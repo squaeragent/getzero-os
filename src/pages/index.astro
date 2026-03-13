@@ -87,63 +87,95 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- PROPOSAL B: ANIMATED COUNTER CARDS -->
+  <!-- PROPOSAL F: LIVING DISCOVERY CARDS -->
   <section class="section reveal">
     <p class="section-label a reveal-child">EMERGENT</p>
     <h2 class="section-title reveal-child">None of these were programmed</h2>
     <div class="discovery-grid reveal-child">
-      <div class="disc-card" data-counter="0.41" data-prefix="H = " data-decimals="2">
-        <div class="disc-val p">H = 0.00</div>
-        <p>Mean-reverting territory — reversal windows no human hypothesized</p>
+      <div class="disc-card tilt-card" data-accent="phosphor">
+        <canvas class="disc-canvas" id="disc-hurst" width="200" height="60"></canvas>
+        <div class="disc-val p" id="disc-hurst-val">H = 0.41</div>
+        <p>Mean-reverting — reversal windows no human hypothesized</p>
       </div>
-      <div class="disc-card" data-counter="30" data-prefix="<" data-suffix="% HR" data-decimals="0">
-        <div class="disc-val a">&lt;0% HR</div>
+      <div class="disc-card tilt-card" data-accent="amber">
+        <canvas class="disc-canvas" id="disc-winloss" width="200" height="60"></canvas>
+        <div class="disc-val a" id="disc-hr-val">&lt;30% HR</div>
         <p>Low hit rate, massive payoff — the wins dominate</p>
       </div>
-      <div class="disc-card" data-counter="1" data-prefix="Δ " data-suffix="" data-text="SENT" data-decimals="-1">
+      <div class="disc-card tilt-card" data-accent="ice">
+        <canvas class="disc-canvas" id="disc-sent" width="200" height="60"></canvas>
         <div class="disc-val ice">Δ SENT</div>
         <p>Analyst-crowd divergence — contrarian signal invisible to price</p>
       </div>
     </div>
   </section>
 
-  <!-- PROPOSAL C: PROGRESSIVE LAYERS + ACTIVE FLYWHEEL -->
+  <!-- PROPOSAL G: TIMELINE TOWER + H: CIRCULAR FLYWHEEL -->
   <section class="section reveal">
     <p class="section-label p reveal-child">THREE LAYERS</p>
 
-    <div class="layer-block l1 reveal-child">
-      <div class="layer-border"></div>
-      <div class="layer-content">
-        <h3 class="layer-title"><span class="p">L1</span> Signal-as-a-Service <span class="layer-tag p">LIVE</span></h3>
-        <p class="layer-desc dim">Raw alpha via API. Not indicators — discoveries. For funds and trading desks that have infrastructure but not this data edge.</p>
-      </div>
-    </div>
+    <div class="timeline reveal-child">
+      <!-- spine -->
+      <div class="tl-spine"></div>
 
-    <div class="layer-block l2 reveal-child">
-      <div class="layer-border layer-border-a"></div>
-      <div class="layer-content">
-        <h3 class="layer-title"><span class="a">L2</span> Agent Marketplace <span class="layer-tag a">BUILDING</span></h3>
-        <p class="layer-desc dim">Engineers build predictors → agents find combinations → best agents attract capital → engineers earn revenue share.</p>
-        <div class="flywheel" id="flywheel">
-          <span class="fw-step" data-fw="0">Engineers</span>
-          <span class="fw-arrow p">→</span>
-          <span class="fw-step" data-fw="1">Predictors</span>
-          <span class="fw-arrow p">→</span>
-          <span class="fw-step" data-fw="2">Agents</span>
-          <span class="fw-arrow p">→</span>
-          <span class="fw-step" data-fw="3">Capital</span>
-          <span class="fw-arrow p">→</span>
-          <span class="fw-step" data-fw="4">Revenue</span>
-          <span class="fw-arrow p">↩</span>
+      <!-- L1 -->
+      <div class="tl-node tl-l1 tilt-card">
+        <div class="tl-dot tl-dot-p"></div>
+        <div class="tl-content">
+          <h3 class="layer-title"><span class="p">L1</span> Signal-as-a-Service <span class="layer-tag tag-live p">LIVE</span></h3>
+          <p class="layer-desc dim">Raw alpha via API. Not indicators — discoveries. For funds and trading desks that have infrastructure but not this data edge.</p>
         </div>
       </div>
-    </div>
 
-    <div class="layer-block l3 last reveal-child">
-      <div class="layer-border layer-border-ice"></div>
-      <div class="layer-content">
-        <h3 class="layer-title"><span class="ice">L3</span> One-click execution <span class="layer-tag ice">VISION</span></h3>
-        <p class="layer-desc dim">14 months live PnL. Verified Sharpe. Documented drawdown. One button.</p>
+      <!-- L2 -->
+      <div class="tl-node tl-l2 tilt-card">
+        <div class="tl-dot tl-dot-a"></div>
+        <div class="tl-content">
+          <h3 class="layer-title"><span class="a">L2</span> Agent Marketplace <span class="layer-tag tag-build a">BUILDING</span></h3>
+          <p class="layer-desc dim">Engineers build predictors → agents find combinations → best agents attract capital → engineers earn revenue share.</p>
+          <!-- Circular Flywheel SVG -->
+          <div class="fw-circle-wrap">
+            <svg class="fw-circle" viewBox="0 0 200 200" width="180" height="180">
+              <circle cx="100" cy="100" r="75" fill="none" stroke="rgba(26,26,26,0.5)" stroke-width="1"/>
+              <!-- nodes -->
+              <g id="fw-nodes">
+                <g class="fw-node" data-fw="0" transform="translate(100,25)">
+                  <rect x="-28" y="-9" width="56" height="18" rx="2" fill="rgba(26,26,26,0.8)" stroke="rgba(138,130,120,0.3)" stroke-width="1"/>
+                  <text x="0" y="4" text-anchor="middle" fill="rgba(232,228,223,0.7)" font-size="7" font-weight="700" font-family="JetBrains Mono, monospace">Engineers</text>
+                </g>
+                <g class="fw-node" data-fw="1" transform="translate(171,62)">
+                  <rect x="-30" y="-9" width="60" height="18" rx="2" fill="rgba(26,26,26,0.8)" stroke="rgba(138,130,120,0.3)" stroke-width="1"/>
+                  <text x="0" y="4" text-anchor="middle" fill="rgba(232,228,223,0.7)" font-size="7" font-weight="700" font-family="JetBrains Mono, monospace">Predictors</text>
+                </g>
+                <g class="fw-node" data-fw="2" transform="translate(147,150)">
+                  <rect x="-22" y="-9" width="44" height="18" rx="2" fill="rgba(26,26,26,0.8)" stroke="rgba(138,130,120,0.3)" stroke-width="1"/>
+                  <text x="0" y="4" text-anchor="middle" fill="rgba(232,228,223,0.7)" font-size="7" font-weight="700" font-family="JetBrains Mono, monospace">Agents</text>
+                </g>
+                <g class="fw-node" data-fw="3" transform="translate(53,150)">
+                  <rect x="-22" y="-9" width="44" height="18" rx="2" fill="rgba(26,26,26,0.8)" stroke="rgba(138,130,120,0.3)" stroke-width="1"/>
+                  <text x="0" y="4" text-anchor="middle" fill="rgba(232,228,223,0.7)" font-size="7" font-weight="700" font-family="JetBrains Mono, monospace">Capital</text>
+                </g>
+                <g class="fw-node" data-fw="4" transform="translate(29,62)">
+                  <rect x="-26" y="-9" width="52" height="18" rx="2" fill="rgba(26,26,26,0.8)" stroke="rgba(138,130,120,0.3)" stroke-width="1"/>
+                  <text x="0" y="4" text-anchor="middle" fill="rgba(232,228,223,0.7)" font-size="7" font-weight="700" font-family="JetBrains Mono, monospace">Revenue</text>
+                </g>
+              </g>
+              <!-- rotating glow -->
+              <circle id="fw-glow" cx="100" cy="25" r="6" fill="none" stroke="rgba(200,255,0,0.5)" stroke-width="2">
+                <animateMotion dur="4s" repeatCount="indefinite" path="M100,25 A75,75 0 0,1 171,62 A75,75 0 0,1 147,150 A75,75 0 0,1 53,150 A75,75 0 0,1 29,62 A75,75 0 0,1 100,25"/>
+              </circle>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- L3 -->
+      <div class="tl-node tl-l3 tilt-card">
+        <div class="tl-dot tl-dot-ice"></div>
+        <div class="tl-content">
+          <h3 class="layer-title"><span class="ice">L3</span> One-click execution <span class="layer-tag tag-vision ice">VISION</span></h3>
+          <p class="layer-desc dim">14 months live PnL. Verified Sharpe. Documented drawdown. One button.</p>
+        </div>
       </div>
     </div>
 
@@ -457,7 +489,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text);
   }
 
-  /* ═══ PROPOSAL B: DISCOVERY CARDS ═══ */
+  /* ═══ PROPOSAL F: LIVING DISCOVERY CARDS ═══ */
   .discovery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -468,110 +500,141 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .disc-card {
     border: 1px solid var(--border);
-    padding: 1.5rem 1rem;
+    padding: 0;
     text-align: center;
-    transition: border-color 0.4s, box-shadow 0.4s, background 0.4s;
+    transition: border-color 0.4s, box-shadow 0.4s;
     position: relative;
     overflow: hidden;
   }
-  .disc-card::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 0; height: 0;
-    border-radius: 50%;
-    transition: width 0.6s, height 0.6s, top 0.3s, left 0.3s, opacity 0.6s;
-    opacity: 0;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+  .disc-card[data-accent="phosphor"]:hover { border-color: rgba(200,255,0,.3); box-shadow: 0 0 16px rgba(200,255,0,.06); }
+  .disc-card[data-accent="amber"]:hover { border-color: rgba(255,176,0,.3); box-shadow: 0 0 16px rgba(255,176,0,.06); }
+  .disc-card[data-accent="ice"]:hover { border-color: rgba(0,212,255,.3); box-shadow: 0 0 16px rgba(0,212,255,.06); }
+  .disc-canvas {
+    display: block;
+    width: 100%;
+    height: 60px;
+    border-bottom: 1px solid var(--border);
   }
-  .disc-card.counted::before {
-    width: 120px; height: 120px;
-    opacity: 1;
-  }
-  .disc-card:nth-child(1)::before { background: radial-gradient(circle, rgba(200,255,0,0.08), transparent 70%); }
-  .disc-card:nth-child(2)::before { background: radial-gradient(circle, rgba(255,176,0,0.08), transparent 70%); }
-  .disc-card:nth-child(3)::before { background: radial-gradient(circle, rgba(0,212,255,0.08), transparent 70%); }
   .disc-val {
     font-family: var(--font-head);
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 700;
-    margin-bottom: 0.3rem;
+    margin: 0.75rem 0 0.2rem;
     position: relative;
   }
-  .disc-card p { font-size: 0.6rem; color: var(--text-dim); line-height: 1.5; position: relative; }
+  .disc-card p { font-size: 0.55rem; color: var(--text-dim); line-height: 1.5; padding: 0 0.75rem 1rem; }
 
-  /* ═══ PROPOSAL C: PROGRESSIVE LAYERS ═══ */
-  .layer-block {
-    display: flex;
-    gap: 0;
-    margin-bottom: 1.25rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid rgba(26,26,26,0.3);
+  /* ═══ PROPOSAL G: TIMELINE TOWER ═══ */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
   }
-  .layer-block.last { border-bottom: none; margin-bottom: 0.5rem; padding-bottom: 0.5rem; }
-  .layer-border {
-    width: 3px;
-    flex-shrink: 0;
-    background: var(--phosphor);
-    border-radius: 2px;
-    margin-right: 1rem;
-    box-shadow: 0 0 8px var(--phosphor-glow);
+  .tl-spine {
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--phosphor) 0%, var(--amber) 50%, rgba(0,212,255,0.3) 100%);
+    border-radius: 1px;
   }
-  .layer-border-a { background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.2); }
-  .layer-border-ice { background: var(--ice); box-shadow: 0 0 8px rgba(0,212,255,0.2); opacity: 0.5; }
-  .layer-content { flex: 1; }
-  .l2 { opacity: 0.85; }
-  .l3 { opacity: 0.6; }
+  .tl-node {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+  .tl-node:last-of-type { margin-bottom: 0; }
+  .tl-dot {
+    position: absolute;
+    left: -24px;
+    top: 1.25rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--phosphor);
+    background: var(--bg);
+    z-index: 2;
+  }
+  .tl-dot-p {
+    border-color: var(--phosphor);
+    box-shadow: 0 0 10px var(--phosphor-glow);
+    animation: dotPulse 2s ease infinite;
+  }
+  .tl-dot-a {
+    border-color: var(--amber);
+    box-shadow: 0 0 8px rgba(255,176,0,0.2);
+    width: 8px; height: 8px;
+    top: 1.35rem;
+    left: -23px;
+  }
+  .tl-dot-ice {
+    border-color: var(--ice);
+    opacity: 0.5;
+    width: 6px; height: 6px;
+    top: 1.45rem;
+    left: -22px;
+  }
+  @keyframes dotPulse {
+    0%,100% { box-shadow: 0 0 6px var(--phosphor-glow); }
+    50% { box-shadow: 0 0 16px var(--phosphor-glow), 0 0 24px rgba(200,255,0,0.1); }
+  }
+  .tl-l1:hover { border-color: rgba(200,255,0,.2); box-shadow: 0 0 20px rgba(200,255,0,.04); }
+  .tl-l2 { opacity: 0.85; }
+  .tl-l2:hover { border-color: rgba(255,176,0,.2); box-shadow: 0 0 20px rgba(255,176,0,.04); opacity: 1; }
+  .tl-l3 { opacity: 0.55; }
+  .tl-l3:hover { border-color: rgba(0,212,255,.2); box-shadow: 0 0 20px rgba(0,212,255,.04); opacity: 0.8; }
+  .tl-content { position: relative; }
   .layer-title {
     font-family: var(--font-head);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.3rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   .layer-tag {
-    font-size: 0.45rem;
+    font-size: 0.4rem;
     letter-spacing: 0.15em;
-    padding: 0.15rem 0.4rem;
+    padding: 0.12rem 0.35rem;
     border: 1px solid currentColor;
-    opacity: 0.7;
   }
+  .tag-live { background: rgba(200,255,0,.08); }
+  .tag-build { background: rgba(255,176,0,.06); }
+  .tag-vision { background: rgba(0,212,255,.05); }
   .layer-desc {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     line-height: 1.6;
     max-width: 500px;
   }
 
-  /* FLYWHEEL — animated */
-  .flywheel {
+  /* ═══ PROPOSAL H: CIRCULAR FLYWHEEL ═══ */
+  .fw-circle-wrap {
     display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    margin-top: 0.75rem;
-    font-family: var(--font-head);
-    font-size: 0.6rem;
+    justify-content: center;
+    margin-top: 1rem;
   }
-  .fw-step {
-    color: var(--text-dim);
-    font-weight: 700;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--border);
-    transition: color 0.4s, border-color 0.4s, box-shadow 0.4s, background 0.4s;
+  .fw-circle { max-width: 180px; }
+  .fw-node rect { transition: fill 0.3s, stroke 0.3s; }
+  .fw-node text { transition: fill 0.3s; }
+  .fw-node.fw-active rect {
+    fill: rgba(200,255,0,0.12);
+    stroke: rgba(200,255,0,0.5);
+    filter: drop-shadow(0 0 6px rgba(200,255,0,0.2));
   }
-  .fw-step.active {
-    color: var(--phosphor);
-    border-color: var(--phosphor);
-    background: rgba(200,255,0,0.06);
-    box-shadow: 0 0 10px rgba(200,255,0,0.1);
+  .fw-node.fw-active text { fill: rgb(200,255,0); }
+
+  /* ═══ PROPOSAL I: TILT HOVER ═══ */
+  .tilt-card {
+    transition: transform 0.2s ease, border-color 0.4s, box-shadow 0.4s;
+    transform-style: preserve-3d;
   }
-  .fw-arrow {
-    font-size: 0.8rem;
-    transition: color 0.3s;
+  @media (hover: hover) {
+    .tilt-card:hover { transform: perspective(600px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); }
   }
 
   /* VISION */
@@ -1020,39 +1083,165 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   setInterval(rvTick, 50);
 
-  // ═══ PROPOSAL B: ANIMATED COUNTERS ═══
-  const counterObs = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if(!e.isIntersecting) return;
-      const card = e.target;
-      if(card.classList.contains('counted')) return;
-      const target = parseFloat(card.dataset.counter);
-      const prefix = card.dataset.prefix || '';
-      const suffix = card.dataset.suffix || '';
-      const decimals = parseInt(card.dataset.decimals);
-      const valEl = card.querySelector('.disc-val');
-      if(decimals === -1) { card.classList.add('counted'); return; } // text-only (Δ SENT)
-      let cur = 0;
-      const step = target / 40;
-      const iv = setInterval(()=>{
-        cur += step;
-        if(cur >= target) { cur = target; clearInterval(iv); }
-        if(decimals > 0) valEl.textContent = prefix + cur.toFixed(decimals);
-        else valEl.textContent = prefix + Math.round(cur) + suffix;
-      }, 25);
-      card.classList.add('counted');
-    });
-  }, { threshold: 0.5 });
-  document.querySelectorAll('.disc-card').forEach(el=>counterObs.observe(el));
+  // ═══ PROPOSAL F: LIVING DISCOVERY CARDS ═══
+  // Card 1: Hurst mean-reversion wave
+  const hurstCanvas = document.getElementById('disc-hurst');
+  const hurstCtx = hurstCanvas.getContext('2d');
+  let hurstVal = 0.41;
+  let hurstBuf = [];
+  for(let i=0;i<100;i++) hurstBuf.push(30+Math.sin(i*.15)*15);
 
-  // ═══ PROPOSAL C: FLYWHEEL ANIMATION ═══
+  function drawHurst(){
+    const w=hurstCanvas.width, h=hurstCanvas.height;
+    hurstCtx.clearRect(0,0,w,h);
+    // bounds lines
+    hurstCtx.strokeStyle='rgba(200,255,0,0.1)';
+    hurstCtx.setLineDash([3,3]);
+    hurstCtx.beginPath(); hurstCtx.moveTo(0,15); hurstCtx.lineTo(w,15); hurstCtx.stroke();
+    hurstCtx.beginPath(); hurstCtx.moveTo(0,45); hurstCtx.lineTo(w,45); hurstCtx.stroke();
+    hurstCtx.setLineDash([]);
+    // wave
+    const last=hurstBuf[hurstBuf.length-1];
+    const next=last+rnd(-3,3);
+    const clamped=Math.max(10,Math.min(50,next+(30-next)*.05));
+    hurstBuf.push(clamped); if(hurstBuf.length>100) hurstBuf.shift();
+    hurstCtx.beginPath();
+    hurstCtx.strokeStyle='rgba(200,255,0,0.6)';
+    hurstCtx.lineWidth=1.5;
+    hurstBuf.forEach((v,i)=>{
+      const x=i*(w/100);
+      i===0?hurstCtx.moveTo(x,v):hurstCtx.lineTo(x,v);
+    });
+    hurstCtx.stroke();
+    // update val
+    hurstVal=lerp(hurstVal,.41+rnd(-.03,.03),.02);
+    document.getElementById('disc-hurst-val').textContent='H = '+hurstVal.toFixed(2);
+  }
+
+  // Card 2: Win/loss ticker
+  const wlCanvas = document.getElementById('disc-winloss');
+  const wlCtx = wlCanvas.getContext('2d');
+  let wlDots = [];
+  let wlWins = 0, wlTotal = 0;
+  for(let i=0;i<40;i++){const w=Math.random()<.28;wlDots.push({x:i*5,win:w});if(w)wlWins++;wlTotal++;}
+
+  function drawWinLoss(){
+    const w=wlCanvas.width, h=wlCanvas.height;
+    wlCtx.clearRect(0,0,w,h);
+    if(Math.random()<.15){
+      const win=Math.random()<.28;
+      wlDots.push({x:0,win,flash:win?1:0});
+      if(win) wlWins++;
+      wlTotal++;
+      if(wlDots.length>40){const old=wlDots.shift();if(old.win)wlWins--;wlTotal--;}
+    }
+    wlDots.forEach((d,i)=>{
+      d.x=i*(w/40)+w/80;
+      const y=h/2;
+      const r=d.win?4:2;
+      if(d.win){
+        wlCtx.fillStyle=`rgba(255,176,0,${0.5+(d.flash||0)*0.5})`;
+        if(d.flash>0){
+          const grad=wlCtx.createRadialGradient(d.x,y,0,d.x,y,12);
+          grad.addColorStop(0,'rgba(255,176,0,0.3)');
+          grad.addColorStop(1,'rgba(255,176,0,0)');
+          wlCtx.fillStyle=grad;
+          wlCtx.fillRect(d.x-12,y-12,24,24);
+          wlCtx.fillStyle='rgba(255,176,0,0.9)';
+          d.flash-=.02;
+        }
+      } else {
+        wlCtx.fillStyle='rgba(138,130,120,0.25)';
+      }
+      wlCtx.beginPath();
+      wlCtx.arc(d.x,y,r,0,Math.PI*2);
+      wlCtx.fill();
+    });
+    const hr=wlTotal>0?Math.round(wlWins/wlTotal*100):0;
+    document.getElementById('disc-hr-val').textContent='<'+hr+'% HR';
+  }
+
+  // Card 3: Sentiment divergence
+  const sentCanvas = document.getElementById('disc-sent');
+  const sentCtx = sentCanvas.getContext('2d');
+  let analystPos = 20, crowdPos = 40, analystT = 20, crowdT = 40;
+
+  function drawSent(){
+    const w=sentCanvas.width, h=sentCanvas.height;
+    sentCtx.clearRect(0,0,w,h);
+    if(Math.random()<.02) analystT=rnd(10,50);
+    if(Math.random()<.02) crowdT=rnd(10,50);
+    analystPos=lerp(analystPos,analystT,.03);
+    crowdPos=lerp(crowdPos,crowdT,.03);
+    // labels
+    sentCtx.font='bold 7px JetBrains Mono, monospace';
+    sentCtx.fillStyle='rgba(138,130,120,0.5)';
+    sentCtx.textAlign='left';
+    sentCtx.fillText('ANALYSTS',4,18);
+    sentCtx.fillText('CROWD',4,42);
+    // bars
+    const barX=60;
+    const barW=w-barX-8;
+    // analyst bar
+    const aW=analystPos/60*barW;
+    sentCtx.fillStyle='rgba(0,212,255,0.25)';
+    sentCtx.fillRect(barX,10,aW,12);
+    sentCtx.fillStyle='rgba(0,212,255,0.7)';
+    sentCtx.fillRect(barX+aW-2,10,2,12);
+    // crowd bar
+    const cW=crowdPos/60*barW;
+    sentCtx.fillStyle='rgba(255,176,0,0.2)';
+    sentCtx.fillRect(barX,34,cW,12);
+    sentCtx.fillStyle='rgba(255,176,0,0.6)';
+    sentCtx.fillRect(barX+cW-2,34,2,12);
+    // divergence indicator
+    const div=Math.abs(analystPos-crowdPos)/60;
+    if(div>.3){
+      sentCtx.fillStyle=`rgba(0,212,255,${div*.3})`;
+      sentCtx.fillRect(0,0,w,h);
+    }
+  }
+
+  // Resize canvases to container
+  function resizeDiscCanvases(){
+    document.querySelectorAll('.disc-canvas').forEach(c=>{
+      c.width=c.parentElement.clientWidth;
+      c.height=60;
+    });
+  }
+  resizeDiscCanvases();
+  window.addEventListener('resize',resizeDiscCanvases);
+
+  // Animate all discovery cards
+  function discFrame(){
+    drawHurst(); drawWinLoss(); drawSent();
+    requestAnimationFrame(discFrame);
+  }
+  requestAnimationFrame(discFrame);
+
+  // ═══ PROPOSAL H: CIRCULAR FLYWHEEL ANIMATION ═══
   let fwIdx = 0;
   setInterval(()=>{
-    document.querySelectorAll('.fw-step').forEach(el=>el.classList.remove('active'));
-    const steps = document.querySelectorAll('.fw-step');
-    if(steps[fwIdx]) steps[fwIdx].classList.add('active');
-    fwIdx = (fwIdx + 1) % steps.length;
+    document.querySelectorAll('.fw-node').forEach(el=>el.classList.remove('fw-active'));
+    const nodes = document.querySelectorAll('.fw-node');
+    if(nodes[fwIdx]) nodes[fwIdx].classList.add('fw-active');
+    fwIdx = (fwIdx + 1) % nodes.length;
   }, 800);
+
+  // ═══ PROPOSAL I: TILT ON HOVER ═══
+  document.querySelectorAll('.tilt-card').forEach(card=>{
+    card.addEventListener('mousemove',(e)=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5;
+      const y=(e.clientY-r.top)/r.height-.5;
+      card.style.setProperty('--tilt-y',x*4+'deg');
+      card.style.setProperty('--tilt-x',-y*4+'deg');
+    });
+    card.addEventListener('mouseleave',()=>{
+      card.style.setProperty('--tilt-y','0deg');
+      card.style.setProperty('--tilt-x','0deg');
+    });
+  });
 
   // ═══ PROPOSAL D: TERMINAL CTA ═══
   const form = document.getElementById('access-form');
