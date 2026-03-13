@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    background: #050505;
+    font-family: 'JetBrains Mono', monospace;
+    color: #e8e4df;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, transparent 80%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+  .brand { color: #c8ff00; font-weight: 700; font-size: 14px; }
+  .tag { color: #8a8278; }
+  .divider { border: none; border-top: 1px solid #1a1a1a; margin: 0 0 36px; }
+  .title {
+    font-size: 52px;
+    font-weight: 700;
+    color: #e8e4df;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+  .title em {
+    color: #c8ff00;
+    font-style: normal;
+  }
+  .sub {
+    font-size: 17px;
+    color: #8a8278;
+    line-height: 1.5;
+    max-width: 700px;
+    margin-bottom: 36px;
+  }
+  .stats {
+    display: flex;
+    gap: 48px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+  .stat { display: flex; gap: 8px; }
+  .sv { color: #c8ff00; font-weight: 700; font-size: 15px; }
+  .sv.a { color: #ffb000; }
+  .sl { color: #8a8278; }
+  .bottom {
+    position: absolute;
+    bottom: 36px;
+    left: 80px;
+    right: 80px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+  <div class="top">
+    <span class="brand">◇ ZERO OS</span>
+    <span class="tag">TRADING INTELLIGENCE INFRASTRUCTURE</span>
+  </div>
+  <hr class="divider">
+  <div class="title">AI that trades better<br>than you. <em>And you're<br>okay with it.</em></div>
+  <div class="sub">Signals no one else has. Agents that find edges no human programmed. A marketplace where the best ML wins.</div>
+  <div class="stats">
+    <div class="stat"><span class="sv">147</span><span class="sl">FEATURES</span></div>
+    <div class="stat"><span class="sv a">250</span><span class="sl">AGENTS</span></div>
+    <div class="stat"><span class="sv">24/7</span><span class="sl">LIVE</span></div>
+    <div class="stat"><span class="sv">3</span><span class="sl">LAYERS</span></div>
+  </div>
+  <div class="bottom">
+    <span>getzero.dev</span>
+    <span>REQUEST ACCESS</span>
+  </div>
+</body>
+</html>
