@@ -99,25 +99,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- PROPOSAL F: LIVING DISCOVERY CARDS -->
+  <!-- BACKTEST RESULTS -->
   <section class="section reveal">
-    <p class="section-label a reveal-child">EMERGENT SIGNALS</p>
-    <h2 class="section-title reveal-child">The system discovered these. We didn't program them.</h2>
-    <div class="discovery-grid reveal-child">
-      <div class="disc-card tilt-card" data-accent="phosphor">
-        <canvas class="disc-canvas" id="disc-hurst" width="200" height="60"></canvas>
-        <div class="disc-val p" id="disc-hurst-val">H = 0.41</div>
-        <p>Mean-reverting — reversal windows no human hypothesized</p>
+    <p class="section-label a reveal-child">MONTE CARLO BACKTEST</p>
+    <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
+    <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets. Median returns, worst-case scenarios, and drawdown limits — all from the Envy Matrix regime detection engine.</p>
+    
+    <div class="bt-table-wrap reveal-child">
+      <table class="bt-table">
+        <thead>
+          <tr>
+            <th class="bt-coin">COIN</th>
+            <th>RETURN</th>
+            <th>WIN RATE</th>
+            <th>MAX DD</th>
+            <th class="bt-hide-mobile">WORST CASE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="bt-coin">BTC</td><td class="p">+52.2%</td><td>50.9%</td><td class="bt-dd">-14.9%</td><td class="p bt-hide-mobile">+35.3%</td></tr>
+          <tr><td class="bt-coin">ETH</td><td class="p">+77.4%</td><td>39.8%</td><td class="bt-dd">-28.3%</td><td class="p bt-hide-mobile">+42.0%</td></tr>
+          <tr><td class="bt-coin">SOL</td><td class="p">+86.5%</td><td>43.4%</td><td class="bt-dd">-16.0%</td><td class="p bt-hide-mobile">+50.4%</td></tr>
+          <tr><td class="bt-coin">ARB</td><td class="p">+95.8%</td><td>37.1%</td><td class="bt-dd">-23.1%</td><td class="p bt-hide-mobile">+45.6%</td></tr>
+          <tr><td class="bt-coin">CRV</td><td class="p">+127.0%</td><td>34.7%</td><td class="bt-dd bt-dd-hot">-31.5%</td><td class="p bt-hide-mobile">+43.7%</td></tr>
+          <tr><td class="bt-coin">KPEPE</td><td class="p">+256.1%</td><td>37.7%</td><td class="bt-dd">-20.4%</td><td class="p bt-hide-mobile">+165.0%</td></tr>
+          <tr><td class="bt-coin">KBONK</td><td class="p">+224.6%</td><td>32.6%</td><td class="bt-dd bt-dd-hot">-29.2%</td><td class="p bt-hide-mobile">+143.2%</td></tr>
+          <tr><td class="bt-coin">TRX</td><td class="p">+59.4%</td><td class="bt-wr-best">61.3%</td><td class="bt-dd bt-dd-safe">-8.3%</td><td class="p bt-hide-mobile">+47.8%</td></tr>
+          <tr><td class="bt-coin">DOGE</td><td class="p">+47.6%</td><td>38.2%</td><td class="bt-dd">-19.7%</td><td class="p bt-hide-mobile">+20.1%</td></tr>
+          <tr><td class="bt-coin">KSHIB</td><td class="p">+117.7%</td><td>43.0%</td><td class="bt-dd">-17.8%</td><td class="p bt-hide-mobile">+70.7%</td></tr>
+          <tr class="bt-neg"><td class="bt-coin">PAXG</td><td class="dim">-5.1%</td><td>49.2%</td><td class="bt-dd bt-dd-safe">-11.3%</td><td class="red bt-hide-mobile">-14.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bt-highlights reveal-child">
+      <div class="bt-stat tilt-card">
+        <div class="bt-stat-val p">14/15</div>
+        <div class="bt-stat-label dim">coins profitable at median</div>
       </div>
-      <div class="disc-card tilt-card" data-accent="amber">
-        <canvas class="disc-canvas" id="disc-winloss" width="200" height="60"></canvas>
-        <div class="disc-val a" id="disc-hr-val">&lt;30% HR</div>
-        <p>Low hit rate, massive payoff — the wins dominate</p>
+      <div class="bt-stat tilt-card">
+        <div class="bt-stat-val a">37%</div>
+        <div class="bt-stat-label dim">avg win rate — wins are 3-5x larger than losses</div>
       </div>
-      <div class="disc-card tilt-card" data-accent="ice">
-        <canvas class="disc-canvas" id="disc-sent" width="200" height="60"></canvas>
-        <div class="disc-val ice">Δ SENT</div>
-        <p>Analyst-crowd divergence — contrarian signal invisible to price</p>
+      <div class="bt-stat tilt-card">
+        <div class="bt-stat-val ice">p5 positive</div>
+        <div class="bt-stat-label dim">even the worst 5% of simulations are profitable</div>
       </div>
     </div>
   </section>
@@ -534,40 +560,73 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text);
   }
 
-  /* ═══ PROPOSAL F: LIVING DISCOVERY CARDS ═══ */
-  .discovery-grid {
+  /* ═══ BACKTEST TABLE ═══ */
+  .bt-sub { font-size: 0.65rem; line-height: 1.7; max-width: 520px; margin-bottom: 1rem; }
+  .bt-table-wrap {
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+  .bt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+  }
+  .bt-table thead { background: rgba(0,0,0,0.4); }
+  .bt-table th {
+    padding: 0.5rem 0.6rem;
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .bt-table th.bt-coin { text-align: left; }
+  .bt-table td {
+    padding: 0.4rem 0.6rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .bt-table td.bt-coin {
+    text-align: left;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .bt-table tr:hover { background: rgba(200,255,0,0.02); }
+  .bt-neg td { opacity: 0.5; }
+  .bt-dd { color: var(--text-dim); }
+  .bt-dd-hot { color: var(--amber); }
+  .bt-dd-safe { color: var(--ice); }
+  .bt-wr-best { color: var(--phosphor); font-weight: 700; }
+  @media (max-width: 639px) {
+    .bt-hide-mobile { display: none; }
+    .bt-table { font-size: 0.6rem; }
+    .bt-table th, .bt-table td { padding: 0.35rem 0.4rem; }
+  }
+
+  /* BACKTEST HIGHLIGHTS */
+  .bt-highlights {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
   }
-  @media (max-width: 639px) {
-    .discovery-grid { grid-template-columns: 1fr; }
-  }
-  .disc-card {
+  @media (max-width: 639px) { .bt-highlights { grid-template-columns: 1fr; } }
+  .bt-stat {
     border: 1px solid var(--border);
-    padding: 0;
+    padding: 1rem;
     text-align: center;
-    transition: border-color 0.4s, box-shadow 0.4s;
-    position: relative;
-    overflow: hidden;
   }
-  .disc-card[data-accent="phosphor"]:hover { border-color: rgba(200,255,0,.3); box-shadow: 0 0 16px rgba(200,255,0,.06); }
-  .disc-card[data-accent="amber"]:hover { border-color: rgba(255,176,0,.3); box-shadow: 0 0 16px rgba(255,176,0,.06); }
-  .disc-card[data-accent="ice"]:hover { border-color: rgba(0,212,255,.3); box-shadow: 0 0 16px rgba(0,212,255,.06); }
-  .disc-canvas {
-    display: block;
-    width: 100%;
-    height: 60px;
-    border-bottom: 1px solid var(--border);
-  }
-  .disc-val {
+  .bt-stat-val {
     font-family: var(--font-head);
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin: 0.75rem 0 0.2rem;
-    position: relative;
+    margin-bottom: 0.2rem;
   }
-  .disc-card p { font-size: 0.55rem; color: var(--text-dim); line-height: 1.5; padding: 0 0.75rem 1rem; }
+  .bt-stat-label { font-size: 0.5rem; }
 
   /* ═══ PROPOSAL G: TIMELINE TOWER ═══ */
   .timeline {
@@ -1075,114 +1134,10 @@ function updateStatus(){
 }
 
 let fc=0;
-// Discovery card state (initialized in DOMContentLoaded, drawn in frame loop)
-let hurstCanvas, hurstCtx, hurstVal=0.41, hurstBuf=[];
-let wlCanvas, wlCtx, wlDots=[], wlWins=0, wlTotal=0;
-let sentCanvas, sentCtx, analystPos=20, crowdPos=40, analystT=20, crowdT=40;
-let discReady = false;
-
-for(let i=0;i<100;i++) hurstBuf.push(30+Math.sin(i*.15)*15);
-for(let i=0;i<40;i++){const w=Math.random()<.28;wlDots.push({x:i*5,win:w});if(w)wlWins++;wlTotal++;}
-
-function drawHurst(){
-  if(!hurstCtx) return;
-  const w=hurstCanvas.width, h=hurstCanvas.height;
-  hurstCtx.clearRect(0,0,w,h);
-  hurstCtx.strokeStyle='rgba(200,255,0,0.1)';
-  hurstCtx.setLineDash([3,3]);
-  hurstCtx.beginPath(); hurstCtx.moveTo(0,15); hurstCtx.lineTo(w,15); hurstCtx.stroke();
-  hurstCtx.beginPath(); hurstCtx.moveTo(0,45); hurstCtx.lineTo(w,45); hurstCtx.stroke();
-  hurstCtx.setLineDash([]);
-  const last=hurstBuf[hurstBuf.length-1];
-  const next=last+rnd(-3,3);
-  const clamped=Math.max(10,Math.min(50,next+(30-next)*.05));
-  hurstBuf.push(clamped); if(hurstBuf.length>100) hurstBuf.shift();
-  hurstCtx.beginPath();
-  hurstCtx.strokeStyle='rgba(200,255,0,0.6)';
-  hurstCtx.lineWidth=1.5;
-  hurstBuf.forEach((v,i)=>{
-    const x=i*(w/100);
-    i===0?hurstCtx.moveTo(x,v):hurstCtx.lineTo(x,v);
-  });
-  hurstCtx.stroke();
-  hurstVal=lerp(hurstVal,.41+rnd(-.03,.03),.02);
-  const el=document.getElementById('disc-hurst-val');
-  if(el) el.textContent='H = '+hurstVal.toFixed(2);
-}
-
-function drawWinLoss(){
-  if(!wlCtx) return;
-  const w=wlCanvas.width, h=wlCanvas.height;
-  wlCtx.clearRect(0,0,w,h);
-  if(Math.random()<.15){
-    const win=Math.random()<.28;
-    wlDots.push({x:0,win,flash:win?1:0});
-    if(win) wlWins++;
-    wlTotal++;
-    if(wlDots.length>40){const old=wlDots.shift();if(old.win)wlWins--;wlTotal--;}
-  }
-  wlDots.forEach((d,i)=>{
-    d.x=i*(w/40)+w/80;
-    const y=h/2;
-    if(d.win){
-      wlCtx.fillStyle=`rgba(255,176,0,${0.5+(d.flash||0)*0.5})`;
-      if(d.flash>0){
-        const grad=wlCtx.createRadialGradient(d.x,y,0,d.x,y,12);
-        grad.addColorStop(0,'rgba(255,176,0,0.3)');
-        grad.addColorStop(1,'rgba(255,176,0,0)');
-        wlCtx.fillStyle=grad;
-        wlCtx.fillRect(d.x-12,y-12,24,24);
-        wlCtx.fillStyle='rgba(255,176,0,0.9)';
-        d.flash-=.02;
-      }
-    } else {
-      wlCtx.fillStyle='rgba(138,130,120,0.25)';
-    }
-    wlCtx.beginPath();
-    wlCtx.arc(d.x,y,d.win?4:2,0,Math.PI*2);
-    wlCtx.fill();
-  });
-  const hr=wlTotal>0?Math.round(wlWins/wlTotal*100):0;
-  const el=document.getElementById('disc-hr-val');
-  if(el) el.textContent='<'+hr+'% HR';
-}
-
-function drawSent(){
-  if(!sentCtx) return;
-  const w=sentCanvas.width, h=sentCanvas.height;
-  sentCtx.clearRect(0,0,w,h);
-  if(Math.random()<.02) analystT=rnd(10,50);
-  if(Math.random()<.02) crowdT=rnd(10,50);
-  analystPos=lerp(analystPos,analystT,.03);
-  crowdPos=lerp(crowdPos,crowdT,.03);
-  sentCtx.font='bold 7px JetBrains Mono, monospace';
-  sentCtx.fillStyle='rgba(138,130,120,0.5)';
-  sentCtx.textAlign='left';
-  sentCtx.fillText('ANALYSTS',4,18);
-  sentCtx.fillText('CROWD',4,42);
-  const barX=60, barW=w-barX-8;
-  const aW=analystPos/60*barW;
-  sentCtx.fillStyle='rgba(0,212,255,0.25)';
-  sentCtx.fillRect(barX,10,aW,12);
-  sentCtx.fillStyle='rgba(0,212,255,0.7)';
-  sentCtx.fillRect(barX+aW-2,10,2,12);
-  const cW=crowdPos/60*barW;
-  sentCtx.fillStyle='rgba(255,176,0,0.2)';
-  sentCtx.fillRect(barX,34,cW,12);
-  sentCtx.fillStyle='rgba(255,176,0,0.6)';
-  sentCtx.fillRect(barX+cW-2,34,2,12);
-  const div=Math.abs(analystPos-crowdPos)/60;
-  if(div>.3){
-    sentCtx.fillStyle=`rgba(0,212,255,${div*.3})`;
-    sentCtx.fillRect(0,0,w,h);
-  }
-}
-
 function frame(){
   tick();
   draw();
   if(fc%30===0) updateStatus();
-  if(fc%2===0 && discReady){ drawHurst(); drawWinLoss(); drawSent(); }
   fc++;
   requestAnimationFrame(frame);
 }
@@ -1283,24 +1238,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     lMarker.style.boxShadow = rvState.ly>.7?'0 0 8px rgba(255,51,51,.3)':'none';
   }
   setInterval(rvTick, 50);
-
-  // ═══ PROPOSAL F: INIT DISCOVERY CANVASES ═══
-  hurstCanvas = document.getElementById('disc-hurst');
-  hurstCtx = hurstCanvas ? hurstCanvas.getContext('2d') : null;
-  wlCanvas = document.getElementById('disc-winloss');
-  wlCtx = wlCanvas ? wlCanvas.getContext('2d') : null;
-  sentCanvas = document.getElementById('disc-sent');
-  sentCtx = sentCanvas ? sentCanvas.getContext('2d') : null;
-
-  function resizeDiscCanvases(){
-    document.querySelectorAll('.disc-canvas').forEach(c=>{
-      c.width=c.parentElement.clientWidth;
-      c.height=60;
-    });
-  }
-  resizeDiscCanvases();
-  window.addEventListener('resize',resizeDiscCanvases);
-  discReady = true;
 
   // ═══ PROPOSAL H: CIRCULAR FLYWHEEL ANIMATION ═══
   let fwIdx = 0;
