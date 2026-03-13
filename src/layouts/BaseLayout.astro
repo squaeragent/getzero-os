@@ -1,0 +1,31 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'Trading intelligence infrastructure. Launch autonomous trading agents that discover edges in real markets.' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://getzero.dev">
+  <meta property="og:site_name" content="ZERO OS">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="/fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+  <slot />
+</body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
