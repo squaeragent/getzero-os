@@ -34,6 +34,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="hero-cta">
       <a href="#access" class="btn-primary">Request Early Access</a>
       <a href="#signals" class="btn-ghost">See it live ↓</a>
+      <a href="/thesis" class="btn-ghost">Read the thesis</a>
     </div>
   </header>
 
@@ -807,12 +808,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 // ═══════════════════════════════════════════════════
 
 const ALL_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','OP','SUI','MATIC','NEAR','INJ'];
-const COINS = window.innerWidth < 640 ? ALL_COINS.slice(0, 8) : ALL_COINS;
-const COLS = ['HURST','DFA','SENT','LYAP','FLOW'];
+const isMobile = window.innerWidth < 640;
+const COINS = isMobile ? ALL_COINS.slice(0, 8) : ALL_COINS;
+const COLS = isMobile ? ['HURST','DFA','LYAP','FLOW'] : ['HURST','DFA','SENT','LYAP','FLOW'];
 const NC = COLS.length;
-const ROW_H = 30;
-const HDR_H = 26;
-const PAD = 10;
+const ROW_H = isMobile ? 34 : 30;
+const HDR_H = isMobile ? 28 : 26;
+const PAD = isMobile ? 6 : 10;
 const DPR = Math.min(window.devicePixelRatio || 1, 2);
 
 // palette
@@ -829,7 +831,7 @@ const CLR = {
 
 const S = {
   data: [], canvas: null, ctx: null,
-  w: 0, h: 0, coinW: 54, regW: 90, colW: 0,
+  w: 0, h: 0, coinW: isMobile ? 44 : 54, regW: isMobile ? 72 : 90, colW: 0,
   glows: [], time: 0
 };
 
@@ -872,11 +874,15 @@ const SEEDS = {
   INJ:  {h:[.42,.50], d:[.44,.52], s:[-.5,.6],  ly:[.65,.90], fl:[-2.2,2.2]}
 };
 
+// Column mapping: indices into full 5-value array [h,d,s,ly,fl]
+const COL_MAP = COLS.map(c=>({HURST:0,DFA:1,SENT:2,LYAP:3,FLOW:4}[c]));
+
 function initData(){
   COINS.forEach(coin=>{
     const s=SEEDS[coin];
-    const v=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
-    S.data.push({coin,v:[...v],t:[...v],reg:regime(v[0],v[1],v[3]),rt:0,seeds:s});
+    const full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
+    const v=COL_MAP.map(i=>full[i]);
+    S.data.push({coin,v:[...v],t:[...v],full:[...full],reg:regime(full[0],full[1],full[3]),rt:0,seeds:s});
   });
 }
 
@@ -904,7 +910,7 @@ function draw(){
   // header
   ctx.fillStyle='rgba(0,0,0,0.4)';
   ctx.fillRect(0,0,w,HDR_H);
-  ctx.font='bold 9px JetBrains Mono, monospace';
+  ctx.font='bold '+(isMobile?'10':'9')+'px JetBrains Mono, monospace';
   ctx.fillStyle=rgba(CLR.dim,.5);
   ctx.textBaseline='middle';
   ctx.textAlign='left';
@@ -933,10 +939,11 @@ function draw(){
     // heat cells
     d.v.forEach((val,j)=>{
       const x=dataX+j*colW;
+      const fi=COL_MAP[j];
       let norm;
-      if(j<2) norm=val;
-      else if(j===2) norm=(val+1)/2;
-      else if(j===3) norm=1-Math.min(val,1.2)/1.2;
+      if(fi<2) norm=val;
+      else if(fi===2) norm=(val+1)/2;
+      else if(fi===3) norm=1-Math.min(val,1.2)/1.2;
       else norm=(val+3)/6;
 
       // cell bg
@@ -957,20 +964,21 @@ function draw(){
     ctx.fillRect(0, y+ROW_H-1, w, 1);
 
     // coin label
-    ctx.font='bold 10px JetBrains Mono, monospace';
+    ctx.font='bold '+(isMobile?'11':'10')+'px JetBrains Mono, monospace';
     ctx.fillStyle=rgba(CLR.text,.85);
     ctx.textAlign='left';
     ctx.textBaseline='middle';
     ctx.fillText(d.coin, PAD, y+ROW_H/2);
 
     // values
-    ctx.font='10px JetBrains Mono, monospace';
+    ctx.font=(isMobile?'11':'10')+'px JetBrains Mono, monospace';
     ctx.textAlign='center';
     d.v.forEach((val,j)=>{
+      const fi=COL_MAP[j];
       let norm;
-      if(j<2) norm=val;
-      else if(j===2) norm=(val+1)/2;
-      else if(j===3) norm=1-Math.min(val,1.2)/1.2;
+      if(fi<2) norm=val;
+      else if(fi===2) norm=(val+1)/2;
+      else if(fi===3) norm=1-Math.min(val,1.2)/1.2;
       else norm=(val+3)/6;
 
       const intensity=Math.abs(norm-.5)*2;
@@ -1058,14 +1066,16 @@ function tick(){
     d.v.forEach((_,j)=>{ d.v[j]=lerp(d.v[j],d.t[j],.06); });
     if(Math.random()<.025){
       const j=Math.floor(Math.random()*NC);
+      const fi=COL_MAP[j]; // full index
       const s=d.seeds;
       const ranges=[[s.h[0],s.h[1]],[s.d[0],s.d[1]],[s.s[0],s.s[1]],[s.ly[0],s.ly[1]],[s.fl[0],s.fl[1]]];
-      const nt=rnd(ranges[j][0],ranges[j][1]);
+      const nt=rnd(ranges[fi][0],ranges[fi][1]);
       if(Math.abs(nt-d.v[j])>.08) S.glows.push({row:i,col:j,i:1,d:.015});
       d.t[j]=nt;
+      d.full[fi]=nt; // keep full array in sync
     }
     d.rt--;
-    if(d.rt<=0){d.reg=regime(d.v[0],d.v[1],d.v[3]);d.rt=40+Math.floor(Math.random()*80);}
+    if(d.rt<=0){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
   });
 }
 
@@ -1110,11 +1120,26 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
   // ═══ PROPOSAL A: REGIME VISUALIZER ═══
-  const rvState = { h: 0.5, d: 0.5, ly: 0.0, ht: 0.5, dt: 0.5, lt: 0.0 };
+  // Regime viz uses correlated scenarios: trending, reverting, chaotic, shift, stable
+  const rvScenarios = [
+    {h:[.58,.68], d:[.57,.66], ly:[.15,.40], label:'trending'},
+    {h:[.35,.44], d:[.36,.44], ly:[.10,.35], label:'reverting'},
+    {h:[.42,.52], d:[.44,.54], ly:[.80,1.05], label:'chaotic'},
+    {h:[.58,.65], d:[.38,.46], ly:[.30,.55], label:'shift'},
+    {h:[.46,.54], d:[.46,.54], ly:[.20,.50], label:'stable'},
+  ];
+  let rvScene = rvScenarios[Math.floor(Math.random()*rvScenarios.length)];
+  let rvSceneTimer = 120 + Math.floor(Math.random()*200);
+  const rvState = { h: 0.5, d: 0.5, ly: 0.3, ht: 0.5, dt: 0.5, lt: 0.3 };
   function rvTick() {
-    if(Math.random()<.04) rvState.ht = rnd(.25,.75);
-    if(Math.random()<.04) rvState.dt = rnd(.25,.75);
-    if(Math.random()<.03) rvState.lt = rnd(-.1,1.1);
+    rvSceneTimer--;
+    if(rvSceneTimer<=0){
+      rvScene = rvScenarios[Math.floor(Math.random()*rvScenarios.length)];
+      rvSceneTimer = 120 + Math.floor(Math.random()*200);
+    }
+    if(Math.random()<.04) rvState.ht = rnd(rvScene.h[0],rvScene.h[1]);
+    if(Math.random()<.04) rvState.dt = rnd(rvScene.d[0],rvScene.d[1]);
+    if(Math.random()<.03) rvState.lt = rnd(rvScene.ly[0],rvScene.ly[1]);
     rvState.h = lerp(rvState.h, rvState.ht, .03);
     rvState.d = lerp(rvState.d, rvState.dt, .03);
     rvState.ly = lerp(rvState.ly, rvState.lt, .03);

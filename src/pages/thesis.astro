@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="ZERO OS — Thesis" description="Why chaos mathematics changes everything about trading signals.">
+
+<div class="page">
+  <header style="padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--border);">
+    <a href="/" style="font-family: var(--font-head); font-size: 0.55rem; color: var(--text-dim); text-decoration: none;">← ZERO OS</a>
+    <h1 style="font-family: var(--font-head); font-size: clamp(1.2rem, 4vw, 1.8rem); font-weight: 700; color: var(--text); margin-top: 1rem; line-height: 1.2;">The Regime Problem</h1>
+    <p style="font-size: 0.65rem; color: var(--text-dim); margin-top: 0.3rem;">Why every indicator you use assumes one market. There are many.</p>
+  </header>
+
+  <article style="padding: 2rem 0; font-size: 0.75rem; line-height: 1.8; color: var(--text-dim);">
+    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin-bottom: 0.5rem;">The assumption</h2>
+    <p>Every technical indicator in crypto — RSI, MACD, Bollinger Bands, moving average crossovers — contains the same hidden assumption: <span style="color: var(--text)">the market behaves the same way tomorrow as it did yesterday.</span></p>
+    <p>This is false. Markets switch between distinct regimes: trending, mean-reverting, chaotic, and transitional. An RSI signal that works beautifully in a trending regime becomes noise in a mean-reverting one. A mean-reversion strategy that prints money in calm markets gets destroyed when a trend emerges.</p>
+    <p>The question isn't <em>"what does the indicator say?"</em> — it's <em>"does this indicator even apply right now?"</em></p>
+
+    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin: 2rem 0 0.5rem;">Three chaos indicators</h2>
+    
+    <h3 style="font-family: var(--font-head); font-size: 0.75rem; color: var(--phosphor); margin: 1.5rem 0 0.3rem;">Hurst Exponent (H)</h3>
+    <p>Measures long-term memory in a time series. H &lt; 0.5 = mean-reverting (prices tend to snap back). H &gt; 0.5 = trending (momentum is real). H ≈ 0.5 = random walk (your signals are meaningless).</p>
+    
+    <h3 style="font-family: var(--font-head); font-size: 0.75rem; color: var(--phosphor); margin: 1.5rem 0 0.3rem;">Detrended Fluctuation Analysis (DFA)</h3>
+    <p>A more robust version of Hurst that handles non-stationary data. When Hurst and DFA agree, you have a strong regime signal. When they diverge, the market is in transition — the most dangerous zone for any strategy.</p>
+    
+    <h3 style="font-family: var(--font-head); font-size: 0.75rem; color: var(--phosphor); margin: 1.5rem 0 0.3rem;">Lyapunov Exponent (λ)</h3>
+    <p>Measures sensitivity to initial conditions — literally, chaos level. High λ means tiny input changes cause wildly different outcomes. In trading: <span style="color: var(--text)">high Lyapunov = reduce position size, because the market is unpredictable even with perfect information.</span></p>
+
+    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin: 2rem 0 0.5rem;">The punchline</h2>
+    <p style="color: var(--text); font-weight: 700;">A MACD crossover in a trending regime is meaningful. The same crossover in a mean-reverting regime is a trap.</p>
+    <p>Traditional platforms show you the crossover. We show you the regime first. Then you decide if the crossover matters.</p>
+    <p>This is the difference between an indicator dashboard and a trading intelligence system.</p>
+
+    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+      <a href="/#access" style="font-family: var(--font-head); font-size: 0.7rem; font-weight: 700; color: var(--bg); background: var(--phosphor); padding: 0.6rem 1.2rem; text-decoration: none;">Request Early Access</a>
+    </div>
+  </article>
+
+  <footer style="padding: 1.5rem 0; text-align: center; border-top: 1px solid var(--border); font-family: var(--font-head); font-size: 0.5rem;">
+    <span style="color: var(--phosphor);">◇</span> <span style="color: var(--text-dim);">ZERO OS</span>
+  </footer>
+</div>
+
+</BaseLayout>
+
+<style>
+  .page { max-width: 640px; margin: 0 auto; padding: 0 1.25rem; }
+  p { margin-bottom: 1rem; }
+</style>
