@@ -41,19 +41,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="section" id="signals">
     <div class="matrix-head">
       <p class="section-label p">SIGNAL MATRIX — LIVE</p>
-      <span class="matrix-status" id="matrix-status">3 signals active</span>
+      <span class="matrix-status" id="matrix-status">scanning</span>
     </div>
-    <div class="matrix-container">
-      <div class="matrix-header">
-        <span class="mh-coin">ASSET</span>
-        <span class="mh-cell">HURST</span>
-        <span class="mh-cell">DFA</span>
-        <span class="mh-cell">SENT</span>
-        <span class="mh-cell">LYAP</span>
-        <span class="mh-cell">FLOW</span>
-        <span class="mh-signal">SIGNAL</span>
-      </div>
-      <div id="matrix-rows"></div>
+    <div class="matrix-wrap">
+      <canvas id="matrix-canvas"></canvas>
     </div>
   </section>
 
@@ -304,65 +295,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-  .matrix-container {
-    font-family: var(--font-head);
-    font-size: 0.6rem;
-    overflow-x: auto;
+  .matrix-wrap {
+    position: relative;
     border: 1px solid var(--border);
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
+    overflow: hidden;
+    animation: matrixBreathe 4s ease-in-out infinite;
   }
-  .matrix-header {
-    display: grid;
-    grid-template-columns: 48px repeat(5, 1fr) 100px;
-    padding: 0.35rem 0.5rem;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-    font-size: 0.42rem;
-    font-weight: 700;
+  @keyframes matrixBreathe {
+    0%,100% { box-shadow: 0 0 0px transparent, inset 0 0 0px transparent; border-color: var(--border); }
+    50% { box-shadow: 0 0 12px rgba(200,255,0,0.04), inset 0 0 20px rgba(200,255,0,0.02); border-color: rgba(200,255,0,0.15); }
   }
-  .mh-signal { text-align: right; }
-  .mh-cell { text-align: right; padding-right: 0.3rem; }
-  .matrix-row {
-    display: grid;
-    grid-template-columns: 48px repeat(5, 1fr) 100px;
-    padding: 0.3rem 0.5rem;
-    border-bottom: 1px solid rgba(26,26,26,0.3);
-    transition: background 0.5s, box-shadow 0.5s;
-    align-items: center;
+  #matrix-canvas {
+    display: block;
+    width: 100%;
+    image-rendering: pixelated;
   }
-  .matrix-row.fire {
-    background: rgba(200,255,0,0.04);
-    box-shadow: inset 3px 0 0 var(--phosphor);
-  }
-  .mr-coin { color: var(--text); font-weight: 700; font-size: 0.52rem; }
-  .mr-cell {
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-    padding-right: 0.3rem;
-    transition: color 0.4s, text-shadow 0.4s, background 0.4s;
-    border-radius: 1px;
-    padding: 0.15rem 0.3rem 0.15rem 0;
-  }
-  /* heat map: intensity-based coloring */
-  .mr-cell.neutral { color: var(--text-dim); }
-  .mr-cell.warm { color: var(--phosphor); background: rgba(200,255,0,0.04); }
-  .mr-cell.hot { color: var(--phosphor); background: rgba(200,255,0,0.1); text-shadow: 0 0 6px var(--phosphor-glow); }
-  .mr-cell.cool { color: var(--amber); background: rgba(255,176,0,0.04); }
-  .mr-cell.cold { color: var(--amber); background: rgba(255,176,0,0.1); text-shadow: 0 0 4px rgba(255,176,0,0.3); }
-  .mr-signal {
-    font-weight: 700;
-    font-size: 0.5rem;
-    letter-spacing: 0.05em;
-    text-align: right;
-  }
-  .mr-signal.on {
-    color: var(--phosphor);
-    text-shadow: 0 0 8px var(--phosphor-glow);
-    animation: sigPulse 1s ease infinite;
-  }
-  .mr-signal.off { color: rgba(138,130,120,0.2); }
-  @keyframes sigPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+  /* regime badge animations handled in canvas via opacity cycling */
 
   /* SECTIONS */
   .section { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
@@ -536,95 +485,276 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <script>
+// ═══════════════════════════════════════════════════
+// ZERO OS — Canvas Heat Map Matrix (fully canvas-rendered)
+// ═══════════════════════════════════════════════════
+
 const COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','OP','SUI','MATIC','NEAR','INJ'];
-const SIGS = ['REVERSAL','MOMENTUM','MEAN REV','BREAKOUT','DIVERGE'];
+const COLS = ['HURST','DFA','SENT','LYAP','FLOW'];
+const NC = COLS.length;
+const ROW_H = 30;
+const HDR_H = 26;
+const PAD = 10;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-function r(a,b){return Math.random()*(b-a)+a;}
-function f(n){return n.toFixed(2);}
+// palette
+const CLR = {
+  phosphor: [200,255,0],
+  amber: [255,176,0],
+  red: [255,51,51],
+  ice: [0,212,255],
+  text: [232,228,223],
+  dim: [138,130,120],
+  bg: [5,5,5],
+  line: [26,26,26]
+};
 
-// heat intensity: maps value to CSS class
-function heat(v, lo, hi) {
-  if (v <= lo) return 'hot';
-  if (v <= lo + (hi-lo)*0.25) return 'warm';
-  if (v >= hi) return 'cold';
-  if (v >= hi - (hi-lo)*0.25) return 'cool';
-  return 'neutral';
+const S = {
+  data: [], canvas: null, ctx: null,
+  w: 0, h: 0, coinW: 54, regW: 90, colW: 0,
+  glows: [], time: 0
+};
+
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function lerp(a,b,t){return a+(b-a)*t;}
+
+function regime(h,d,ly){
+  if(ly>.85)return 'chaotic';
+  if(h<.45&&d<.45)return 'reverting';
+  if(h>.55&&d>.55)return 'trending';
+  if((h<.45&&d>.55)||(h>.55&&d<.45))return 'shift';
+  return '';
 }
 
-function mkRow(coin){
-  const h=r(.28,.72), dfa=r(.35,.68), se=r(-1,1), ly=r(-.2,1.2), fl=r(-3,3);
-  const fire=Math.random()<.20;
-  const sig=fire?SIGS[Math.floor(Math.random()*SIGS.length)]:'';
-  const row=document.createElement('div');
-  row.className='matrix-row'+(fire?' fire':'');
-  row.innerHTML=`
-    <span class="mr-coin">${coin}</span>
-    <span class="mr-cell ${heat(h, .42, .58)}">${f(h)}</span>
-    <span class="mr-cell ${heat(dfa, .42, .58)}">${f(dfa)}</span>
-    <span class="mr-cell ${Math.abs(se)>.6?'hot':'neutral'}">${f(se)}</span>
-    <span class="mr-cell ${ly>.8?'cold':ly<.1?'hot':'neutral'}">${f(ly)}</span>
-    <span class="mr-cell ${Math.abs(fl)>2?(fl>0?'hot':'cold'):'neutral'}">${f(fl)}</span>
-    <span class="mr-signal ${fire?'on':'off'}">${sig||'—'}</span>`;
-  return row;
+function heatRGBA(norm, alpha){
+  const d=Math.abs(norm-.5)*2;
+  const i=Math.pow(d,.7);
+  const c=norm<.5?CLR.phosphor:CLR.amber;
+  return `rgba(${c[0]},${c[1]},${c[2]},${i*alpha})`;
 }
 
-function init(){
-  const c=document.getElementById('matrix-rows');
-  if(!c)return;
-  c.innerHTML='';
-  COINS.forEach(coin=>c.appendChild(mkRow(coin)));
-  updateCount();
+function initData(){
+  COINS.forEach(coin=>{
+    const v=[rnd(.28,.72),rnd(.30,.70),rnd(-1,1),rnd(-.1,1.1),rnd(-3,3)];
+    S.data.push({coin,v:[...v],t:[...v],reg:regime(v[0],v[1],v[3]),rt:0});
+  });
 }
 
-function updateCount(){
-  const n=document.querySelectorAll('.matrix-row.fire').length;
-  const s=document.getElementById('matrix-status');
-  if(s)s.textContent=n+' signal'+(n!==1?'s':'')+' active';
+function setup(){
+  const c=document.getElementById('matrix-canvas');
+  const wrap=c.parentElement;
+  const w=wrap.clientWidth;
+  const h=HDR_H+COINS.length*ROW_H+2;
+  c.width=w*DPR; c.height=h*DPR;
+  c.style.width=w+'px'; c.style.height=h+'px';
+  S.canvas=c; S.ctx=c.getContext('2d');
+  S.ctx.scale(DPR,DPR);
+  S.w=w; S.h=h;
+  S.colW=(w-S.coinW-S.regW-PAD*2)/NC;
+}
+
+function rgba(c,a){return `rgba(${c[0]},${c[1]},${c[2]},${a})`;}
+
+function draw(){
+  const {ctx,w,h,coinW,colW,regW}=S;
+  const dataX=PAD+coinW;
+
+  ctx.clearRect(0,0,w,h);
+
+  // header
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.fillRect(0,0,w,HDR_H);
+  ctx.font='bold 9px JetBrains Mono, monospace';
+  ctx.fillStyle=rgba(CLR.dim,.5);
+  ctx.textBaseline='middle';
+  ctx.textAlign='left';
+  ctx.fillText('ASSET',PAD,HDR_H/2);
+  ctx.textAlign='center';
+  COLS.forEach((c,j)=>{
+    ctx.fillText(c, dataX+j*colW+colW/2, HDR_H/2);
+  });
+  ctx.textAlign='right';
+  ctx.fillText('REGIME', w-PAD, HDR_H/2);
+
+  // header line
+  ctx.fillStyle=rgba(CLR.line,.6);
+  ctx.fillRect(0,HDR_H,w,1);
+
+  // rows
+  S.data.forEach((d,i)=>{
+    const y=HDR_H+1+i*ROW_H;
+
+    // alternating row bg
+    if(i%2===0){
+      ctx.fillStyle='rgba(255,255,255,0.008)';
+      ctx.fillRect(0,y,w,ROW_H);
+    }
+
+    // heat cells
+    d.v.forEach((val,j)=>{
+      const x=dataX+j*colW;
+      let norm;
+      if(j<2) norm=val;
+      else if(j===2) norm=(val+1)/2;
+      else if(j===3) norm=1-Math.min(val,1.2)/1.2;
+      else norm=(val+3)/6;
+
+      // cell bg
+      ctx.fillStyle=heatRGBA(norm,.3);
+      ctx.fillRect(x+2, y+3, colW-4, ROW_H-6);
+
+      // subtle border on hot cells
+      const intensity=Math.abs(norm-.5)*2;
+      if(intensity>.6){
+        ctx.strokeStyle=heatRGBA(norm,.2);
+        ctx.lineWidth=1;
+        ctx.strokeRect(x+2.5, y+3.5, colW-5, ROW_H-7);
+      }
+    });
+
+    // row line
+    ctx.fillStyle=rgba(CLR.line,.25);
+    ctx.fillRect(0, y+ROW_H-1, w, 1);
+
+    // coin label
+    ctx.font='bold 10px JetBrains Mono, monospace';
+    ctx.fillStyle=rgba(CLR.text,.85);
+    ctx.textAlign='left';
+    ctx.textBaseline='middle';
+    ctx.fillText(d.coin, PAD, y+ROW_H/2);
+
+    // values
+    ctx.font='10px JetBrains Mono, monospace';
+    ctx.textAlign='center';
+    d.v.forEach((val,j)=>{
+      let norm;
+      if(j<2) norm=val;
+      else if(j===2) norm=(val+1)/2;
+      else if(j===3) norm=1-Math.min(val,1.2)/1.2;
+      else norm=(val+3)/6;
+
+      const intensity=Math.abs(norm-.5)*2;
+      if(intensity>.5){
+        const c=norm<.5?CLR.phosphor:CLR.amber;
+        ctx.fillStyle=rgba(c, .6+intensity*.4);
+      } else {
+        ctx.fillStyle=rgba(CLR.text,.55);
+      }
+      ctx.fillText(val.toFixed(2), dataX+j*colW+colW/2, y+ROW_H/2);
+    });
+
+    // regime badge
+    if(d.reg){
+      const labels={trending:'TRENDING',reverting:'REVERTING',chaotic:'CHAOTIC',shift:'SHIFT'};
+      const colors={trending:CLR.phosphor,reverting:CLR.amber,chaotic:CLR.red,shift:CLR.ice};
+      const bgAlphas={trending:.12,reverting:.1,chaotic:.15,shift:.08};
+      const label=labels[d.reg];
+      const clr=colors[d.reg];
+      
+      ctx.font='bold 8px JetBrains Mono, monospace';
+      const tw=ctx.measureText(label).width;
+      const px=w-PAD-tw-10;
+      const py=y+ROW_H/2-6;
+      const pw=tw+10;
+      const ph=13;
+
+      // badge bg
+      let badgeAlpha=bgAlphas[d.reg];
+      if(d.reg==='chaotic'){
+        badgeAlpha*=.5+.5*Math.abs(Math.sin(S.time*4));
+      }
+      if(d.reg==='shift'){
+        const osc=Math.sin(S.time*2)*.5+.5;
+        const c1=CLR.ice, c2=CLR.amber;
+        const cr=Math.round(lerp(c1[0],c2[0],osc));
+        const cg=Math.round(lerp(c1[1],c2[1],osc));
+        const cb=Math.round(lerp(c1[2],c2[2],osc));
+        ctx.fillStyle=`rgba(${cr},${cg},${cb},.08)`;
+        ctx.fillRect(px,py,pw,ph);
+        ctx.fillStyle=`rgba(${cr},${cg},${cb},.85)`;
+      } else {
+        ctx.fillStyle=rgba(clr,badgeAlpha);
+        ctx.fillRect(px,py,pw,ph);
+        ctx.fillStyle=rgba(clr, d.reg==='chaotic'? .5+.5*Math.abs(Math.sin(S.time*4)) : .85);
+      }
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(label, px+pw/2, y+ROW_H/2);
+
+      // glow halo for active regimes
+      if(d.reg==='trending'||d.reg==='chaotic'){
+        const grad=ctx.createRadialGradient(px+pw/2,y+ROW_H/2,0,px+pw/2,y+ROW_H/2,pw);
+        grad.addColorStop(0,rgba(clr,.06));
+        grad.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=grad;
+        ctx.fillRect(px-pw/2,y,pw*2,ROW_H);
+      }
+    } else {
+      ctx.font='10px JetBrains Mono, monospace';
+      ctx.fillStyle=rgba(CLR.dim,.2);
+      ctx.textAlign='right';
+      ctx.fillText('—', w-PAD, y+ROW_H/2);
+    }
+  });
+
+  // glow bursts
+  S.glows=S.glows.filter(g=>{
+    const x=PAD+S.coinW+g.col*S.colW+S.colW/2;
+    const y=HDR_H+1+g.row*ROW_H+ROW_H/2;
+    const r=g.i*35;
+    const grad=ctx.createRadialGradient(x,y,0,x,y,r);
+    grad.addColorStop(0,`rgba(200,255,0,${g.i*.2})`);
+    grad.addColorStop(1,'rgba(200,255,0,0)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(x-r,y-r,r*2,r*2);
+    g.i-=g.d;
+    return g.i>.01;
+  });
 }
 
 function tick(){
-  const rows=[...document.querySelectorAll('.matrix-row')];
-  if(!rows.length)return;
-  const row=rows[Math.floor(Math.random()*rows.length)];
-  const cells=row.querySelectorAll('.mr-cell');
-  const idx=Math.floor(Math.random()*cells.length);
-  const cell=cells[idx];
-  if(!cell)return;
-  
-  const v=r(-.3, 1.2);
-  cell.textContent=f(v);
-  cell.classList.remove('hot','warm','neutral','cool','cold');
-  if(v<.3) cell.classList.add('hot');
-  else if(v<.42) cell.classList.add('warm');
-  else if(v>.7) cell.classList.add('cold');
-  else if(v>.58) cell.classList.add('cool');
-  else cell.classList.add('neutral');
-
-  // flash: row briefly glows on change
-  cell.style.transition='none';
-  cell.style.textShadow='0 0 8px var(--phosphor-glow)';
-  requestAnimationFrame(()=>{
-    cell.style.transition='text-shadow 0.6s';
-    setTimeout(()=>{ cell.style.textShadow=''; },400);
-  });
-
-  if(Math.random()<.05){
-    const sig=row.querySelector('.mr-signal');
-    const name=SIGS[Math.floor(Math.random()*SIGS.length)];
-    if(sig){
-      sig.textContent=name;
-      sig.className='mr-signal on';
-      row.classList.add('fire');
-      updateCount();
-      setTimeout(()=>{
-        sig.textContent='—';
-        sig.className='mr-signal off';
-        row.classList.remove('fire');
-        updateCount();
-      },3000+Math.random()*5000);
+  S.time+=1/60;
+  S.data.forEach((d,i)=>{
+    d.v.forEach((_,j)=>{ d.v[j]=lerp(d.v[j],d.t[j],.06); });
+    if(Math.random()<.025){
+      const j=Math.floor(Math.random()*NC);
+      const nt=j<2?rnd(.25,.75):j===2?rnd(-1,1):j===3?rnd(-.1,1.2):rnd(-3,3);
+      if(Math.abs(nt-d.v[j])>.12) S.glows.push({row:i,col:j,i:1,d:.015});
+      d.t[j]=nt;
     }
-  }
+    d.rt--;
+    if(d.rt<=0){d.reg=regime(d.v[0],d.v[1],d.v[3]);d.rt=40+Math.floor(Math.random()*80);}
+  });
 }
 
-document.addEventListener('DOMContentLoaded',()=>{init();setInterval(tick,300);});
+function updateStatus(){
+  const n=S.data.filter(d=>d.reg).length;
+  const el=document.getElementById('matrix-status');
+  if(el) el.textContent=n+' regime'+(n!==1?'s':'')+' detected';
+}
+
+let fc=0;
+function frame(){
+  tick();
+  draw();
+  if(fc%30===0) updateStatus();
+  fc++;
+  requestAnimationFrame(frame);
+}
+
+function resize(){
+  const wrap=S.canvas.parentElement;
+  const w=wrap.clientWidth;
+  const h=HDR_H+COINS.length*ROW_H+2;
+  S.canvas.width=w*DPR; S.canvas.height=h*DPR;
+  S.canvas.style.width=w+'px'; S.canvas.style.height=h+'px';
+  S.ctx=S.canvas.getContext('2d'); S.ctx.scale(DPR,DPR);
+  S.w=w; S.h=h; S.colW=(w-S.coinW-S.regW-PAD*2)/NC;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initData(); setup(); updateStatus();
+  requestAnimationFrame(frame);
+  window.addEventListener('resize',resize);
+});
 </script>
