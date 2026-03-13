@@ -185,7 +185,75 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </blockquote>
   </section>
 
-  <!-- PROPOSAL D: TERMINAL CTA -->
+  <!-- STATUS -->
+  <section class="section reveal">
+    <p class="section-label p reveal-child">STATUS</p>
+    <h2 class="section-title reveal-child">Where we are</h2>
+    <div class="status-grid reveal-child">
+      <div class="status-item">
+        <span class="status-val p">v0.1</span>
+        <span class="status-label dim">Signal Matrix built</span>
+      </div>
+      <div class="status-item">
+        <span class="status-val a">147</span>
+        <span class="status-label dim">features engineered</span>
+      </div>
+      <div class="status-item">
+        <span class="status-val ice">Pre-launch</span>
+        <span class="status-label dim">seeking design partners</span>
+      </div>
+    </div>
+    <p class="status-honest dim reveal-child">We're early. The Signal Matrix architecture is built. The marketplace and consumer layers are roadmap. We're looking for design partners — funds and trading desks who want to test signals before anyone else.</p>
+  </section>
+
+  <!-- NOT LIKE THE OTHERS -->
+  <section class="section reveal">
+    <p class="section-label a reveal-child">POSITIONING</p>
+    <h2 class="section-title reveal-child">Not another AI trading dashboard</h2>
+    <div class="pos-grid reveal-child">
+      <div class="pos-item">
+        <span class="pos-them dim">They show you RSI and MACD</span>
+        <span class="pos-us p">We tell you if RSI and MACD even work right now</span>
+      </div>
+      <div class="pos-item">
+        <span class="pos-them dim">They give you a leaderboard</span>
+        <span class="pos-us p">We build a marketplace where ML competes for capital</span>
+      </div>
+      <div class="pos-item">
+        <span class="pos-them dim">They automate your strategy</span>
+        <span class="pos-us p">We discover strategies no human hypothesized</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOUNDERS -->
+  <section class="section reveal">
+    <p class="section-label dim reveal-child">FOUNDERS</p>
+    <div class="founders reveal-child">
+      <div class="founder tilt-card">
+        <div class="founder-name">Igor Pugachevsky</div>
+        <div class="founder-role dim">CEO — Product & Architecture</div>
+        <p class="founder-bio dim">Built autonomous agent systems. Designed the Signal Matrix architecture. Previously led product at early-stage startups. Technical founder who ships.</p>
+      </div>
+      <div class="founder tilt-card">
+        <div class="founder-name">Nikolay Manolov</div>
+        <div class="founder-role dim">CTO — Quantitative Systems</div>
+        <p class="founder-bio dim">Chaos mathematics, regime detection, feature engineering. Designed the DFA/Hurst/Lyapunov framework. The brain behind the edge.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVESTOR CTA -->
+  <section class="section reveal">
+    <div class="inv-cta reveal-child">
+      <p class="section-label a">FOR INVESTORS</p>
+      <h2 class="section-title">Raising seed round</h2>
+      <p class="inv-desc dim">We're raising to build the Signal-as-a-Service API and launch the first design partner program. If you're a fund that understands this space, let's talk.</p>
+      <a href="mailto:degenie@getzero.dev?subject=ZERO%20OS%20—%20Investor%20Inquiry" class="btn-primary">Contact Founders</a>
+    </div>
+  </section>
+
+  <!-- TERMINAL CTA -->
   <section class="section cta-section reveal" id="access">
     <div class="term-cta reveal-child">
       <div class="term-header">
@@ -628,6 +696,70 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .fw-node.fw-active text { fill: rgb(200,255,0); }
 
+  /* ═══ STATUS ═══ */
+  .status-grid {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .status-item { display: flex; flex-direction: column; }
+  .status-val {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .status-label { font-size: 0.6rem; margin-top: 0.2rem; }
+  .status-honest { font-size: 0.65rem; line-height: 1.7; max-width: 520px; font-style: italic; }
+
+  /* ═══ POSITIONING ═══ */
+  .pos-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+  .pos-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+  }
+  .pos-item:last-child { border-bottom: none; }
+  .pos-them {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+  .pos-us {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  /* ═══ FOUNDERS ═══ */
+  .founders {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 639px) { .founders { grid-template-columns: 1fr; } }
+  .founder {
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+  }
+  .founder-name {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+  }
+  .founder-role { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .founder-bio { font-size: 0.6rem; line-height: 1.6; }
+
+  /* ═══ INVESTOR CTA ═══ */
+  .inv-cta { max-width: 480px; }
+  .inv-desc { font-size: 0.7rem; line-height: 1.7; margin-bottom: 1rem; }
+
   /* ═══ PROPOSAL I: TILT HOVER ═══ */
   .tilt-card {
     transition: transform 0.2s ease, border-color 0.4s, box-shadow 0.4s;
@@ -748,7 +880,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 // ZERO OS — Canvas Heat Map Matrix (fully canvas-rendered)
 // ═══════════════════════════════════════════════════
 
-const COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','OP','SUI','MATIC','NEAR','INJ'];
+const ALL_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','OP','SUI','MATIC','NEAR','INJ'];
+const COINS = window.innerWidth < 640 ? ALL_COINS.slice(0, 8) : ALL_COINS;
 const COLS = ['HURST','DFA','SENT','LYAP','FLOW'];
 const NC = COLS.length;
 const ROW_H = 30;
@@ -792,10 +925,27 @@ function heatRGBA(norm, alpha){
   return `rgba(${c[0]},${c[1]},${c[2]},${i*alpha})`;
 }
 
+// Realistic seed ranges per coin (based on typical crypto market behavior)
+const SEEDS = {
+  BTC:  {h:[.47,.53], d:[.48,.54], s:[-.3,.3],  ly:[.1,.4],  fl:[-1,1]},
+  ETH:  {h:[.44,.52], d:[.45,.53], s:[-.4,.4],  ly:[.15,.5], fl:[-1.5,1.5]},
+  SOL:  {h:[.38,.48], d:[.40,.50], s:[-.5,.5],  ly:[.3,.7],  fl:[-2,2]},
+  DOGE: {h:[.33,.45], d:[.35,.47], s:[-.6,.8],  ly:[.4,.9],  fl:[-2.5,2.5]},
+  AVAX: {h:[.40,.52], d:[.42,.54], s:[-.4,.4],  ly:[.2,.6],  fl:[-1.5,1.5]},
+  LINK: {h:[.42,.54], d:[.44,.56], s:[-.3,.3],  ly:[.15,.5], fl:[-1,1.5]},
+  ARB:  {h:[.36,.48], d:[.38,.52], s:[-.5,.5],  ly:[.3,.7],  fl:[-2,2]},
+  OP:   {h:[.38,.50], d:[.40,.52], s:[-.4,.4],  ly:[.2,.6],  fl:[-1.5,1.5]},
+  SUI:  {h:[.35,.47], d:[.37,.49], s:[-.5,.6],  ly:[.3,.8],  fl:[-2,2.5]},
+  MATIC:{h:[.41,.53], d:[.43,.55], s:[-.3,.3],  ly:[.15,.5], fl:[-1,1]},
+  NEAR: {h:[.37,.49], d:[.39,.51], s:[-.4,.5],  ly:[.25,.65],fl:[-1.5,2]},
+  INJ:  {h:[.34,.46], d:[.36,.48], s:[-.5,.6],  ly:[.35,.75],fl:[-2,2.5]}
+};
+
 function initData(){
   COINS.forEach(coin=>{
-    const v=[rnd(.28,.72),rnd(.30,.70),rnd(-1,1),rnd(-.1,1.1),rnd(-3,3)];
-    S.data.push({coin,v:[...v],t:[...v],reg:regime(v[0],v[1],v[3]),rt:0});
+    const s=SEEDS[coin];
+    const v=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
+    S.data.push({coin,v:[...v],t:[...v],reg:regime(v[0],v[1],v[3]),rt:0,seeds:s});
   });
 }
 
@@ -977,8 +1127,10 @@ function tick(){
     d.v.forEach((_,j)=>{ d.v[j]=lerp(d.v[j],d.t[j],.06); });
     if(Math.random()<.025){
       const j=Math.floor(Math.random()*NC);
-      const nt=j<2?rnd(.25,.75):j===2?rnd(-1,1):j===3?rnd(-.1,1.2):rnd(-3,3);
-      if(Math.abs(nt-d.v[j])>.12) S.glows.push({row:i,col:j,i:1,d:.015});
+      const s=d.seeds;
+      const ranges=[[s.h[0],s.h[1]],[s.d[0],s.d[1]],[s.s[0],s.s[1]],[s.ly[0],s.ly[1]],[s.fl[0],s.fl[1]]];
+      const nt=rnd(ranges[j][0],ranges[j][1]);
+      if(Math.abs(nt-d.v[j])>.08) S.glows.push({row:i,col:j,i:1,d:.015});
       d.t[j]=nt;
     }
     d.rt--;
@@ -1245,11 +1397,24 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // ═══ PROPOSAL D: TERMINAL CTA ═══
   const form = document.getElementById('access-form');
-  if(form) form.addEventListener('submit', (e)=>{
+  if(form) form.addEventListener('submit', async(e)=>{
     e.preventDefault();
     const email = document.getElementById('access-email').value;
     if(!email) return;
-    document.getElementById('req-id').textContent = Math.random().toString(36).substr(2,6).toUpperCase();
+    const btn = form.querySelector('.term-submit');
+    btn.textContent = 'SUBMITTING...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email})
+      });
+      const data = await res.json();
+      document.getElementById('req-id').textContent = data.ref || 'ZOS-' + Math.random().toString(36).substr(2,6).toUpperCase();
+    } catch(e) {
+      document.getElementById('req-id').textContent = 'ZOS-' + Math.random().toString(36).substr(2,6).toUpperCase();
+    }
     form.style.display = 'none';
     document.getElementById('term-confirm').style.display = 'block';
   });
