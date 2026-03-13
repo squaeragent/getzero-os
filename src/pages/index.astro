@@ -225,6 +225,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <span class="p">✓ ACCESS_REQUEST_QUEUED</span><br>
           <span class="dim">ref: ZOS-<span id="req-id">0000</span> — we'll be in touch.</span>
         </p>
+        <p class="term-error" id="term-error" style="display:none">
+          <span class="red">✗ CONNECTION_ERROR</span><br>
+          <span class="dim">Try again or email <a href="mailto:degenie@getzero.dev" style="color:var(--phosphor);">degenie@getzero.dev</a> directly.</span>
+        </p>
       </div>
     </div>
   </section>
@@ -771,11 +775,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: opacity 0.15s;
   }
   .term-submit:hover { opacity: 0.85; }
-  .term-confirm {
+  .term-confirm, .term-error {
     font-size: 0.65rem;
     line-height: 1.7;
     margin-top: 0.5rem;
   }
+  .term-submit:disabled { opacity: 0.5; cursor: wait; }
 
   /* FOOTER */
   .footer {
@@ -1365,13 +1370,17 @@ document.addEventListener('DOMContentLoaded',()=>{
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({email})
       });
+      if(!res.ok) throw new Error('API error');
       const data = await res.json();
       document.getElementById('req-id').textContent = data.ref || 'ZOS-' + Math.random().toString(36).substr(2,6).toUpperCase();
+      form.style.display = 'none';
+      document.getElementById('term-confirm').style.display = 'block';
     } catch(e) {
-      document.getElementById('req-id').textContent = 'ZOS-' + Math.random().toString(36).substr(2,6).toUpperCase();
+      btn.textContent = 'SUBMIT ↵';
+      btn.disabled = false;
+      document.getElementById('term-error').style.display = 'block';
+      return;
     }
-    form.style.display = 'none';
-    document.getElementById('term-confirm').style.display = 'block';
   });
 });
 </script>
