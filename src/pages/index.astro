@@ -9,9 +9,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <!-- CRT BOOT -->
   <header class="hero">
     <div class="boot-sequence">
-      <pre class="boot-line b1"><span class="p">ZERO OS</span> v0.1 .................... <span class="p">INIT</span></pre>
-      <pre class="boot-line b2"><span class="p">SIGNAL MATRIX</span> ................... <span class="p">147 FEATURES</span></pre>
-      <pre class="boot-line b3"><span class="p">AGENTS</span> .......................... <span class="p">250 ACTIVE</span></pre>
+      <pre class="boot-line b1"><span class="p">ZERO OS</span> v0.1 .................... <span class="p">BOOT</span></pre>
+      <pre class="boot-line b2"><span class="p">ENVY MATRIX</span> .................... <span class="p">5 CHAOS INDICATORS</span></pre>
+      <pre class="boot-line b3"><span class="p">REGIME DETECTION</span> ............... <span class="p">ONLINE</span></pre>
     </div>
 
     <div class="logo-wrap">
@@ -27,13 +27,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h1 class="hero-title">AI that trades better than you.<br>And you're okay with it.</h1>
 
     <p class="hero-sub">
-      250 agents scanning 147 features across 6 timeframes, 24/7. 
-      Signals no one else has. A marketplace where the best ML wins.
+      Chaos mathematics applied to crypto markets. Hurst exponents, DFA, Lyapunov — 
+      indicators that tell you which regime you're in before your strategy fails.
     </p>
 
     <div class="hero-cta">
-      <a href="#access" class="btn-primary">Request Access</a>
-      <a href="#signals" class="btn-ghost">See the signals ↓</a>
+      <a href="#access" class="btn-primary">Request Early Access</a>
+      <a href="#signals" class="btn-ghost">See it live ↓</a>
     </div>
   </header>
 
@@ -48,11 +48,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- PROPOSAL A: REGIME VISUALIZER -->
+  <!-- THE EDGE + POSITIONING (merged) -->
   <section class="section reveal">
     <p class="section-label p reveal-child">THE EDGE</p>
-    <h2 class="section-title reveal-child">Your indicators assume the market never changes. It does.</h2>
-    
+    <h2 class="section-title reveal-child">Traditional indicators assume one regime. Markets have many.</h2>
+
+    <div class="edge-contrast reveal-child">
+      <div class="edge-row">
+        <span class="edge-them dim">RSI says overbought</span>
+        <span class="edge-us p">We know if RSI even applies in this regime</span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-them dim">MACD shows a crossover</span>
+        <span class="edge-us p">We tell you if that crossover is meaningful or a trap ↓</span>
+      </div>
+    </div>
+
     <div class="regime-viz reveal-child">
       <div class="rv-bar-group">
         <div class="rv-bar">
@@ -89,8 +100,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   <!-- PROPOSAL F: LIVING DISCOVERY CARDS -->
   <section class="section reveal">
-    <p class="section-label a reveal-child">EMERGENT</p>
-    <h2 class="section-title reveal-child">None of these were programmed</h2>
+    <p class="section-label a reveal-child">EMERGENT SIGNALS</p>
+    <h2 class="section-title reveal-child">The system discovered these. We didn't program them.</h2>
     <div class="discovery-grid reveal-child">
       <div class="disc-card tilt-card" data-accent="phosphor">
         <canvas class="disc-canvas" id="disc-hurst" width="200" height="60"></canvas>
@@ -180,53 +191,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
 
     <blockquote class="vision-quote reveal-child">
-      The line between a trading system and a world model starts to blur. 
+      <span class="dim">»</span> The line between a trading system and a world model starts to blur. 
       That is the point we are building toward.
     </blockquote>
   </section>
 
-  <!-- STATUS -->
-  <section class="section reveal">
-    <p class="section-label p reveal-child">STATUS</p>
-    <h2 class="section-title reveal-child">Where we are</h2>
-    <div class="status-grid reveal-child">
-      <div class="status-item">
-        <span class="status-val p">v0.1</span>
-        <span class="status-label dim">Signal Matrix built</span>
-      </div>
-      <div class="status-item">
-        <span class="status-val a">147</span>
-        <span class="status-label dim">features engineered</span>
-      </div>
-      <div class="status-item">
-        <span class="status-val ice">Pre-launch</span>
-        <span class="status-label dim">seeking design partners</span>
-      </div>
-    </div>
-    <p class="status-honest dim reveal-child">We're early. The Signal Matrix architecture is built. The marketplace and consumer layers are roadmap. We're looking for design partners — funds and trading desks who want to test signals before anyone else.</p>
-  </section>
-
-  <!-- NOT LIKE THE OTHERS -->
-  <section class="section reveal">
-    <p class="section-label a reveal-child">POSITIONING</p>
-    <h2 class="section-title reveal-child">Not another AI trading dashboard</h2>
-    <div class="pos-grid reveal-child">
-      <div class="pos-item">
-        <span class="pos-them dim">They show you RSI and MACD</span>
-        <span class="pos-us p">We tell you if RSI and MACD even work right now</span>
-      </div>
-      <div class="pos-item">
-        <span class="pos-them dim">They give you a leaderboard</span>
-        <span class="pos-us p">We build a marketplace where ML competes for capital</span>
-      </div>
-      <div class="pos-item">
-        <span class="pos-them dim">They automate your strategy</span>
-        <span class="pos-us p">We discover strategies no human hypothesized</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- TERMINAL CTA -->
+  <!-- TERMINAL CTA (with status merged) -->
   <section class="section cta-section reveal" id="access">
     <div class="term-cta reveal-child">
       <div class="term-header">
@@ -238,9 +208,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </span>
       </div>
       <div class="term-body">
-        <p class="term-line dim">$ zero-os request_access</p>
-        <p class="term-line"><span class="p">&gt;</span> Signal API for funds. Marketplace for engineers.</p>
-        <p class="term-line"><span class="p">&gt;</span> Early access is limited.</p>
+        <p class="term-line dim">$ zero-os --status</p>
+        <p class="term-line"><span class="p">&gt;</span> Regime detection engine: <span class="p">BUILT</span></p>
+        <p class="term-line"><span class="p">&gt;</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
+        <p class="term-line"><span class="p">&gt;</span> Seeking design partners — funds and desks who want first access.</p>
+        <p class="term-line dim" style="margin-top:0.5rem">$ zero-os request_access</p>
         <form class="term-form" id="access-form" action="#" method="POST">
           <div class="term-input-row">
             <span class="p">email:</span>
@@ -250,7 +222,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </form>
         <p class="term-confirm" id="term-confirm" style="display:none">
           <span class="p">✓ ACCESS_REQUEST_QUEUED</span><br>
-          <span class="dim">ref: ZOS-<span id="req-id">0000</span> — we review every application.</span>
+          <span class="dim">ref: ZOS-<span id="req-id">0000</span> — we'll be in touch.</span>
         </p>
       </div>
     </div>
@@ -258,7 +230,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   <!-- FOOTER -->
   <footer class="footer reveal">
-    <span class="p">◇</span> <span class="dim">ZERO OS</span>
+    <div class="footer-links">
+      <a href="https://x.com/squaer_agent" class="footer-link dim" target="_blank" rel="noopener">X ↗</a>
+      <span class="footer-sep dim">·</span>
+      <a href="https://github.com/squaeragent" class="footer-link dim" target="_blank" rel="noopener">GitHub ↗</a>
+      <span class="footer-sep dim">·</span>
+      <a href="mailto:degenie@getzero.dev" class="footer-link dim">Contact</a>
+    </div>
+    <div class="footer-copy dim">
+      <span class="p">◇</span> ZERO OS — chaos-aware trading infrastructure
+    </div>
   </footer>
 
 </div>
@@ -295,12 +276,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .boot-sequence { margin-bottom: 1.25rem; }
   .boot-line {
     font-family: var(--font-head);
-    font-size: 0.55rem;
+    font-size: clamp(0.4rem, 2.5vw, 0.55rem);
     color: var(--text-dim);
     margin: 0;
     line-height: 1.8;
     opacity: 0;
     animation: bootIn 0.3s ease forwards;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .b1 { animation-delay: 0.2s; }
   .b2 { animation-delay: 0.5s; }
@@ -417,6 +401,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: rgba(0,0,0,0.6);
     overflow: hidden;
     animation: matrixBreathe 4s ease-in-out infinite;
+    will-change: box-shadow, border-color;
   }
   @keyframes matrixBreathe {
     0%,100% { box-shadow: 0 0 0px transparent, inset 0 0 0px transparent; border-color: var(--border); }
@@ -460,6 +445,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .reveal.visible .reveal-child:nth-child(5) { transition-delay: .4s; }
   .reveal.visible .reveal-child:nth-child(6) { transition-delay: .5s; }
 
+  /* ═══ EDGE CONTRAST ═══ */
+  .edge-contrast { margin-bottom: 1.25rem; }
+  .edge-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+  }
+  .edge-row:last-child { border-bottom: none; }
+  .edge-them {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+  .edge-us {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
   /* ═══ PROPOSAL A: REGIME VISUALIZER ═══ */
   .regime-viz { margin-top: 1rem; }
   .rv-bar-group { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
@@ -496,6 +503,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: var(--phosphor);
     box-shadow: 0 0 8px var(--phosphor-glow);
     transition: left 0.8s ease, background 0.8s ease, box-shadow 0.8s ease;
+    will-change: left;
   }
   .rv-val {
     font-size: 0.6rem;
@@ -669,45 +677,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .fw-node.fw-active text { fill: rgb(200,255,0); }
 
-  /* ═══ STATUS ═══ */
-  .status-grid {
-    display: flex;
-    gap: 2rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  .status-item { display: flex; flex-direction: column; }
-  .status-val {
-    font-family: var(--font-head);
-    font-size: 1.3rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-  .status-label { font-size: 0.6rem; margin-top: 0.2rem; }
-  .status-honest { font-size: 0.65rem; line-height: 1.7; max-width: 520px; font-style: italic; }
-
-  /* ═══ POSITIONING ═══ */
-  .pos-grid { display: flex; flex-direction: column; gap: 0.75rem; }
-  .pos-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(26,26,26,0.3);
-  }
-  .pos-item:last-child { border-bottom: none; }
-  .pos-them {
-    font-family: var(--font-head);
-    font-size: 0.6rem;
-    text-decoration: line-through;
-    opacity: 0.5;
-  }
-  .pos-us {
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-    font-weight: 700;
-  }
-
   /* ═══ PROPOSAL I: TILT HOVER ═══ */
   .tilt-card {
     transition: transform 0.2s ease, border-color 0.4s, box-shadow 0.4s;
@@ -723,11 +692,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: clamp(0.8rem, 2.5vw, 1rem);
     font-weight: 700;
     color: var(--text);
-    line-height: 1.4;
+    line-height: 1.5;
     border-left: 2px solid var(--phosphor);
     padding-left: 1rem;
     margin-top: 1.5rem;
     max-width: 460px;
+    background: linear-gradient(90deg, rgba(200,255,0,0.03), transparent 60%);
+    padding: 0.75rem 1rem;
   }
 
   /* ═══ PROPOSAL D: TERMINAL CTA ═══ */
@@ -807,13 +778,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* FOOTER */
   .footer {
-    padding: 1.5rem 0;
+    padding: 2rem 0 1.5rem;
     font-family: var(--font-head);
     font-size: 0.55rem;
     letter-spacing: 0.05em;
     text-align: center;
     border-top: 1px solid var(--border);
   }
+  .footer-links { margin-bottom: 0.75rem; }
+  .footer-link {
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-link:hover { color: var(--text); }
+  .footer-sep { margin: 0 0.5rem; }
 
   /* UTILITY */
   .p { color: var(--phosphor); }
@@ -873,20 +851,25 @@ function heatRGBA(norm, alpha){
   return `rgba(${c[0]},${c[1]},${c[2]},${i*alpha})`;
 }
 
-// Realistic seed ranges per coin (based on typical crypto market behavior)
+// Realistic seed ranges per coin — Hurst/DFA correlated for coherent regime detection
+// BTC/LINK/MATIC: stable, near random walk → regime rarely fires
+// SOL/SUI/NEAR: trending bias → Hurst&DFA both elevated
+// DOGE/INJ: chaotic bias → high Lyapunov, volatile
+// ETH/AVAX: mean-reverting bias → Hurst&DFA both low
+// ARB/OP: regime-shift prone → H high but D low (or vice versa)
 const SEEDS = {
-  BTC:  {h:[.47,.53], d:[.48,.54], s:[-.3,.3],  ly:[.1,.4],  fl:[-1,1]},
-  ETH:  {h:[.44,.52], d:[.45,.53], s:[-.4,.4],  ly:[.15,.5], fl:[-1.5,1.5]},
-  SOL:  {h:[.38,.48], d:[.40,.50], s:[-.5,.5],  ly:[.3,.7],  fl:[-2,2]},
-  DOGE: {h:[.33,.45], d:[.35,.47], s:[-.6,.8],  ly:[.4,.9],  fl:[-2.5,2.5]},
-  AVAX: {h:[.40,.52], d:[.42,.54], s:[-.4,.4],  ly:[.2,.6],  fl:[-1.5,1.5]},
-  LINK: {h:[.42,.54], d:[.44,.56], s:[-.3,.3],  ly:[.15,.5], fl:[-1,1.5]},
-  ARB:  {h:[.36,.48], d:[.38,.52], s:[-.5,.5],  ly:[.3,.7],  fl:[-2,2]},
-  OP:   {h:[.38,.50], d:[.40,.52], s:[-.4,.4],  ly:[.2,.6],  fl:[-1.5,1.5]},
-  SUI:  {h:[.35,.47], d:[.37,.49], s:[-.5,.6],  ly:[.3,.8],  fl:[-2,2.5]},
-  MATIC:{h:[.41,.53], d:[.43,.55], s:[-.3,.3],  ly:[.15,.5], fl:[-1,1]},
-  NEAR: {h:[.37,.49], d:[.39,.51], s:[-.4,.5],  ly:[.25,.65],fl:[-1.5,2]},
-  INJ:  {h:[.34,.46], d:[.36,.48], s:[-.5,.6],  ly:[.35,.75],fl:[-2,2.5]}
+  BTC:  {h:[.47,.53], d:[.47,.53], s:[-.2,.2],  ly:[.10,.35], fl:[-.8,.8]},
+  ETH:  {h:[.38,.46], d:[.37,.45], s:[-.3,.3],  ly:[.15,.45], fl:[-1.2,1.2]},
+  SOL:  {h:[.56,.66], d:[.57,.65], s:[-.4,.4],  ly:[.20,.55], fl:[-1.5,1.5]},
+  DOGE: {h:[.40,.52], d:[.42,.50], s:[-.6,.7],  ly:[.70,.95], fl:[-2.5,2.5]},
+  AVAX: {h:[.36,.44], d:[.37,.45], s:[-.3,.3],  ly:[.20,.50], fl:[-1.2,1.2]},
+  LINK: {h:[.48,.54], d:[.48,.54], s:[-.2,.25], ly:[.12,.40], fl:[-.9,1.0]},
+  ARB:  {h:[.56,.64], d:[.38,.46], s:[-.4,.4],  ly:[.30,.60], fl:[-1.8,1.8]},
+  OP:   {h:[.37,.45], d:[.56,.64], s:[-.3,.35], ly:[.25,.55], fl:[-1.5,1.5]},
+  SUI:  {h:[.58,.68], d:[.56,.65], s:[-.4,.5],  ly:[.25,.60], fl:[-1.8,2.0]},
+  MATIC:{h:[.48,.54], d:[.47,.53], s:[-.2,.25], ly:[.12,.38], fl:[-.8,.8]},
+  NEAR: {h:[.55,.63], d:[.54,.62], s:[-.35,.4], ly:[.22,.55], fl:[-1.5,1.8]},
+  INJ:  {h:[.42,.50], d:[.44,.52], s:[-.5,.6],  ly:[.65,.90], fl:[-2.2,2.2]}
 };
 
 function initData(){
@@ -1097,6 +1080,10 @@ function frame(){
   tick();
   draw();
   if(fc%30===0) updateStatus();
+  // discovery cards at 30fps (every other frame)
+  if(fc%2===0 && typeof drawHurst==='function'){
+    try{ drawHurst(); drawWinLoss(); drawSent(); }catch(e){}
+  }
   fc++;
   requestAnimationFrame(frame);
 }
@@ -1312,12 +1299,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   resizeDiscCanvases();
   window.addEventListener('resize',resizeDiscCanvases);
 
-  // Animate all discovery cards
-  function discFrame(){
-    drawHurst(); drawWinLoss(); drawSent();
-    requestAnimationFrame(discFrame);
-  }
-  requestAnimationFrame(discFrame);
+  // Discovery cards animated via main matrix rAF (consolidated below)
 
   // ═══ PROPOSAL H: CIRCULAR FLYWHEEL ANIMATION ═══
   let fwIdx = 0;
