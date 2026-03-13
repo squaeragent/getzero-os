@@ -48,100 +48,143 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- WHY THIS WORKS — compact -->
-  <section class="section">
-    <p class="section-label p">THE EDGE</p>
-    <h2 class="section-title">Your indicators assume the market never changes. It does.</h2>
-    <div class="edge-columns">
-      <div class="edge-left">
-        <div class="edge-item">
-          <span class="edge-name">Hurst + DFA</span>
-          <span class="edge-desc dim">— trending or reverting? Both agree = strong. Diverge = regime shift.</span>
+  <!-- PROPOSAL A: REGIME VISUALIZER -->
+  <section class="section reveal">
+    <p class="section-label p reveal-child">THE EDGE</p>
+    <h2 class="section-title reveal-child">Your indicators assume the market never changes. It does.</h2>
+    
+    <div class="regime-viz reveal-child">
+      <div class="rv-bar-group">
+        <div class="rv-bar">
+          <span class="rv-label dim">HURST</span>
+          <div class="rv-track">
+            <div class="rv-fill" id="rv-hurst"></div>
+            <div class="rv-marker" id="rv-hurst-marker"></div>
+          </div>
+          <span class="rv-val" id="rv-hurst-val">0.50</span>
         </div>
-        <div class="edge-item">
-          <span class="edge-name">Lyapunov λ</span>
-          <span class="edge-desc dim">— chaos level. High = reduce size. Low = trust your signals.</span>
+        <div class="rv-bar">
+          <span class="rv-label dim">DFA</span>
+          <div class="rv-track">
+            <div class="rv-fill" id="rv-dfa"></div>
+            <div class="rv-marker" id="rv-dfa-marker"></div>
+          </div>
+          <span class="rv-val" id="rv-dfa-val">0.50</span>
+        </div>
+        <div class="rv-bar">
+          <span class="rv-label dim">LYAPUNOV</span>
+          <div class="rv-track">
+            <div class="rv-fill rv-fill-lyap" id="rv-lyap"></div>
+            <div class="rv-marker" id="rv-lyap-marker"></div>
+          </div>
+          <span class="rv-val" id="rv-lyap-val">0.00</span>
         </div>
       </div>
-      <div class="edge-right">
-        <p class="edge-punchline">
-          A MACD crossover in a trending regime is meaningful.
-          <span class="dim">The same crossover in a mean-reverting regime is a trap.</span>
-        </p>
+      <div class="rv-output">
+        <div class="rv-regime-badge" id="rv-badge">SCANNING</div>
+        <p class="rv-verdict" id="rv-verdict">Your MACD crossover is → <span class="p">ANALYZING</span></p>
       </div>
     </div>
   </section>
 
-  <!-- DISCOVERIES — tighter -->
-  <section class="section">
-    <p class="section-label a">EMERGENT</p>
-    <h2 class="section-title">None of these were programmed</h2>
-    <div class="discovery-grid">
-      <div class="disc-card">
-        <div class="disc-val p">H = 0.41</div>
+  <!-- PROPOSAL B: ANIMATED COUNTER CARDS -->
+  <section class="section reveal">
+    <p class="section-label a reveal-child">EMERGENT</p>
+    <h2 class="section-title reveal-child">None of these were programmed</h2>
+    <div class="discovery-grid reveal-child">
+      <div class="disc-card" data-counter="0.41" data-prefix="H = " data-decimals="2">
+        <div class="disc-val p">H = 0.00</div>
         <p>Mean-reverting territory — reversal windows no human hypothesized</p>
       </div>
-      <div class="disc-card">
-        <div class="disc-val a">&lt;30% HR</div>
+      <div class="disc-card" data-counter="30" data-prefix="<" data-suffix="% HR" data-decimals="0">
+        <div class="disc-val a">&lt;0% HR</div>
         <p>Low hit rate, massive payoff — the wins dominate</p>
       </div>
-      <div class="disc-card">
+      <div class="disc-card" data-counter="1" data-prefix="Δ " data-suffix="" data-text="SENT" data-decimals="-1">
         <div class="disc-val ice">Δ SENT</div>
         <p>Analyst-crowd divergence — contrarian signal invisible to price</p>
       </div>
     </div>
   </section>
 
-  <!-- THREE LAYERS — compressed -->
-  <section class="section">
-    <p class="section-label p">THREE LAYERS</p>
+  <!-- PROPOSAL C: PROGRESSIVE LAYERS + ACTIVE FLYWHEEL -->
+  <section class="section reveal">
+    <p class="section-label p reveal-child">THREE LAYERS</p>
 
-    <div class="layer-block">
-      <h3 class="layer-title"><span class="p">L1</span> Signal-as-a-Service</h3>
-      <p class="layer-desc dim">Raw alpha via API. Not indicators — discoveries. For funds and trading desks that have infrastructure but not this data edge.</p>
-    </div>
-
-    <div class="layer-block">
-      <h3 class="layer-title"><span class="a">L2</span> Agent Marketplace</h3>
-      <p class="layer-desc dim">Engineers build predictors → agents find combinations → best agents attract capital → engineers earn revenue share.</p>
-      <div class="flywheel">
-        <span class="fw-step">Engineers</span>
-        <span class="fw-arrow p">→</span>
-        <span class="fw-step">Predictors</span>
-        <span class="fw-arrow p">→</span>
-        <span class="fw-step">Agents</span>
-        <span class="fw-arrow p">→</span>
-        <span class="fw-step">Capital</span>
-        <span class="fw-arrow p">→</span>
-        <span class="fw-step">Revenue</span>
-        <span class="fw-arrow p">↩</span>
+    <div class="layer-block l1 reveal-child">
+      <div class="layer-border"></div>
+      <div class="layer-content">
+        <h3 class="layer-title"><span class="p">L1</span> Signal-as-a-Service <span class="layer-tag p">LIVE</span></h3>
+        <p class="layer-desc dim">Raw alpha via API. Not indicators — discoveries. For funds and trading desks that have infrastructure but not this data edge.</p>
       </div>
     </div>
 
-    <div class="layer-block last">
-      <h3 class="layer-title"><span class="ice">L3</span> One-click execution</h3>
-      <p class="layer-desc dim">14 months live PnL. Verified Sharpe. Documented drawdown. One button.</p>
+    <div class="layer-block l2 reveal-child">
+      <div class="layer-border layer-border-a"></div>
+      <div class="layer-content">
+        <h3 class="layer-title"><span class="a">L2</span> Agent Marketplace <span class="layer-tag a">BUILDING</span></h3>
+        <p class="layer-desc dim">Engineers build predictors → agents find combinations → best agents attract capital → engineers earn revenue share.</p>
+        <div class="flywheel" id="flywheel">
+          <span class="fw-step" data-fw="0">Engineers</span>
+          <span class="fw-arrow p">→</span>
+          <span class="fw-step" data-fw="1">Predictors</span>
+          <span class="fw-arrow p">→</span>
+          <span class="fw-step" data-fw="2">Agents</span>
+          <span class="fw-arrow p">→</span>
+          <span class="fw-step" data-fw="3">Capital</span>
+          <span class="fw-arrow p">→</span>
+          <span class="fw-step" data-fw="4">Revenue</span>
+          <span class="fw-arrow p">↩</span>
+        </div>
+      </div>
     </div>
 
-    <blockquote class="vision-quote">
+    <div class="layer-block l3 last reveal-child">
+      <div class="layer-border layer-border-ice"></div>
+      <div class="layer-content">
+        <h3 class="layer-title"><span class="ice">L3</span> One-click execution <span class="layer-tag ice">VISION</span></h3>
+        <p class="layer-desc dim">14 months live PnL. Verified Sharpe. Documented drawdown. One button.</p>
+      </div>
+    </div>
+
+    <blockquote class="vision-quote reveal-child">
       The line between a trading system and a world model starts to blur. 
       That is the point we are building toward.
     </blockquote>
   </section>
 
-  <!-- CTA -->
-  <section class="section cta-section" id="access">
-    <h2 class="cta-title">Request access</h2>
-    <p class="cta-desc dim">Signal API for funds. Marketplace for ML engineers. Limited.</p>
-    <form class="cta-form" action="#" method="POST">
-      <input type="email" placeholder="your@email.com" class="cta-input" required>
-      <button type="submit" class="btn-primary">Request Access</button>
-    </form>
-    <p class="cta-note dim">We review every application.</p>
+  <!-- PROPOSAL D: TERMINAL CTA -->
+  <section class="section cta-section reveal" id="access">
+    <div class="term-cta reveal-child">
+      <div class="term-header">
+        <span class="dim">zero-os</span>
+        <span class="term-dots">
+          <span class="dot dot-r"></span>
+          <span class="dot dot-a"></span>
+          <span class="dot dot-p"></span>
+        </span>
+      </div>
+      <div class="term-body">
+        <p class="term-line dim">$ zero-os request_access</p>
+        <p class="term-line"><span class="p">&gt;</span> Signal API for funds. Marketplace for engineers.</p>
+        <p class="term-line"><span class="p">&gt;</span> Early access is limited.</p>
+        <form class="term-form" id="access-form" action="#" method="POST">
+          <div class="term-input-row">
+            <span class="p">email:</span>
+            <input type="email" id="access-email" class="term-input" placeholder="you@fund.com" required autocomplete="email">
+          </div>
+          <button type="submit" class="term-submit">SUBMIT ↵</button>
+        </form>
+        <p class="term-confirm" id="term-confirm" style="display:none">
+          <span class="p">✓ ACCESS_REQUEST_QUEUED</span><br>
+          <span class="dim">ref: ZOS-<span id="req-id">0000</span> — we review every application.</span>
+        </p>
+      </div>
+    </div>
   </section>
 
   <!-- FOOTER -->
-  <footer class="footer">
+  <footer class="footer reveal">
     <span class="p">◇</span> <span class="dim">ZERO OS</span>
   </footer>
 
@@ -332,37 +375,89 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: -0.01em;
   }
 
-  /* EDGE SECTION */
-  .edge-columns {
+  /* ═══ PROPOSAL E: SCROLL REVEAL ═══ */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-child { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal.visible .reveal-child { opacity: 1; transform: translateY(0); }
+  .reveal.visible .reveal-child:nth-child(1) { transition-delay: 0s; }
+  .reveal.visible .reveal-child:nth-child(2) { transition-delay: .1s; }
+  .reveal.visible .reveal-child:nth-child(3) { transition-delay: .2s; }
+  .reveal.visible .reveal-child:nth-child(4) { transition-delay: .3s; }
+  .reveal.visible .reveal-child:nth-child(5) { transition-delay: .4s; }
+  .reveal.visible .reveal-child:nth-child(6) { transition-delay: .5s; }
+
+  /* ═══ PROPOSAL A: REGIME VISUALIZER ═══ */
+  .regime-viz { margin-top: 1rem; }
+  .rv-bar-group { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
+  .rv-bar {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-    margin-top: 0.75rem;
-  }
-  @media (min-width: 640px) {
-    .edge-columns { grid-template-columns: 1fr 1fr; }
-  }
-  .edge-item {
+    grid-template-columns: 70px 1fr 42px;
+    align-items: center;
+    gap: 0.5rem;
     font-family: var(--font-head);
-    font-size: 0.7rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
   }
-  .edge-name { color: var(--text); font-weight: 700; }
-  .edge-desc { font-size: 0.65rem; line-height: 1.5; }
-  .edge-punchline {
-    font-family: var(--font-head);
-    font-size: 0.8rem;
+  .rv-label { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.1em; text-align: right; }
+  .rv-track {
+    position: relative;
+    height: 20px;
+    background: rgba(26,26,26,0.6);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .rv-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 50%;
+    background: linear-gradient(90deg, rgba(200,255,0,0.15), rgba(200,255,0,0.05));
+    transition: width 0.8s ease, background 0.8s ease;
+  }
+  .rv-fill-lyap {
+    background: linear-gradient(90deg, rgba(0,212,255,0.1), rgba(255,51,51,0.15));
+  }
+  .rv-marker {
+    position: absolute;
+    top: 2px; bottom: 2px;
+    width: 3px;
+    left: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 8px var(--phosphor-glow);
+    transition: left 0.8s ease, background 0.8s ease, box-shadow 0.8s ease;
+  }
+  .rv-val {
+    font-size: 0.6rem;
     font-weight: 700;
     color: var(--text);
-    line-height: 1.5;
-    border-left: 2px solid var(--phosphor);
-    padding-left: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .rv-output {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .rv-regime-badge {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border);
+    transition: all 0.5s ease;
+  }
+  .rv-regime-badge.trending { color: var(--phosphor); border-color: var(--phosphor); background: rgba(200,255,0,0.08); box-shadow: 0 0 12px rgba(200,255,0,0.1); }
+  .rv-regime-badge.reverting { color: var(--amber); border-color: var(--amber); background: rgba(255,176,0,0.08); box-shadow: 0 0 12px rgba(255,176,0,0.1); }
+  .rv-regime-badge.chaotic { color: var(--red); border-color: var(--red); background: rgba(255,51,51,0.08); box-shadow: 0 0 12px rgba(255,51,51,0.1); animation: chaosPulse 0.8s ease infinite; }
+  .rv-regime-badge.shift { color: var(--ice); border-color: var(--ice); background: rgba(0,212,255,0.06); }
+  @keyframes chaosPulse { 0%,100%{opacity:1;}50%{opacity:.5;} }
+  .rv-verdict {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text);
   }
 
-  /* DISCOVERIES */
+  /* ═══ PROPOSAL B: DISCOVERY CARDS ═══ */
   .discovery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -373,30 +468,77 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .disc-card {
     border: 1px solid var(--border);
-    padding: 1.25rem 1rem;
+    padding: 1.5rem 1rem;
     text-align: center;
+    transition: border-color 0.4s, box-shadow 0.4s, background 0.4s;
+    position: relative;
+    overflow: hidden;
   }
+  .disc-card::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    border-radius: 50%;
+    transition: width 0.6s, height 0.6s, top 0.3s, left 0.3s, opacity 0.6s;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .disc-card.counted::before {
+    width: 120px; height: 120px;
+    opacity: 1;
+  }
+  .disc-card:nth-child(1)::before { background: radial-gradient(circle, rgba(200,255,0,0.08), transparent 70%); }
+  .disc-card:nth-child(2)::before { background: radial-gradient(circle, rgba(255,176,0,0.08), transparent 70%); }
+  .disc-card:nth-child(3)::before { background: radial-gradient(circle, rgba(0,212,255,0.08), transparent 70%); }
   .disc-val {
     font-family: var(--font-head);
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 700;
     margin-bottom: 0.3rem;
+    position: relative;
   }
-  .disc-card p { font-size: 0.6rem; color: var(--text-dim); line-height: 1.5; }
+  .disc-card p { font-size: 0.6rem; color: var(--text-dim); line-height: 1.5; position: relative; }
 
-  /* LAYERS */
+  /* ═══ PROPOSAL C: PROGRESSIVE LAYERS ═══ */
   .layer-block {
-    padding-bottom: 1.25rem;
+    display: flex;
+    gap: 0;
     margin-bottom: 1.25rem;
-    border-bottom: 1px solid rgba(26,26,26,0.4);
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
   }
   .layer-block.last { border-bottom: none; margin-bottom: 0.5rem; padding-bottom: 0.5rem; }
+  .layer-border {
+    width: 3px;
+    flex-shrink: 0;
+    background: var(--phosphor);
+    border-radius: 2px;
+    margin-right: 1rem;
+    box-shadow: 0 0 8px var(--phosphor-glow);
+  }
+  .layer-border-a { background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.2); }
+  .layer-border-ice { background: var(--ice); box-shadow: 0 0 8px rgba(0,212,255,0.2); opacity: 0.5; }
+  .layer-content { flex: 1; }
+  .l2 { opacity: 0.85; }
+  .l3 { opacity: 0.6; }
   .layer-title {
     font-family: var(--font-head);
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .layer-tag {
+    font-size: 0.45rem;
+    letter-spacing: 0.15em;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid currentColor;
+    opacity: 0.7;
   }
   .layer-desc {
     font-size: 0.7rem;
@@ -404,7 +546,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     max-width: 500px;
   }
 
-  /* FLYWHEEL */
+  /* FLYWHEEL — animated */
   .flywheel {
     display: flex;
     align-items: center;
@@ -415,12 +557,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.6rem;
   }
   .fw-step {
-    color: var(--text);
+    color: var(--text-dim);
     font-weight: 700;
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--border);
+    transition: color 0.4s, border-color 0.4s, box-shadow 0.4s, background 0.4s;
   }
-  .fw-arrow { font-size: 0.8rem; }
+  .fw-step.active {
+    color: var(--phosphor);
+    border-color: var(--phosphor);
+    background: rgba(200,255,0,0.06);
+    box-shadow: 0 0 10px rgba(200,255,0,0.1);
+  }
+  .fw-arrow {
+    font-size: 0.8rem;
+    transition: color 0.3s;
+  }
 
   /* VISION */
   .vision-quote {
@@ -435,36 +587,80 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     max-width: 460px;
   }
 
-  /* CTA */
-  .cta-section { border-bottom: none; padding: 2.5rem 0 1.5rem; text-align: center; }
-  .cta-title {
-    font-family: var(--font-head);
-    font-size: clamp(1rem, 3vw, 1.3rem);
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.5rem;
-  }
-  .cta-desc { font-size: 0.7rem; margin-bottom: 1.25rem; text-align: center; }
-  .cta-form {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .cta-input {
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    background: var(--surface);
+  /* ═══ PROPOSAL D: TERMINAL CTA ═══ */
+  .cta-section { border-bottom: none; padding: 2.5rem 0 1.5rem; }
+  .term-cta {
     border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.6rem 1rem;
-    min-width: 220px;
-    outline: none;
-    transition: border-color 0.15s;
+    background: rgba(0,0,0,0.6);
+    overflow: hidden;
+    max-width: 480px;
+    margin: 0 auto;
   }
-  .cta-input:focus { border-color: var(--phosphor); }
-  .cta-input::placeholder { color: var(--text-dim); }
-  .cta-note { font-size: 0.55rem; margin-top: 0.4rem; }
+  .term-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    background: rgba(26,26,26,0.5);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-size: 0.5rem;
+  }
+  .term-dots { display: flex; gap: 4px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-r { background: #ff5f56; }
+  .dot-a { background: #ffbd2e; }
+  .dot-p { background: #27c93f; }
+  .term-body {
+    padding: 1rem 1.25rem;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+  .term-line {
+    margin-bottom: 0.3rem;
+    line-height: 1.6;
+  }
+  .term-form { margin-top: 0.75rem; }
+  .term-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+  }
+  .term-input {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.3rem 0;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
+    caret-color: var(--phosphor);
+  }
+  .term-input:focus { border-color: var(--phosphor); }
+  .term-input::placeholder { color: var(--text-dim); }
+  .term-submit {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--bg);
+    background: var(--phosphor);
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .term-submit:hover { opacity: 0.85; }
+  .term-confirm {
+    font-size: 0.65rem;
+    line-height: 1.7;
+    margin-top: 0.5rem;
+  }
 
   /* FOOTER */
   .footer {
@@ -756,5 +952,117 @@ document.addEventListener('DOMContentLoaded',()=>{
   initData(); setup(); updateStatus();
   requestAnimationFrame(frame);
   window.addEventListener('resize',resize);
+
+  // ═══ PROPOSAL E: SCROLL REVEAL ═══
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  // ═══ PROPOSAL A: REGIME VISUALIZER ═══
+  const rvState = { h: 0.5, d: 0.5, ly: 0.0, ht: 0.5, dt: 0.5, lt: 0.0 };
+  function rvTick() {
+    if(Math.random()<.04) rvState.ht = rnd(.25,.75);
+    if(Math.random()<.04) rvState.dt = rnd(.25,.75);
+    if(Math.random()<.03) rvState.lt = rnd(-.1,1.1);
+    rvState.h = lerp(rvState.h, rvState.ht, .03);
+    rvState.d = lerp(rvState.d, rvState.dt, .03);
+    rvState.ly = lerp(rvState.ly, rvState.lt, .03);
+
+    const hPct = rvState.h * 100;
+    const dPct = rvState.d * 100;
+    const lPct = Math.max(0, Math.min(rvState.ly, 1.2)) / 1.2 * 100;
+
+    document.getElementById('rv-hurst').style.width = hPct + '%';
+    document.getElementById('rv-hurst-marker').style.left = hPct + '%';
+    document.getElementById('rv-hurst-val').textContent = rvState.h.toFixed(2);
+    document.getElementById('rv-dfa').style.width = dPct + '%';
+    document.getElementById('rv-dfa-marker').style.left = dPct + '%';
+    document.getElementById('rv-dfa-val').textContent = rvState.d.toFixed(2);
+    document.getElementById('rv-lyap').style.width = lPct + '%';
+    document.getElementById('rv-lyap-marker').style.left = lPct + '%';
+    document.getElementById('rv-lyap-val').textContent = rvState.ly.toFixed(2);
+
+    // regime + verdict
+    const badge = document.getElementById('rv-badge');
+    const verdict = document.getElementById('rv-verdict');
+    let reg = '', vtext = '', cls = '';
+    if(rvState.ly > .85) {
+      reg='CHAOTIC'; cls='chaotic';
+      vtext='Your MACD crossover is → <span class="red">UNRELIABLE</span>';
+    } else if(rvState.h<.45 && rvState.d<.45) {
+      reg='REVERTING'; cls='reverting';
+      vtext='Your MACD crossover is → <span class="a">A TRAP</span>';
+    } else if(rvState.h>.55 && rvState.d>.55) {
+      reg='TRENDING'; cls='trending';
+      vtext='Your MACD crossover is → <span class="p">MEANINGFUL</span>';
+    } else if((rvState.h<.45&&rvState.d>.55)||(rvState.h>.55&&rvState.d<.45)) {
+      reg='SHIFT'; cls='shift';
+      vtext='Your MACD crossover is → <span class="ice">TRANSITIONING</span>';
+    } else {
+      reg='SCANNING'; cls='';
+      vtext='Your MACD crossover is → <span class="dim">ANALYZING</span>';
+    }
+    badge.textContent = reg;
+    badge.className = 'rv-regime-badge ' + cls;
+    verdict.innerHTML = vtext;
+
+    // marker colors
+    const hMarker = document.getElementById('rv-hurst-marker');
+    const dMarker = document.getElementById('rv-dfa-marker');
+    const lMarker = document.getElementById('rv-lyap-marker');
+    hMarker.style.background = rvState.h<.45?'var(--amber)':rvState.h>.55?'var(--phosphor)':'var(--text-dim)';
+    hMarker.style.boxShadow = rvState.h<.45?'0 0 8px rgba(255,176,0,.3)':rvState.h>.55?'0 0 8px var(--phosphor-glow)':'none';
+    dMarker.style.background = rvState.d<.45?'var(--amber)':rvState.d>.55?'var(--phosphor)':'var(--text-dim)';
+    dMarker.style.boxShadow = rvState.d<.45?'0 0 8px rgba(255,176,0,.3)':rvState.d>.55?'0 0 8px var(--phosphor-glow)':'none';
+    lMarker.style.background = rvState.ly>.7?'var(--red)':rvState.ly<.2?'var(--ice)':'var(--text-dim)';
+    lMarker.style.boxShadow = rvState.ly>.7?'0 0 8px rgba(255,51,51,.3)':'none';
+  }
+  setInterval(rvTick, 50);
+
+  // ═══ PROPOSAL B: ANIMATED COUNTERS ═══
+  const counterObs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const card = e.target;
+      if(card.classList.contains('counted')) return;
+      const target = parseFloat(card.dataset.counter);
+      const prefix = card.dataset.prefix || '';
+      const suffix = card.dataset.suffix || '';
+      const decimals = parseInt(card.dataset.decimals);
+      const valEl = card.querySelector('.disc-val');
+      if(decimals === -1) { card.classList.add('counted'); return; } // text-only (Δ SENT)
+      let cur = 0;
+      const step = target / 40;
+      const iv = setInterval(()=>{
+        cur += step;
+        if(cur >= target) { cur = target; clearInterval(iv); }
+        if(decimals > 0) valEl.textContent = prefix + cur.toFixed(decimals);
+        else valEl.textContent = prefix + Math.round(cur) + suffix;
+      }, 25);
+      card.classList.add('counted');
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.disc-card').forEach(el=>counterObs.observe(el));
+
+  // ═══ PROPOSAL C: FLYWHEEL ANIMATION ═══
+  let fwIdx = 0;
+  setInterval(()=>{
+    document.querySelectorAll('.fw-step').forEach(el=>el.classList.remove('active'));
+    const steps = document.querySelectorAll('.fw-step');
+    if(steps[fwIdx]) steps[fwIdx].classList.add('active');
+    fwIdx = (fwIdx + 1) % steps.length;
+  }, 800);
+
+  // ═══ PROPOSAL D: TERMINAL CTA ═══
+  const form = document.getElementById('access-form');
+  if(form) form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const email = document.getElementById('access-email').value;
+    if(!email) return;
+    document.getElementById('req-id').textContent = Math.random().toString(36).substr(2,6).toUpperCase();
+    form.style.display = 'none';
+    document.getElementById('term-confirm').style.display = 'block';
+  });
 });
 </script>
