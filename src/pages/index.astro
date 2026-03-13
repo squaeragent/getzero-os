@@ -226,23 +226,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- FOUNDERS -->
-  <section class="section reveal">
-    <p class="section-label dim reveal-child">FOUNDERS</p>
-    <div class="founders reveal-child">
-      <div class="founder tilt-card">
-        <div class="founder-name">Igor Pugachevsky</div>
-        <div class="founder-role dim">CEO — Product & Architecture</div>
-        <p class="founder-bio dim">Built autonomous agent systems. Designed the Signal Matrix architecture. Previously led product at early-stage startups. Technical founder who ships.</p>
-      </div>
-      <div class="founder tilt-card">
-        <div class="founder-name">Nikolay Manolov</div>
-        <div class="founder-role dim">CTO — Quantitative Systems</div>
-        <p class="founder-bio dim">Chaos mathematics, regime detection, feature engineering. Designed the DFA/Hurst/Lyapunov framework. The brain behind the edge.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- INVESTOR CTA -->
   <section class="section reveal">
     <div class="inv-cta reveal-child">
@@ -734,27 +717,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.7rem;
     font-weight: 700;
   }
-
-  /* ═══ FOUNDERS ═══ */
-  .founders {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  @media (max-width: 639px) { .founders { grid-template-columns: 1fr; } }
-  .founder {
-    border: 1px solid var(--border);
-    padding: 1.25rem;
-  }
-  .founder-name {
-    font-family: var(--font-head);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.15rem;
-  }
-  .founder-role { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
-  .founder-bio { font-size: 0.6rem; line-height: 1.6; }
 
   /* ═══ INVESTOR CTA ═══ */
   .inv-cta { max-width: 480px; }
