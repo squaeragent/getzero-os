@@ -287,17 +287,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     content: '';
     position: fixed;
     inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
     pointer-events: none;
     z-index: 100;
+  }
+  @media (max-width: 639px) {
+    body::before { opacity: 0.5; }
   }
   body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, transparent 85%, rgba(0,0,0,0.15) 92%, rgba(0,0,0,0.4) 100%);
+    background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 0%, transparent 90%, rgba(0,0,0,0.1) 95%, rgba(0,0,0,0.2) 100%);
     pointer-events: none;
     z-index: 101;
+  }
+  @media (max-width: 639px) {
+    body::after { display: none; }
   }
 
   /* HERO */
@@ -459,8 +465,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Mode step stagger */
   .mode-step {
-    opacity: 0;
-    transform: translateX(-8px);
+    opacity: 0.1;
+    transform: translateX(-6px);
     transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
   }
   .reveal.visible .mode-step:nth-child(1) { transition-delay: 0.05s; }
@@ -474,8 +480,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Agent point stagger */
   .agent-point {
-    opacity: 0;
-    transform: translateX(-6px);
+    opacity: 0.1;
+    transform: translateX(-4px);
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
   .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(1) { transition-delay: 0s; }
@@ -498,8 +504,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Edge row entrance */
   .edge-row {
-    opacity: 0;
-    transform: translateX(-12px);
+    opacity: 0.1;
+    transform: translateX(-8px);
     transition: opacity 0.4s ease, transform 0.4s ease;
   }
   .reveal.visible .edge-row:nth-child(1) { transition-delay: 0.1s; }
@@ -511,8 +517,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Backtest table row entrance — only plays when parent section is visible */
   .bt-table tbody tr {
-    opacity: 0;
-    transform: translateY(6px);
+    opacity: 0.15;
+    transform: translateY(4px);
   }
   .reveal.visible .bt-table tbody tr {
     animation: rowIn 0.3s ease both;
@@ -603,16 +609,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: -0.01em;
   }
 
-  /* ═══ SCROLL REVEAL (varied per section) ═══ */
+  /* ═══ SCROLL REVEAL (subtle — content visible, animates on enter) ═══ */
   .reveal {
-    opacity: 0;
-    transform: translateY(14px);
+    opacity: 0.25;
+    transform: translateY(8px);
     transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .reveal.visible { opacity: 1; transform: translateY(0); }
   .reveal-child {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
     transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .reveal.visible .reveal-child { opacity: 1; transform: translateY(0); }
@@ -1375,7 +1381,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   // ═══ PROPOSAL E: SCROLL REVEAL ═══
   const obs = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
-  }, { threshold: 0.15 });
+  }, { threshold: 0.05, rootMargin: '0px 0px 50px 0px' });
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
   // ═══ PROPOSAL A: REGIME VISUALIZER ═══
