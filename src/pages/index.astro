@@ -55,123 +55,128 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </header>
 
-  <!-- WHY IT'S SMARTER (before proof — explain first, prove second) -->
-  <section class="section reveal sec-elevated">
-    <p class="section-label p reveal-child">WHY IT'S SMARTER</p>
-    <h2 class="section-title reveal-child">Your agent sees what others can't.</h2>
-    <p class="intel-explain dim reveal-child">79 dimensions. Technical indicators across 7 timeframes, Ichimoku cloud system, social sentiment analysis, candlestick pattern recognition. Your bot checks RSI. Ours checks everything — and knows when RSI is lying.</p>
-
-    <div class="edge-contrast reveal-child">
-      <div class="edge-row">
-        <span class="edge-them dim">RSI says overbought</span>
-        <span class="edge-us p">We know if RSI even applies right now</span>
-      </div>
-      <div class="edge-row">
-        <span class="edge-them dim">MACD shows a crossover</span>
-        <span class="edge-us p">We tell you if that crossover is meaningful or a trap</span>
-      </div>
-    </div>
-
-    <div class="regime-viz reveal-child">
-      <div class="rv-bar-group">
-        <div class="rv-bar">
-          <span class="rv-label dim">TREND <span style="font-size:0.35rem;opacity:0.5">(Hurst)</span></span>
-          <div class="rv-track">
-            <div class="rv-fill" id="rv-hurst"></div>
-            <div class="rv-marker" id="rv-hurst-marker"></div>
+  <!-- ═══ PANE: INTELLIGENCE ═══ -->
+  <div class="pane-grid reveal">
+    <div class="pane">
+      <div class="pane-header"><span class="p">■</span> INTELLIGENCE <span class="pane-dim">— 79 dimensions</span></div>
+      <div class="pane-body">
+        <p class="pane-text">Technical indicators across 7 timeframes. Ichimoku cloud. Sentiment analysis. Candlestick patterns. Your bot checks RSI. Ours checks everything — and knows when RSI is lying.</p>
+        <div class="edge-contrast">
+          <div class="edge-row">
+            <span class="edge-them dim">RSI says overbought</span>
+            <span class="edge-us p">→ We know if RSI even applies right now</span>
           </div>
-          <span class="rv-val" id="rv-hurst-val">0.50</span>
-        </div>
-        <div class="rv-bar">
-          <span class="rv-label dim">PATTERN <span style="font-size:0.35rem;opacity:0.5">(DFA)</span></span>
-          <div class="rv-track">
-            <div class="rv-fill" id="rv-dfa"></div>
-            <div class="rv-marker" id="rv-dfa-marker"></div>
+          <div class="edge-row">
+            <span class="edge-them dim">MACD crossover detected</span>
+            <span class="edge-us p">→ We tell you if it's a signal or a trap</span>
           </div>
-          <span class="rv-val" id="rv-dfa-val">0.50</span>
-        </div>
-        <div class="rv-bar">
-          <span class="rv-label dim">CHAOS <span style="font-size:0.35rem;opacity:0.5">(Lyapunov)</span></span>
-          <div class="rv-track">
-            <div class="rv-fill rv-fill-lyap" id="rv-lyap"></div>
-            <div class="rv-marker" id="rv-lyap-marker"></div>
-          </div>
-          <span class="rv-val" id="rv-lyap-val">0.00</span>
-        </div>
-      </div>
-      <div class="rv-output">
-        <div class="rv-regime-badge" id="rv-badge">SCANNING</div>
-        <p class="rv-verdict" id="rv-verdict">Your MACD crossover is → <span class="p">ANALYZING</span></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROOF (now after intelligence — data confirms the thesis) -->
-  <section class="section reveal" id="proof">
-    <p class="section-label a reveal-child">MONTE CARLO BACKTEST <span class="dim" style="font-weight:400;letter-spacing:0.05em;font-size:0.45rem">Jan 2025 — Dec 2025</span></p>
-    <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
-    <p class="bt-sub dim reveal-child">10,000 Monte Carlo runs per coin, 15 assets, 0.1% taker fees, 0.05% slippage. The agent only enters when market conditions confirm the strategy applies.</p>
-    
-    <div class="bt-split reveal-child">
-      <div class="bt-table-wrap">
-        <table class="bt-table">
-          <thead>
-            <tr>
-              <th class="bt-coin">COIN</th>
-              <th>RETURN</th>
-              <th>WIN RATE</th>
-              <th>MAX DD</th>
-              <th class="bt-hide-mobile">p5 RETURN*</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td class="bt-coin">BTC</td><td class="p">+52.2%</td><td>50.9%</td><td class="bt-dd">-14.9%</td><td class="p bt-hide-mobile">+35.3%</td></tr>
-            <tr><td class="bt-coin">ETH</td><td class="p">+77.4%</td><td>39.8%</td><td class="bt-dd">-28.3%</td><td class="p bt-hide-mobile">+42.0%</td></tr>
-            <tr><td class="bt-coin">SOL</td><td class="p">+86.5%</td><td>43.4%</td><td class="bt-dd">-16.0%</td><td class="p bt-hide-mobile">+50.4%</td></tr>
-            <tr><td class="bt-coin">ARB</td><td class="p">+95.8%</td><td>37.1%</td><td class="bt-dd">-23.1%</td><td class="p bt-hide-mobile">+45.6%</td></tr>
-            <tr><td class="bt-coin">CRV</td><td class="p">+127.0%</td><td>34.7%</td><td class="bt-dd bt-dd-hot">-31.5%</td><td class="p bt-hide-mobile">+43.7%</td></tr>
-            <tr><td class="bt-coin">KPEPE</td><td class="p">+256.1%</td><td>37.7%</td><td class="bt-dd">-20.4%</td><td class="p bt-hide-mobile">+165.0%</td></tr>
-            <tr><td class="bt-coin">KBONK</td><td class="p">+224.6%</td><td>32.6%</td><td class="bt-dd bt-dd-hot">-29.2%</td><td class="p bt-hide-mobile">+143.2%</td></tr>
-            <tr><td class="bt-coin">TRX</td><td class="p">+59.4%</td><td class="bt-wr-best">61.3%</td><td class="bt-dd bt-dd-safe">-8.3%</td><td class="p bt-hide-mobile">+47.8%</td></tr>
-            <tr><td class="bt-coin">DOGE</td><td class="p">+47.6%</td><td>38.2%</td><td class="bt-dd">-19.7%</td><td class="p bt-hide-mobile">+20.1%</td></tr>
-            <tr><td class="bt-coin">KSHIB</td><td class="p">+117.7%</td><td>43.0%</td><td class="bt-dd">-17.8%</td><td class="p bt-hide-mobile">+70.7%</td></tr>
-            <tr class="bt-neg"><td class="bt-coin">PAXG</td><td class="dim">-5.1%</td><td>49.2%</td><td class="bt-dd bt-dd-safe">-11.3%</td><td class="red bt-hide-mobile">-14.1%</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="bt-highlights-side">
-        <div class="bt-stat tilt-card">
-          <div class="bt-stat-val p" data-count-to="14" data-count-suffix="/15">0/15</div>
-          <div class="bt-stat-label dim">coins profitable</div>
-        </div>
-        <div class="bt-stat tilt-card">
-          <div class="bt-stat-val a" data-count-to="37" data-count-suffix="%">0%</div>
-          <div class="bt-stat-label dim">avg win rate</div>
-        </div>
-        <div class="bt-stat tilt-card">
-          <div class="bt-stat-val ice">p5+</div>
-          <div class="bt-stat-label dim">worst 5% still profitable</div>
         </div>
       </div>
     </div>
+    <div class="pane">
+      <div class="pane-header"><span class="p">■</span> MARKET STATE <span class="pane-dim">— live detection</span></div>
+      <div class="pane-body">
+        <div class="regime-viz">
+          <div class="rv-bar-group">
+            <div class="rv-bar">
+              <span class="rv-label dim">TREND</span>
+              <div class="rv-track">
+                <div class="rv-fill" id="rv-hurst"></div>
+                <div class="rv-marker" id="rv-hurst-marker"></div>
+              </div>
+              <span class="rv-val" id="rv-hurst-val">0.50</span>
+            </div>
+            <div class="rv-bar">
+              <span class="rv-label dim">PATTERN</span>
+              <div class="rv-track">
+                <div class="rv-fill" id="rv-dfa"></div>
+                <div class="rv-marker" id="rv-dfa-marker"></div>
+              </div>
+              <span class="rv-val" id="rv-dfa-val">0.50</span>
+            </div>
+            <div class="rv-bar">
+              <span class="rv-label dim">CHAOS</span>
+              <div class="rv-track">
+                <div class="rv-fill rv-fill-lyap" id="rv-lyap"></div>
+                <div class="rv-marker" id="rv-lyap-marker"></div>
+              </div>
+              <span class="rv-val" id="rv-lyap-val">0.00</span>
+            </div>
+          </div>
+          <div class="rv-output">
+            <div class="rv-regime-badge" id="rv-badge">SCANNING</div>
+            <p class="rv-verdict" id="rv-verdict">MACD crossover → <span class="p">ANALYZING</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <p class="bt-footnote dim reveal-child">* p5 = 5th percentile of Monte Carlo simulations. 95% of outcomes were better than this number.</p>
-  </section>
+  <!-- ═══ PANE: BACKTEST ═══ -->
+  <div class="pane-full reveal" id="proof">
+    <div class="pane">
+      <div class="pane-header"><span class="a">■</span> MONTE CARLO BACKTEST <span class="pane-dim">— Jan 2025 – Dec 2025 · 10K runs/coin · 0.1% fees · 0.05% slippage</span></div>
+      <div class="pane-body">
+        <div class="bt-split">
+          <div class="bt-table-wrap">
+            <table class="bt-table">
+              <thead>
+                <tr>
+                  <th class="bt-coin">COIN</th>
+                  <th>RETURN</th>
+                  <th>WIN RATE</th>
+                  <th>MAX DD</th>
+                  <th class="bt-hide-mobile">p5 RETURN*</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="bt-coin">BTC</td><td class="p">+52.2%</td><td>50.9%</td><td class="bt-dd">-14.9%</td><td class="p bt-hide-mobile">+35.3%</td></tr>
+                <tr><td class="bt-coin">ETH</td><td class="p">+77.4%</td><td>39.8%</td><td class="bt-dd">-28.3%</td><td class="p bt-hide-mobile">+42.0%</td></tr>
+                <tr><td class="bt-coin">SOL</td><td class="p">+86.5%</td><td>43.4%</td><td class="bt-dd">-16.0%</td><td class="p bt-hide-mobile">+50.4%</td></tr>
+                <tr><td class="bt-coin">ARB</td><td class="p">+95.8%</td><td>37.1%</td><td class="bt-dd">-23.1%</td><td class="p bt-hide-mobile">+45.6%</td></tr>
+                <tr><td class="bt-coin">CRV</td><td class="p">+127.0%</td><td>34.7%</td><td class="bt-dd bt-dd-hot">-31.5%</td><td class="p bt-hide-mobile">+43.7%</td></tr>
+                <tr><td class="bt-coin">KPEPE</td><td class="p">+256.1%</td><td>37.7%</td><td class="bt-dd">-20.4%</td><td class="p bt-hide-mobile">+165.0%</td></tr>
+                <tr><td class="bt-coin">KBONK</td><td class="p">+224.6%</td><td>32.6%</td><td class="bt-dd bt-dd-hot">-29.2%</td><td class="p bt-hide-mobile">+143.2%</td></tr>
+                <tr><td class="bt-coin">TRX</td><td class="p">+59.4%</td><td class="bt-wr-best">61.3%</td><td class="bt-dd bt-dd-safe">-8.3%</td><td class="p bt-hide-mobile">+47.8%</td></tr>
+                <tr><td class="bt-coin">DOGE</td><td class="p">+47.6%</td><td>38.2%</td><td class="bt-dd">-19.7%</td><td class="p bt-hide-mobile">+20.1%</td></tr>
+                <tr><td class="bt-coin">KSHIB</td><td class="p">+117.7%</td><td>43.0%</td><td class="bt-dd">-17.8%</td><td class="p bt-hide-mobile">+70.7%</td></tr>
+                <tr class="bt-neg"><td class="bt-coin">PAXG</td><td class="dim">-5.1%</td><td>49.2%</td><td class="bt-dd bt-dd-safe">-11.3%</td><td class="red bt-hide-mobile">-14.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="bt-highlights-side">
+            <div class="bt-stat tilt-card">
+              <div class="bt-stat-val p" data-count-to="14" data-count-suffix="/15">0/15</div>
+              <div class="bt-stat-label dim">coins profitable</div>
+            </div>
+            <div class="bt-stat tilt-card">
+              <div class="bt-stat-val a" data-count-to="37" data-count-suffix="%">0%</div>
+              <div class="bt-stat-label dim">avg win rate</div>
+            </div>
+            <div class="bt-stat tilt-card">
+              <div class="bt-stat-val ice">p5+</div>
+              <div class="bt-stat-label dim">worst 5% still profitable</div>
+            </div>
+          </div>
+        </div>
+        <p class="bt-footnote dim">* p5 = 5th percentile of Monte Carlo simulations. 95% of outcomes beat this.</p>
+      </div>
+    </div>
+  </div>
 
-  <!-- MODES + AGENT (two-column) -->
-  <section class="section reveal">
-    <div class="dual-grid">
-      <div class="dual-col">
-        <p class="section-label a reveal-child">MODES</p>
-        <h2 class="section-title reveal-child">You choose the autonomy level</h2>
-        <div class="mode-gradient reveal-child">
+  <!-- ═══ PANE: MODES + AGENT ═══ -->
+  <div class="pane-grid reveal">
+    <div class="pane">
+      <div class="pane-header"><span class="a">■</span> AUTONOMY MODES</div>
+      <div class="pane-body">
+        <div class="mode-gradient">
           <div class="mode-step" style="--mode-opacity: 0.4">
             <div class="mode-bar"></div>
             <div class="mode-content">
               <span class="mode-label dim">OBSERVE</span>
               <span class="mode-meta dim">LEARN</span>
             </div>
-            <p class="mode-desc-inline dim">Watch the agent think. No trades. Training wheels.</p>
+            <p class="mode-desc-inline dim">Watch the agent think. No trades.</p>
           </div>
           <div class="mode-step" style="--mode-opacity: 0.6">
             <div class="mode-bar a"></div>
@@ -179,7 +184,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span class="mode-label a">SIGNAL</span>
               <span class="mode-meta dim">VALIDATE</span>
             </div>
-            <p class="mode-desc-inline dim">Agent generates signals. You decide when to act.</p>
+            <p class="mode-desc-inline dim">Agent generates signals. You decide.</p>
           </div>
           <div class="mode-step" style="--mode-opacity: 0.8">
             <div class="mode-bar ice"></div>
@@ -187,7 +192,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span class="mode-label ice">SEMI-AUTO</span>
               <span class="mode-meta dim">TRUST</span>
             </div>
-            <p class="mode-desc-inline dim">Agent prepares trades. One tap to approve. Kill switch.</p>
+            <p class="mode-desc-inline dim">One tap to approve. Kill switch.</p>
           </div>
           <div class="mode-step" style="--mode-opacity: 1">
             <div class="mode-bar p"></div>
@@ -195,46 +200,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span class="mode-label p">AUTO</span>
               <span class="mode-meta p">DELEGATE</span>
             </div>
-            <p class="mode-desc-inline dim">24/7 portfolio management within your risk parameters.</p>
+            <p class="mode-desc-inline dim">24/7 within your risk parameters.</p>
           </div>
         </div>
       </div>
-      <div class="dual-col">
-        <p class="section-label ice reveal-child">THE AGENT</p>
-        <h2 class="section-title reveal-child">Three ways to run</h2>
-        <div class="agent-list reveal-child">
-          <p class="agent-point dim"><span class="p">AGENT</span> — Ships with OpenClaw runtime. Install, configure, trade. No existing AI setup needed.</p>
-          <p class="agent-point dim"><span class="p">SKILL</span> — Plug into OpenClaw, Claude Code, Perplexity Computer, or any agentic framework.</p>
-          <p class="agent-point dim"><span class="p">CLI</span> — Direct command-line control. Script it, automate it, integrate it.</p>
+    </div>
+    <div class="pane">
+      <div class="pane-header"><span class="ice">■</span> RUNTIME</div>
+      <div class="pane-body">
+        <div class="agent-list">
+          <p class="agent-point dim"><span class="p">AGENT</span> Ships with OpenClaw runtime. Install, configure, trade.</p>
+          <p class="agent-point dim"><span class="p">SKILL</span> Plug into OpenClaw, Claude Code, or any agentic framework.</p>
+          <p class="agent-point dim"><span class="p">CLI</span> Direct command-line. Script it, automate it, integrate it.</p>
         </div>
-        <div class="custody-list reveal-child">
-          <p class="agent-point dim"><span class="p">✓</span> Keys managed locally, encrypted at rest</p>
-          <p class="agent-point dim"><span class="p">✓</span> Kill switch — pause everything instantly</p>
-          <p class="agent-point dim"><span class="p">✓</span> Built-in position limits and daily loss caps</p>
+        <div class="custody-list" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <p class="agent-point dim"><span class="p">✓</span> Keys encrypted locally</p>
+          <p class="agent-point dim"><span class="p">✓</span> Kill switch — pause instantly</p>
+          <p class="agent-point dim"><span class="p">✓</span> Position limits + daily loss caps</p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- TERMINAL CTA (credibility merged in) -->
-  <section class="section cta-section reveal" id="access">
-    <div class="term-cta reveal-child">
-      <div class="term-header">
-        <span class="dim">zero-os</span>
-        <span class="term-dots">
-          <span class="dot dot-r"></span>
-          <span class="dot dot-a"></span>
-          <span class="dot dot-p"></span>
-        </span>
-      </div>
-      <div class="term-body">
+  <!-- ═══ PANE: ACCESS ═══ -->
+  <div class="pane-grid reveal" id="access">
+    <div class="pane pane-cta">
+      <div class="pane-header"><span class="p">■</span> ACCESS</div>
+      <div class="pane-body">
         <p class="term-line dim term-cursor">$ zero-os --status</p>
-        <p class="term-line"><span class="p">&gt;</span> Intelligence engine: <span class="p">BUILT</span></p>
-        <p class="term-line"><span class="p">&gt;</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
-        <p class="term-line"><span class="p">&gt;</span> Methodology: <a href="/thesis" style="color:var(--phosphor);">/thesis</a></p>
-        <p class="term-line"><span class="p">&gt;</span> Self-custodial: your keys, your machine, verifiable</p>
-        <p class="term-line"><span class="p">&gt;</span> Onboarding design partners — funds, desks, and builders.</p>
-        <p class="term-line dim" style="margin-top:0.5rem">$ zero-os request_access</p>
+        <p class="term-line"><span class="p">▸</span> Intelligence: <span class="p">BUILT</span></p>
+        <p class="term-line"><span class="p">▸</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
+        <p class="term-line"><span class="p">▸</span> Methodology: <a href="/thesis" style="color:var(--phosphor)">/thesis</a></p>
+        <p class="term-line"><span class="p">▸</span> Self-custodial: your keys, your machine</p>
+        <p class="term-line dim" style="margin-top:1rem">$ zero-os request_access</p>
         <form class="term-form" id="access-form" action="#" method="POST">
           <div class="term-input-row">
             <span class="p">email:</span>
@@ -252,7 +250,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </p>
       </div>
     </div>
-  </section>
+    <div class="pane pane-status">
+      <div class="pane-header"><span class="dim">■</span> SYSTEM</div>
+      <div class="pane-body">
+        <p class="term-line dim">uptime .............. operational</p>
+        <p class="term-line dim">agents .............. 5 cognitive functions</p>
+        <p class="term-line dim">intelligence ........ 79 dimensions</p>
+        <p class="term-line dim">backtest ............ 14/15 profitable</p>
+        <p class="term-line dim">custody ............. self-custodial</p>
+        <p class="term-line dim">mode ................ design partners</p>
+        <p class="term-line dim" style="margin-top:1rem">next: signal API launch</p>
+      </div>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer class="footer reveal">
@@ -647,32 +657,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   /* regime badge animations handled in canvas via opacity cycling */
 
-  /* SECTIONS */
-  .section { padding: 2.5rem 0; border-bottom: 1px solid transparent; }
-  .sec-elevated { background: rgba(200,255,0,0.015); margin: 0 -3rem; padding: 2.5rem 3rem; }
-  @media (max-width: 639px) { .sec-elevated { margin: 0 -1rem; padding: 2.5rem 1rem; } }
+  /* ═══ PANE SYSTEM — Terminal panels ═══ */
+  .pane-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .pane-full { margin-bottom: 0.5rem; }
+  .pane {
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
+  }
+  .pane-header {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,10,0.6);
+    color: var(--text-dim);
+  }
+  .pane-dim { font-weight: 400; opacity: 0.5; font-size: 0.6rem; letter-spacing: 0.05em; }
+  .pane-body { padding: 1.25rem; }
+  .pane-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 900px) {
+    .pane-grid { grid-template-columns: 1fr; }
+  }
 
   /* Backtest split: table + highlights side by side */
   .bt-split { display: grid; grid-template-columns: 1fr 200px; gap: 1.5rem; align-items: start; }
   .bt-highlights-side { display: flex; flex-direction: column; gap: 0.75rem; }
   @media (max-width: 900px) { .bt-split { grid-template-columns: 1fr; } }
-  .section.visible { border-bottom-color: var(--border); }
-  .section-label {
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.75rem;
-  }
-  .section-title {
-    font-family: var(--font-head);
-    font-size: clamp(1.3rem, 3.5vw, 2rem);
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--text);
-    margin-bottom: 1rem;
-    letter-spacing: -0.01em;
-  }
 
   /* ═══ SCROLL REVEAL (subtle — content visible, animates on enter) ═══ */
   .reveal {
@@ -942,11 +964,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .mid-cta .btn-primary { width: 100%; text-align: center; }
   }
 
-  /* ═══ CREDIBILITY ═══ */
-  .cred-grid { max-width: 500px; }
-  .cred-line { font-size: 0.65rem; line-height: 1.7; margin-bottom: 0.75rem; }
-  .cred-signals { display: flex; flex-direction: column; gap: 0.3rem; }
-  .cred-signal { font-size: 0.55rem; line-height: 1.6; color: var(--text-dim); }
+  /* (credibility merged into access pane) */
 
   /* ═══ PROPOSAL I: TILT HOVER ═══ */
   .tilt-card {
@@ -960,31 +978,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* VISION */
   /* (vision quote removed — replaced by token economy section) */
 
-  /* ═══ PROPOSAL D: TERMINAL CTA ═══ */
-  .cta-section { border-bottom: none; padding: 2.5rem 0 1.5rem; }
-  .term-cta {
-    border: 1px solid var(--border);
-    background: rgba(0,0,0,0.6);
-    overflow: hidden;
-    max-width: 560px;
-  }
-  .term-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 0.75rem;
-    background: rgba(26,26,26,0.5);
-    border-bottom: 1px solid var(--border);
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-  }
-  .term-dots { display: flex; gap: 4px; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .dot-r { background: #ff5f56; }
-  .dot-a { background: #ffbd2e; }
-  .dot-p { background: #27c93f; }
-  .term-body {
-    padding: 1rem 1.25rem;
+  /* ═══ TERMINAL CTA (inside pane system) ═══ */
+  .pane-cta .pane-body, .pane-status .pane-body {
     font-family: var(--font-head);
     font-size: 0.85rem;
   }
