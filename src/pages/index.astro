@@ -292,11 +292,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .page {
     max-width: 1200px;
     margin: 1rem auto;
-    border: 1px solid rgba(200,255,0,0.35);
+    border: 1px solid rgba(200,255,0,0.4);
     min-height: calc(100vh - 2rem);
     padding: 0;
     position: relative;
-    box-shadow: 0 0 20px rgba(200,255,0,0.03), inset 0 0 40px rgba(200,255,0,0.01);
+    box-shadow: 0 0 30px rgba(200,255,0,0.05), 0 0 60px rgba(200,255,0,0.02);
+  }
+  /* Corner accent brackets */
+  .page::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 1px solid transparent;
+    border-image: linear-gradient(
+      to bottom right,
+      rgba(200,255,0,0.6) 0%, rgba(200,255,0,0.1) 15%,
+      transparent 15%, transparent 85%,
+      rgba(200,255,0,0.1) 85%, rgba(200,255,0,0.6) 100%
+    ) 1;
+    pointer-events: none;
+    z-index: 1;
   }
   .page::before {
     content: '';
@@ -361,7 +376,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* HERO — two-column split on desktop */
   .hero-split {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 45% 55%;
     gap: 2rem;
     align-items: start;
   }
@@ -391,7 +406,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .boot-sequence { margin-bottom: 1.25rem; }
   .boot-line {
     font-family: var(--font-head);
-    font-size: clamp(0.4rem, 2.5vw, 0.55rem);
+    font-size: clamp(0.45rem, 2.5vw, 0.6rem);
     color: var(--text-dim);
     margin: 0;
     line-height: 1.8;
