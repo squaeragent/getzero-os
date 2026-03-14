@@ -41,12 +41,13 @@ export default async function handler(req, res) {
       })
     );
 
-    // Merge all batches
+    // Merge all batches — batch is the snapshot object { BTC: [...], ETH: [...] }
     const allData = {};
     for (const batch of batches) {
-      for (const [coin, indicators] of Object.entries(batch)) {
+      for (const [coin, coinIndicators] of Object.entries(batch)) {
+        if (!Array.isArray(coinIndicators)) continue; // skip non-coin keys
         const row = {};
-        for (const ind of indicators) {
+        for (const ind of coinIndicators) {
           row[ind.indicatorCode] = ind.value;
           if (!row._ts && ind.timestamp) row._ts = ind.timestamp;
         }
