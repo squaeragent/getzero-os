@@ -46,7 +46,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div class="hero-right">
       <div class="matrix-head">
-        <p class="section-label p">SIGNAL MATRIX — SIMULATION</p>
+        <p class="section-label p matrix-label">SIGNAL MATRIX — SIMULATION</p>
         <span class="matrix-status" id="matrix-status">scanning</span>
       </div>
       <div class="matrix-wrap">
@@ -1062,9 +1062,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 // ZERO OS — Canvas Heat Map Matrix (fully canvas-rendered)
 // ═══════════════════════════════════════════════════
 
-const ALL_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','OP','SUI','MATIC','NEAR','INJ'];
+const ALL_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','SUI','NEAR','INJ'];
 const isMobile = window.innerWidth < 640;
 const COINS = isMobile ? ALL_COINS.slice(0, 8) : ALL_COINS;
+let LIVE_DATA = null; // filled by Envy API fetch
 const COLS = isMobile ? ['TREND','PATTERN','CHAOS','FLOW'] : ['TREND','PATTERN','SENT','CHAOS','FLOW'];
 const NC = COLS.length;
 const ROW_H = isMobile ? 34 : 30;
@@ -1122,9 +1123,7 @@ const SEEDS = {
   AVAX: {h:[.36,.44], d:[.37,.45], s:[-.3,.3],  ly:[.20,.50], fl:[-1.2,1.2]},
   LINK: {h:[.48,.54], d:[.48,.54], s:[-.2,.25], ly:[.12,.40], fl:[-.9,1.0]},
   ARB:  {h:[.56,.64], d:[.38,.46], s:[-.4,.4],  ly:[.30,.60], fl:[-1.8,1.8]},
-  OP:   {h:[.37,.45], d:[.56,.64], s:[-.3,.35], ly:[.25,.55], fl:[-1.5,1.5]},
   SUI:  {h:[.58,.68], d:[.56,.65], s:[-.4,.5],  ly:[.25,.60], fl:[-1.8,2.0]},
-  MATIC:{h:[.48,.54], d:[.47,.53], s:[-.2,.25], ly:[.12,.38], fl:[-.8,.8]},
   NEAR: {h:[.55,.63], d:[.54,.62], s:[-.35,.4], ly:[.22,.55], fl:[-1.5,1.8]},
   INJ:  {h:[.42,.50], d:[.44,.52], s:[-.5,.6],  ly:[.65,.90], fl:[-2.2,2.2]}
 };
@@ -1135,10 +1134,58 @@ const COL_MAP = COLS.map(c=>({TREND:0,PATTERN:1,SENT:2,CHAOS:3,FLOW:4}[c]));
 function initData(){
   COINS.forEach(coin=>{
     const s=SEEDS[coin];
-    const full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
+    let full;
+    if(LIVE_DATA && LIVE_DATA[coin]){
+      const ld=LIVE_DATA[coin];
+      const h=ld.HURST_24H!=null?ld.HURST_24H:rnd(s.h[0],s.h[1]);
+      const d=ld.DFA_24H!=null?ld.DFA_24H:rnd(s.d[0],s.d[1]);
+      const sent=ld.XONE_AVG_NET!=null?(ld.XONE_AVG_NET/100):rnd(s.s[0],s.s[1]);
+      const ly=ld.LYAPUNOV_24H!=null?Math.min(ld.LYAPUNOV_24H,2)/2:rnd(s.ly[0],s.ly[1]);
+      const fl=ld.ROC_3H!=null?ld.ROC_3H:rnd(s.fl[0],s.fl[1]);
+      full=[h,d,sent,ly,fl];
+      // Override seed ranges to center on real values for smooth animation
+      s.h=[Math.max(0,h-.06),Math.min(1,h+.06)];
+      s.d=[Math.max(0,d-.06),Math.min(1,d+.06)];
+      s.s=[sent-.15,sent+.15];
+      s.ly=[Math.max(0,ly-.08),Math.min(1,ly+.08)];
+      s.fl=[fl-1,fl+1];
+    } else {
+      full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
+    }
     const v=COL_MAP.map(i=>full[i]);
     S.data.push({coin,v:[...v],t:[...v],full:[...full],reg:regime(full[0],full[1],full[3]),rt:0,seeds:s});
   });
+}
+
+async function fetchLiveData(){
+  try{
+    const r=await fetch('/api/envy');
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!d.live||!d.matrix)return;
+    LIVE_DATA=d.matrix;
+    // Update existing data targets with live values
+    S.data.forEach(row=>{
+      const ld=LIVE_DATA[row.coin];
+      if(!ld)return;
+      const h=ld.HURST_24H!=null?ld.HURST_24H:row.full[0];
+      const df=ld.DFA_24H!=null?ld.DFA_24H:row.full[1];
+      const sent=ld.XONE_AVG_NET!=null?(ld.XONE_AVG_NET/100):row.full[2];
+      const ly=ld.LYAPUNOV_24H!=null?Math.min(ld.LYAPUNOV_24H,2)/2:row.full[3];
+      const fl=ld.ROC_3H!=null?ld.ROC_3H:row.full[4];
+      row.full=[h,df,sent,ly,fl];
+      row.t=COL_MAP.map(i=>row.full[i]);
+      row.seeds.h=[Math.max(0,h-.04),Math.min(1,h+.04)];
+      row.seeds.d=[Math.max(0,df-.04),Math.min(1,df+.04)];
+      row.seeds.s=[sent-.1,sent+.1];
+      row.seeds.ly=[Math.max(0,ly-.05),Math.min(1,ly+.05)];
+      row.seeds.fl=[fl-.5,fl+.5];
+      row.reg=regime(h,df,ly);
+    });
+    // Update label
+    const lbl=document.querySelector('.matrix-label');
+    if(lbl&&!lbl.textContent.includes('LIVE')){lbl.innerHTML='SIGNAL MATRIX — <span class="p">LIVE</span>';}
+  }catch(e){console.warn('Envy API unavailable, using simulation',e);}
 }
 
 function setup(){
@@ -1369,10 +1416,21 @@ function resize(){
   S.w=w; S.h=h; S.colW=(w-S.coinW-S.regW-PAD*2)/NC;
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async()=>{
+  // Try to fetch live data before initializing
+  try{
+    const r=await fetch('/api/envy');
+    if(r.ok){const d=await r.json();if(d.live&&d.matrix){
+      LIVE_DATA=d.matrix;
+      const lbl=document.querySelector('.matrix-label');
+      if(lbl)lbl.innerHTML='SIGNAL MATRIX — <span class="p">LIVE</span>';
+    }}
+  }catch(e){}
   initData(); setup();
   // Delay matrix animation start to sync with CSS boot sequence (1.7s entrance)
   setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 1500);
+  // Refresh live data every 5 minutes
+  setInterval(fetchLiveData, 300000);
 
   // ═══ CHARACTER-BY-CHARACTER BOOT TYPING ═══
   function typeBootLine(el, delay) {
@@ -1465,7 +1523,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   ];
   let rvScene = rvScenarios[Math.floor(Math.random()*rvScenarios.length)];
   let rvSceneTimer = 120 + Math.floor(Math.random()*200);
-  const rvState = { h: 0.5, d: 0.5, ly: 0.3, ht: 0.5, dt: 0.5, lt: 0.3 };
+  // Init from live BTC data if available
+  const btcLive = LIVE_DATA && LIVE_DATA.BTC;
+  const initH = btcLive && btcLive.HURST_24H != null ? btcLive.HURST_24H : 0.5;
+  const initD = btcLive && btcLive.DFA_24H != null ? btcLive.DFA_24H : 0.5;
+  const initLy = btcLive && btcLive.LYAPUNOV_24H != null ? Math.min(btcLive.LYAPUNOV_24H, 2)/2 : 0.3;
+  const rvState = { h: initH, d: initD, ly: initLy, ht: initH, dt: initD, lt: initLy };
+  // If live, override scenarios to oscillate near real values
+  if(btcLive){
+    rvScenarios.length=0;
+    rvScenarios.push({h:[initH-.04,initH+.04],d:[initD-.04,initD+.04],ly:[Math.max(0,initLy-.05),initLy+.05],label:'live'});
+    rvScene=rvScenarios[0];
+  }
   function rvTick() {
     rvSceneTimer--;
     if(rvSceneTimer<=0){
