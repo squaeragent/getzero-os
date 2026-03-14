@@ -20,7 +20,8 @@ export default async function handler(req, res) {
   }
 
   const coinBatch = BATCHES[batchIdx];
-  const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,CLOSE_PRICE_15M,RSI_3H30M,ADX_3H30M,ROC_24H,BB_POS_24H,XONE_AVG_NET';
+  // Max ~5 indicators per batch — API returns success:false with 9+
+  const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,CLOSE_PRICE_15M,RSI_3H30M';
 
   try {
     const response = await fetch(
