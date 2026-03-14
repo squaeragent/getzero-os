@@ -39,7 +39,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </header>
 
   <!-- LIVE SIGNAL MATRIX -->
-  <section class="section" id="signals">
+  <section class="section matrix-section" id="signals">
     <div class="matrix-head">
       <p class="section-label p">SIGNAL MATRIX — LIVE</p>
       <span class="matrix-status" id="matrix-status">scanning</span>
@@ -262,7 +262,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </span>
       </div>
       <div class="term-body">
-        <p class="term-line dim">$ zero-os --status</p>
+        <p class="term-line dim term-cursor">$ zero-os --status</p>
         <p class="term-line"><span class="p">&gt;</span> Regime detection engine: <span class="p">BUILT</span></p>
         <p class="term-line"><span class="p">&gt;</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
         <p class="term-line"><span class="p">&gt;</span> Seeking design partners — funds and desks who want first access.</p>
@@ -427,6 +427,131 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: border-color 0.15s, color 0.15s;
   }
   .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* ═══ ORCHESTRATED BOOT SEQUENCE ═══ */
+  .matrix-section {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: sectionIn 0.8s ease 2.4s both;
+  }
+  @keyframes sectionIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Number counter animation */
+  .counter-animate {
+    display: inline-block;
+    animation: counterPop 0.4s ease both;
+  }
+  @keyframes counterPop {
+    0% { opacity: 0; transform: translateY(8px) scale(0.8); }
+    60% { transform: translateY(-2px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Step/card stagger entrance */
+  .reveal.visible .step:nth-child(1),
+  .reveal.visible .mode:nth-child(1) { transition-delay: 0s; }
+  .reveal.visible .step:nth-child(2),
+  .reveal.visible .mode:nth-child(2) { transition-delay: 0.12s; }
+  .reveal.visible .step:nth-child(3),
+  .reveal.visible .mode:nth-child(3) { transition-delay: 0.24s; }
+  .reveal.visible .mode:nth-child(4) { transition-delay: 0.36s; }
+
+  .step, .mode {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.4s, box-shadow 0.4s;
+  }
+  .reveal.visible .step,
+  .reveal.visible .mode {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Custody items stagger */
+  .custody-item {
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .reveal.visible .custody-item:nth-child(1) { transition-delay: 0s; }
+  .reveal.visible .custody-item:nth-child(2) { transition-delay: 0.08s; }
+  .reveal.visible .custody-item:nth-child(3) { transition-delay: 0.16s; }
+  .reveal.visible .custody-item:nth-child(4) { transition-delay: 0.24s; }
+  .reveal.visible .custody-item:nth-child(5) { transition-delay: 0.32s; }
+  .reveal.visible .custody-item {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Hover micro-interactions */
+  .tilt-card {
+    transform: perspective(600px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.15s ease, border-color 0.4s, box-shadow 0.4s;
+    will-change: transform;
+  }
+  .step:hover, .mode:hover {
+    border-color: rgba(200,255,0,0.12);
+    box-shadow: 0 0 16px rgba(200,255,0,0.03);
+  }
+  .custody-item:hover .custody-num {
+    text-shadow: 0 0 8px var(--phosphor-glow);
+    transition: text-shadow 0.3s;
+  }
+
+  /* Edge row entrance */
+  .edge-row {
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .reveal.visible .edge-row:nth-child(1) { transition-delay: 0.1s; }
+  .reveal.visible .edge-row:nth-child(2) { transition-delay: 0.25s; }
+  .reveal.visible .edge-row {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Backtest table row entrance — only plays when parent section is visible */
+  .bt-table tbody tr {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  .reveal.visible .bt-table tbody tr {
+    animation: rowIn 0.3s ease both;
+  }
+  .reveal.visible .bt-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+  .reveal.visible .bt-table tbody tr:nth-child(2) { animation-delay: 0.09s; }
+  .reveal.visible .bt-table tbody tr:nth-child(3) { animation-delay: 0.13s; }
+  .reveal.visible .bt-table tbody tr:nth-child(4) { animation-delay: 0.17s; }
+  .reveal.visible .bt-table tbody tr:nth-child(5) { animation-delay: 0.21s; }
+  .reveal.visible .bt-table tbody tr:nth-child(6) { animation-delay: 0.25s; }
+  .reveal.visible .bt-table tbody tr:nth-child(7) { animation-delay: 0.29s; }
+  .reveal.visible .bt-table tbody tr:nth-child(8) { animation-delay: 0.33s; }
+  .reveal.visible .bt-table tbody tr:nth-child(9) { animation-delay: 0.37s; }
+  .reveal.visible .bt-table tbody tr:nth-child(10) { animation-delay: 0.41s; }
+  .reveal.visible .bt-table tbody tr:nth-child(11) { animation-delay: 0.45s; }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Terminal CTA typing cursor */
+  .term-line::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+  }
+  .term-cursor::after {
+    content: '█';
+    animation: blink 1s step-end infinite;
+    color: var(--phosphor);
+    font-weight: 400;
+  }
+  @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
 
   /* MATRIX */
   .matrix-head {
@@ -1158,8 +1283,9 @@ function resize(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  initData(); setup(); updateStatus();
-  requestAnimationFrame(frame);
+  initData(); setup();
+  // Delay matrix animation start to sync with CSS boot sequence (2.4s entrance)
+  setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 2200);
   window.addEventListener('resize',resize);
 
   // ═══ PROPOSAL E: SCROLL REVEAL ═══
