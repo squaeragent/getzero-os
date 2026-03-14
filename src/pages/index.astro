@@ -1169,12 +1169,12 @@ function initData(){
       const ly=ld.LYAPUNOV_24H!=null?Math.min(ld.LYAPUNOV_24H,2)/2:rnd(s.ly[0],s.ly[1]);
       const fl=ld.ROC_3H!=null?ld.ROC_3H:rnd(s.fl[0],s.fl[1]);
       full=[h,d,sent,ly,fl];
-      // Override seed ranges to center on real values for smooth animation
-      s.h=[Math.max(0,h-.06),Math.min(1,h+.06)];
-      s.d=[Math.max(0,d-.06),Math.min(1,d+.06)];
-      s.s=[sent-.15,sent+.15];
-      s.ly=[Math.max(0,ly-.08),Math.min(1,ly+.08)];
-      s.fl=[fl-1,fl+1];
+      // Seed ranges centered on real values — wide enough for visible movement
+      s.h=[Math.max(0,h-.12),Math.min(1,h+.12)];
+      s.d=[Math.max(0,d-.12),Math.min(1,d+.12)];
+      s.s=[sent-.25,sent+.25];
+      s.ly=[Math.max(0,ly-.15),Math.min(1,ly+.15)];
+      s.fl=[fl-2,fl+2];
     } else {
       full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
     }
@@ -1202,17 +1202,17 @@ async function fetchLiveData(){
       const fl=ld.ROC_3H!=null?ld.ROC_3H:row.full[4];
       row.full=[h,df,sent,ly,fl];
       row.t=COL_MAP.map(i=>row.full[i]);
-      row.seeds.h=[Math.max(0,h-.04),Math.min(1,h+.04)];
-      row.seeds.d=[Math.max(0,df-.04),Math.min(1,df+.04)];
-      row.seeds.s=[sent-.1,sent+.1];
-      row.seeds.ly=[Math.max(0,ly-.05),Math.min(1,ly+.05)];
-      row.seeds.fl=[fl-.5,fl+.5];
+      row.seeds.h=[Math.max(0,h-.12),Math.min(1,h+.12)];
+      row.seeds.d=[Math.max(0,df-.12),Math.min(1,df+.12)];
+      row.seeds.s=[sent-.25,sent+.25];
+      row.seeds.ly=[Math.max(0,ly-.15),Math.min(1,ly+.15)];
+      row.seeds.fl=[fl-2,fl+2];
       row.reg=regime(h,df,ly);
       row.liveLocked=true;
     });
     // Update label
     const lbl=document.querySelector('.matrix-label');
-    if(lbl&&!lbl.textContent.includes('LIVE')){lbl.innerHTML='SIGNAL MATRIX — <span class="p">LIVE</span>';}
+    if(lbl){lbl.innerHTML='SIGNAL MATRIX — <span class="p">DEMO</span>';}
     // Update verdict bar
     updateVerdict();
   }catch(e){console.warn('Envy API unavailable, using simulation',e);}
@@ -1437,9 +1437,7 @@ function tick(){
       d.full[fi]=nt; // keep full array in sync
     }
     d.rt--;
-    // Only recalculate regime from animated values if NOT using live data
-    // Live data regime is locked at init — don't let drift change it
-    if(d.rt<=0&&!d.liveLocked){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
+    if(d.rt<=0){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
   });
 }
 
