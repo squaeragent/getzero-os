@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     if (!data.snapshot) {
-      return res.status(200).json({ batch: batchIdx, coins: {}, error: data.error });
+      return res.status(200).json({ batch: batchIdx, coins: {}, error: data.error, _debug: { status: response.status, keys: Object.keys(data) } });
     }
 
     // Transform snapshot + compute regime
@@ -62,6 +62,6 @@ export default async function handler(req, res) {
       coins
     });
   } catch (err) {
-    return res.status(500).json({ batch: batchIdx, error: err.message, coins: {} });
+    return res.status(200).json({ batch: batchIdx, error: err.message, coins: {}, _errType: err.constructor.name });
   }
 }
