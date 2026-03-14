@@ -174,7 +174,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <th>RETURN</th>
             <th>WIN RATE</th>
             <th>MAX DD</th>
-            <th class="bt-hide-mobile">WORST CASE</th>
+            <th class="bt-hide-mobile">p5 RETURN*</th>
           </tr>
         </thead>
         <tbody>
@@ -193,6 +193,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </table>
     </div>
 
+    <p class="bt-footnote dim reveal-child">* p5 = 5th percentile of Monte Carlo simulations. 95% of outcomes were better than this number.</p>
+
     <div class="bt-highlights reveal-child">
       <div class="bt-stat tilt-card">
         <div class="bt-stat-val p">14/15</div>
@@ -209,32 +211,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- TOKEN ECONOMY -->
+  <!-- COMPUTE -->
   <section class="section reveal">
-    <p class="section-label p reveal-child">TOKEN ECONOMY</p>
-    <h2 class="section-title reveal-child">Launch your token. Use it to pay for compute.</h2>
+    <p class="section-label p reveal-child">COMPUTE</p>
+    <h2 class="section-title reveal-child">Pay for intelligence with your wallet</h2>
 
-    <div class="token-flow reveal-child">
-      <div class="tf-step tilt-card">
-        <span class="tf-icon p">⬡</span>
-        <h3 class="tf-title">Launch</h3>
-        <p class="tf-desc dim">Launch your own token through ZERO OS. On-chain, permissionless, yours.</p>
-      </div>
-      <div class="tf-arrow p">→</div>
-      <div class="tf-step tilt-card">
-        <span class="tf-icon a">⚡</span>
-        <h3 class="tf-title">Compute</h3>
-        <p class="tf-desc dim">Use your token to pay for intelligence feeds — regime detection, signals, MC simulations, strategy updates.</p>
-      </div>
-      <div class="tf-arrow p">→</div>
-      <div class="tf-step tilt-card">
-        <span class="tf-icon ice">∞</span>
-        <h3 class="tf-title">Compound</h3>
-        <p class="tf-desc dim">Agent trades → profits → reinvests in compute → better signals → better trades. The loop closes itself.</p>
-      </div>
+    <div class="compute-desc reveal-child">
+      <p class="dim" style="font-size: 0.65rem; line-height: 1.7; max-width: 500px;">Observe mode is free. Signal, Semi-Auto, and Auto modes consume compute — regime detection, Monte Carlo simulations, strategy updates. Pay directly from your wallet with any token. No subscriptions. No fiat. Crypto-native.</p>
     </div>
-
-    <p class="tf-note dim reveal-child">No subscriptions. No fiat. Your token IS the payment. Crypto-native infrastructure for crypto-native traders.</p>
   </section>
 
   <!-- SELF-CUSTODIAL -->
@@ -651,6 +635,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .bt-table th, .bt-table td { padding: 0.35rem 0.4rem; }
   }
 
+  .bt-footnote { font-size: 0.5rem; line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+
   /* BACKTEST HIGHLIGHTS */
   .bt-highlights {
     display: grid;
@@ -734,40 +720,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .mode-desc { font-size: 0.55rem; line-height: 1.6; }
 
-  /* ═══ TOKEN ECONOMY ═══ */
-  .token-flow {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  @media (max-width: 639px) {
-    .token-flow { flex-direction: column; align-items: stretch; }
-    .tf-arrow { text-align: center; transform: rotate(90deg); }
-  }
-  .tf-step {
-    flex: 1;
-    border: 1px solid var(--border);
-    padding: 1rem;
-    text-align: center;
-  }
-  .tf-icon { font-size: 1.5rem; display: block; margin-bottom: 0.5rem; }
-  .tf-title {
-    font-family: var(--font-head);
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.3rem;
-  }
-  .tf-desc { font-size: 0.55rem; line-height: 1.6; }
-  .tf-arrow {
-    font-family: var(--font-head);
-    font-size: 1.2rem;
-    font-weight: 700;
-    align-self: center;
-    flex-shrink: 0;
-  }
-  .tf-note { font-size: 0.6rem; line-height: 1.7; font-style: italic; max-width: 500px; }
+  /* ═══ COMPUTE ═══ */
+  .compute-desc { margin-bottom: 0.5rem; }
 
   /* ═══ SELF-CUSTODIAL ═══ */
   .custody-grid {
