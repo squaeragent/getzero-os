@@ -6,53 +6,65 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <div class="page">
 
-  <!-- CRT BOOT -->
-  <header class="hero">
-    <div class="boot-sequence">
-      <pre class="boot-line b1" data-text="ZERO OS v0.1 .................... BOOT"></pre>
-      <pre class="boot-line b2" data-text="ENVY MATRIX .................... ACTIVE"></pre>
-      <pre class="boot-line b3" data-text="PORTFOLIO ENGINE ............... SELF-CUSTODIAL"></pre>
+  <!-- TERMINAL TITLEBAR -->
+  <div class="term-titlebar">
+    <div class="titlebar-dots">
+      <span class="td-r"></span>
+      <span class="td-a"></span>
+      <span class="td-g"></span>
     </div>
+    <span class="titlebar-path">zero-os@getzero.dev:~$</span>
+  </div>
 
-    <div class="logo-wrap">
-      <pre class="logo-art">████████╗ ███████╗ ██████╗   ██████╗
+  <div class="page-inner">
+
+  <!-- CRT BOOT + MATRIX (two-column hero) -->
+  <header class="hero hero-split">
+    <div class="hero-left">
+      <div class="boot-sequence">
+        <pre class="boot-line b1" data-text="ZERO OS v0.1 .................... BOOT"></pre>
+        <pre class="boot-line b2" data-text="ENVY MATRIX .................... ACTIVE"></pre>
+        <pre class="boot-line b3" data-text="PORTFOLIO ENGINE ............... SELF-CUSTODIAL"></pre>
+      </div>
+
+      <div class="logo-wrap">
+        <pre class="logo-art">████████╗ ███████╗ ██████╗   ██████╗
 ╚══███╔═╝ ██╔════╝ ██╔══██╗ ██╔═══██╗
   ███╔╝   █████╗   ██████╔╝ ██║   ██║
  ███╔╝    ██╔══╝   ██╔══██╗ ██║   ██║
 ████████╗ ███████╗ ██║  ██║ ╚██████╔╝
 ╚═══════╝ ╚══════╝ ╚═╝  ╚═╝  ╚═════╝</pre>
-      <div class="crt-scanline"></div>
+        <div class="crt-scanline"></div>
+      </div>
+
+      <h1 class="hero-title">AI trades better than you.<br>And you're OK with it.</h1>
+
+      <p class="hero-sub">
+        79 dimensions of market intelligence. Self-custodial.<br>
+        Every other trading bot reads 5 indicators and guesses. This one doesn't guess.
+      </p>
+
+      <p class="hero-tertiary">Agent · Skill · CLI — works with OpenClaw, Claude Code, Perplexity Computer</p>
+
+      <div class="hero-cta">
+        <a href="#access" class="btn-primary">Request Early Access →</a>
+        <a href="/thesis" class="btn-ghost">Read the thesis →</a>
+      </div>
     </div>
 
-    <h1 class="hero-title">AI trades better than you.<br>And you're OK with it.</h1>
-
-    <p class="hero-sub">
-      79 dimensions of market intelligence. Self-custodial.<br>
-      Every other trading bot reads 5 indicators and guesses. This one doesn't guess.
-    </p>
-
-    <p class="hero-tertiary">Agent · Skill · CLI — works with OpenClaw, Claude Code, Perplexity Computer</p>
-
-    <div class="hero-cta">
-      <a href="#access" class="btn-primary">Request Early Access →</a>
-      <a href="/thesis" class="btn-ghost">Read the thesis →</a>
+    <div class="hero-right">
+      <div class="matrix-head">
+        <p class="section-label p">SIGNAL MATRIX — DEMO</p>
+        <span class="matrix-status" id="matrix-status">scanning</span>
+      </div>
+      <div class="matrix-wrap">
+        <canvas id="matrix-canvas"></canvas>
+      </div>
     </div>
   </header>
 
-  <!-- LIVE SIGNAL MATRIX -->
-  <section class="section matrix-section" id="signals">
-    <div class="matrix-head">
-      <p class="section-label p">SIGNAL MATRIX — DEMO</p>
-      <span class="matrix-status" id="matrix-status">scanning</span>
-    </div>
-    <div class="matrix-wrap">
-      <canvas id="matrix-canvas"></canvas>
-    </div>
-  </section>
-
-  <!-- PROOF (backtest moved up — most persuasive asset) -->
+  <!-- PROOF -->
   <section class="section reveal" id="proof">
-  <section class="section reveal">
     <p class="section-label a reveal-child">MONTE CARLO BACKTEST</p>
     <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
     <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets, 12 months of historical data, 10,000 runs per coin. Includes 0.1% taker fees and 0.05% slippage per trade. The agent only enters when market conditions confirm the strategy applies.</p>
@@ -159,62 +171,60 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- MODES (gradient progression) -->
+  <!-- MODES + AGENT (two-column) -->
   <section class="section reveal">
-    <p class="section-label a reveal-child">MODES</p>
-    <h2 class="section-title reveal-child">You choose the level of autonomy</h2>
-
-    <div class="mode-gradient reveal-child">
-      <div class="mode-step" style="--mode-opacity: 0.4">
-        <div class="mode-bar"></div>
-        <div class="mode-content">
-          <span class="mode-label dim">OBSERVE</span>
-          <span class="mode-meta dim">FREE</span>
+    <div class="dual-grid">
+      <div class="dual-col">
+        <p class="section-label a reveal-child">MODES</p>
+        <h2 class="section-title reveal-child">You choose the autonomy level</h2>
+        <div class="mode-gradient reveal-child">
+          <div class="mode-step" style="--mode-opacity: 0.4">
+            <div class="mode-bar"></div>
+            <div class="mode-content">
+              <span class="mode-label dim">OBSERVE</span>
+              <span class="mode-meta dim">FREE</span>
+            </div>
+            <p class="mode-desc-inline dim">Watch the agent think. No trades.</p>
+          </div>
+          <div class="mode-step" style="--mode-opacity: 0.6">
+            <div class="mode-bar a"></div>
+            <div class="mode-content">
+              <span class="mode-label a">SIGNAL</span>
+              <span class="mode-meta dim">COMPUTE</span>
+            </div>
+            <p class="mode-desc-inline dim">Agent generates signals. You execute.</p>
+          </div>
+          <div class="mode-step" style="--mode-opacity: 0.8">
+            <div class="mode-bar ice"></div>
+            <div class="mode-content">
+              <span class="mode-label ice">SEMI-AUTO</span>
+              <span class="mode-meta dim">COMPUTE</span>
+            </div>
+            <p class="mode-desc-inline dim">Agent prepares trades. One tap to approve.</p>
+          </div>
+          <div class="mode-step" style="--mode-opacity: 1">
+            <div class="mode-bar p"></div>
+            <div class="mode-content">
+              <span class="mode-label p">AUTO</span>
+              <span class="mode-meta p">FULL AUTONOMY</span>
+            </div>
+            <p class="mode-desc-inline dim">24/7 portfolio management within your risk parameters.</p>
+          </div>
         </div>
-        <p class="mode-desc-inline dim">Watch the agent think. No trades. Training wheels.</p>
       </div>
-      <div class="mode-step" style="--mode-opacity: 0.6">
-        <div class="mode-bar a"></div>
-        <div class="mode-content">
-          <span class="mode-label a">SIGNAL</span>
-          <span class="mode-meta dim">COMPUTE</span>
+      <div class="dual-col">
+        <p class="section-label ice reveal-child">THE AGENT</p>
+        <h2 class="section-title reveal-child">Three ways to run</h2>
+        <div class="agent-list reveal-child">
+          <p class="agent-point dim"><span class="p">AGENT</span> — Ships with OpenClaw runtime. Install, configure, trade. No existing AI setup needed.</p>
+          <p class="agent-point dim"><span class="p">SKILL</span> — Plug into OpenClaw, Claude Code, Perplexity Computer, or any agentic framework.</p>
+          <p class="agent-point dim"><span class="p">CLI</span> — Direct command-line control. Script it, automate it, integrate it.</p>
         </div>
-        <p class="mode-desc-inline dim">Agent generates buy/sell signals. You execute manually.</p>
-      </div>
-      <div class="mode-step" style="--mode-opacity: 0.8">
-        <div class="mode-bar ice"></div>
-        <div class="mode-content">
-          <span class="mode-label ice">SEMI-AUTO</span>
-          <span class="mode-meta dim">COMPUTE</span>
+        <div class="custody-list reveal-child">
+          <p class="agent-point dim"><span class="p">✓</span> Keys managed locally, encrypted at rest</p>
+          <p class="agent-point dim"><span class="p">✓</span> Kill switch — pause everything instantly</p>
+          <p class="agent-point dim"><span class="p">✓</span> Built-in position limits and daily loss caps</p>
         </div>
-        <p class="mode-desc-inline dim">Agent prepares trades. One tap to approve. Kill switch.</p>
-      </div>
-      <div class="mode-step" style="--mode-opacity: 1">
-        <div class="mode-bar p"></div>
-        <div class="mode-content">
-          <span class="mode-label p">AUTO</span>
-          <span class="mode-meta p">FULL AUTONOMY</span>
-        </div>
-        <p class="mode-desc-inline dim">Portfolio management, rebalancing, position sizing — 24/7, within your risk parameters.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- THE AGENT (compact: install + self-custodial merged) -->
-  <section class="section reveal">
-    <p class="section-label ice reveal-child">THE AGENT</p>
-    <h2 class="section-title reveal-child">Three ways to run. One intelligence.</h2>
-
-    <div class="agent-grid reveal-child">
-      <div class="agent-col">
-        <p class="agent-point dim"><span class="p">AGENT</span> — Ships with OpenClaw runtime. Install, configure, trade. No existing AI setup needed.</p>
-        <p class="agent-point dim"><span class="p">SKILL</span> — Plug into OpenClaw, Claude Code, Perplexity Computer, or any agentic framework. Your existing agent gets trading intelligence.</p>
-        <p class="agent-point dim"><span class="p">CLI</span> — Direct command-line control. Script it, automate it, integrate it into your own stack.</p>
-      </div>
-      <div class="agent-col">
-        <p class="agent-point dim"><span class="p">✓</span> Keys managed locally, encrypted at rest</p>
-        <p class="agent-point dim"><span class="p">✓</span> Kill switch — pause everything instantly</p>
-        <p class="agent-point dim"><span class="p">✓</span> Built-in position limits and daily loss caps</p>
       </div>
     </div>
   </section>
@@ -273,27 +283,53 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <span class="p">◇</span> <span class="dim">ZERO OS</span>
   </footer>
 
+  </div><!-- /page-inner -->
 </div>
 
 </BaseLayout>
 
 <style>
   .page {
-    max-width: 960px;
+    max-width: 1200px;
     margin: 1rem auto;
-    border: 1px solid rgba(200,255,0,0.15);
+    border: 1px solid rgba(200,255,0,0.35);
     min-height: calc(100vh - 2rem);
-    padding: 2rem 3rem;
+    padding: 0;
     position: relative;
+    box-shadow: 0 0 20px rgba(200,255,0,0.03), inset 0 0 40px rgba(200,255,0,0.01);
   }
   .page::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(200,255,0,0.008) 2px, rgba(200,255,0,0.008) 4px);
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(200,255,0,0.012) 2px, rgba(200,255,0,0.012) 4px);
     pointer-events: none;
     z-index: 0;
   }
+  /* Terminal window title bar */
+  .term-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(200,255,0,0.03);
+    border-bottom: 1px solid rgba(200,255,0,0.15);
+    font-family: var(--font-head);
+    font-size: 0.45rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+  }
+  .titlebar-dots { display: flex; gap: 5px; }
+  .titlebar-dots span { width: 8px; height: 8px; border-radius: 50%; }
+  .titlebar-dots .td-r { background: #ff5f56; }
+  .titlebar-dots .td-a { background: #ffbd2e; }
+  .titlebar-dots .td-g { background: #27c93f; }
+  .titlebar-path { flex: 1; text-align: center; opacity: 0.6; }
+  .page-inner { padding: 2rem 3rem; }
 
   /* CRT */
   body::before {
@@ -306,7 +342,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   @media (max-width: 639px) {
     body::before { opacity: 0.5; }
-    .page { margin: 0.5rem auto; padding: 1.25rem 1rem; min-height: calc(100vh - 1rem); }
+    .page { margin: 0; border: none; min-height: 100vh; }
+    .page-inner { padding: 1.25rem 1rem; }
+    .term-titlebar { display: none; }
   }
   body::after {
     content: '';
@@ -320,7 +358,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     body::after { display: none; }
   }
 
-  /* HERO */
+  /* HERO — two-column split on desktop */
+  .hero-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .hero-split { grid-template-columns: 1fr; }
+  }
+  .hero-left { }
+  .hero-right { 
+    padding-top: 1rem;
+  }
+  /* Dual-column layout for modes + agent */
+  .dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  @media (max-width: 900px) {
+    .dual-grid { grid-template-columns: 1fr; }
+  }
+  .dual-col { }
+  .agent-list { margin-bottom: 1.25rem; }
+  .custody-list { 
+    border-top: 1px solid var(--border); 
+    padding-top: 1rem; 
+  }
   .hero { padding: 2.5rem 0 2rem; border-bottom: 1px solid var(--border); }
   .boot-sequence { margin-bottom: 1.25rem; }
   .boot-line {
@@ -464,7 +530,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   /* ═══ ORCHESTRATED BOOT SEQUENCE ═══ */
-  .matrix-section {
+  .hero-right {
     opacity: 0;
     transform: translateY(12px);
     animation: sectionIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.7s both;
@@ -876,13 +942,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .mode-label { font-size: 0.8rem; }
   }
 
-  /* ═══ AGENT (merged install + custody) ═══ */
-  .agent-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 2rem;
-  }
-  @media (max-width: 639px) { .agent-grid { grid-template-columns: 1fr; } }
+  /* ═══ AGENT ═══ */
   .agent-point {
     font-size: 0.6rem;
     line-height: 1.7;
