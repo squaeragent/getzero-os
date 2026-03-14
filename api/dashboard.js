@@ -23,13 +23,21 @@ export default async function handler(req, res) {
   try {
     const batches = await Promise.all(
       allCoins.map(async (coinBatch) => {
-        const response = await fetch(
-          `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
-          { headers: { 'X-API-Key': API_KEY } }
-        );
-        if (!response.ok) return {};
-        const data = await response.json();
-        return data.snapshot || {};
+        try {
+          const response = await fetch(
+            `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
+            { headers: { 'X-API-Key': API_KEY } }
+          );
+          const data = await response.json();
+          if (data.error) {
+            console.error('Batch error:', coinBatch, data.error);
+            return {};
+          }
+          return data.snapshot || {};
+        } catch (e) {
+          console.error('Batch fetch failed:', coinBatch, e.message);
+          return {};
+        }
       })
     );
 
@@ -62,10 +70,30 @@ export default async function handler(req, res) {
       }
     }
 
+    const coinCount = Object.keys(allData).length;
+    if (coinCount === 0) {
+      // Debug: try single fetch to diagnose
+      try {
+        const debugResp = await fetch(
+          'https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=BTC&indicators=HURST_24H',
+          { headers: { 'X-API-Key': API_KEY } }
+        );
+        const debugData = await debugResp.json();
+        return res.status(200).json({
+          live: false,
+          debug: { status: debugResp.status, keys: Object.keys(debugData), hasSnapshot: !!debugData.snapshot },
+          timestamp: new Date().toISOString(),
+          coinCount: 0,
+          coins: {}
+        });
+      } catch (de) {
+        return res.status(200).json({ live: false, debug: { error: de.message }, coinCount: 0, coins: {} });
+      }
+    }
     return res.status(200).json({
       live: true,
       timestamp: new Date().toISOString(),
-      coinCount: Object.keys(allData).length,
+      coinCount,
       coins: allData
     });
   } catch (err) {
