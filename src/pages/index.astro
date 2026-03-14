@@ -591,7 +591,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* regime badge animations handled in canvas via opacity cycling */
 
   /* SECTIONS */
-  .section { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
+  .section { padding: 2.5rem 0; border-bottom: 1px solid transparent; }
+  .section.visible { border-bottom-color: var(--border); }
   .section-label {
     font-family: var(--font-head);
     font-size: 0.55rem;
@@ -866,9 +867,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-items: center;
     gap: 1rem;
     padding: 1.5rem 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid transparent;
     flex-wrap: wrap;
   }
+  .mid-cta.visible { border-bottom-color: var(--border); }
   .mid-cta-note { font-size: 0.55rem; line-height: 1.6; }
   @media (max-width: 639px) {
     .mid-cta { flex-direction: column; align-items: flex-start; }
