@@ -54,7 +54,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="section reveal">
     <p class="section-label a reveal-child">MONTE CARLO BACKTEST</p>
     <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
-    <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets. Median returns, worst-case scenarios, and drawdown limits — all from the Envy Matrix regime detection engine.</p>
+    <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets, 12 months of historical data, 10,000 runs per coin. Includes 0.1% taker fees and 0.05% slippage per trade. Regime-aware position sizing — the agent only enters when Hurst/DFA confirm the strategy matches the current market state.</p>
     
     <div class="bt-table-wrap reveal-child">
       <table class="bt-table">
@@ -100,6 +100,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
   </section>
+
+  <!-- MID-PAGE CTA -->
+  <div class="mid-cta reveal">
+    <a href="#access" class="btn-primary">Become a design partner →</a>
+    <span class="mid-cta-note dim">We're onboarding funds and desks who want first access to regime-aware trading.</span>
+  </div>
 
   <!-- THE INTELLIGENCE -->
   <section class="section reveal">
@@ -211,6 +217,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
+  <!-- CREDIBILITY -->
+  <section class="section reveal">
+    <p class="section-label dim reveal-child">BUILT BY</p>
+    <div class="cred-grid reveal-child">
+      <p class="cred-line dim">Product and quantitative engineering team with experience shipping trading infrastructure, exchange integrations, and ML systems at scale.</p>
+      <div class="cred-signals">
+        <span class="cred-signal"><span class="p">◇</span> Backtest methodology: <a href="/thesis" style="color:var(--phosphor);">/thesis</a></span>
+        <span class="cred-signal"><span class="p">◇</span> Real Monte Carlo data — not simulated marketing</span>
+        <span class="cred-signal"><span class="p">◇</span> Self-custodial: your keys, your machine, verifiable</span>
+      </div>
+    </div>
+  </section>
+
   <!-- TERMINAL CTA (with status merged) -->
   <section class="section cta-section reveal" id="access">
     <div class="term-cta reveal-child">
@@ -226,7 +245,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <p class="term-line dim term-cursor">$ zero-os --status</p>
         <p class="term-line"><span class="p">&gt;</span> Regime detection engine: <span class="p">BUILT</span></p>
         <p class="term-line"><span class="p">&gt;</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
-        <p class="term-line"><span class="p">&gt;</span> Seeking design partners — funds and desks who want first access.</p>
+        <p class="term-line"><span class="p">&gt;</span> Onboarding design partners — funds and trading desks who want regime-aware execution.</p>
         <p class="term-line dim" style="margin-top:0.5rem">$ zero-os request_access</p>
         <form class="term-form" id="access-form" action="#" method="POST">
           <div class="term-input-row">
@@ -835,7 +854,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .agent-point span { margin-right: 0.3rem; }
 
-  /* (compute + custody removed — merged into agent section) */
+  /* ═══ MID-PAGE CTA ═══ */
+  .mid-cta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .mid-cta-note { font-size: 0.55rem; line-height: 1.6; }
+  @media (max-width: 639px) {
+    .mid-cta { flex-direction: column; align-items: flex-start; }
+    .mid-cta .btn-primary { width: 100%; text-align: center; }
+  }
+
+  /* ═══ CREDIBILITY ═══ */
+  .cred-grid { max-width: 500px; }
+  .cred-line { font-size: 0.65rem; line-height: 1.7; margin-bottom: 0.75rem; }
+  .cred-signals { display: flex; flex-direction: column; gap: 0.3rem; }
+  .cred-signal { font-size: 0.55rem; line-height: 1.6; color: var(--text-dim); }
 
   /* ═══ PROPOSAL I: TILT HOVER ═══ */
   .tilt-card {
