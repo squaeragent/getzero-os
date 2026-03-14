@@ -1153,7 +1153,8 @@ function initData(){
       full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
     }
     const v=COL_MAP.map(i=>full[i]);
-    S.data.push({coin,v:[...v],t:[...v],full:[...full],reg:regime(full[0],full[1],full[3]),rt:0,seeds:s});
+    const isLive = LIVE_DATA && LIVE_DATA[coin];
+    S.data.push({coin,v:[...v],t:[...v],full:[...full],reg:regime(full[0],full[1],full[3]),rt:0,seeds:s,liveLocked:!!isLive});
   });
 }
 
@@ -1181,6 +1182,7 @@ async function fetchLiveData(){
       row.seeds.ly=[Math.max(0,ly-.05),Math.min(1,ly+.05)];
       row.seeds.fl=[fl-.5,fl+.5];
       row.reg=regime(h,df,ly);
+      row.liveLocked=true;
     });
     // Update label
     const lbl=document.querySelector('.matrix-label');
@@ -1377,7 +1379,9 @@ function tick(){
       d.full[fi]=nt; // keep full array in sync
     }
     d.rt--;
-    if(d.rt<=0){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
+    // Only recalculate regime from animated values if NOT using live data
+    // Live data regime is locked at init — don't let drift change it
+    if(d.rt<=0&&!d.liveLocked){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
   });
 }
 
