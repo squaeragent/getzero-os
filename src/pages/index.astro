@@ -27,8 +27,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h1 class="hero-title">Your AI. Your keys.<br>Your trades.</h1>
 
     <p class="hero-sub">
-      A self-custodial trading agent with intelligence no other agent has. 
-      Run it standalone with ZERO OS, install it as a skill into OpenClaw, Claude Code, or Perplexity Computer, or control it from the CLI.
+      A self-custodial trading agent that reads market conditions before reading indicators.<br>
+      Run it standalone. Install it as a skill into OpenClaw, Claude Code, or Perplexity Computer.<br>
+      Or control it from the CLI.
     </p>
 
     <p class="hero-tertiary">Agent · Skill · CLI — runs anywhere</p>
@@ -42,7 +43,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <!-- LIVE SIGNAL MATRIX -->
   <section class="section matrix-section" id="signals">
     <div class="matrix-head">
-      <p class="section-label p">SIGNAL MATRIX — LIVE</p>
+      <p class="section-label p">SIGNAL MATRIX — DEMO</p>
       <span class="matrix-status" id="matrix-status">scanning</span>
     </div>
     <div class="matrix-wrap">
@@ -55,7 +56,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="section reveal">
     <p class="section-label a reveal-child">MONTE CARLO BACKTEST</p>
     <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
-    <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets, 12 months of historical data, 10,000 runs per coin. Includes 0.1% taker fees and 0.05% slippage per trade. Regime-aware position sizing — the agent only enters when Hurst/DFA confirm the strategy matches the current market state.</p>
+    <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets, 12 months of historical data, 10,000 runs per coin. Includes 0.1% taker fees and 0.05% slippage per trade. The agent only enters when market conditions confirm the strategy applies.</p>
     
     <div class="bt-table-wrap reveal-child">
       <table class="bt-table">
@@ -112,6 +113,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="section reveal">
     <p class="section-label p reveal-child">WHY IT'S SMARTER</p>
     <h2 class="section-title reveal-child">Your agent sees what others can't.</h2>
+    <p class="intel-explain dim reveal-child">Markets shift between states — trending, choppy, chaotic, calm. A signal that works in one state is a trap in another. ZERO reads the state first.</p>
 
     <div class="edge-contrast reveal-child">
       <div class="edge-row">
@@ -244,7 +246,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
       <div class="term-body">
         <p class="term-line dim term-cursor">$ zero-os --status</p>
-        <p class="term-line"><span class="p">&gt;</span> Regime detection engine: <span class="p">BUILT</span></p>
+        <p class="term-line"><span class="p">&gt;</span> Intelligence engine: <span class="p">BUILT</span></p>
         <p class="term-line"><span class="p">&gt;</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
         <p class="term-line"><span class="p">&gt;</span> Onboarding design partners — funds, desks, and builders who want first access.</p>
         <p class="term-line dim" style="margin-top:0.5rem">$ zero-os request_access</p>
@@ -261,7 +263,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </p>
         <p class="term-error" id="term-error" style="display:none">
           <span class="red">✗ CONNECTION_ERROR</span><br>
-          <span class="dim">Try again or email <a href="mailto:degenie@getzero.dev" style="color:var(--phosphor);">degenie@getzero.dev</a> directly.</span>
+          <span class="dim">Try again later.</span>
         </p>
       </div>
     </div>
@@ -640,6 +642,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .reveal.visible .reveal-child:nth-child(6) { transition-delay: .44s; }
 
   /* ═══ EDGE CONTRAST ═══ */
+  .intel-explain {
+    font-family: var(--font-body);
+    font-size: 0.55rem;
+    line-height: 1.7;
+    max-width: 520px;
+    margin-bottom: 1.5rem;
+  }
   .edge-contrast { margin-bottom: 1.25rem; }
   .edge-row {
     display: flex;
