@@ -295,7 +295,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     pointer-events: none;
     z-index: 0;
   }
-  .page-inner { padding: 2rem 3rem; }
+  .page-inner { padding: 0.75rem 3rem 2rem; }
 
   /* CRT */
   body::before {
@@ -309,7 +309,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   @media (max-width: 639px) {
     body::before { opacity: 0.5; }
     .page { margin: 0.5rem auto; min-height: calc(100vh - 1rem); }
-    .page-inner { padding: 1.25rem 1rem; }
+    .page-inner { padding: 0.5rem 1rem 1.25rem; }
   }
   body::after {
     content: '';
@@ -352,7 +352,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border-top: 1px solid var(--border); 
     padding-top: 1rem; 
   }
-  .hero { padding: 2.5rem 0 2rem; border-bottom: 1px solid var(--border); }
+  .hero { padding: 0.5rem 0 2rem; border-bottom: 1px solid var(--border); }
   .boot-sequence { margin-bottom: 1.25rem; }
   .boot-line {
     font-family: var(--font-head);
