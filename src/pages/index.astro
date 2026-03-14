@@ -1416,19 +1416,13 @@ function resize(){
   S.w=w; S.h=h; S.colW=(w-S.coinW-S.regW-PAD*2)/NC;
 }
 
-document.addEventListener('DOMContentLoaded',async()=>{
-  // Try to fetch live data before initializing
-  try{
-    const r=await fetch('/api/envy');
-    if(r.ok){const d=await r.json();if(d.live&&d.matrix){
-      LIVE_DATA=d.matrix;
-      const lbl=document.querySelector('.matrix-label');
-      if(lbl)lbl.innerHTML='SIGNAL MATRIX — <span class="p">LIVE</span>';
-    }}
-  }catch(e){}
+document.addEventListener('DOMContentLoaded',()=>{
+  // Init immediately with simulated data — don't block on API
   initData(); setup();
   // Delay matrix animation start to sync with CSS boot sequence (1.7s entrance)
   setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 1500);
+  // Fetch live data async — upgrades simulation to live when ready
+  fetchLiveData();
   // Refresh live data every 5 minutes
   setInterval(fetchLiveData, 300000);
 
