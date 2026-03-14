@@ -1461,7 +1461,7 @@ let fc=0;
 function frame(){
   tick();
   draw();
-  if(fc%30===0) updateStatus();
+  if(fc%30===0){ updateStatus(); updateVerdict(); }
   fc++;
   requestAnimationFrame(frame);
 }
