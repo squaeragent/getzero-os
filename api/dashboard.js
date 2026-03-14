@@ -1,5 +1,7 @@
 // Vercel Serverless Function — Full dashboard data for all coins
 // Fetches in batches of 10 (API limit), caches 5 minutes
+export const config = { maxDuration: 25 }; // Vercel Pro: up to 300s; Hobby: 10s default, request 25
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
@@ -17,31 +19,30 @@ export default async function handler(req, res) {
     'SUI,TIA,TON,TRUMP,TRX,UNI,WLD,XPL,XRP,ZEC'
   ];
 
-  // Key indicators for regime detection + context
-  const indicators = 'HURST_24H,HURST_48H,DFA_24H,DFA_48H,LYAPUNOV_24H,LYAPUNOV_48H,RSI_3H30M,ADX_3H30M,ROC_3H,ROC_24H,BB_POS_24H,CLOSE_PRICE_15M,XONE_AVG_NET,XONE_SPREAD,ICHIMOKU_BULL';
+  // Key indicators for regime detection + context (trimmed for speed)
+  const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,CLOSE_PRICE_15M,RSI_3H30M,ADX_3H30M,ROC_24H,BB_POS_24H,XONE_AVG_NET';
 
   try {
-    // Fetch batches sequentially to avoid rate limiting
-    const batches = [];
+    // Fetch all 4 batches in parallel (sequential hits Vercel's 10s timeout)
     const errors = [];
-    for (const coinBatch of allCoins) {
-      try {
-        const response = await fetch(
-          `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
-          { headers: { 'X-API-Key': API_KEY } }
-        );
-        const data = await response.json();
-        if (data.snapshot) {
-          batches.push(data.snapshot);
-        } else {
-          errors.push({ batch: coinBatch, status: response.status, keys: Object.keys(data) });
-          batches.push({});
+    const batchResults = await Promise.all(
+      allCoins.map(async (coinBatch) => {
+        try {
+          const response = await fetch(
+            `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
+            { headers: { 'X-API-Key': API_KEY }, signal: AbortSignal.timeout(8000) }
+          );
+          const data = await response.json();
+          if (data.snapshot) return data.snapshot;
+          errors.push({ batch: coinBatch, status: response.status });
+          return {};
+        } catch (e) {
+          errors.push({ batch: coinBatch, error: e.message });
+          return {};
         }
-      } catch (e) {
-        errors.push({ batch: coinBatch, error: e.message });
-        batches.push({});
-      }
-    }
+      })
+    );
+    const batches = batchResults;
 
     // Merge all batches — batch is the snapshot object { BTC: [...], ETH: [...] }
     const allData = {};
