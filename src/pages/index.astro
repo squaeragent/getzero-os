@@ -45,10 +45,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
 
     <div class="hero-right">
-      <div class="verdict-bar" id="verdict-bar" style="display:none">
-        <p class="verdict-text" id="verdict-text"></p>
-        <div class="regime-bar" id="regime-bar"></div>
-      </div>
       <div class="matrix-head">
         <p class="section-label p matrix-label">SIGNAL MATRIX — SIMULATION</p>
         <span class="matrix-status" id="matrix-status">scanning</span>
@@ -630,28 +626,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
 
-  /* VERDICT BAR */
-  .verdict-bar {
-    margin-bottom: 0.5rem;
-  }
-  .verdict-text {
-    font-family: var(--font-head);
-    font-size: 0.75rem;
-    line-height: 1.5;
-    color: var(--text-dim);
-    margin: 0 0 0.4rem;
-  }
-  .regime-bar {
-    display: flex;
-    height: 4px;
-    border-radius: 2px;
-    overflow: hidden;
-    gap: 2px;
-  }
-  .regime-bar > div {
-    border-radius: 2px;
-  }
-
   /* MATRIX */
   .matrix-head {
     display: flex;
@@ -1169,12 +1143,12 @@ function initData(){
       const ly=ld.LYAPUNOV_24H!=null?Math.min(ld.LYAPUNOV_24H,2)/2:rnd(s.ly[0],s.ly[1]);
       const fl=ld.ROC_3H!=null?ld.ROC_3H:rnd(s.fl[0],s.fl[1]);
       full=[h,d,sent,ly,fl];
-      // Seed ranges centered on real values — wide enough for visible movement
-      s.h=[Math.max(0,h-.12),Math.min(1,h+.12)];
-      s.d=[Math.max(0,d-.12),Math.min(1,d+.12)];
-      s.s=[sent-.25,sent+.25];
-      s.ly=[Math.max(0,ly-.15),Math.min(1,ly+.15)];
-      s.fl=[fl-2,fl+2];
+      // Tight drift around real values — movement for visual life, not regime flipping
+      s.h=[Math.max(0,h-.03),Math.min(1,h+.03)];
+      s.d=[Math.max(0,d-.03),Math.min(1,d+.03)];
+      s.s=[sent-.08,sent+.08];
+      s.ly=[Math.max(0,ly-.03),Math.min(1,ly+.03)];
+      s.fl=[fl-.5,fl+.5];
     } else {
       full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
     }
@@ -1202,51 +1176,22 @@ async function fetchLiveData(){
       const fl=ld.ROC_3H!=null?ld.ROC_3H:row.full[4];
       row.full=[h,df,sent,ly,fl];
       row.t=COL_MAP.map(i=>row.full[i]);
-      row.seeds.h=[Math.max(0,h-.12),Math.min(1,h+.12)];
-      row.seeds.d=[Math.max(0,df-.12),Math.min(1,df+.12)];
-      row.seeds.s=[sent-.25,sent+.25];
-      row.seeds.ly=[Math.max(0,ly-.15),Math.min(1,ly+.15)];
-      row.seeds.fl=[fl-2,fl+2];
+      row.seeds.h=[Math.max(0,h-.03),Math.min(1,h+.03)];
+      row.seeds.d=[Math.max(0,df-.03),Math.min(1,df+.03)];
+      row.seeds.s=[sent-.08,sent+.08];
+      row.seeds.ly=[Math.max(0,ly-.03),Math.min(1,ly+.03)];
+      row.seeds.fl=[fl-.5,fl+.5];
       row.reg=regime(h,df,ly);
       row.liveLocked=true;
     });
     // Update label
     const lbl=document.querySelector('.matrix-label');
-    if(lbl){lbl.innerHTML='SIGNAL MATRIX — <span class="p">DEMO</span>';}
+    if(lbl){lbl.innerHTML='SIGNAL MATRIX — <span class="p">LIVE</span>';}
     // Update verdict bar
     updateVerdict();
   }catch(e){console.warn('Envy API unavailable, using simulation',e);}
 }
 
-function updateVerdict(){
-  const counts={trending:0,reverting:0,chaotic:0,shift:0,neutral:0};
-  S.data.forEach(d=>{if(d.reg&&counts[d.reg]!=null)counts[d.reg]++;else if(!d.reg)counts.neutral++;});
-  const total=S.data.length;
-  const {trending,reverting,chaotic,shift}=counts;
-  let text;
-  if(chaotic>=total*.6) text=chaotic+' of '+total+' markets are unpredictable. Most signals will fail.';
-  else if(chaotic>=total*.4) text=chaotic+' of '+total+' chaotic. Tread carefully.';
-  else if(trending>=total*.5) text=trending+' of '+total+' trending. Momentum has an edge.';
-  else if(reverting>=total*.4) text=reverting+' of '+total+' mean-reverting. Fade the extremes.';
-  else text='Markets split: '+trending+' trending, '+chaotic+' chaotic, '+reverting+' reverting.';
-
-  const vBar=document.getElementById('verdict-bar');
-  const vText=document.getElementById('verdict-text');
-  const rBar=document.getElementById('regime-bar');
-  if(!vBar||!vText||!rBar)return;
-  vText.textContent=text;
-  rBar.innerHTML='';
-  const colors={trending:'#c8ff00',reverting:'#ffb000',chaotic:'#ff3333',shift:'#00d4ff'};
-  for(const r of['trending','reverting','chaotic','shift']){
-    if(!counts[r])continue;
-    const seg=document.createElement('div');
-    seg.style.flex=counts[r];
-    seg.style.background=colors[r];
-    seg.style.opacity='0.8';
-    rBar.appendChild(seg);
-  }
-  vBar.style.display='block';
-}
 
 function setup(){
   const c=document.getElementById('matrix-canvas');
@@ -1437,7 +1382,7 @@ function tick(){
       d.full[fi]=nt; // keep full array in sync
     }
     d.rt--;
-    if(d.rt<=0){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
+    if(d.rt<=0&&!d.liveLocked){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
   });
 }
 
@@ -1461,7 +1406,7 @@ let fc=0;
 function frame(){
   tick();
   draw();
-  if(fc%30===0){ updateStatus(); updateVerdict(); }
+  if(fc%30===0) updateStatus();
   fc++;
   requestAnimationFrame(frame);
 }
@@ -1479,7 +1424,7 @@ function resize(){
 document.addEventListener('DOMContentLoaded',()=>{
   // Init immediately with simulated data — don't block on API
   initData(); setup();
-  if(LIVE_DATA) updateVerdict();
+  // Live data loaded at init
   // Delay matrix animation start to sync with CSS boot sequence (1.7s entrance)
   setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 1500);
   // Fetch live data async — upgrades simulation to live when ready
