@@ -346,7 +346,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .boot-sequence { margin-bottom: 1.25rem; }
   .boot-line {
     font-family: var(--font-head);
-    font-size: clamp(0.5rem, 2.5vw, 0.7rem);
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
     color: var(--text-dim);
     margin: 0;
     line-height: 1.8;
@@ -406,24 +406,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .hero-bridge {
     font-family: var(--font-head);
-    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
     font-weight: 700;
     color: var(--phosphor);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.35s both;
   }
   .hero-sub {
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    font-weight: 400;
     color: var(--text-dim);
     line-height: 1.7;
-    max-width: 520px;
+    max-width: 560px;
     margin-bottom: 1.25rem;
     animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
   }
   .hero-tertiary {
     font-family: var(--font-head);
-    font-size: 0.65rem;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
     color: var(--text-dim);
     letter-spacing: 0.05em;
     margin-bottom: 1.5rem;
@@ -451,13 +451,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .btn-primary {
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--phosphor);
     background: transparent;
     border: 1px solid var(--phosphor);
-    padding: 0.6rem 1.2rem;
+    padding: 0.75rem 1.5rem;
     text-decoration: none;
     cursor: pointer;
     position: relative;
@@ -483,11 +483,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .btn-ghost {
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--text-dim);
-    padding: 0.6rem 1.2rem;
+    padding: 0.75rem 1.5rem;
     text-decoration: none;
     border: 1px solid var(--border);
     transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
@@ -620,7 +620,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .matrix-status {
     font-family: var(--font-head);
-    font-size: 0.5rem;
+    font-size: 0.65rem;
     color: var(--phosphor);
     letter-spacing: 0.05em;
     animation: pulse 2s ease infinite;
@@ -659,18 +659,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .section.visible { border-bottom-color: var(--border); }
   .section-label {
     font-family: var(--font-head);
-    font-size: 0.55rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
   }
   .section-title {
     font-family: var(--font-head);
-    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    font-size: clamp(1.3rem, 3.5vw, 2rem);
     font-weight: 700;
     line-height: 1.2;
     color: var(--text);
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
     letter-spacing: -0.01em;
   }
 
@@ -697,9 +697,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* ═══ EDGE CONTRAST ═══ */
   .intel-explain {
     font-family: var(--font-body);
-    font-size: 0.55rem;
+    font-size: 0.95rem;
     line-height: 1.7;
-    max-width: 520px;
+    max-width: 640px;
     margin-bottom: 1.5rem;
   }
   .edge-contrast { margin-bottom: 1.25rem; }
@@ -713,13 +713,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .edge-row:last-child { border-bottom: none; }
   .edge-them {
     font-family: var(--font-head);
-    font-size: 0.6rem;
+    font-size: 0.85rem;
     text-decoration: line-through;
     opacity: 0.5;
   }
   .edge-us {
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.95rem;
     font-weight: 700;
   }
 
@@ -733,7 +733,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     gap: 0.5rem;
     font-family: var(--font-head);
   }
-  .rv-label { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.1em; text-align: right; }
+  .rv-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-align: right; }
   .rv-track {
     position: relative;
     height: 20px;
@@ -762,7 +762,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     will-change: left;
   }
   .rv-val {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text);
     font-variant-numeric: tabular-nums;
@@ -775,10 +775,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .rv-regime-badge {
     font-family: var(--font-head);
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.1em;
-    padding: 0.3rem 0.8rem;
+    padding: 0.4rem 1rem;
     border: 1px solid var(--border);
     transition: all 0.5s ease;
   }
@@ -789,13 +789,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   @keyframes chaosPulse { 0%,100%{opacity:1;}50%{opacity:.5;} }
   .rv-verdict {
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text);
   }
 
   /* ═══ BACKTEST TABLE ═══ */
-  .bt-sub { font-size: 0.65rem; line-height: 1.7; max-width: 520px; margin-bottom: 1rem; }
+  .bt-sub { font-size: 0.9rem; line-height: 1.7; max-width: 640px; margin-bottom: 1.25rem; }
   .bt-table-wrap {
     border: 1px solid var(--border);
     overflow-x: auto;
@@ -805,14 +805,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     width: 100%;
     border-collapse: collapse;
     font-family: var(--font-head);
-    font-size: 0.65rem;
+    font-size: 0.85rem;
   }
   .bt-table thead { background: rgba(0,0,0,0.4); }
   .bt-table th {
     padding: 0.5rem 0.6rem;
     text-align: right;
     font-weight: 700;
-    font-size: 0.5rem;
+    font-size: 0.65rem;
     letter-spacing: 0.1em;
     color: var(--text-dim);
     border-bottom: 1px solid var(--border);
@@ -842,7 +842,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .bt-table th, .bt-table td { padding: 0.35rem 0.4rem; }
   }
 
-  .bt-footnote { font-size: 0.5rem; line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+  .bt-footnote { font-size: 0.7rem; line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
 
   /* BACKTEST HIGHLIGHTS */
   .bt-highlights {
@@ -862,7 +862,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 700;
     margin-bottom: 0.2rem;
   }
-  .bt-stat-label { font-size: 0.5rem; }
+  .bt-stat-label { font-size: 0.75rem; }
 
   /* (steps removed — merged into agent section) */
 
@@ -902,16 +902,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .mode-label {
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     font-weight: 700;
   }
   .mode-meta {
     font-family: var(--font-head);
-    font-size: 0.4rem;
+    font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.15em;
   }
-  .mode-desc-inline { font-size: 0.55rem; line-height: 1.5; }
+  .mode-desc-inline { font-size: 0.8rem; line-height: 1.5; }
   @media (max-width: 639px) {
     .mode-step { grid-template-columns: 4px 1fr; }
     .mode-desc-inline { grid-column: 2 / -1; margin-top: 0.2rem; font-size: 0.6rem; }
@@ -920,9 +920,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* ═══ AGENT ═══ */
   .agent-point {
-    font-size: 0.6rem;
+    font-size: 0.85rem;
     line-height: 1.7;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.4rem;
   }
   .agent-point span { margin-right: 0.3rem; }
 
@@ -976,7 +976,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: rgba(26,26,26,0.5);
     border-bottom: 1px solid var(--border);
     font-family: var(--font-head);
-    font-size: 0.5rem;
+    font-size: 0.7rem;
   }
   .term-dots { display: flex; gap: 4px; }
   .dot { width: 6px; height: 6px; border-radius: 50%; }
@@ -986,7 +986,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .term-body {
     padding: 1rem 1.25rem;
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
   .term-line {
     margin-bottom: 0.3rem;
