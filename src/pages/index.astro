@@ -24,16 +24,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="crt-scanline"></div>
     </div>
 
-    <h1 class="hero-title">Install a trading agent.<br>Your keys. Your machine. Your edge.</h1>
+    <h1 class="hero-title">We show you the regime first.<br>Then you decide if the signal matters.</h1>
 
     <p class="hero-sub">
-      Self-custodial AI that detects market regimes, manages your portfolio, 
-      and rebalances automatically. 14 out of 15 coins profitable in Monte Carlo simulation.
+      Chaos mathematics applied to crypto. Hurst exponents detect trending markets. 
+      DFA confirms persistence. Lyapunov measures chaos. Your strategy runs only when the regime supports it.
     </p>
 
     <div class="hero-cta">
       <a href="#access" class="btn-primary">Request Early Access →</a>
-      <a href="#how" class="btn-ghost">How it works ↓</a>
+      <a href="#proof" class="btn-ghost">See the proof ↓</a>
       <a href="/thesis" class="btn-ghost">Read the thesis</a>
     </div>
   </header>
@@ -49,118 +49,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
-  <section class="section reveal" id="how">
-    <p class="section-label p reveal-child">HOW IT WORKS</p>
-    <h2 class="section-title reveal-child">Three minutes. Then it runs forever.</h2>
-
-    <div class="steps reveal-child">
-      <div class="step tilt-card">
-        <div class="step-num p" data-step="01">01</div>
-        <h3 class="step-title">Install</h3>
-        <p class="step-desc dim">One command. Runs on your machine. Your keys never leave your device. No cloud. No trust required.</p>
-      </div>
-      <div class="step tilt-card">
-        <div class="step-num p" data-step="02">02</div>
-        <h3 class="step-title">Connect</h3>
-        <p class="step-desc dim">Link your exchange API. Set your risk limits. Choose your mode — from observation-only to fully autonomous.</p>
-      </div>
-      <div class="step tilt-card">
-        <div class="step-num p" data-step="03">03</div>
-        <h3 class="step-title">Trade</h3>
-        <p class="step-desc dim">The agent detects regimes, manages your portfolio, executes trades, and rebalances — 24/7, on your terms.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- MODES -->
-  <section class="section reveal">
-    <p class="section-label a reveal-child">MODES</p>
-    <h2 class="section-title reveal-child">You choose the level of autonomy</h2>
-
-    <div class="modes reveal-child">
-      <div class="mode tilt-card">
-        <div class="mode-header">
-          <span class="mode-name">OBSERVE</span>
-          <span class="mode-tag dim">FREE</span>
-        </div>
-        <p class="mode-desc dim">Watch the agent think. See regime shifts, signals, portfolio analysis. No trades executed. Training wheels.</p>
-      </div>
-      <div class="mode tilt-card">
-        <div class="mode-header">
-          <span class="mode-name a">SIGNAL</span>
-          <span class="mode-tag a">COMPUTE</span>
-        </div>
-        <p class="mode-desc dim">Agent generates buy/sell signals with reasoning. You execute manually. Full control, informed decisions.</p>
-      </div>
-      <div class="mode tilt-card">
-        <div class="mode-header">
-          <span class="mode-name ice">SEMI-AUTO</span>
-          <span class="mode-tag ice">COMPUTE</span>
-        </div>
-        <p class="mode-desc dim">Agent prepares trades and notifies you. One tap to approve. Kill switch always available.</p>
-      </div>
-      <div class="mode tilt-card mode-auto">
-        <div class="mode-header">
-          <span class="mode-name p">AUTO</span>
-          <span class="mode-tag p">COMPUTE</span>
-        </div>
-        <p class="mode-desc dim">Full autonomy within your risk parameters. Portfolio management, rebalancing, position sizing — all regime-aware. 24/7.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- THE INTELLIGENCE -->
-  <section class="section reveal">
-    <p class="section-label p reveal-child">THE INTELLIGENCE</p>
-    <h2 class="section-title reveal-child">Traditional indicators assume one regime. Markets have many.</h2>
-
-    <div class="edge-contrast reveal-child">
-      <div class="edge-row">
-        <span class="edge-them dim">RSI says overbought</span>
-        <span class="edge-us p">We know if RSI even applies in this regime</span>
-      </div>
-      <div class="edge-row">
-        <span class="edge-them dim">MACD shows a crossover</span>
-        <span class="edge-us p">We tell you if that crossover is meaningful or a trap ↓</span>
-      </div>
-    </div>
-
-    <div class="regime-viz reveal-child">
-      <div class="rv-bar-group">
-        <div class="rv-bar">
-          <span class="rv-label dim">HURST</span>
-          <div class="rv-track">
-            <div class="rv-fill" id="rv-hurst"></div>
-            <div class="rv-marker" id="rv-hurst-marker"></div>
-          </div>
-          <span class="rv-val" id="rv-hurst-val">0.50</span>
-        </div>
-        <div class="rv-bar">
-          <span class="rv-label dim">DFA</span>
-          <div class="rv-track">
-            <div class="rv-fill" id="rv-dfa"></div>
-            <div class="rv-marker" id="rv-dfa-marker"></div>
-          </div>
-          <span class="rv-val" id="rv-dfa-val">0.50</span>
-        </div>
-        <div class="rv-bar">
-          <span class="rv-label dim">LYAPUNOV</span>
-          <div class="rv-track">
-            <div class="rv-fill rv-fill-lyap" id="rv-lyap"></div>
-            <div class="rv-marker" id="rv-lyap-marker"></div>
-          </div>
-          <span class="rv-val" id="rv-lyap-val">0.00</span>
-        </div>
-      </div>
-      <div class="rv-output">
-        <div class="rv-regime-badge" id="rv-badge">SCANNING</div>
-        <p class="rv-verdict" id="rv-verdict">Your MACD crossover is → <span class="p">ANALYZING</span></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- BACKTEST RESULTS -->
+  <!-- PROOF (backtest moved up — most persuasive asset) -->
+  <section class="section reveal" id="proof">
   <section class="section reveal">
     <p class="section-label a reveal-child">MONTE CARLO BACKTEST</p>
     <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
@@ -211,41 +101,112 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <!-- COMPUTE -->
+  <!-- THE INTELLIGENCE -->
   <section class="section reveal">
-    <p class="section-label p reveal-child">COMPUTE</p>
-    <h2 class="section-title reveal-child">Pay for intelligence with your wallet</h2>
+    <p class="section-label p reveal-child">THE INTELLIGENCE</p>
+    <h2 class="section-title reveal-child">Traditional indicators assume one regime. Markets have many.</h2>
 
-    <div class="compute-desc reveal-child">
-      <p class="dim" style="font-size: 0.65rem; line-height: 1.7; max-width: 500px;">Observe mode is free. Signal, Semi-Auto, and Auto modes consume compute — regime detection, Monte Carlo simulations, strategy updates. Pay directly from your wallet with any token. No subscriptions. No fiat. Crypto-native.</p>
+    <div class="edge-contrast reveal-child">
+      <div class="edge-row">
+        <span class="edge-them dim">RSI says overbought</span>
+        <span class="edge-us p">We know if RSI even applies in this regime</span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-them dim">MACD shows a crossover</span>
+        <span class="edge-us p">We tell you if that crossover is meaningful or noise</span>
+      </div>
+    </div>
+
+    <div class="regime-viz reveal-child">
+      <div class="rv-bar-group">
+        <div class="rv-bar">
+          <span class="rv-label dim">HURST</span>
+          <div class="rv-track">
+            <div class="rv-fill" id="rv-hurst"></div>
+            <div class="rv-marker" id="rv-hurst-marker"></div>
+          </div>
+          <span class="rv-val" id="rv-hurst-val">0.50</span>
+        </div>
+        <div class="rv-bar">
+          <span class="rv-label dim">DFA</span>
+          <div class="rv-track">
+            <div class="rv-fill" id="rv-dfa"></div>
+            <div class="rv-marker" id="rv-dfa-marker"></div>
+          </div>
+          <span class="rv-val" id="rv-dfa-val">0.50</span>
+        </div>
+        <div class="rv-bar">
+          <span class="rv-label dim">LYAPUNOV</span>
+          <div class="rv-track">
+            <div class="rv-fill rv-fill-lyap" id="rv-lyap"></div>
+            <div class="rv-marker" id="rv-lyap-marker"></div>
+          </div>
+          <span class="rv-val" id="rv-lyap-val">0.00</span>
+        </div>
+      </div>
+      <div class="rv-output">
+        <div class="rv-regime-badge" id="rv-badge">SCANNING</div>
+        <p class="rv-verdict" id="rv-verdict">Your MACD crossover is → <span class="p">ANALYZING</span></p>
+      </div>
     </div>
   </section>
 
-  <!-- SELF-CUSTODIAL -->
+  <!-- MODES (gradient progression) -->
   <section class="section reveal">
-    <p class="section-label ice reveal-child">SELF-CUSTODIAL</p>
-    <h2 class="section-title reveal-child">Your keys never leave your machine</h2>
+    <p class="section-label a reveal-child">MODES</p>
+    <h2 class="section-title reveal-child">You choose the level of autonomy</h2>
 
-    <div class="custody-grid reveal-child">
-      <div class="custody-item">
-        <span class="custody-num p">01</span>
-        <span class="custody-label">API keys stored locally, encrypted at rest</span>
+    <div class="mode-gradient reveal-child">
+      <div class="mode-step" style="--mode-opacity: 0.4">
+        <div class="mode-bar"></div>
+        <div class="mode-content">
+          <span class="mode-label dim">OBSERVE</span>
+          <span class="mode-meta dim">FREE</span>
+        </div>
+        <p class="mode-desc-inline dim">Watch the agent think. No trades. Training wheels.</p>
       </div>
-      <div class="custody-item">
-        <span class="custody-num p">02</span>
-        <span class="custody-label">All trades execute from your device</span>
+      <div class="mode-step" style="--mode-opacity: 0.6">
+        <div class="mode-bar a"></div>
+        <div class="mode-content">
+          <span class="mode-label a">SIGNAL</span>
+          <span class="mode-meta dim">COMPUTE</span>
+        </div>
+        <p class="mode-desc-inline dim">Agent generates buy/sell signals. You execute manually.</p>
       </div>
-      <div class="custody-item">
-        <span class="custody-num p">03</span>
-        <span class="custody-label">Kill switch — pause everything instantly</span>
+      <div class="mode-step" style="--mode-opacity: 0.8">
+        <div class="mode-bar ice"></div>
+        <div class="mode-content">
+          <span class="mode-label ice">SEMI-AUTO</span>
+          <span class="mode-meta dim">COMPUTE</span>
+        </div>
+        <p class="mode-desc-inline dim">Agent prepares trades. One tap to approve. Kill switch.</p>
       </div>
-      <div class="custody-item">
-        <span class="custody-num p">04</span>
-        <span class="custody-label">Built-in position limits and daily loss caps</span>
+      <div class="mode-step" style="--mode-opacity: 1">
+        <div class="mode-bar p"></div>
+        <div class="mode-content">
+          <span class="mode-label p">AUTO</span>
+          <span class="mode-meta p">FULL AUTONOMY</span>
+        </div>
+        <p class="mode-desc-inline dim">Portfolio management, rebalancing, position sizing — all regime-aware. 24/7.</p>
       </div>
-      <div class="custody-item">
-        <span class="custody-num p">05</span>
-        <span class="custody-label">No cloud dependency — runs offline if needed</span>
+    </div>
+  </section>
+
+  <!-- THE AGENT (compact: install + self-custodial merged) -->
+  <section class="section reveal">
+    <p class="section-label ice reveal-child">THE AGENT</p>
+    <h2 class="section-title reveal-child">Self-custodial. One command to install. Your keys never leave.</h2>
+
+    <div class="agent-grid reveal-child">
+      <div class="agent-col">
+        <p class="agent-point dim"><span class="p">→</span> Install with one command — runs on your machine</p>
+        <p class="agent-point dim"><span class="p">→</span> Connect exchange API, set risk limits, pick your mode</p>
+        <p class="agent-point dim"><span class="p">→</span> Pay for compute from your wallet with any token</p>
+      </div>
+      <div class="agent-col">
+        <p class="agent-point dim"><span class="p">→</span> Keys stored locally, encrypted at rest</p>
+        <p class="agent-point dim"><span class="p">→</span> Kill switch — pause everything instantly</p>
+        <p class="agent-point dim"><span class="p">→</span> Built-in position limits and daily loss caps</p>
       </div>
     </div>
   </section>
@@ -477,38 +438,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* Step/card stagger entrance */
-  .reveal.visible .step:nth-child(1),
-  .reveal.visible .mode:nth-child(1) { transition-delay: 0s; }
-  .reveal.visible .step:nth-child(2),
-  .reveal.visible .mode:nth-child(2) { transition-delay: 0.12s; }
-  .reveal.visible .step:nth-child(3),
-  .reveal.visible .mode:nth-child(3) { transition-delay: 0.24s; }
-  .reveal.visible .mode:nth-child(4) { transition-delay: 0.36s; }
-
-  .step, .mode {
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.4s, box-shadow 0.4s;
-  }
-  .reveal.visible .step,
-  .reveal.visible .mode {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Custody items stagger */
-  .custody-item {
+  /* Mode step stagger */
+  .mode-step {
     opacity: 0;
     transform: translateX(-8px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
   }
-  .reveal.visible .custody-item:nth-child(1) { transition-delay: 0s; }
-  .reveal.visible .custody-item:nth-child(2) { transition-delay: 0.08s; }
-  .reveal.visible .custody-item:nth-child(3) { transition-delay: 0.16s; }
-  .reveal.visible .custody-item:nth-child(4) { transition-delay: 0.24s; }
-  .reveal.visible .custody-item:nth-child(5) { transition-delay: 0.32s; }
-  .reveal.visible .custody-item {
+  .reveal.visible .mode-step:nth-child(1) { transition-delay: 0.05s; }
+  .reveal.visible .mode-step:nth-child(2) { transition-delay: 0.15s; }
+  .reveal.visible .mode-step:nth-child(3) { transition-delay: 0.25s; }
+  .reveal.visible .mode-step:nth-child(4) { transition-delay: 0.35s; }
+  .reveal.visible .mode-step {
+    opacity: var(--mode-opacity, 1);
+    transform: translateX(0);
+  }
+
+  /* Agent point stagger */
+  .agent-point {
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(1) { transition-delay: 0s; }
+  .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(2) { transition-delay: 0.08s; }
+  .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(3) { transition-delay: 0.16s; }
+  .reveal.visible .agent-col:nth-child(2) .agent-point:nth-child(1) { transition-delay: 0.05s; }
+  .reveal.visible .agent-col:nth-child(2) .agent-point:nth-child(2) { transition-delay: 0.13s; }
+  .reveal.visible .agent-col:nth-child(2) .agent-point:nth-child(3) { transition-delay: 0.21s; }
+  .reveal.visible .agent-point {
     opacity: 1;
     transform: translateX(0);
   }
@@ -518,14 +475,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transform: perspective(600px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     transition: transform 0.15s ease, border-color 0.4s, box-shadow 0.4s;
     will-change: transform;
-  }
-  .step:hover, .mode:hover {
-    border-color: rgba(200,255,0,0.12);
-    box-shadow: 0 0 16px rgba(200,255,0,0.03);
-  }
-  .custody-item:hover .custody-num {
-    text-shadow: 0 0 8px var(--phosphor-glow);
-    transition: text-shadow 0.3s;
   }
 
   /* Edge row entrance */
@@ -818,101 +767,75 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .bt-stat-label { font-size: 0.5rem; }
 
-  /* ═══ HOW IT WORKS ═══ */
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-  }
-  @media (max-width: 639px) { .steps { grid-template-columns: 1fr; } }
-  .step {
-    border: 1px solid var(--border);
-    padding: 1.25rem;
-  }
-  .step-num {
-    font-family: var(--font-head);
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1;
-    margin-bottom: 0.5rem;
-  }
-  .step-title {
-    font-family: var(--font-head);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.3rem;
-  }
-  .step-desc { font-size: 0.6rem; line-height: 1.6; }
+  /* (steps removed — merged into agent section) */
 
-  /* ═══ MODES ═══ */
-  .modes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
-  @media (max-width: 639px) { .modes { grid-template-columns: 1fr; } }
-  .mode {
-    border: 1px solid var(--border);
-    padding: 1rem 1.25rem;
-    transition: border-color 0.4s, box-shadow 0.4s;
-  }
-  .mode-auto { border-color: rgba(200,255,0,0.15); }
-  .mode-auto:hover { box-shadow: 0 0 20px rgba(200,255,0,0.04); }
-  .mode-header {
+  /* ═══ MODES (gradient progression) ═══ */
+  .mode-gradient {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0;
+  }
+  .mode-step {
+    display: grid;
+    grid-template-columns: 4px 180px 1fr;
+    gap: 0 1rem;
     align-items: center;
-    margin-bottom: 0.4rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+    opacity: var(--mode-opacity, 1);
+    transition: opacity 0.3s, background 0.3s;
   }
-  .mode-name {
+  .mode-step:last-child { border-bottom: none; }
+  .mode-step:hover { opacity: 1; background: rgba(200,255,0,0.01); }
+  .mode-bar {
+    width: 4px;
+    height: 100%;
+    min-height: 24px;
+    background: var(--text-dim);
+    border-radius: 0;
+    transition: background 0.3s;
+  }
+  .mode-bar.p { background: var(--phosphor); box-shadow: 0 0 8px var(--phosphor-glow); }
+  .mode-bar.a { background: var(--amber); }
+  .mode-bar.ice { background: var(--ice); }
+  .mode-content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .mode-label {
     font-family: var(--font-head);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: var(--text);
   }
-  .mode-tag {
+  .mode-meta {
     font-family: var(--font-head);
     font-size: 0.4rem;
     font-weight: 700;
     letter-spacing: 0.15em;
-    padding: 0.12rem 0.35rem;
-    border: 1px solid currentColor;
   }
-  .mode-desc { font-size: 0.55rem; line-height: 1.6; }
+  .mode-desc-inline { font-size: 0.55rem; line-height: 1.5; }
   @media (max-width: 639px) {
-    .mode-desc { font-size: 0.6rem; }
-    .mode-name { font-size: 0.85rem; }
+    .mode-step { grid-template-columns: 4px 1fr; }
+    .mode-desc-inline { grid-column: 2 / -1; margin-top: 0.2rem; font-size: 0.6rem; }
+    .mode-label { font-size: 0.8rem; }
   }
 
-  /* ═══ COMPUTE ═══ */
-  .compute-desc { margin-bottom: 0.5rem; }
-
-  /* ═══ SELF-CUSTODIAL ═══ */
-  .custody-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  /* ═══ AGENT (merged install + custody) ═══ */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 2rem;
   }
-  .custody-item {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(26,26,26,0.3);
-  }
-  .custody-item:last-child { border-bottom: none; }
-  .custody-num {
-    font-family: var(--font-head);
+  @media (max-width: 639px) { .agent-grid { grid-template-columns: 1fr; } }
+  .agent-point {
     font-size: 0.6rem;
-    font-weight: 700;
-    flex-shrink: 0;
+    line-height: 1.7;
+    margin-bottom: 0.3rem;
   }
-  .custody-label {
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
+  .agent-point span { margin-right: 0.3rem; }
+
+  /* (compute + custody removed — merged into agent section) */
 
   /* ═══ PROPOSAL I: TILT HOVER ═══ */
   .tilt-card {
