@@ -67,10 +67,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <th>DFA</th>
             <th>LYAPUNOV</th>
             <th class="hide-mobile">RSI</th>
-            <th class="hide-mobile">ADX</th>
-            <th class="hide-mobile">ROC 24H</th>
-            <th class="hide-mobile">BB POS</th>
-            <th class="hide-mobile">SENTIMENT</th>
             <th>STRATEGY</th>
           </tr>
         </thead>
@@ -333,21 +329,14 @@ function colorVal(val, low, high) {
 
 async function loadDashboard() {
   try {
-    // Fetch all 4 batches in parallel — each is one API call (10 coins each)
-    const results = await Promise.all([0,1,2,3].map(i => fetch(`/api/dashboard?batch=${i}`).then(r=>r.json())));
-    const allCoins = {};
-    let timestamp = null;
-    for (const result of results) {
-      if (result.coins) Object.assign(allCoins, result.coins);
-      if (result.timestamp) timestamp = result.timestamp;
-    }
-    if (Object.keys(allCoins).length === 0) throw new Error('No data');
-
-    const data = { coins: allCoins, timestamp };
+    const r = await fetch('/api/dashboard');
+    if (!r.ok) throw new Error('API error');
+    const data = await r.json();
+    if (!data.live || !data.coins) throw new Error('No data');
 
     // Update status
     document.getElementById('nav-status').textContent = 'LIVE';
-    document.getElementById('nav-ts').textContent = 'Updated: ' + new Date(timestamp).toLocaleTimeString();
+    document.getElementById('nav-ts').textContent = 'Updated: ' + new Date(data.timestamp).toLocaleTimeString();
 
     // Sort coins: chaotic first, then shift, trending, reverting, neutral, unknown
     const order = { chaotic: 0, shift: 1, trending: 2, reverting: 3, neutral: 4, unknown: 5 };
@@ -379,13 +368,6 @@ async function loadDashboard() {
       const lyClass = d.LYAPUNOV_24H > 1.5 ? 'red' : d.LYAPUNOV_24H > 0.8 ? 'a' : 'p';
       const rsi = d.RSI_3H30M != null ? parseFloat(d.RSI_3H30M).toFixed(0) : '—';
       const rsiClass = d.RSI_3H30M > 70 ? 'a' : d.RSI_3H30M < 30 ? 'p' : '';
-      const adx = d.ADX_3H30M != null ? parseFloat(d.ADX_3H30M).toFixed(0) : '—';
-      const adxClass = d.ADX_3H30M > 40 ? 'p' : d.ADX_3H30M < 20 ? 'dim' : '';
-      const roc = d.ROC_24H != null ? (d.ROC_24H >= 0 ? '+' : '') + parseFloat(d.ROC_24H).toFixed(2) + '%' : '—';
-      const rocClass = d.ROC_24H > 0 ? 'p' : d.ROC_24H < 0 ? 'red' : '';
-      const bb = d.BB_POS_24H != null ? parseFloat(d.BB_POS_24H).toFixed(2) : '—';
-      const sent = d.XONE_AVG_NET != null ? parseFloat(d.XONE_AVG_NET).toFixed(0) : '—';
-      const sentClass = d.XONE_AVG_NET > 30 ? 'p' : d.XONE_AVG_NET < -30 ? 'red' : 'dim';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -396,10 +378,6 @@ async function loadDashboard() {
         <td class="${dfa.cls}">${dfa.text}</td>
         <td class="${lyClass}">${ly}</td>
         <td class="hide-mobile ${rsiClass}">${rsi}</td>
-        <td class="hide-mobile ${adxClass}">${adx}</td>
-        <td class="hide-mobile ${rocClass}">${roc}</td>
-        <td class="hide-mobile">${bb}</td>
-        <td class="hide-mobile ${sentClass}">${sent}</td>
         <td class="${strat.cls}" style="font-weight:700">${strat.label}</td>
       `;
       tbody.appendChild(tr);

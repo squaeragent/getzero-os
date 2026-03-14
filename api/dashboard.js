@@ -1,41 +1,27 @@
-// Vercel Serverless Function — one batch of 10 coins per invocation
-// Client calls this 4 times in parallel: ?batch=0, ?batch=1, ?batch=2, ?batch=3
+// Vercel Serverless Function — Dashboard data (top 10 coins)
+// Single API call, same pattern as working /api/envy
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=240, stale-while-revalidate=480');
+  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
 
   const API_KEY = process.env.ENVY_API_KEY;
   if (!API_KEY) return res.status(500).json({ error: 'ENVY_API_KEY not configured' });
 
-  const BATCHES = [
-    'AAVE,ADA,APT,ARB,AVAX,BCH,BNB,BTC,CRV,DOGE',
-    'DOT,ENA,ETH,FARTCOIN,HYPE,INJ,JUP,kBONK,kPEPE,kSHIB',
-    'LDO,LINK,LTC,NEAR,ONDO,OP,PAXG,PUMP,SEI,SOL',
-    'SUI,TIA,TON,TRUMP,TRX,UNI,WLD,XPL,XRP,ZEC'
-  ];
-
-  const batchIdx = parseInt(req.query?.batch ?? '0', 10);
-  if (batchIdx < 0 || batchIdx >= BATCHES.length) {
-    return res.status(400).json({ error: 'batch must be 0-3' });
-  }
-
-  const coinBatch = BATCHES[batchIdx];
-  // Max ~5 indicators per batch — API returns success:false with 9+
+  const coins = 'BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ';
   const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,CLOSE_PRICE_15M,RSI_3H30M';
 
   try {
     const response = await fetch(
-      `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
+      `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coins}&indicators=${indicators}`,
       { headers: { 'X-API-Key': API_KEY } }
     );
 
     const data = await response.json();
     if (!data.snapshot) {
-      return res.status(200).json({ batch: batchIdx, coins: {}, error: data.error, _debug: { status: response.status, keys: Object.keys(data) } });
+      return res.status(200).json({ live: false, error: data.error, coins: {} });
     }
 
-    // Transform snapshot + compute regime
-    const coins = {};
+    const result = {};
     for (const [coin, indList] of Object.entries(data.snapshot)) {
       if (!Array.isArray(indList)) continue;
       const row = {};
@@ -54,15 +40,16 @@ export default async function handler(req, res) {
       }
       row._regime = regime;
       row._confidence = confidence;
-      coins[coin] = row;
+      result[coin] = row;
     }
 
     return res.status(200).json({
-      batch: batchIdx,
+      live: true,
       timestamp: new Date().toISOString(),
-      coins
+      coinCount: Object.keys(result).length,
+      coins: result
     });
   } catch (err) {
-    return res.status(200).json({ batch: batchIdx, error: err.message, coins: {}, _errType: err.constructor.name });
+    return res.status(500).json({ live: false, error: err.message, coins: {} });
   }
 }
