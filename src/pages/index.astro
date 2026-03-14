@@ -9,9 +9,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <!-- CRT BOOT -->
   <header class="hero">
     <div class="boot-sequence">
-      <pre class="boot-line b1"><span class="p">ZERO OS</span> v0.1 .................... <span class="p">BOOT</span></pre>
-      <pre class="boot-line b2"><span class="p">ENVY MATRIX</span> .................... <span class="p">REGIME DETECTION</span></pre>
-      <pre class="boot-line b3"><span class="p">PORTFOLIO ENGINE</span> ............... <span class="p">SELF-CUSTODIAL</span></pre>
+      <pre class="boot-line b1" data-text="ZERO OS v0.1 .................... BOOT"></pre>
+      <pre class="boot-line b2" data-text="ENVY MATRIX .................... REGIME DETECTION"></pre>
+      <pre class="boot-line b3" data-text="PORTFOLIO ENGINE ............... SELF-CUSTODIAL"></pre>
     </div>
 
     <div class="logo-wrap">
@@ -32,7 +32,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </p>
 
     <div class="hero-cta">
-      <a href="#access" class="btn-primary">Request Early Access</a>
+      <a href="#access" class="btn-primary">Request Early Access →</a>
       <a href="#how" class="btn-ghost">How it works ↓</a>
       <a href="/thesis" class="btn-ghost">Read the thesis</a>
     </div>
@@ -56,17 +56,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div class="steps reveal-child">
       <div class="step tilt-card">
-        <div class="step-num p">01</div>
+        <div class="step-num p" data-step="01">01</div>
         <h3 class="step-title">Install</h3>
         <p class="step-desc dim">One command. Runs on your machine. Your keys never leave your device. No cloud. No trust required.</p>
       </div>
       <div class="step tilt-card">
-        <div class="step-num a">02</div>
+        <div class="step-num p" data-step="02">02</div>
         <h3 class="step-title">Connect</h3>
         <p class="step-desc dim">Link your exchange API. Set your risk limits. Choose your mode — from observation-only to fully autonomous.</p>
       </div>
       <div class="step tilt-card">
-        <div class="step-num ice">03</div>
+        <div class="step-num p" data-step="03">03</div>
         <h3 class="step-title">Trade</h3>
         <p class="step-desc dim">The agent detects regimes, manages your portfolio, executes trades, and rebalances — 24/7, on your terms.</p>
       </div>
@@ -197,11 +197,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div class="bt-highlights reveal-child">
       <div class="bt-stat tilt-card">
-        <div class="bt-stat-val p">14/15</div>
+        <div class="bt-stat-val p" data-count-to="14" data-count-suffix="/15">0/15</div>
         <div class="bt-stat-label dim">coins profitable at median</div>
       </div>
       <div class="bt-stat tilt-card">
-        <div class="bt-stat-val a">37%</div>
+        <div class="bt-stat-val a" data-count-to="37" data-count-suffix="%">0%</div>
         <div class="bt-stat-label dim">avg win rate — wins are 3-5x larger than losses</div>
       </div>
       <div class="bt-stat tilt-card">
@@ -329,18 +329,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text-dim);
     margin: 0;
     line-height: 1.8;
-    opacity: 0;
-    animation: bootIn 0.3s ease forwards;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-height: 1.8em;
   }
-  .b1 { animation-delay: 0.2s; }
-  .b2 { animation-delay: 0.5s; }
-  .b3 { animation-delay: 0.8s; }
-  @keyframes bootIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
+  .boot-line .boot-cursor {
+    color: var(--phosphor);
+    animation: blink 0.6s step-end infinite;
   }
 
   .logo-wrap { position: relative; margin-bottom: 1.5rem; overflow: hidden; }
@@ -349,17 +345,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: clamp(7px, calc((100vw - 30px) / 38), 22px);
     line-height: 1.15;
     color: var(--phosphor);
-    text-shadow: 0 0 8px var(--phosphor-glow), 0 0 24px rgba(200,255,0,0.12);
     white-space: pre;
     margin: 0;
     background: transparent;
     border: none;
-    animation: logoIn 0.6s ease 1s both;
+    opacity: 0;
+    animation: logoIn 0.6s ease 0.9s both, logoGlow 3s ease-in-out 1.5s infinite;
   }
   @keyframes logoIn {
-    0% { opacity: 0; filter: brightness(4) blur(2px); }
-    50% { opacity: 0.7; filter: brightness(1.8) blur(0.5px); }
-    100% { opacity: 1; filter: brightness(1); }
+    0% { opacity: 0; filter: brightness(4) blur(3px); text-shadow: 0 0 30px rgba(200,255,0,0.8); }
+    40% { opacity: 0.8; filter: brightness(2) blur(1px); }
+    100% { opacity: 1; filter: brightness(1) blur(0); }
+  }
+  @keyframes logoGlow {
+    0%, 100% { text-shadow: 0 0 6px var(--phosphor-glow), 0 0 20px rgba(200,255,0,0.08); }
+    50% { text-shadow: 0 0 12px var(--phosphor-glow), 0 0 30px rgba(200,255,0,0.15), 0 0 50px rgba(200,255,0,0.05); }
   }
   .crt-scanline {
     position: absolute;
@@ -380,18 +380,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text);
     margin-bottom: 0.75rem;
     letter-spacing: -0.02em;
-    animation: fadeUp 0.5s ease 1.4s both;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both;
   }
   .hero-sub {
     font-size: 0.8rem;
+    font-weight: 500;
     color: var(--text-dim);
     line-height: 1.7;
     max-width: 480px;
     margin-bottom: 1.25rem;
-    animation: fadeUp 0.5s ease 1.6s both;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.3s both;
   }
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -399,22 +400,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
-    animation: fadeUp 0.5s ease 1.8s both;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
+  }
+  @media (max-width: 639px) {
+    .hero-cta { flex-direction: column; }
+    .hero-cta a { text-align: center; }
   }
   .btn-primary {
     font-family: var(--font-head);
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.05em;
-    color: var(--bg);
-    background: var(--phosphor);
-    border: none;
+    color: var(--phosphor);
+    background: transparent;
+    border: 1px solid var(--phosphor);
     padding: 0.6rem 1.2rem;
     text-decoration: none;
     cursor: pointer;
-    transition: opacity 0.15s;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s, background 0.3s, box-shadow 0.3s;
   }
-  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(200,255,0,0.1), transparent);
+    animation: scanSweep 3s linear infinite;
+  }
+  @keyframes scanSweep {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  .btn-primary:hover {
+    background: rgba(200,255,0,0.08);
+    box-shadow: 0 0 20px rgba(200,255,0,0.1), inset 0 0 20px rgba(200,255,0,0.05);
+    color: var(--phosphor);
+  }
   .btn-ghost {
     font-family: var(--font-head);
     font-size: 0.7rem;
@@ -424,18 +447,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 0.6rem 1.2rem;
     text-decoration: none;
     border: 1px solid var(--border);
-    transition: border-color 0.15s, color 0.15s;
+    transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
   }
-  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+  .btn-ghost:hover {
+    border-color: rgba(200,255,0,0.25);
+    color: var(--text);
+    box-shadow: 0 0 12px rgba(200,255,0,0.04);
+  }
 
   /* ═══ ORCHESTRATED BOOT SEQUENCE ═══ */
   .matrix-section {
     opacity: 0;
-    transform: translateY(16px);
-    animation: sectionIn 0.8s ease 2.4s both;
+    transform: translateY(12px);
+    animation: sectionIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.7s both;
   }
   @keyframes sectionIn {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -523,16 +550,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     animation: rowIn 0.3s ease both;
   }
   .reveal.visible .bt-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
-  .reveal.visible .bt-table tbody tr:nth-child(2) { animation-delay: 0.09s; }
-  .reveal.visible .bt-table tbody tr:nth-child(3) { animation-delay: 0.13s; }
-  .reveal.visible .bt-table tbody tr:nth-child(4) { animation-delay: 0.17s; }
-  .reveal.visible .bt-table tbody tr:nth-child(5) { animation-delay: 0.21s; }
-  .reveal.visible .bt-table tbody tr:nth-child(6) { animation-delay: 0.25s; }
-  .reveal.visible .bt-table tbody tr:nth-child(7) { animation-delay: 0.29s; }
-  .reveal.visible .bt-table tbody tr:nth-child(8) { animation-delay: 0.33s; }
-  .reveal.visible .bt-table tbody tr:nth-child(9) { animation-delay: 0.37s; }
-  .reveal.visible .bt-table tbody tr:nth-child(10) { animation-delay: 0.41s; }
-  .reveal.visible .bt-table tbody tr:nth-child(11) { animation-delay: 0.45s; }
+  .reveal.visible .bt-table tbody tr:nth-child(2) { animation-delay: 0.12s; }
+  .reveal.visible .bt-table tbody tr:nth-child(3) { animation-delay: 0.19s; }
+  .reveal.visible .bt-table tbody tr:nth-child(4) { animation-delay: 0.26s; }
+  .reveal.visible .bt-table tbody tr:nth-child(5) { animation-delay: 0.33s; }
+  .reveal.visible .bt-table tbody tr:nth-child(6) { animation-delay: 0.40s; }
+  .reveal.visible .bt-table tbody tr:nth-child(7) { animation-delay: 0.47s; }
+  .reveal.visible .bt-table tbody tr:nth-child(8) { animation-delay: 0.54s; }
+  .reveal.visible .bt-table tbody tr:nth-child(9) { animation-delay: 0.61s; }
+  .reveal.visible .bt-table tbody tr:nth-child(10) { animation-delay: 0.68s; }
+  .reveal.visible .bt-table tbody tr:nth-child(11) { animation-delay: 0.75s; }
   @keyframes rowIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -566,6 +593,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--phosphor);
     letter-spacing: 0.05em;
     animation: pulse 2s ease infinite;
+    transition: opacity 0.15s ease;
   }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
@@ -592,9 +620,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .section { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
   .section-label {
     font-family: var(--font-head);
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
     margin-bottom: 0.5rem;
   }
   .section-title {
@@ -607,17 +635,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: -0.01em;
   }
 
-  /* ═══ PROPOSAL E: SCROLL REVEAL ═══ */
-  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  /* ═══ SCROLL REVEAL (varied per section) ═══ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
   .reveal.visible { opacity: 1; transform: translateY(0); }
-  .reveal-child { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal-child {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
   .reveal.visible .reveal-child { opacity: 1; transform: translateY(0); }
   .reveal.visible .reveal-child:nth-child(1) { transition-delay: 0s; }
-  .reveal.visible .reveal-child:nth-child(2) { transition-delay: .1s; }
-  .reveal.visible .reveal-child:nth-child(3) { transition-delay: .2s; }
+  .reveal.visible .reveal-child:nth-child(2) { transition-delay: .12s; }
+  .reveal.visible .reveal-child:nth-child(3) { transition-delay: .22s; }
   .reveal.visible .reveal-child:nth-child(4) { transition-delay: .3s; }
-  .reveal.visible .reveal-child:nth-child(5) { transition-delay: .4s; }
-  .reveal.visible .reveal-child:nth-child(6) { transition-delay: .5s; }
+  .reveal.visible .reveal-child:nth-child(5) { transition-delay: .38s; }
+  .reveal.visible .reveal-child:nth-child(6) { transition-delay: .44s; }
 
   /* ═══ EDGE CONTRAST ═══ */
   .edge-contrast { margin-bottom: 1.25rem; }
@@ -664,7 +700,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     top: 0; left: 0; bottom: 0;
     width: 50%;
     background: linear-gradient(90deg, rgba(200,255,0,0.15), rgba(200,255,0,0.05));
-    transition: width 0.8s ease, background 0.8s ease;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.6s ease;
   }
   .rv-fill-lyap {
     background: linear-gradient(90deg, rgba(0,212,255,0.1), rgba(255,51,51,0.15));
@@ -676,7 +712,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     left: 50%;
     background: var(--phosphor);
     box-shadow: 0 0 8px var(--phosphor-glow);
-    transition: left 0.8s ease, background 0.8s ease, box-shadow 0.8s ease;
+    transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease, box-shadow 0.4s ease;
     will-change: left;
   }
   .rv-val {
@@ -844,6 +880,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid currentColor;
   }
   .mode-desc { font-size: 0.55rem; line-height: 1.6; }
+  @media (max-width: 639px) {
+    .mode-desc { font-size: 0.6rem; }
+    .mode-name { font-size: 0.85rem; }
+  }
 
   /* ═══ COMPUTE ═══ */
   .compute-desc { margin-bottom: 0.5rem; }
@@ -947,14 +987,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: var(--bg);
-    background: var(--phosphor);
-    border: none;
+    color: var(--phosphor);
+    background: transparent;
+    border: 1px solid var(--phosphor);
     padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: opacity 0.15s;
+    transition: background 0.3s, box-shadow 0.3s;
   }
-  .term-submit:hover { opacity: 0.85; }
+  .term-submit:hover {
+    background: rgba(200,255,0,0.08);
+    box-shadow: 0 0 12px rgba(200,255,0,0.1);
+  }
   .term-confirm, .term-error {
     font-size: 0.65rem;
     line-height: 1.7;
@@ -1260,7 +1303,17 @@ function tick(){
 function updateStatus(){
   const n=S.data.filter(d=>d.reg).length;
   const el=document.getElementById('matrix-status');
-  if(el) el.textContent=n+' regime'+(n!==1?'s':'')+' detected';
+  if(!el) return;
+  const newText = n+' regime'+(n!==1?'s':'')+' detected';
+  if(el.textContent !== newText && el.textContent !== 'scanning') {
+    el.style.opacity = '0';
+    setTimeout(()=>{
+      el.textContent = newText;
+      el.style.opacity = '1';
+    }, 150);
+  } else if(el.textContent === 'scanning') {
+    el.textContent = newText;
+  }
 }
 
 let fc=0;
@@ -1284,8 +1337,78 @@ function resize(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   initData(); setup();
-  // Delay matrix animation start to sync with CSS boot sequence (2.4s entrance)
-  setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 2200);
+  // Delay matrix animation start to sync with CSS boot sequence (1.7s entrance)
+  setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 1500);
+
+  // ═══ CHARACTER-BY-CHARACTER BOOT TYPING ═══
+  function typeBootLine(el, delay) {
+    const text = el.getAttribute('data-text') || '';
+    el.innerHTML = '<span class="boot-cursor">█</span>';
+    let i = 0;
+    setTimeout(()=>{
+      const interval = setInterval(()=>{
+        if(i < text.length) {
+          // Color the phosphor keywords
+          let displayed = text.substring(0, i+1);
+          // Highlight known keywords in phosphor
+          displayed = displayed
+            .replace(/ZERO OS/g, '<span class="p">ZERO OS</span>')
+            .replace(/BOOT/g, '<span class="p">BOOT</span>')
+            .replace(/ENVY MATRIX/g, '<span class="p">ENVY MATRIX</span>')
+            .replace(/REGIME DETECTION/g, '<span class="p">REGIME DETECTION</span>')
+            .replace(/PORTFOLIO ENGINE/g, '<span class="p">PORTFOLIO ENGINE</span>')
+            .replace(/SELF-CUSTODIAL/g, '<span class="p">SELF-CUSTODIAL</span>');
+          el.innerHTML = displayed + '<span class="boot-cursor">█</span>';
+          i++;
+        } else {
+          // Done typing — remove cursor
+          let final = text
+            .replace(/ZERO OS/g, '<span class="p">ZERO OS</span>')
+            .replace(/BOOT/g, '<span class="p">BOOT</span>')
+            .replace(/ENVY MATRIX/g, '<span class="p">ENVY MATRIX</span>')
+            .replace(/REGIME DETECTION/g, '<span class="p">REGIME DETECTION</span>')
+            .replace(/PORTFOLIO ENGINE/g, '<span class="p">PORTFOLIO ENGINE</span>')
+            .replace(/SELF-CUSTODIAL/g, '<span class="p">SELF-CUSTODIAL</span>');
+          el.innerHTML = final;
+          clearInterval(interval);
+        }
+      }, 18); // ~18ms per char = ~55 chars/sec
+    }, delay);
+  }
+  document.querySelectorAll('.boot-line').forEach((el, idx) => {
+    typeBootLine(el, idx * 350); // 350ms between lines starting
+  });
+
+  // ═══ COUNTER ANIMATIONS (triggered on scroll reveal) ═══
+  function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-count-to'));
+    const suffix = el.getAttribute('data-count-suffix') || '';
+    if(isNaN(target)) return;
+    let current = 0;
+    const duration = 1200; // ms
+    const steps = 30;
+    const increment = target / steps;
+    const stepTime = duration / steps;
+    const interval = setInterval(()=>{
+      current += increment;
+      if(current >= target) {
+        current = target;
+        clearInterval(interval);
+      }
+      el.textContent = Math.round(current) + suffix;
+    }, stepTime);
+  }
+
+  // Watch for counters entering view
+  const counterObs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting) {
+        e.target.querySelectorAll('[data-count-to]').forEach(el => animateCounter(el));
+        counterObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.bt-highlights').forEach(el => counterObs.observe(el));
   window.addEventListener('resize',resize);
 
   // ═══ PROPOSAL E: SCROLL REVEAL ═══
