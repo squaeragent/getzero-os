@@ -6,11 +6,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <div class="page">
 
-  <!-- TERMINAL TITLEBAR -->
-  <div class="term-titlebar">
-    <span class="titlebar-label">ZERO OS</span>
-  </div>
-
   <div class="page-inner">
 
   <!-- CRT BOOT + MATRIX (two-column hero) -->
@@ -300,22 +295,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     pointer-events: none;
     z-index: 0;
   }
-  /* Terminal window title bar — flat, no Apple dots */
-  .term-titlebar {
-    padding: 0.5rem 1rem;
-    background: rgba(26,26,26,0.5);
-    border-bottom: 1px solid rgba(200,255,0,0.15);
-    font-family: var(--font-head);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .titlebar-label {
-    font-size: 0.55rem;
-    font-weight: 700;
-    color: var(--phosphor);
-    letter-spacing: 0.1em;
-  }
   .page-inner { padding: 2rem 3rem; }
 
   /* CRT */
@@ -329,9 +308,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   @media (max-width: 639px) {
     body::before { opacity: 0.5; }
-    .page { margin: 0; border: none; min-height: 100vh; }
+    .page { margin: 0.5rem auto; min-height: calc(100vh - 1rem); }
     .page-inner { padding: 1.25rem 1rem; }
-    .term-titlebar { display: none; }
   }
   body::after {
     content: '';
