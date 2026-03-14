@@ -8,9 +8,11 @@ export default async function handler(req, res) {
   if (!API_KEY) return res.status(500).json({ error: 'ENVY_API_KEY not configured' });
 
   const coins = 'BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ';
-  const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,CLOSE_PRICE_15M,RSI_3H30M';
+  // Use exact same indicators as working /api/envy endpoint
+  const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,XONE_AVG_NET,ROC_3H';
 
   try {
+    // First call: chaos indicators (same as proven /api/envy)
     const response = await fetch(
       `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coins}&indicators=${indicators}`,
       { headers: { 'X-API-Key': API_KEY } }
@@ -21,11 +23,26 @@ export default async function handler(req, res) {
       return res.status(200).json({ live: false, error: data.error, coins: {} });
     }
 
+    // Second call: price + RSI (if time permits)
+    let priceData = {};
+    try {
+      const r2 = await fetch(
+        `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coins}&indicators=CLOSE_PRICE_15M,RSI_3H30M`,
+        { headers: { 'X-API-Key': API_KEY } }
+      );
+      const d2 = await r2.json();
+      if (d2.snapshot) priceData = d2.snapshot;
+    } catch {}
+
     const result = {};
     for (const [coin, indList] of Object.entries(data.snapshot)) {
       if (!Array.isArray(indList)) continue;
       const row = {};
       for (const ind of indList) { row[ind.indicatorCode] = ind.value; }
+      // Merge price data if available
+      if (priceData[coin] && Array.isArray(priceData[coin])) {
+        for (const ind of priceData[coin]) { row[ind.indicatorCode] = ind.value; }
+      }
 
       const h = row.HURST_24H, d = row.DFA_24H, ly = row.LYAPUNOV_24H;
       let regime = 'unknown', confidence = 0;
