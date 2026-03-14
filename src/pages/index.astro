@@ -279,9 +279,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <style>
   .page {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 1.25rem;
+    max-width: 960px;
+    margin: 1rem auto;
+    border: 1px solid rgba(200,255,0,0.15);
+    min-height: calc(100vh - 2rem);
+    padding: 2rem 3rem;
+    position: relative;
+  }
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(200,255,0,0.008) 2px, rgba(200,255,0,0.008) 4px);
+    pointer-events: none;
+    z-index: 0;
   }
 
   /* CRT */
@@ -295,6 +306,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   @media (max-width: 639px) {
     body::before { opacity: 0.5; }
+    .page { margin: 0.5rem auto; padding: 1.25rem 1rem; min-height: calc(100vh - 1rem); }
   }
   body::after {
     content: '';
