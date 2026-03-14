@@ -21,25 +21,27 @@ export default async function handler(req, res) {
   const indicators = 'HURST_24H,HURST_48H,DFA_24H,DFA_48H,LYAPUNOV_24H,LYAPUNOV_48H,RSI_3H30M,ADX_3H30M,ROC_3H,ROC_24H,BB_POS_24H,CLOSE_PRICE_15M,XONE_AVG_NET,XONE_SPREAD,ICHIMOKU_BULL';
 
   try {
-    const batches = await Promise.all(
-      allCoins.map(async (coinBatch) => {
-        try {
-          const response = await fetch(
-            `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
-            { headers: { 'X-API-Key': API_KEY } }
-          );
-          const data = await response.json();
-          if (data.error) {
-            console.error('Batch error:', coinBatch, data.error);
-            return {};
-          }
-          return data.snapshot || {};
-        } catch (e) {
-          console.error('Batch fetch failed:', coinBatch, e.message);
-          return {};
+    // Fetch batches sequentially to avoid rate limiting
+    const batches = [];
+    const errors = [];
+    for (const coinBatch of allCoins) {
+      try {
+        const response = await fetch(
+          `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coinBatch}&indicators=${indicators}`,
+          { headers: { 'X-API-Key': API_KEY } }
+        );
+        const data = await response.json();
+        if (data.snapshot) {
+          batches.push(data.snapshot);
+        } else {
+          errors.push({ batch: coinBatch, status: response.status, keys: Object.keys(data) });
+          batches.push({});
         }
-      })
-    );
+      } catch (e) {
+        errors.push({ batch: coinBatch, error: e.message });
+        batches.push({});
+      }
+    }
 
     // Merge all batches — batch is the snapshot object { BTC: [...], ETH: [...] }
     const allData = {};
@@ -72,30 +74,12 @@ export default async function handler(req, res) {
     }
 
     const coinCount = Object.keys(allData).length;
-    if (coinCount === 0) {
-      // Debug: try single fetch to diagnose
-      try {
-        const debugResp = await fetch(
-          'https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=BTC&indicators=HURST_24H',
-          { headers: { 'X-API-Key': API_KEY } }
-        );
-        const debugData = await debugResp.json();
-        return res.status(200).json({
-          live: false,
-          debug: { status: debugResp.status, keys: Object.keys(debugData), hasSnapshot: !!debugData.snapshot },
-          timestamp: new Date().toISOString(),
-          coinCount: 0,
-          coins: {}
-        });
-      } catch (de) {
-        return res.status(200).json({ live: false, debug: { error: de.message }, coinCount: 0, coins: {} });
-      }
-    }
     return res.status(200).json({
-      live: true,
+      live: coinCount > 0,
       timestamp: new Date().toISOString(),
       coinCount,
-      coins: allData
+      coins: allData,
+      ...(errors.length > 0 ? { _errors: errors } : {})
     });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to fetch data', detail: err.message });
