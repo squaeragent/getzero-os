@@ -1,0 +1,416 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="ZERO OS — Live Market Intelligence" description="Real-time regime detection across 40 crypto assets. Know whether your indicators are working before you trade.">
+
+<div class="page">
+<div class="page-inner">
+
+  <!-- NAV -->
+  <nav class="dash-nav">
+    <a href="/" class="nav-back"><span class="p">←</span> ZERO OS</a>
+    <div class="nav-right">
+      <span class="live-dot"></span>
+      <span class="nav-live p" id="nav-status">CONNECTING...</span>
+      <span class="nav-ts dim" id="nav-ts"></span>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="pane pane-header">
+    <div class="pane-hdr"><span class="p">■</span> MARKET INTELLIGENCE — LIVE</div>
+    <div class="pane-body header-body">
+      <div class="header-stats" id="header-stats">
+        <div class="hstat">
+          <div class="hstat-val p" id="stat-coins">—</div>
+          <div class="hstat-label dim">coins tracked</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-val a" id="stat-trending">—</div>
+          <div class="hstat-label dim">trending</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-val" style="color:var(--red)" id="stat-chaotic">—</div>
+          <div class="hstat-label dim">chaotic</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-val ice" id="stat-shift">—</div>
+          <div class="hstat-label dim">shifting</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-val a" id="stat-reverting">—</div>
+          <div class="hstat-label dim">reverting</div>
+        </div>
+      </div>
+      <p class="header-sub dim">Should you even be trading right now? Check the state first.</p>
+    </div>
+  </div>
+
+  <!-- MAIN TABLE -->
+  <div class="pane" id="main-pane">
+    <div class="pane-hdr">
+      <span class="dim">■</span> ALL ASSETS
+      <span class="pane-dim" id="table-count"></span>
+    </div>
+    <div class="pane-body table-body">
+      <div class="table-loading" id="table-loading">
+        <span class="p">▸</span> Fetching live data from intelligence engine...
+      </div>
+      <table class="dash-table" id="dash-table" style="display:none">
+        <thead>
+          <tr>
+            <th class="th-coin">ASSET</th>
+            <th class="th-price">PRICE</th>
+            <th>REGIME</th>
+            <th>HURST</th>
+            <th>DFA</th>
+            <th>LYAPUNOV</th>
+            <th class="hide-mobile">RSI</th>
+            <th class="hide-mobile">ADX</th>
+            <th class="hide-mobile">ROC 24H</th>
+            <th class="hide-mobile">BB POS</th>
+            <th class="hide-mobile">SENTIMENT</th>
+            <th>STRATEGY</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="pane-grid">
+    <div class="pane">
+      <div class="pane-hdr"><span class="p">■</span> REGIME STATES</div>
+      <div class="pane-body">
+        <div class="legend-row"><span class="badge badge-trending">TRENDING</span> <span class="dim">Momentum is real. Trend-following strategies work. RSI overbought may be continuation, not reversal.</span></div>
+        <div class="legend-row"><span class="badge badge-reverting">REVERTING</span> <span class="dim">Prices snap back. Mean-reversion strategies work. Breakout signals are likely false.</span></div>
+        <div class="legend-row"><span class="badge badge-chaotic">CHAOTIC</span> <span class="dim">Unpredictable. Reduce position size. Most indicators are unreliable. Wait for regime shift.</span></div>
+        <div class="legend-row"><span class="badge badge-shift">SHIFT</span> <span class="dim">Market is transitioning between states. High risk. Conflicting signals are expected.</span></div>
+        <div class="legend-row"><span class="badge badge-neutral">NEUTRAL</span> <span class="dim">No clear regime. Random walk territory. Signals have low conviction.</span></div>
+      </div>
+    </div>
+    <div class="pane">
+      <div class="pane-hdr"><span class="dim">■</span> STRATEGY GUIDE</div>
+      <div class="pane-body">
+        <div class="legend-row"><span class="p">MOMENTUM</span> <span class="dim">— Follow the trend. Use EMA crossovers, MACD. Works when Hurst &gt; 0.55.</span></div>
+        <div class="legend-row"><span class="a">REVERT</span> <span class="dim">— Fade extremes. Use RSI, Bollinger bands. Works when Hurst &lt; 0.45.</span></div>
+        <div class="legend-row"><span class="red">REDUCE</span> <span class="dim">— Cut exposure. Chaos is high. No strategy is reliable. Preserve capital.</span></div>
+        <div class="legend-row"><span class="ice">WAIT</span> <span class="dim">— Market is transitioning. Sit on hands until a clear regime emerges.</span></div>
+        <div class="legend-row"><span class="dim">—</span> <span class="dim">— No clear edge. Small positions only. Don't force trades.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="dash-footer">
+    <span class="p">◇</span> <span class="dim">ZERO OS</span>
+    <span class="dim" style="margin-left:1rem">Data updates every 15 minutes</span>
+  </footer>
+
+</div>
+</div>
+
+</BaseLayout>
+
+<style>
+  .page {
+    margin: 0.5rem;
+    border: 1px solid rgba(200,255,0,0.4);
+    min-height: calc(100vh - 1rem);
+    padding: 0;
+    overflow: hidden;
+  }
+  .page-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem 1.5rem;
+  }
+
+  /* NAV */
+  .dash-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0 0.75rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+  }
+  .nav-back {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-dim);
+  }
+  .nav-back:hover { color: var(--phosphor); }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    animation: livePulse 2s ease infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--phosphor-glow); }
+    50% { opacity: 0.4; box-shadow: none; }
+  }
+  .nav-ts { font-size: 0.65rem; }
+
+  /* PANES */
+  .pane {
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
+    margin-bottom: 0.5rem;
+  }
+  .pane-hdr {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,10,0.6);
+    color: var(--text-dim);
+  }
+  .pane-dim { font-weight: 400; opacity: 0.5; font-size: 0.6rem; margin-left: 0.5rem; }
+  .pane-body { padding: 1rem 1.25rem; overflow-x: auto; }
+  .pane-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* HEADER STATS */
+  .header-body { padding: 1rem 1.25rem; }
+  .header-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .hstat-val {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+  .hstat-label {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+  .header-sub { font-size: 0.9rem; }
+
+  /* TABLE */
+  .table-body { padding: 0; }
+  .table-loading {
+    padding: 2rem 1.25rem;
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+  }
+  .dash-table th {
+    padding: 0.6rem 0.75rem;
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .th-coin { text-align: left; }
+  .th-price { text-align: right; }
+  .dash-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .dash-table td:first-child {
+    text-align: left;
+    font-weight: 700;
+  }
+  .dash-table tr:hover { background: rgba(200,255,0,0.02); }
+
+  /* REGIME BADGES */
+  .badge, .regime-badge {
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.5rem;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+  }
+  .badge-trending, .regime-trending { color: var(--phosphor); border: 1px solid var(--phosphor); background: rgba(200,255,0,0.08); }
+  .badge-reverting, .regime-reverting { color: var(--amber); border: 1px solid var(--amber); background: rgba(255,176,0,0.08); }
+  .badge-chaotic, .regime-chaotic { color: var(--red); border: 1px solid var(--red); background: rgba(255,51,51,0.08); }
+  .badge-shift, .regime-shift { color: var(--ice); border: 1px solid var(--ice); background: rgba(0,212,255,0.06); }
+  .badge-neutral, .regime-neutral, .regime-unknown { color: var(--text-dim); border: 1px solid var(--border); }
+
+  /* STRATEGY BADGES */
+  .strat-momentum { color: var(--phosphor); }
+  .strat-revert { color: var(--amber); }
+  .strat-reduce { color: var(--red); }
+  .strat-wait { color: var(--ice); }
+
+  /* LEGEND */
+  .legend-row {
+    font-size: 0.8rem;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .legend-row .badge { flex-shrink: 0; }
+
+  /* FOOTER */
+  .dash-footer {
+    text-align: center;
+    padding: 1rem 0;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    .pane-grid { grid-template-columns: 1fr; }
+    .page-inner { padding: 0.5rem 0.75rem 1rem; }
+    .hide-mobile { display: none; }
+    .header-stats { gap: 1rem; }
+    .hstat-val { font-size: 1.4rem; }
+    .dash-table { font-size: 0.7rem; }
+    .dash-table th, .dash-table td { padding: 0.4rem 0.5rem; }
+  }
+</style>
+
+<script>
+const REGIME_LABELS = { trending: 'TRENDING', reverting: 'REVERTING', chaotic: 'CHAOTIC', shift: 'SHIFT', neutral: 'NEUTRAL', unknown: '—' };
+const STRATEGY_MAP = {
+  trending: { label: 'MOMENTUM', cls: 'strat-momentum' },
+  reverting: { label: 'REVERT', cls: 'strat-revert' },
+  chaotic: { label: 'REDUCE', cls: 'strat-reduce' },
+  shift: { label: 'WAIT', cls: 'strat-wait' },
+  neutral: { label: '—', cls: '' },
+  unknown: { label: '—', cls: '' }
+};
+
+function formatPrice(p) {
+  if (p == null) return '—';
+  if (p >= 1000) return '$' + p.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (p >= 1) return '$' + p.toFixed(2);
+  if (p >= 0.01) return '$' + p.toFixed(4);
+  return '$' + p.toFixed(6);
+}
+
+function colorVal(val, low, high) {
+  if (val == null) return { text: '—', cls: 'dim' };
+  const v = parseFloat(val).toFixed(2);
+  if (val > high) return { text: v, cls: 'p' };
+  if (val < low) return { text: v, cls: 'a' };
+  return { text: v, cls: '' };
+}
+
+async function loadDashboard() {
+  try {
+    const r = await fetch('/api/dashboard');
+    if (!r.ok) throw new Error('API error');
+    const data = await r.json();
+    if (!data.live || !data.coins) throw new Error('No data');
+
+    // Update status
+    document.getElementById('nav-status').textContent = 'LIVE';
+    document.getElementById('nav-ts').textContent = 'Updated: ' + new Date(data.timestamp).toLocaleTimeString();
+
+    // Sort coins: chaotic first, then shift, trending, reverting, neutral, unknown
+    const order = { chaotic: 0, shift: 1, trending: 2, reverting: 3, neutral: 4, unknown: 5 };
+    const sorted = Object.entries(data.coins).sort((a, b) => {
+      const ra = order[a[1]._regime] ?? 5;
+      const rb = order[b[1]._regime] ?? 5;
+      return ra - rb;
+    });
+
+    // Count regimes
+    const counts = { trending: 0, chaotic: 0, shift: 0, reverting: 0 };
+    for (const [, d] of sorted) { if (counts[d._regime] != null) counts[d._regime]++; }
+    document.getElementById('stat-coins').textContent = sorted.length;
+    document.getElementById('stat-trending').textContent = counts.trending;
+    document.getElementById('stat-chaotic').textContent = counts.chaotic;
+    document.getElementById('stat-shift').textContent = counts.shift;
+    document.getElementById('stat-reverting').textContent = counts.reverting;
+    document.getElementById('table-count').textContent = '— ' + sorted.length + ' assets';
+
+    // Build table
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+    for (const [coin, d] of sorted) {
+      const regime = d._regime || 'unknown';
+      const strat = STRATEGY_MAP[regime] || STRATEGY_MAP.unknown;
+      const h = colorVal(d.HURST_24H, 0.45, 0.55);
+      const dfa = colorVal(d.DFA_24H, 0.45, 0.55);
+      const ly = d.LYAPUNOV_24H != null ? parseFloat(d.LYAPUNOV_24H).toFixed(2) : '—';
+      const lyClass = d.LYAPUNOV_24H > 1.5 ? 'red' : d.LYAPUNOV_24H > 0.8 ? 'a' : 'p';
+      const rsi = d.RSI_3H30M != null ? parseFloat(d.RSI_3H30M).toFixed(0) : '—';
+      const rsiClass = d.RSI_3H30M > 70 ? 'a' : d.RSI_3H30M < 30 ? 'p' : '';
+      const adx = d.ADX_3H30M != null ? parseFloat(d.ADX_3H30M).toFixed(0) : '—';
+      const adxClass = d.ADX_3H30M > 40 ? 'p' : d.ADX_3H30M < 20 ? 'dim' : '';
+      const roc = d.ROC_24H != null ? (d.ROC_24H >= 0 ? '+' : '') + parseFloat(d.ROC_24H).toFixed(2) + '%' : '—';
+      const rocClass = d.ROC_24H > 0 ? 'p' : d.ROC_24H < 0 ? 'red' : '';
+      const bb = d.BB_POS_24H != null ? parseFloat(d.BB_POS_24H).toFixed(2) : '—';
+      const sent = d.XONE_AVG_NET != null ? parseFloat(d.XONE_AVG_NET).toFixed(0) : '—';
+      const sentClass = d.XONE_AVG_NET > 30 ? 'p' : d.XONE_AVG_NET < -30 ? 'red' : 'dim';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${coin}</td>
+        <td>${formatPrice(d.CLOSE_PRICE_15M)}</td>
+        <td><span class="regime-badge regime-${regime}">${REGIME_LABELS[regime] || '—'}</span></td>
+        <td class="${h.cls}">${h.text}</td>
+        <td class="${dfa.cls}">${dfa.text}</td>
+        <td class="${lyClass}">${ly}</td>
+        <td class="hide-mobile ${rsiClass}">${rsi}</td>
+        <td class="hide-mobile ${adxClass}">${adx}</td>
+        <td class="hide-mobile ${rocClass}">${roc}</td>
+        <td class="hide-mobile">${bb}</td>
+        <td class="hide-mobile ${sentClass}">${sent}</td>
+        <td class="${strat.cls}" style="font-weight:700">${strat.label}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('table-loading').style.display = 'none';
+    document.getElementById('dash-table').style.display = 'table';
+
+  } catch (e) {
+    document.getElementById('nav-status').textContent = 'OFFLINE';
+    document.getElementById('nav-status').className = 'nav-live red';
+    document.getElementById('table-loading').innerHTML = '<span class="red">✗</span> Failed to connect to intelligence engine. Retrying...';
+    setTimeout(loadDashboard, 10000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadDashboard();
+  setInterval(loadDashboard, 300000); // refresh every 5 min
+});
+</script>
