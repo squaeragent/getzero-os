@@ -29,9 +29,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <h1 class="hero-title">AI trades better than you.<br>And you're OK with it.</h1>
 
+      <p class="hero-bridge">Because this one doesn't guess.</p>
+
       <p class="hero-sub">
         79 dimensions of market intelligence. Self-custodial.<br>
-        Every other trading bot reads 5 indicators and guesses. This one doesn't guess.
+        Every other trading bot reads 5 indicators. This one reads 79.
       </p>
 
       <p class="hero-tertiary">Agent · Skill · CLI — works with OpenClaw, Claude Code, Perplexity Computer</p>
@@ -44,7 +46,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div class="hero-right">
       <div class="matrix-head">
-        <p class="section-label p">SIGNAL MATRIX — DEMO</p>
+        <p class="section-label p">SIGNAL MATRIX — SIMULATION</p>
         <span class="matrix-status" id="matrix-status">scanning</span>
       </div>
       <div class="matrix-wrap">
@@ -53,68 +55,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </header>
 
-  <!-- PROOF -->
-  <section class="section reveal" id="proof">
-    <p class="section-label a reveal-child">MONTE CARLO BACKTEST</p>
-    <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
-    <p class="bt-sub dim reveal-child">Monte Carlo simulation across 15 assets, 12 months of historical data, 10,000 runs per coin. Includes 0.1% taker fees and 0.05% slippage per trade. The agent only enters when market conditions confirm the strategy applies.</p>
-    
-    <div class="bt-table-wrap reveal-child">
-      <table class="bt-table">
-        <thead>
-          <tr>
-            <th class="bt-coin">COIN</th>
-            <th>RETURN</th>
-            <th>WIN RATE</th>
-            <th>MAX DD</th>
-            <th class="bt-hide-mobile">p5 RETURN*</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="bt-coin">BTC</td><td class="p">+52.2%</td><td>50.9%</td><td class="bt-dd">-14.9%</td><td class="p bt-hide-mobile">+35.3%</td></tr>
-          <tr><td class="bt-coin">ETH</td><td class="p">+77.4%</td><td>39.8%</td><td class="bt-dd">-28.3%</td><td class="p bt-hide-mobile">+42.0%</td></tr>
-          <tr><td class="bt-coin">SOL</td><td class="p">+86.5%</td><td>43.4%</td><td class="bt-dd">-16.0%</td><td class="p bt-hide-mobile">+50.4%</td></tr>
-          <tr><td class="bt-coin">ARB</td><td class="p">+95.8%</td><td>37.1%</td><td class="bt-dd">-23.1%</td><td class="p bt-hide-mobile">+45.6%</td></tr>
-          <tr><td class="bt-coin">CRV</td><td class="p">+127.0%</td><td>34.7%</td><td class="bt-dd bt-dd-hot">-31.5%</td><td class="p bt-hide-mobile">+43.7%</td></tr>
-          <tr><td class="bt-coin">KPEPE</td><td class="p">+256.1%</td><td>37.7%</td><td class="bt-dd">-20.4%</td><td class="p bt-hide-mobile">+165.0%</td></tr>
-          <tr><td class="bt-coin">KBONK</td><td class="p">+224.6%</td><td>32.6%</td><td class="bt-dd bt-dd-hot">-29.2%</td><td class="p bt-hide-mobile">+143.2%</td></tr>
-          <tr><td class="bt-coin">TRX</td><td class="p">+59.4%</td><td class="bt-wr-best">61.3%</td><td class="bt-dd bt-dd-safe">-8.3%</td><td class="p bt-hide-mobile">+47.8%</td></tr>
-          <tr><td class="bt-coin">DOGE</td><td class="p">+47.6%</td><td>38.2%</td><td class="bt-dd">-19.7%</td><td class="p bt-hide-mobile">+20.1%</td></tr>
-          <tr><td class="bt-coin">KSHIB</td><td class="p">+117.7%</td><td>43.0%</td><td class="bt-dd">-17.8%</td><td class="p bt-hide-mobile">+70.7%</td></tr>
-          <tr class="bt-neg"><td class="bt-coin">PAXG</td><td class="dim">-5.1%</td><td>49.2%</td><td class="bt-dd bt-dd-safe">-11.3%</td><td class="red bt-hide-mobile">-14.1%</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="bt-footnote dim reveal-child">* p5 = 5th percentile of Monte Carlo simulations. 95% of outcomes were better than this number.</p>
-
-    <div class="bt-highlights reveal-child">
-      <div class="bt-stat tilt-card">
-        <div class="bt-stat-val p" data-count-to="14" data-count-suffix="/15">0/15</div>
-        <div class="bt-stat-label dim">coins profitable at median</div>
-      </div>
-      <div class="bt-stat tilt-card">
-        <div class="bt-stat-val a" data-count-to="37" data-count-suffix="%">0%</div>
-        <div class="bt-stat-label dim">avg win rate — wins 3-5x larger</div>
-      </div>
-      <div class="bt-stat tilt-card">
-        <div class="bt-stat-val ice">p5+</div>
-        <div class="bt-stat-label dim">worst 5% still profitable</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MID-PAGE CTA -->
-  <div class="mid-cta reveal">
-    <a href="#access" class="btn-primary">Become a design partner →</a>
-    <span class="mid-cta-note dim">Design partners — funds, desks, and builders who want first access.</span>
-  </div>
-
-  <!-- THE INTELLIGENCE -->
-  <section class="section reveal">
+  <!-- WHY IT'S SMARTER (before proof — explain first, prove second) -->
+  <section class="section reveal sec-elevated">
     <p class="section-label p reveal-child">WHY IT'S SMARTER</p>
     <h2 class="section-title reveal-child">Your agent sees what others can't.</h2>
-    <p class="intel-explain dim reveal-child">79 dimensions. Technical indicators across 7 timeframes, Ichimoku cloud system, regime detection, social sentiment analysis, candlestick pattern recognition. Your bot checks RSI. Ours checks everything — and knows when RSI is lying.</p>
+    <p class="intel-explain dim reveal-child">79 dimensions. Technical indicators across 7 timeframes, Ichimoku cloud system, social sentiment analysis, candlestick pattern recognition. Your bot checks RSI. Ours checks everything — and knows when RSI is lying.</p>
 
     <div class="edge-contrast reveal-child">
       <div class="edge-row">
@@ -161,6 +106,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
+  <!-- PROOF (now after intelligence — data confirms the thesis) -->
+  <section class="section reveal" id="proof">
+    <p class="section-label a reveal-child">MONTE CARLO BACKTEST <span class="dim" style="font-weight:400;letter-spacing:0.05em;font-size:0.45rem">Jan 2025 — Dec 2025</span></p>
+    <h2 class="section-title reveal-child">14 out of 15 coins profitable. Even at the 5th percentile.</h2>
+    <p class="bt-sub dim reveal-child">10,000 Monte Carlo runs per coin, 15 assets, 0.1% taker fees, 0.05% slippage. The agent only enters when market conditions confirm the strategy applies.</p>
+    
+    <div class="bt-split reveal-child">
+      <div class="bt-table-wrap">
+        <table class="bt-table">
+          <thead>
+            <tr>
+              <th class="bt-coin">COIN</th>
+              <th>RETURN</th>
+              <th>WIN RATE</th>
+              <th>MAX DD</th>
+              <th class="bt-hide-mobile">p5 RETURN*</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="bt-coin">BTC</td><td class="p">+52.2%</td><td>50.9%</td><td class="bt-dd">-14.9%</td><td class="p bt-hide-mobile">+35.3%</td></tr>
+            <tr><td class="bt-coin">ETH</td><td class="p">+77.4%</td><td>39.8%</td><td class="bt-dd">-28.3%</td><td class="p bt-hide-mobile">+42.0%</td></tr>
+            <tr><td class="bt-coin">SOL</td><td class="p">+86.5%</td><td>43.4%</td><td class="bt-dd">-16.0%</td><td class="p bt-hide-mobile">+50.4%</td></tr>
+            <tr><td class="bt-coin">ARB</td><td class="p">+95.8%</td><td>37.1%</td><td class="bt-dd">-23.1%</td><td class="p bt-hide-mobile">+45.6%</td></tr>
+            <tr><td class="bt-coin">CRV</td><td class="p">+127.0%</td><td>34.7%</td><td class="bt-dd bt-dd-hot">-31.5%</td><td class="p bt-hide-mobile">+43.7%</td></tr>
+            <tr><td class="bt-coin">KPEPE</td><td class="p">+256.1%</td><td>37.7%</td><td class="bt-dd">-20.4%</td><td class="p bt-hide-mobile">+165.0%</td></tr>
+            <tr><td class="bt-coin">KBONK</td><td class="p">+224.6%</td><td>32.6%</td><td class="bt-dd bt-dd-hot">-29.2%</td><td class="p bt-hide-mobile">+143.2%</td></tr>
+            <tr><td class="bt-coin">TRX</td><td class="p">+59.4%</td><td class="bt-wr-best">61.3%</td><td class="bt-dd bt-dd-safe">-8.3%</td><td class="p bt-hide-mobile">+47.8%</td></tr>
+            <tr><td class="bt-coin">DOGE</td><td class="p">+47.6%</td><td>38.2%</td><td class="bt-dd">-19.7%</td><td class="p bt-hide-mobile">+20.1%</td></tr>
+            <tr><td class="bt-coin">KSHIB</td><td class="p">+117.7%</td><td>43.0%</td><td class="bt-dd">-17.8%</td><td class="p bt-hide-mobile">+70.7%</td></tr>
+            <tr class="bt-neg"><td class="bt-coin">PAXG</td><td class="dim">-5.1%</td><td>49.2%</td><td class="bt-dd bt-dd-safe">-11.3%</td><td class="red bt-hide-mobile">-14.1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="bt-highlights-side">
+        <div class="bt-stat tilt-card">
+          <div class="bt-stat-val p" data-count-to="14" data-count-suffix="/15">0/15</div>
+          <div class="bt-stat-label dim">coins profitable</div>
+        </div>
+        <div class="bt-stat tilt-card">
+          <div class="bt-stat-val a" data-count-to="37" data-count-suffix="%">0%</div>
+          <div class="bt-stat-label dim">avg win rate</div>
+        </div>
+        <div class="bt-stat tilt-card">
+          <div class="bt-stat-val ice">p5+</div>
+          <div class="bt-stat-label dim">worst 5% still profitable</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="bt-footnote dim reveal-child">* p5 = 5th percentile of Monte Carlo simulations. 95% of outcomes were better than this number.</p>
+  </section>
+
   <!-- MODES + AGENT (two-column) -->
   <section class="section reveal">
     <div class="dual-grid">
@@ -172,31 +169,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="mode-bar"></div>
             <div class="mode-content">
               <span class="mode-label dim">OBSERVE</span>
-              <span class="mode-meta dim">FREE</span>
+              <span class="mode-meta dim">LEARN</span>
             </div>
-            <p class="mode-desc-inline dim">Watch the agent think. No trades.</p>
+            <p class="mode-desc-inline dim">Watch the agent think. No trades. Training wheels.</p>
           </div>
           <div class="mode-step" style="--mode-opacity: 0.6">
             <div class="mode-bar a"></div>
             <div class="mode-content">
               <span class="mode-label a">SIGNAL</span>
-              <span class="mode-meta dim">COMPUTE</span>
+              <span class="mode-meta dim">VALIDATE</span>
             </div>
-            <p class="mode-desc-inline dim">Agent generates signals. You execute.</p>
+            <p class="mode-desc-inline dim">Agent generates signals. You decide when to act.</p>
           </div>
           <div class="mode-step" style="--mode-opacity: 0.8">
             <div class="mode-bar ice"></div>
             <div class="mode-content">
               <span class="mode-label ice">SEMI-AUTO</span>
-              <span class="mode-meta dim">COMPUTE</span>
+              <span class="mode-meta dim">TRUST</span>
             </div>
-            <p class="mode-desc-inline dim">Agent prepares trades. One tap to approve.</p>
+            <p class="mode-desc-inline dim">Agent prepares trades. One tap to approve. Kill switch.</p>
           </div>
           <div class="mode-step" style="--mode-opacity: 1">
             <div class="mode-bar p"></div>
             <div class="mode-content">
               <span class="mode-label p">AUTO</span>
-              <span class="mode-meta p">FULL AUTONOMY</span>
+              <span class="mode-meta p">DELEGATE</span>
             </div>
             <p class="mode-desc-inline dim">24/7 portfolio management within your risk parameters.</p>
           </div>
@@ -284,7 +281,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     pointer-events: none;
     z-index: 0;
   }
-  .page-inner { padding: 0.75rem 3rem 2rem; }
+  .page-inner { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 0.75rem 3rem 2rem; 
+  }
 
   /* CRT */
   body::before {
@@ -395,13 +396,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .hero-title {
     font-family: var(--font-head);
-    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    font-size: clamp(1.6rem, 5vw, 3.2rem);
     font-weight: 700;
     line-height: 1.15;
     color: var(--text);
     margin-bottom: 0.75rem;
     letter-spacing: -0.02em;
     animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both;
+  }
+  .hero-bridge {
+    font-family: var(--font-head);
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+    font-weight: 700;
+    color: var(--phosphor);
+    margin-bottom: 1rem;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.35s both;
   }
   .hero-sub {
     font-size: 0.75rem;
@@ -410,7 +419,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     line-height: 1.7;
     max-width: 520px;
     margin-bottom: 1.25rem;
-    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.4s both;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
   }
   .hero-tertiary {
     font-family: var(--font-head);
@@ -418,7 +427,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text-dim);
     letter-spacing: 0.05em;
     margin-bottom: 1.5rem;
-    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.55s both;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.65s both;
   }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(14px); }
@@ -434,7 +443,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
-    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.65s both;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.8s both;
   }
   @media (max-width: 639px) {
     .hero-cta { flex-direction: column; }
@@ -640,6 +649,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* SECTIONS */
   .section { padding: 2.5rem 0; border-bottom: 1px solid transparent; }
+  .sec-elevated { background: rgba(200,255,0,0.015); margin: 0 -3rem; padding: 2.5rem 3rem; }
+  @media (max-width: 639px) { .sec-elevated { margin: 0 -1rem; padding: 2.5rem 1rem; } }
+
+  /* Backtest split: table + highlights side by side */
+  .bt-split { display: grid; grid-template-columns: 1fr 200px; gap: 1.5rem; align-items: start; }
+  .bt-highlights-side { display: flex; flex-direction: column; gap: 0.75rem; }
+  @media (max-width: 900px) { .bt-split { grid-template-columns: 1fr; } }
   .section.visible { border-bottom-color: var(--border); }
   .section-label {
     font-family: var(--font-head);
