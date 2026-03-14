@@ -2,59 +2,327 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="ZERO OS — Thesis" description="Why chaos mathematics changes everything about trading signals.">
+<BaseLayout title="ZERO OS — The Regime Problem" description="Why chaos mathematics changes everything about trading signals. Hurst exponent, DFA, and Lyapunov — the three indicators that tell you whether your other indicators are lying.">
 
 <div class="page">
-  <header style="padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--border);">
-    <a href="/" style="font-family: var(--font-head); font-size: 0.55rem; color: var(--text-dim); text-decoration: none;">← ZERO OS</a>
-    <h1 style="font-family: var(--font-head); font-size: clamp(1.2rem, 4vw, 1.8rem); font-weight: 700; color: var(--text); margin-top: 1rem; line-height: 1.2;">The Regime Problem</h1>
-    <p style="font-size: 0.65rem; color: var(--text-dim); margin-top: 0.3rem;">Why every indicator you use assumes one market. There are many.</p>
-  </header>
+<div class="page-inner">
 
-  <article style="padding: 2rem 0; font-size: 0.75rem; line-height: 1.8; color: var(--text-dim);">
-    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin-bottom: 0.5rem;">The assumption</h2>
-    <p>Every technical indicator in crypto — RSI, MACD, Bollinger Bands, moving average crossovers — contains the same hidden assumption: <span style="color: var(--text)">the market behaves the same way tomorrow as it did yesterday.</span></p>
-    <p>This is false. Markets switch between distinct regimes: trending, mean-reverting, chaotic, and transitional. An RSI signal that works beautifully in a trending regime becomes noise in a mean-reverting one. A mean-reversion strategy that prints money in calm markets gets destroyed when a trend emerges.</p>
-    <p>The question isn't <em>"what does the indicator say?"</em> — it's <em>"does this indicator even apply right now?"</em></p>
+  <!-- NAV -->
+  <nav class="thesis-nav">
+    <a href="/" class="nav-back"><span class="p">←</span> ZERO OS</a>
+    <span class="nav-label dim">/thesis</span>
+  </nav>
 
-    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin: 2rem 0 0.5rem;">Three chaos indicators</h2>
-    
-    <h3 style="font-family: var(--font-head); font-size: 0.75rem; color: var(--phosphor); margin: 1.5rem 0 0.3rem;">Hurst Exponent (H)</h3>
-    <p>Measures long-term memory in a time series. H &lt; 0.5 = mean-reverting (prices tend to snap back). H &gt; 0.5 = trending (momentum is real). H ≈ 0.5 = random walk (your signals are meaningless).</p>
-    
-    <h3 style="font-family: var(--font-head); font-size: 0.75rem; color: var(--phosphor); margin: 1.5rem 0 0.3rem;">Detrended Fluctuation Analysis (DFA)</h3>
-    <p>A more robust version of Hurst that handles non-stationary data. When Hurst and DFA agree, you have a strong regime signal. When they diverge, the market is in transition — the most dangerous zone for any strategy.</p>
-    
-    <h3 style="font-family: var(--font-head); font-size: 0.75rem; color: var(--phosphor); margin: 1.5rem 0 0.3rem;">Lyapunov Exponent (λ)</h3>
-    <p>Measures sensitivity to initial conditions — literally, chaos level. High λ means tiny input changes cause wildly different outcomes. In trading: <span style="color: var(--text)">high Lyapunov = reduce position size, because the market is unpredictable even with perfect information.</span></p>
-
-    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin: 2rem 0 0.5rem;">The punchline</h2>
-    <p style="color: var(--text); font-weight: 700;">A MACD crossover in a trending regime is meaningful. The same crossover in a mean-reverting regime is a trap.</p>
-    <p>Traditional platforms show you the crossover. We show you the regime first. Then you decide if the crossover matters.</p>
-    <p>This is the difference between an indicator dashboard and a trading intelligence system.</p>
-
-    <h2 style="font-family: var(--font-head); font-size: 0.9rem; color: var(--text); margin: 2rem 0 0.5rem;">References</h2>
-    <ul style="font-size: 0.65rem; color: var(--text-dim); line-height: 1.8; padding-left: 1rem;">
-      <li>Mandelbrot, B. (1963). "The Variation of Certain Speculative Prices." <em>Journal of Business</em></li>
-      <li>Hurst, H.E. (1951). "Long-term Storage Capacity of Reservoirs." <em>Transactions of the American Society of Civil Engineers</em></li>
-      <li>Peng, C.-K. et al. (1994). "Mosaic organization of DNA nucleotide sequences." <em>Physical Review E</em> — original DFA paper</li>
-      <li>Rosenstein, M.T. et al. (1993). "A practical method for calculating largest Lyapunov exponents." <em>Physica D</em></li>
-      <li>Di Matteo, T. et al. (2005). "Long-term memories of developed and emerging markets." <em>J. Banking & Finance</em> — Hurst in financial markets</li>
-    </ul>
-    
-    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-      <a href="/#access" style="font-family: var(--font-head); font-size: 0.7rem; font-weight: 700; color: var(--bg); background: var(--phosphor); padding: 0.6rem 1.2rem; text-decoration: none;">Request Early Access</a>
+  <!-- HERO PANE -->
+  <div class="pane pane-hero">
+    <div class="pane-header"><span class="p">■</span> THESIS</div>
+    <div class="pane-body">
+      <h1 class="thesis-title">The Regime Problem</h1>
+      <p class="thesis-subtitle">Why every indicator you use assumes one market. There are many.</p>
     </div>
-  </article>
+  </div>
 
-  <footer style="padding: 1.5rem 0; text-align: center; border-top: 1px solid var(--border); font-family: var(--font-head); font-size: 0.5rem;">
-    <span style="color: var(--phosphor);">◇</span> <span style="color: var(--text-dim);">ZERO OS</span>
+  <!-- CONTENT: TWO-COLUMN -->
+  <div class="pane-grid">
+
+    <!-- LEFT: The argument -->
+    <div class="pane">
+      <div class="pane-header"><span class="a">■</span> THE ASSUMPTION</div>
+      <div class="pane-body">
+        <p>Every technical indicator in crypto — RSI, MACD, Bollinger Bands, moving average crossovers — contains the same hidden assumption:</p>
+        <p class="highlight">The market behaves the same way tomorrow as it did yesterday.</p>
+        <p>This is false. Markets switch between distinct states: trending, mean-reverting, chaotic, and transitional. An RSI signal that works beautifully in a trending state becomes noise in a mean-reverting one. A mean-reversion strategy that prints money in calm markets gets destroyed when a trend emerges.</p>
+        <p>The question isn't <em>"what does the indicator say?"</em></p>
+        <p class="highlight">It's "does this indicator even apply right now?"</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: The punchline -->
+    <div class="pane">
+      <div class="pane-header"><span class="p">■</span> THE PUNCHLINE</div>
+      <div class="pane-body">
+        <p class="highlight">A MACD crossover in a trending state is meaningful. The same crossover in a mean-reverting state is a trap.</p>
+        <p>Traditional platforms show you the crossover. We show you the state first. Then you decide if the crossover matters.</p>
+        <p>This is the difference between an indicator dashboard and a trading intelligence system.</p>
+        <div class="edge-contrast">
+          <div class="edge-row">
+            <span class="edge-them dim">Indicator dashboard: RSI = 72 → overbought</span>
+            <span class="edge-us p">→ Intelligence: RSI = 72 in a trending state → momentum, not exhaustion</span>
+          </div>
+          <div class="edge-row">
+            <span class="edge-them dim">Indicator dashboard: MACD crossover → buy signal</span>
+            <span class="edge-us p">→ Intelligence: MACD crossover in chaos → noise, ignore it</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THREE INDICATORS -->
+  <div class="pane-full">
+    <div class="pane">
+      <div class="pane-header"><span class="ice">■</span> THREE CHAOS INDICATORS</div>
+      <div class="pane-body">
+        <div class="indicator-grid">
+          <div class="indicator-card">
+            <h3 class="indicator-name p">Hurst Exponent (H)</h3>
+            <p class="indicator-desc">Measures long-term memory in a time series.</p>
+            <div class="indicator-values">
+              <span class="iv"><span class="p">H &lt; 0.5</span> = mean-reverting (prices snap back)</span>
+              <span class="iv"><span class="a">H &gt; 0.5</span> = trending (momentum is real)</span>
+              <span class="iv"><span class="dim">H ≈ 0.5</span> = random walk (signals are meaningless)</span>
+            </div>
+          </div>
+          <div class="indicator-card">
+            <h3 class="indicator-name p">Detrended Fluctuation Analysis (DFA)</h3>
+            <p class="indicator-desc">A more robust version of Hurst that handles non-stationary data. When Hurst and DFA agree, you have a strong signal. When they diverge, the market is in transition — the most dangerous zone.</p>
+          </div>
+          <div class="indicator-card">
+            <h3 class="indicator-name p">Lyapunov Exponent (λ)</h3>
+            <p class="indicator-desc">Measures sensitivity to initial conditions — literally, chaos level. High λ means tiny input changes cause wildly different outcomes.</p>
+            <p class="indicator-highlight">High Lyapunov = reduce position size. The market is unpredictable even with perfect information.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFERENCES + CTA -->
+  <div class="pane-grid">
+    <div class="pane">
+      <div class="pane-header"><span class="dim">■</span> REFERENCES</div>
+      <div class="pane-body">
+        <ul class="ref-list">
+          <li>Mandelbrot, B. (1963). "The Variation of Certain Speculative Prices." <em>Journal of Business</em></li>
+          <li>Hurst, H.E. (1951). "Long-term Storage Capacity of Reservoirs." <em>Trans. ASCE</em></li>
+          <li>Peng, C.-K. et al. (1994). "Mosaic organization of DNA nucleotide sequences." <em>Physical Review E</em> — original DFA paper</li>
+          <li>Rosenstein, M.T. et al. (1993). "A practical method for calculating largest Lyapunov exponents." <em>Physica D</em></li>
+          <li>Di Matteo, T. et al. (2005). "Long-term memories of developed and emerging markets." <em>J. Banking & Finance</em></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pane pane-access">
+      <div class="pane-header"><span class="p">■</span> ACCESS</div>
+      <div class="pane-body" style="display:flex;flex-direction:column;justify-content:center;gap:1rem;">
+        <p class="access-line">The intelligence layer is built.</p>
+        <p class="access-line">Signal API is pre-launch.</p>
+        <p class="access-line dim">Design partners get first access.</p>
+        <a href="/#access" class="btn-primary">Request Early Access →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="thesis-footer">
+    <span class="p">◇</span> <span class="dim">ZERO OS</span>
   </footer>
+
+</div>
 </div>
 
 </BaseLayout>
 
 <style>
-  .page { max-width: 640px; margin: 0 auto; padding: 0 1.25rem; }
-  p { margin-bottom: 1rem; }
+  .page {
+    margin: 0.5rem;
+    border: 1px solid rgba(200,255,0,0.4);
+    min-height: calc(100vh - 1rem);
+    padding: 0;
+    overflow: hidden;
+  }
+  .page-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.75rem 2rem 2rem;
+  }
+
+  /* NAV */
+  .thesis-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+  }
+  .nav-back {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-dim);
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--phosphor); }
+  .nav-label {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* PANE SYSTEM (matches homepage) */
+  .pane-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .pane-full { margin-bottom: 0.5rem; }
+  .pane {
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
+  }
+  .pane-header {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,10,0.6);
+    color: var(--text-dim);
+  }
+  .pane-body {
+    padding: 1.5rem;
+    overflow: hidden;
+  }
+  .pane-hero { margin-bottom: 0.5rem; }
+
+  /* TYPOGRAPHY */
+  .thesis-title {
+    font-family: var(--font-head);
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+  }
+  .thesis-subtitle {
+    font-size: 1rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+    margin-bottom: 0.75rem;
+  }
+  .highlight {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  /* INDICATORS */
+  .indicator-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+  .indicator-card {
+    border: 1px solid var(--border);
+    padding: 1rem;
+    background: rgba(0,0,0,0.3);
+  }
+  .indicator-name {
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .indicator-desc {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  .indicator-values {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .iv {
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+  .indicator-highlight {
+    font-size: 0.85rem;
+    color: var(--text);
+    font-weight: 700;
+    margin-top: 0.5rem;
+  }
+
+  /* EDGE CONTRAST */
+  .edge-contrast { margin-top: 1rem; }
+  .edge-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+  }
+  .edge-row:last-child { border-bottom: none; }
+  .edge-them {
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+  .edge-us {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  /* REFERENCES */
+  .ref-list {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    padding-left: 1rem;
+  }
+  .ref-list li { margin-bottom: 0.5rem; }
+
+  /* ACCESS */
+  .access-line {
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0;
+  }
+  .btn-primary {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--phosphor);
+    background: transparent;
+    border: 1px solid var(--phosphor);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .btn-primary:hover {
+    background: rgba(200,255,0,0.08);
+    box-shadow: 0 0 20px rgba(200,255,0,0.1);
+  }
+
+  /* FOOTER */
+  .thesis-footer {
+    text-align: center;
+    padding: 1.5rem 0;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    .pane-grid { grid-template-columns: 1fr; }
+    .indicator-grid { grid-template-columns: 1fr; }
+    .page-inner { padding: 0.5rem 1rem 1.25rem; }
+  }
 </style>
