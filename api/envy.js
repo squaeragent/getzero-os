@@ -1,16 +1,17 @@
 // Vercel Serverless Function — proxies Envy Matrix API
-// Caches for 5 minutes to avoid hammering the API
+// Accepts optional ?coins= and ?indicators= query params
+// Caches for 60 seconds for live feel
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
 
   const API_KEY = process.env.ENVY_API_KEY;
   if (!API_KEY) {
     return res.status(500).json({ error: 'ENVY_API_KEY not configured' });
   }
 
-  const coins = 'BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ';
-  const indicators = 'HURST_24H,DFA_24H,LYAPUNOV_24H,XONE_AVG_NET,ROC_3H';
+  const coins = req.query.coins || 'BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ';
+  const indicators = req.query.indicators || 'HURST_24H,DFA_24H,LYAPUNOV_24H,XONE_AVG_NET,ROC_3H';
 
   try {
     const response = await fetch(
@@ -24,13 +25,15 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    
-    // Transform to lean format for the canvas
+
+    // Build lean matrix format for homepage canvas
     const matrix = {};
-    for (const [coin, indicators] of Object.entries(data.snapshot || {})) {
+    for (const [coin, indList] of Object.entries(data.snapshot || {})) {
       const row = {};
-      for (const ind of indicators) {
-        row[ind.indicatorCode] = ind.value;
+      if (Array.isArray(indList)) {
+        for (const ind of indList) {
+          row[ind.indicatorCode] = ind.value;
+        }
       }
       matrix[coin] = row;
     }
@@ -38,7 +41,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       live: true,
       timestamp: new Date().toISOString(),
-      matrix
+      matrix,           // lean format for homepage
+      snapshot: data.snapshot || {}  // raw format for portfolio
     });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to fetch Envy data', detail: err.message });
