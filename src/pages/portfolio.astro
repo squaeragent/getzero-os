@@ -519,28 +519,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 
-  // Initial load
-  await loadPortfolio();
-  await fetchPrices();
-  render();
+  // Initial load — portfolio first, then try prices
+  loadPortfolio().then(() => {
+    render();
+    // Try live prices after initial render
+    fetchPrices().then(() => render()).catch(() => {});
+  }).catch(e => console.error('Initial load failed:', e));
 
   // Tick the "ago" timer every 5s
-  setInterval(() => {
+  setInterval(function(){
     if(lastPriceUpdate){
-      document.getElementById('updated').textContent = 'Prices: ' + ago(lastPriceUpdate);
+      var el = document.getElementById('updated');
+      if(el) el.textContent = 'Prices: ' + ago(lastPriceUpdate);
     }
   }, 5000);
 
   // Fetch live prices every 30s and re-render
-  setInterval(async () => {
-    await fetchPrices();
-    render();
+  setInterval(function(){
+    fetchPrices().then(function(){ render(); }).catch(function(){});
   }, 30000);
 
-  // Reload portfolio data every 5 min (in case scanner pushed new data)
-  setInterval(async () => {
-    await loadPortfolio();
-    render();
+  // Reload portfolio data every 5 min
+  setInterval(function(){
+    loadPortfolio().then(function(){ render(); }).catch(function(){});
   }, 300000);
 })();
 </script>

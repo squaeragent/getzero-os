@@ -13,11 +13,16 @@ export default async function handler(req, res) {
   const coins = req.query.coins || 'BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ';
   const indicators = req.query.indicators || 'HURST_24H,DFA_24H,LYAPUNOV_24H,XONE_AVG_NET,ROC_3H';
 
+  // Use gate.getzero.dev (CNAME → nvprotocol.com → 167.172.7.178)
+  const BASE = 'https://gate.getzero.dev';
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     const response = await fetch(
-      `https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins=${coins}&indicators=${indicators}`,
-      { headers: { 'X-API-Key': API_KEY } }
+      `${BASE}/api/claw/paid/indicators/snapshot?coins=${coins}&indicators=${indicators}`,
+      { headers: { 'X-API-Key': API_KEY }, signal: controller.signal }
     );
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const text = await response.text();
