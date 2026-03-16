@@ -1,0 +1,331 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="ZERO OS — Live Portfolio" description="Paper trading portfolio powered by 300+ signals across 10 coins. Updated every 15 minutes.">
+  <div class="page">
+    <div class="terminal-border">
+
+      <!-- HERO -->
+      <div class="hero-pane">
+        <div class="pane-header">◇ ZERO OS PORTFOLIO — <span class="live-dot">●</span> LIVE</div>
+        <div class="hero-body">
+          <div class="stats-row" id="stats-row">
+            <div class="stat">
+              <span class="stat-label">VALUE</span>
+              <span class="stat-value" id="s-value">$10,000</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">P&L</span>
+              <span class="stat-value" id="s-pnl">—</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">WIN RATE</span>
+              <span class="stat-value" id="s-winrate">—</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">TRADES</span>
+              <span class="stat-value" id="s-trades">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">DAYS</span>
+              <span class="stat-value" id="s-days">1</span>
+            </div>
+          </div>
+          <p class="hero-sub">Paper trading $10,000 with autonomous signal detection. Every position backed by backtested entry/exit rules. Updated every 15 minutes.</p>
+        </div>
+      </div>
+
+      <!-- OPEN POSITIONS -->
+      <div class="pane">
+        <div class="pane-header">OPEN POSITIONS <span class="pane-dim" id="pos-count">(0)</span></div>
+        <div class="pane-body" id="positions-body">
+          <div class="loading">Fetching live data...</div>
+        </div>
+      </div>
+
+      <!-- RECENT SIGNALS -->
+      <div class="pane">
+        <div class="pane-header">SIGNAL FEED <span class="pane-dim">last 20 fires</span></div>
+        <div class="pane-body" id="fires-body">
+          <div class="loading">Fetching live data...</div>
+        </div>
+      </div>
+
+      <!-- CLOSED TRADES -->
+      <div class="pane">
+        <div class="pane-header">CLOSED TRADES <span class="pane-dim" id="closed-count">(0)</span></div>
+        <div class="pane-body" id="closed-body">
+          <div class="loading">Fetching live data...</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <span>◇ ZERO OS</span>
+        <span class="pane-dim" id="updated">—</span>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+    min-height: 100vh;
+  }
+  .terminal-border {
+    border: 1px solid rgba(200,255,0,0.4);
+    min-height: 100vh;
+  }
+
+  /* HERO */
+  .hero-pane {
+    border-bottom: 1px solid var(--border);
+  }
+  .pane-header {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.6);
+  }
+  .live-dot {
+    color: #c8ff00;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .hero-body {
+    padding: 1.5rem 1.25rem;
+  }
+  .stats-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .stat-label {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    color: var(--phosphor);
+    font-weight: 700;
+  }
+  .hero-sub {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  /* PANES */
+  .pane {
+    border-bottom: 1px solid var(--border);
+  }
+  .pane-body {
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+  }
+  .pane-dim {
+    opacity: 0.5;
+    font-size: 0.6rem;
+  }
+
+  /* TABLES */
+  .pos-table, .fire-table, .closed-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+  }
+  .pos-table th, .fire-table th, .closed-table th {
+    text-align: left;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .pos-table td, .fire-table td, .closed-table td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    white-space: nowrap;
+  }
+  .pos-coin {
+    color: var(--phosphor);
+    font-weight: 700;
+  }
+  .dir-long { color: #c8ff00; }
+  .dir-short { color: #ff6644; }
+  .pnl-pos { color: #c8ff00; }
+  .pnl-neg { color: #ff3333; }
+  .rarity-trump { color: #ffb000; font-weight: 700; }
+  .rarity-rare { color: #00d4ff; }
+  .rarity-common { color: var(--text-dim); }
+
+  .loading {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0.5;
+  }
+  .empty {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0.4;
+    padding: 0.5rem 0;
+  }
+
+  /* FIRE ROW */
+  .fire-icon { font-size: 0.7rem; }
+
+  /* FOOTER */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 600px) {
+    .page { padding: 0.5rem; }
+    .stats-row { gap: 1rem; }
+    .stat-value { font-size: 1.1rem; }
+    .pos-table, .fire-table, .closed-table { font-size: 0.65rem; }
+    .pos-table th, .fire-table th, .closed-table th { font-size: 0.55rem; }
+  }
+</style>
+
+<script is:inline>
+(async function(){
+  const API = '/api/portfolio.json';
+
+  function fmt$(v){ return v >= 0 ? '$'+v.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) : '-$'+Math.abs(v).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtPct(v){ return (v>=0?'+':'')+v.toFixed(2)+'%'; }
+  function fmtTime(iso){ if(!iso)return '—'; const d=new Date(iso); return d.toISOString().replace('T',' ').slice(0,16)+' UTC'; }
+  function rarityClass(r){ return r==='Trump'?'rarity-trump':r==='Rare'?'rarity-rare':'rarity-common'; }
+  function dirClass(d){ return d==='LONG'?'dir-long':'dir-short'; }
+  function pnlClass(v){ return v>=0?'pnl-pos':'pnl-neg'; }
+
+  async function load(){
+    try {
+      const res = await fetch(API);
+      const d = await res.json();
+      if(!d.live) return;
+
+      // Stats
+      const s = d.summary;
+      document.getElementById('s-value').textContent = fmt$(s.currentValue);
+      const pnlEl = document.getElementById('s-pnl');
+      pnlEl.textContent = fmtPct(s.pnlPct);
+      pnlEl.className = 'stat-value ' + pnlClass(s.pnl);
+      document.getElementById('s-winrate').textContent = s.winRate !== null ? s.winRate+'%' : '—';
+      document.getElementById('s-trades').textContent = s.totalTrades;
+      document.getElementById('s-days').textContent = s.daysRunning;
+      document.getElementById('pos-count').textContent = '('+s.openPositions+')';
+      document.getElementById('closed-count').textContent = '('+s.totalTrades+')';
+      document.getElementById('updated').textContent = 'Updated: '+fmtTime(d.updated);
+
+      // Open positions
+      const posBody = document.getElementById('positions-body');
+      if(d.positions.length === 0){
+        posBody.innerHTML = '<div class="empty">No open positions. Scanning every 15 minutes.</div>';
+      } else {
+        let html = '<table class="pos-table"><thead><tr><th>COIN</th><th>DIR</th><th>ENTRY</th><th>SIZE</th><th>SHARPE</th><th>WR</th><th>RARITY</th><th>OPENED</th></tr></thead><tbody>';
+        for(const p of d.positions){
+          html += '<tr>';
+          html += '<td class="pos-coin">'+p.coin+'</td>';
+          html += '<td class="'+dirClass(p.direction)+'">'+p.direction+'</td>';
+          html += '<td>'+fmt$(p.entry_price)+'</td>';
+          html += '<td>'+fmt$(p.size)+'</td>';
+          html += '<td>'+(p.sharpe||0).toFixed(2)+'</td>';
+          html += '<td>'+(p.win_rate||0).toFixed(0)+'%</td>';
+          html += '<td class="'+rarityClass(p.rarity)+'">'+(p.rarity||'—')+'</td>';
+          html += '<td>'+fmtTime(p.entry_time)+'</td>';
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        posBody.innerHTML = html;
+      }
+
+      // Signal feed
+      const firesBody = document.getElementById('fires-body');
+      const fires = (d.recentFires||[]).slice().reverse();
+      if(fires.length === 0){
+        firesBody.innerHTML = '<div class="empty">No signals fired yet. Scanning 300+ signals every 15 minutes.</div>';
+      } else {
+        let html = '<table class="fire-table"><thead><tr><th>TIME</th><th>COIN</th><th>DIR</th><th>SIGNAL</th><th>SHARPE</th><th>WR</th><th>RARITY</th></tr></thead><tbody>';
+        for(const f of fires){
+          const name = (f.signal||'').replace(/_/g,' ').slice(0,40);
+          html += '<tr>';
+          html += '<td>'+fmtTime(f.time)+'</td>';
+          html += '<td class="pos-coin">'+f.coin+'</td>';
+          html += '<td class="'+dirClass(f.direction)+'">'+f.direction+'</td>';
+          html += '<td>'+name+'</td>';
+          html += '<td>'+(f.sharpe||0).toFixed(2)+'</td>';
+          html += '<td>'+(f.win_rate||0).toFixed(0)+'%</td>';
+          html += '<td class="'+rarityClass(f.rarity)+'">'+(f.rarity||'—')+'</td>';
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        firesBody.innerHTML = html;
+      }
+
+      // Closed trades
+      const closedBody = document.getElementById('closed-body');
+      const closed = (d.closed||[]).slice().reverse();
+      if(closed.length === 0){
+        closedBody.innerHTML = '<div class="empty">No trades closed yet. Positions exit when signal conditions trigger or max hold time expires.</div>';
+      } else {
+        let html = '<table class="closed-table"><thead><tr><th>COIN</th><th>DIR</th><th>ENTRY</th><th>EXIT</th><th>P&L</th><th>P&L $</th><th>HOURS</th><th>EXIT REASON</th><th>RARITY</th></tr></thead><tbody>';
+        for(const c of closed){
+          html += '<tr>';
+          html += '<td class="pos-coin">'+c.coin+'</td>';
+          html += '<td class="'+dirClass(c.direction)+'">'+c.direction+'</td>';
+          html += '<td>'+fmt$(c.entry_price)+'</td>';
+          html += '<td>'+fmt$(c.exit_price)+'</td>';
+          html += '<td class="'+pnlClass(c.pnl_pct)+'">'+fmtPct(c.pnl_pct)+'</td>';
+          html += '<td class="'+pnlClass(c.pnl_dollars)+'">'+fmt$(c.pnl_dollars)+'</td>';
+          html += '<td>'+(c.hours_held||0)+'h</td>';
+          html += '<td>'+(c.exit_reason||'—')+'</td>';
+          html += '<td class="'+rarityClass(c.rarity)+'">'+(c.rarity||'—')+'</td>';
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        closedBody.innerHTML = html;
+      }
+
+    } catch(e) {
+      console.error('Portfolio fetch failed:', e);
+    }
+  }
+
+  load();
+  setInterval(load, 60000); // refresh every minute
+})();
+</script>
