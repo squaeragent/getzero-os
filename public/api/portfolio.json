@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-17T19:01:27.676519+00:00",
+  "updated": "2026-03-17T19:16:29.779732+00:00",
   "summary": {
     "startingCapital": 10000,
     "currentValue": 10028.9,
@@ -884,36 +884,6 @@
   ],
   "recentFires": [
     {
-      "coin": "SOL",
-      "signal": "SOCIAL_CLOUD_CMO_DIP_LONG_V3_MH9_EX3_EX3",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6456,
-      "win_rate": 58.156,
-      "max_drawdown": 12.0279,
-      "total_return": 43.0203,
-      "expression": "XONE_AVG_NET >= 36 AND XONE_AVG_NET_DELTA >= 15 AND CMO_3H30M <= 0",
-      "exit_expression": "CMO_3H30M >= 66.125 OR XONE_AVG_NET_DELTA <= -20",
-      "max_hold_hours": 9,
-      "price": 94.338,
-      "time": "2026-03-17T17:01:09.392711+00:00"
-    },
-    {
-      "coin": "ETH",
-      "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.1692,
-      "win_rate": 62.963,
-      "max_drawdown": 10.0411,
-      "total_return": 17.9206,
-      "expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1.0 AND DOJI_VELOCITY >= 1.5 AND CMO_3H30M <= -10 AND DOJI_VELOCITY_L >= 3.4069866700",
-      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
-      "max_hold_hours": 18,
-      "price": 2324.65,
-      "time": "2026-03-17T17:16:12.874599+00:00"
-    },
-    {
       "coin": "ETH",
       "signal": "SOCIAL_ANALYST_BULLISH_TREND_LONG_V2_EX2_Q2_FR4_EX",
       "rarity": "Common",
@@ -1182,6 +1152,36 @@
       "max_hold_hours": 9,
       "price": 95.307,
       "time": "2026-03-17T19:01:27.651637+00:00"
+    },
+    {
+      "coin": "SOL",
+      "signal": "SOCIAL_CLOUD_CMO_DIP_LONG_V3_MH9_EX3_EX3",
+      "rarity": "Rare",
+      "direction": "LONG",
+      "sharpe": 1.6456,
+      "win_rate": 58.156,
+      "max_drawdown": 12.0279,
+      "total_return": 43.0203,
+      "expression": "XONE_AVG_NET >= 36 AND XONE_AVG_NET_DELTA >= 15 AND CMO_3H30M <= 0",
+      "exit_expression": "CMO_3H30M >= 66.125 OR XONE_AVG_NET_DELTA <= -20",
+      "max_hold_hours": 9,
+      "price": 95.3425,
+      "time": "2026-03-17T19:16:29.754079+00:00"
+    },
+    {
+      "coin": "NEAR",
+      "signal": "WEIGHTED_MOMENTUM_LONG_FR6_EX2_FR11_FR3_Q6",
+      "rarity": "Common",
+      "direction": "LONG",
+      "sharpe": 0.0443,
+      "win_rate": 61.9048,
+      "max_drawdown": 1.7167,
+      "total_return": 0.0704,
+      "expression": "((RSI_3H30M <= 28) * 3) + ((BB_POSITION_15M <= 0.10) * 3) + ((CMO_3H30M <= -24) * 2) + ((EMA_CROSS_15M_N >= 0.0005) * 2) >= 5 AND EMA_N_24H >= 0.9936686425",
+      "exit_expression": "RSI_3H30M >= 78 OR BB_POSITION_15M >= 0.7",
+      "max_hold_hours": 48,
+      "price": 1.45555,
+      "time": "2026-03-17T19:16:29.771299+00:00"
     }
   ]
 }
