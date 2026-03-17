@@ -16,6 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
  ███╔╝    ██╔══╝   ██╔══██╗ ██║   ██║
 ████████╗ ███████╗ ██║  ██║ ╚██████╔╝
 ╚═══════╝ ╚══════╝ ╚═╝  ╚═╝  ╚═════╝</pre>
+      <div class="logo-text">ZERO OS</div>
     </div>
     <p class="hero-sub">A trading agent that scans 40 markets, shows its reasoning, and lets you decide.</p>
   </header>
@@ -150,7 +151,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="sh">GET STARTED</div>
     <div class="cta-body">
       <div class="cta-grid">
-        <a href="/portfolio" class="cta-btn">
+        <a href="/portfolio" class="cta-btn cta-primary">
           <span class="cta-label">Watch it trade</span>
           <span class="cta-sub">Live paper portfolio</span>
         </a>
@@ -222,6 +223,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin: 0;
     white-space: pre;
   }
+  .logo-text {
+    display: none;
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--phosphor);
+    letter-spacing: 0.15em;
+    text-align: center;
+  }
   .hero-sub {
     font-family: var(--font-body);
     font-size: clamp(0.85rem, 2.5vw, 1.1rem);
@@ -235,6 +245,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* ─── SECTIONS ─── */
   .section {
     border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .section + .section {
+    margin-top: 0;
   }
   .sh {
     font-family: var(--font-head);
@@ -333,7 +347,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* ─── MODES ─── */
   .modes-body {
-    padding: 1rem 1.25rem;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -342,6 +356,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border);
     overflow: hidden;
   }
+  .mode-card:nth-child(1) { border-left: 2px solid var(--text-dim); }
+  .mode-card:nth-child(2) { border-left: 2px solid var(--amber); }
+  .mode-card:nth-child(3) { border-left: 2px solid var(--phosphor); }
+  .mode-card:nth-child(4) { border-left: 2px solid var(--ice); }
   .mode-head {
     display: flex;
     align-items: center;
@@ -463,6 +481,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border-color: rgba(200,255,0,0.4);
     background: rgba(200,255,0,0.03);
   }
+  .cta-primary {
+    border-color: var(--phosphor);
+    background: rgba(200,255,0,0.08);
+  }
+  .cta-primary:hover {
+    background: rgba(200,255,0,0.14);
+  }
   .cta-label {
     font-family: var(--font-head);
     font-size: 0.8rem;
@@ -494,6 +519,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .cta-grid { grid-template-columns: 1fr; }
     .proof-link { gap: 1rem; }
     .proof-arr { display: none; }
+  }
+  @media (max-width: 420px) {
+    .logo-art { display: none; }
+    .logo-text { display: block; }
   }
 </style>
 
