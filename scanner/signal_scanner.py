@@ -306,12 +306,29 @@ def scan():
 
         # Don't double-enter same coin+direction
         open_keys = {(p["coin"], p["direction"]) for p in remaining_positions}
+        coin_trades_this_scan = {}
 
         for fire in fires_this_run:
             if len(remaining_positions) >= MAX_OPEN_POSITIONS:
                 break
             key = (fire["coin"], fire["direction"])
             if key in open_keys:
+                continue
+
+            # Max 2 entries per coin per scan (prevents INJ spam)
+            ct = coin_trades_this_scan.get(fire["coin"], 0)
+            if ct >= 2:
+                continue
+
+            # No opposing positions on same coin
+            opposite = (fire["coin"], "SHORT" if fire["direction"] == "LONG" else "LONG")
+            if opposite in open_keys:
+                continue
+
+            # Minimum quality
+            if fire.get("sharpe", 0) < 1.5:
+                continue
+            if fire.get("win_rate", 0) < 50:
                 continue
 
             size = portfolio["capital"] * POSITION_SIZE_PCT
@@ -334,6 +351,7 @@ def scan():
             }
             remaining_positions.append(position)
             open_keys.add(key)
+            coin_trades_this_scan[fire["coin"]] = ct + 1
             print(f"    📈 OPENED {fire['coin']} {fire['direction']} | ${size:.2f} @ ${fire['price']:,.2f} | Sharpe {fire['sharpe']:.2f}")
 
     # Save state
