@@ -1,16 +1,16 @@
 {
   "live": true,
-  "updated": "2026-03-17T18:16:21.494292+00:00",
+  "updated": "2026-03-17T18:31:23.522540+00:00",
   "summary": {
     "startingCapital": 10000,
-    "currentValue": 10029.43,
-    "cash": 7956.4,
-    "pnl": 29.43,
+    "currentValue": 10028.9,
+    "cash": 8374.63,
+    "pnl": 28.9,
     "pnlPct": 0.29,
-    "totalTrades": 64,
-    "winRate": 64.1,
-    "openPositions": 5,
-    "daysRunning": 1,
+    "totalTrades": 65,
+    "winRate": 63.1,
+    "openPositions": 4,
+    "daysRunning": 2,
     "started": "2026-03-16T18:22:43.099450+00:00"
   },
   "positions": [
@@ -65,38 +65,9 @@
       "size": 374.07,
       "sharpe": 1.7626,
       "win_rate": 78.2609
-    },
-    {
-      "coin": "SOL",
-      "signal_name": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3_EX3",
-      "rarity": "Rare",
-      "direction": "SHORT",
-      "entry_price": 94.8815,
-      "entry_time": "2026-03-17T18:16:21.468570+00:00",
-      "exit_expression": "RSI_3H30M <= 18.42375 OR XONE_AVG_NET_DELTA >= 20",
-      "max_hold_hours": 24,
-      "size": 418.76,
-      "sharpe": 1.9649,
-      "win_rate": 57.193
     }
   ],
   "closed": [
-    {
-      "coin": "SOL",
-      "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3_EX3",
-      "rarity": "Rare",
-      "direction": "SHORT",
-      "entry_price": 94.9175,
-      "exit_price": 96.6145,
-      "entry_time": "2026-03-16T18:35:45.829106+00:00",
-      "exit_time": "2026-03-16T22:24:42.940990+00:00",
-      "hours_held": 3.8,
-      "exit_reason": "signal",
-      "pnl_pct": -1.7879,
-      "pnl_dollars": -8.49,
-      "size": 475.05,
-      "portfolio_after": 8630.5
-    },
     {
       "coin": "INJ",
       "signal": "HURST_MEANREV_SHORT_EX0_Q2",
@@ -880,54 +851,25 @@
       "pnl_dollars": 1.38,
       "size": 401.26,
       "portfolio_after": 8375.16
-    }
-  ],
-  "recentFires": [
-    {
-      "coin": "ETH",
-      "signal": "EMA_CROSS_SOCIAL_LONG_V3_LOOSE_EX2_Q1_EX7",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.2489,
-      "win_rate": 45.614,
-      "max_drawdown": 32.6988,
-      "total_return": 57.2416,
-      "expression": "EMA_CROSS_15M_N >= 0.0015 AND XONE_A_NET >= 30 AND DFA_24H >= 0.45 AND LYAPUNOV_24H < 1.747720610",
-      "exit_expression": "EMA_CROSS_15M_N <= -0.0120 OR XONE_A_NET <= -11.5",
-      "max_hold_hours": 144,
-      "price": 2329.95,
-      "time": "2026-03-17T16:31:05.023469+00:00"
     },
     {
       "coin": "SOL",
       "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3_EX3",
       "rarity": "Rare",
       "direction": "SHORT",
-      "sharpe": 1.9649,
-      "win_rate": 57.193,
-      "max_drawdown": 11.8033,
-      "total_return": 74.9189,
-      "expression": "((XONE_AVG_NET_DELTA <= -15) * 3) + ((XONE_A_NET <= -20) * 2) + ((RSI_3H30M >= 60) * 2) + ((BB_POS_6H >= 0.85) * 3) + ((XONE_I_NET <= 0) * 2) >= 5",
-      "exit_expression": "RSI_3H30M <= 18.42375 OR XONE_AVG_NET_DELTA >= 20",
-      "max_hold_hours": 24,
-      "price": 94.4795,
-      "time": "2026-03-17T16:31:05.027780+00:00"
-    },
-    {
-      "coin": "ETH",
-      "signal": "DOJI_REVERSAL_LONG_V2_FR6_EX2_Q5_MH24_Q0",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.4028,
-      "win_rate": 63.5897,
-      "max_drawdown": 20.3071,
-      "total_return": 52.4459,
-      "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 38.25 AND XONE_SPREAD < 70.0000000000 AND HURST_24H >= 0.6866798200",
-      "exit_expression": "RSI_3H30M >= 75.4",
-      "max_hold_hours": 24,
-      "price": 2324.55,
-      "time": "2026-03-17T16:46:07.250635+00:00"
-    },
+      "entry_price": 94.8815,
+      "exit_price": 95.0025,
+      "entry_time": "2026-03-17T18:16:21.468570+00:00",
+      "exit_time": "2026-03-17T18:31:23.476520+00:00",
+      "hours_held": 0.3,
+      "exit_reason": "signal",
+      "pnl_pct": -0.1275,
+      "pnl_dollars": -0.53,
+      "size": 418.76,
+      "portfolio_after": 8374.63
+    }
+  ],
+  "recentFires": [
     {
       "coin": "ETH",
       "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
@@ -1182,6 +1124,51 @@
       "max_hold_hours": 24,
       "price": 94.8815,
       "time": "2026-03-17T18:16:21.468570+00:00"
+    },
+    {
+      "coin": "ETH",
+      "signal": "DOJI_REVERSAL_LONG_V2_FR6_EX2_Q5_MH24_Q0",
+      "rarity": "Rare",
+      "direction": "LONG",
+      "sharpe": 1.4028,
+      "win_rate": 63.5897,
+      "max_drawdown": 20.3071,
+      "total_return": 52.4459,
+      "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 38.25 AND XONE_SPREAD < 70.0000000000 AND HURST_24H >= 0.6866798200",
+      "exit_expression": "RSI_3H30M >= 75.4",
+      "max_hold_hours": 24,
+      "price": 2334.45,
+      "time": "2026-03-17T18:31:23.488537+00:00"
+    },
+    {
+      "coin": "ETH",
+      "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
+      "rarity": "Common",
+      "direction": "LONG",
+      "sharpe": 1.1692,
+      "win_rate": 62.963,
+      "max_drawdown": 10.0411,
+      "total_return": 17.9206,
+      "expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1.0 AND DOJI_VELOCITY >= 1.5 AND CMO_3H30M <= -10 AND DOJI_VELOCITY_L >= 3.4069866700",
+      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
+      "max_hold_hours": 18,
+      "price": 2334.45,
+      "time": "2026-03-17T18:31:23.490655+00:00"
+    },
+    {
+      "coin": "ETH",
+      "signal": "SOCIAL_ANALYST_BULLISH_TREND_LONG_V2_EX2_Q2_FR4_EX",
+      "rarity": "Common",
+      "direction": "LONG",
+      "sharpe": 0.5779,
+      "win_rate": 73.3333,
+      "max_drawdown": 11.0512,
+      "total_return": 6.1098,
+      "expression": "XONE_A_U_DIV >= 45 AND RSI_3H30M <= 60 AND EMA_6H30M_N <= 1.002 AND DFA_24H >= 0.45 AND XONE_SPREAD < 70.0000000000",
+      "exit_expression": "RSI_3H30M >= 81.9 OR XONE_A_U_DIV <= -15",
+      "max_hold_hours": 48,
+      "price": 2334.45,
+      "time": "2026-03-17T18:31:23.492098+00:00"
     }
   ]
 }
