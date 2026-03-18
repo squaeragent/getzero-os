@@ -57,8 +57,7 @@ def export():
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
 
-    # ─── SIGNAL FIRES (from paper engine — still useful for signal feed) ───
-    paper_fires = load_jsonl(DATA_DIR / "fires.jsonl", limit=30)
+    # (paper fires removed from public export)
 
     # ─── LIVE TRADING ───
     live_positions = load_json(LIVE_DIR / "positions.json", [])
@@ -192,7 +191,6 @@ def export():
             "blocked": len(approved.get("blocked", [])),
         },
         "liveEquityCurve": live_equity_curve,
-        "recentFires": paper_fires[-20:],
     }
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

@@ -77,14 +77,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- SIGNAL FEED -->
-      <div class="section">
-        <div class="ph">SIGNAL FEED <span class="dim">last 20 fires</span></div>
-        <div class="sb" id="fires-body">
-          <div class="muted">Fetching live data...</div>
-        </div>
-      </div>
-
       <!-- FOOTER -->
       <div class="footer">
         <span>◇ ZERO OS</span>
@@ -371,34 +363,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .stat-row-label { color: var(--text-dim); }
   .stat-row-value { color: var(--text); font-weight: 700; }
 
-  /* ─── SIGNAL FEED ─── */
-  .fire-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .fire-row {
-    display: grid;
-    grid-template-columns: 130px 50px 55px 1fr auto auto;
-    gap: 0.5rem;
-    padding: 0.35rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    align-items: center;
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-  }
-  .fire-time { color: var(--text-dim); font-size: 0.6rem; }
-  .fire-coin { color: var(--phosphor); font-weight: 700; }
-  .fire-name {
-    color: var(--text-dim);
-    font-size: 0.6rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .fire-sharpe { color: var(--text); text-align: right; }
-  .fire-wr { color: var(--text-dim); text-align: right; }
-
   /* ─── CLOSED TRADES ─── */
   .closed-cards {
     display: flex;
@@ -458,12 +422,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .sv.big { font-size: 1.3rem; }
     .pos-card-grid { grid-template-columns: repeat(2, 1fr); }
     .stats-grid { grid-template-columns: 1fr; }
-    .fire-row {
-      grid-template-columns: 1fr;
-      gap: 0.15rem;
-      padding: 0.5rem 0;
-    }
-    .fire-row > * { text-align: left !important; }
     .closed-card {
       grid-template-columns: 1fr 1fr;
       gap: 0.3rem;
@@ -841,29 +799,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       closedBody.innerHTML = html;
     }
 
-    // ─── SIGNAL FEED ───
-    var firesBody = document.getElementById('fires-body');
-    var fires = (d.recentFires||[]).slice().reverse().slice(0, 20);
-    if(fires.length === 0){
-      firesBody.innerHTML = '<div class="muted">No signals fired yet.</div>';
-    } else {
-      var html = '<div class="fire-list">';
-      for(var i=0; i<fires.length; i++){
-        var f = fires[i];
-        var name = (f.signal||'').replace(/_/g,' ').toLowerCase().slice(0,45);
-        var dirCls = f.direction==='LONG' ? 'c-long' : 'c-short';
-        html += '<div class="fire-row">';
-        html += '<span class="fire-time">'+fmtTime(f.time)+'</span>';
-        html += '<span class="fire-coin">'+f.coin+'</span>';
-        html += '<span class="'+dirCls+'">'+f.direction+'</span>';
-        html += '<span class="fire-name">'+name+'</span>';
-        html += '<span class="fire-sharpe">S '+(f.sharpe||0).toFixed(2)+'</span>';
-        html += '<span class="fire-wr">'+(f.win_rate||0).toFixed(0)+'%</span>';
-        html += '</div>';
-      }
-      html += '</div>';
-      firesBody.innerHTML = html;
-    }
   }
 
   // ─── DATA FETCHING ───
