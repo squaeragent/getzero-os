@@ -38,6 +38,7 @@ AGENTS = [
     ("regime",          AGENTS_DIR / "regime_agent.py",           300,  10),
     ("liquidity",       AGENTS_DIR / "liquidity_agent.py",       120,   5),
     ("cross_timeframe", AGENTS_DIR / "cross_timeframe_agent.py", 300,  10),
+    ("funding",         AGENTS_DIR / "funding_agent.py",         300,  10),
     ("harvester",       AGENTS_DIR / "signal_harvester.py",      600,  20),
     ("correlation",     AGENTS_DIR / "correlation_agent.py",     300,  10),
     ("risk",            AGENTS_DIR / "risk_agent.py",            120,   5),

@@ -543,9 +543,26 @@ def run_cycle(api_key):
         except Exception:
             pass
 
+    # Load funding data for convergence scoring
+    funding_data = {}
+    funding_file = BUS_DIR / "funding.json"
+    if funding_file.exists():
+        try:
+            with open(funding_file) as f:
+                fd_raw = json.load(f)
+            for cs in fd_raw.get("convergence_signals", []):
+                funding_data[cs["coin"]] = cs
+            print(f"  Loaded funding convergence for {len(funding_data)} coins")
+        except Exception:
+            pass
+
     # Extract all indicators needed from expressions
+    # Also request volume profile + VWAP for scoring
     all_indicators = extract_indicators_from_packs(packs)
-    print(f"  Need {len(all_indicators)} unique indicators")
+    volume_indicators = {"VWAP_15M", "VWAP_24H", "VOLUME_PROFILE_15M", "VOLUME_PROFILE_1H",
+                         "VOLUME_PROFILE_4H", "VOLUME_PROFILE_12H", "VOLUME_PROFILE_24H", "VOLUME_PROFILE_48H"}
+    all_indicators = all_indicators | volume_indicators
+    print(f"  Need {len(all_indicators)} unique indicators (incl. volume profile)")
 
     # Fetch current indicator values from Envy API
     print(f"  Fetching indicators for {len(coins)} coins...")
@@ -623,6 +640,34 @@ def run_cycle(api_key):
             sig_weight = signal_weights.get(signal_name, 1.0)
             composite *= sig_weight
 
+            # Volume profile scoring: trades near VWAP get a boost
+            vwap_bonus = 0.0
+            coin_inds = indicator_data.get(coin, {})
+            close_px = coin_inds.get("CLOSE_PRICE_15M", 0)
+            vwap = coin_inds.get("VWAP_24H", 0) or coin_inds.get("VWAP_15M", 0)
+            if close_px > 0 and vwap > 0:
+                distance_from_vwap = abs(close_px - vwap) / close_px
+                if distance_from_vwap < 0.005:  # within 0.5% of VWAP
+                    vwap_bonus = 0.5  # strong support/resistance
+                elif distance_from_vwap < 0.01:
+                    vwap_bonus = 0.25
+                if vwap_bonus > 0:
+                    composite += vwap_bonus
+
+            # Funding rate convergence scoring
+            funding_bonus = 0.0
+            coin_funding = funding_data.get(coin)
+            if coin_funding:
+                f_direction = coin_funding.get("direction")
+                f_strength = coin_funding.get("strength", 0)
+                if f_direction == direction and f_strength > 0:
+                    # Funding agrees with signal direction
+                    funding_bonus = f_strength  # up to +1.5 for extreme convergence
+                    composite += funding_bonus
+                elif f_strength < 0:
+                    # Chaotic + extreme funding = penalty
+                    composite += f_strength  # negative
+
             composite = round(max(0.0, min(10.0, composite)), 2)
 
             candidates.append({
@@ -640,6 +685,8 @@ def run_cycle(api_key):
                 "timeframe_pattern": tf_pattern,
                 "timeframe_confirmation": round(tf_conf, 2),
                 "signal_weight": round(sig_weight, 2),
+                "vwap_bonus": round(vwap_bonus, 2),
+                "funding_bonus": round(funding_bonus, 2),
                 "max_hold_hours": pack.get("max_hold_hours"),
                 "exit_expression": pack.get("exit_expression", ""),
             })

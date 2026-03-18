@@ -555,16 +555,76 @@ STOP_LOSS_BY_MAX_LEV = {
 }
 
 
-def get_adjusted_stop_pct(coin, default_stop):
-    """Get volatility-adjusted stop loss percentage, tightened by regime."""
-    max_lev = COIN_MAX_LEVERAGE.get(coin, 10)
+def compute_atr(coin, api_key, period=14):
+    """Compute ATR from Envy CLOSE_PRICE_15M history. Returns ATR as percentage of price."""
+    try:
+        url = f"https://gate.getzero.dev/api/claw/paid/indicators/history?coin={coin}&indicator=CLOSE_PRICE_15M"
+        req = urllib.request.Request(url, headers={"X-API-Key": api_key})
+        data = json.loads(urllib.request.urlopen(req, timeout=15).read())
+        
+        prices_data = data.get("data", {}).get("CLOSE_PRICE_15M", {}).get("values", [])
+        if len(prices_data) < period + 1:
+            return None
+        
+        prices = [v["v"] for v in prices_data[-96:]]  # last 24h (96 × 15min)
+        if len(prices) < period + 1:
+            return None
+        
+        # True Range = max(high-low, abs(high-prev_close), abs(low-prev_close))
+        # With only close prices, approximate TR as abs(close - prev_close)
+        trs = []
+        for i in range(1, len(prices)):
+            tr = abs(prices[i] - prices[i-1])
+            trs.append(tr)
+        
+        # ATR = SMA of last `period` TRs
+        atr = sum(trs[-period:]) / period
+        atr_pct = atr / prices[-1] if prices[-1] > 0 else 0
+        return round(atr_pct, 6)
+    except Exception as e:
+        log(f"  ATR fetch failed for {coin}: {e}")
+        return None
 
-    # Base stop from leverage bucket
-    base_stop = default_stop
-    for lev in sorted(STOP_LOSS_BY_MAX_LEV.keys(), reverse=True):
-        if max_lev >= lev:
-            base_stop = STOP_LOSS_BY_MAX_LEV[lev]
-            break
+
+# ATR cache (refreshed per cycle, not per trade)
+_atr_cache = {}
+_atr_cache_ts = 0
+
+
+def get_atr_for_coin(coin, api_key=None):
+    """Get cached ATR for a coin. Returns None if unavailable."""
+    global _atr_cache, _atr_cache_ts
+    now = time.time()
+    # Refresh cache every 15 minutes
+    if now - _atr_cache_ts > 900 and api_key:
+        _atr_cache_ts = now
+        _atr_cache.clear()
+    
+    if coin not in _atr_cache and api_key:
+        _atr_cache[coin] = compute_atr(coin, api_key)
+    
+    return _atr_cache.get(coin)
+
+
+def get_adjusted_stop_pct(coin, default_stop):
+    """Get stop loss: ATR-based if available, else leverage-bucket, then regime-adjusted."""
+    # Try ATR-based stop (2x ATR)
+    env = load_env()
+    api_key = env.get("ENVY_API_KEY", "")
+    atr = get_atr_for_coin(coin, api_key)
+    
+    if atr and atr > 0:
+        # 2x ATR as stop, floored at 1.5% and capped at 10%
+        base_stop = max(0.015, min(0.10, atr * 2))
+        log(f"  {coin} ATR-stop: ATR={atr*100:.3f}% → stop={base_stop*100:.2f}%")
+    else:
+        # Fallback to leverage-bucket
+        max_lev = COIN_MAX_LEVERAGE.get(coin, 10)
+        base_stop = default_stop
+        for lev in sorted(STOP_LOSS_BY_MAX_LEV.keys(), reverse=True):
+            if max_lev >= lev:
+                base_stop = STOP_LOSS_BY_MAX_LEV[lev]
+                break
 
     # Regime adjustment: tighter in chaos, wider in trending
     regimes_data = load_json(BUS_DIR / "regimes.json", {})
@@ -629,11 +689,24 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         log(f"  Skip {coin}: order ${order_value:.2f} < $10 min")
         return None
 
+    # Capture pre-trade execution quality data
+    intended_price = price
+    spread_at_entry = None
+    depth_at_entry = None
+    liquidity = load_liquidity()
+    coin_liq = liquidity.get(coin, {})
+    if coin_liq:
+        spread_at_entry = coin_liq.get("spread_pct", None)
+        depth_at_entry = coin_liq.get("bid_depth_50", 0) + coin_liq.get("ask_depth_50", 0)
+
     log(f"{'DRY' if dry else 'LIVE'} OPEN {coin} {direction} | ${size_usd:.2f} ({size_coins}) @ ${price:,.4f} | sharpe={trade.get('sharpe', 0):.2f}")
 
     fill_price = price
+    fill_time_ms = None
     if not dry:
+        t_start = time.time()
         result = client.market_order(coin, is_buy, size_coins)
+        fill_time_ms = round((time.time() - t_start) * 1000)
         log(f"  Order result: {json.dumps(result)}")
 
         if result.get("status") != "ok":
@@ -654,6 +727,11 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
             log(f"  Not filled, skipping")
             return None
 
+    # Log execution quality
+    slippage_pct = abs(fill_price - intended_price) / intended_price * 100 if intended_price > 0 else 0
+    slippage_usd = slippage_pct / 100 * size_usd
+    log(f"  Execution: intended=${intended_price:,.4f} filled=${fill_price:,.4f} slippage={slippage_pct:.4f}% (${slippage_usd:.4f}) fill_time={fill_time_ms}ms spread={spread_at_entry}")
+
     # Place native stop loss on HL
     default_stop = cfg.get("stop_loss_pct", 0.05)
     stop_pct = get_adjusted_stop_pct(coin, default_stop)
@@ -664,6 +742,7 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         "direction": direction,
         "signal": trade.get("signal", ""),
         "entry_price": fill_price,
+        "intended_price": intended_price,
         "entry_time": datetime.now(timezone.utc).isoformat(),
         "size_usd": round(size_usd, 2),
         "size_coins": size_coins,
@@ -674,6 +753,13 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         "stop_loss": stop_price,
         "stop_type": "native",  # HL server-side trigger
         "peak_pnl_pct": 0.0,
+        "exec_quality": {
+            "slippage_pct": round(slippage_pct, 6),
+            "slippage_usd": round(slippage_usd, 6),
+            "fill_time_ms": fill_time_ms,
+            "spread_at_entry": spread_at_entry,
+            "depth_at_entry": round(depth_at_entry, 2) if depth_at_entry else None,
+        },
     }
     return position
 
