@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-18T16:36:18.101088+00:00",
+  "cycle": 1,
+  "observations_since_last": 14,
+  "total_trades_analyzed": 14,
+  "win_rate": 28.6,
+  "net_pnl": -1.21,
+  "llm_analysis": "**Analysis**\n\n1. **Patterns in recent losses:**\n\t* Long bias: 11 out of 14 losses are long positions, indicating a potential issue with our long entry signals or risk management.\n\t* Coin-specific issues: SOL (2 losses), BTC (2 losses), and INJ (2 losses) have been problematic, suggesting that our signals for these coins may need refinement.\n\t* Signal-specific issues: ARCH_CHAOS_REGIME_CONVERGENCE has resulted in 4 losses, indicating a potential flaw in this signal or its application.\n\t* Regime uncertainty: The regime is unknown for all trades, which may be contributing to the poor performance.\n2. **Patterns in recent wins:**\n\t* Short bias: 2 out of 5 wins are short positions, suggesting that our short entry signals may be more effective than our long entry signals.\n\t* Coin-specific successes: WLD, ARB, ZEC, and INJ have been profitable, indicating that our signals for these coins may be more reliable.\n3. **Overweight directions, regimes, or signal types:**\n\t* Long bias: Our recent losses suggest an overweight in long positions, which may need to be addressed through adjustments to our risk management or signal generation.\n4. **Edges to exploit:**\n\t* Short selling: Our wins suggest that short selling may be a profitable strategy, particularly for coins like WLD and INJ.\n\t* Coin-specific signals: Refining our signals for successful coins like ARB and ZEC could lead to more profitable trades.\n5. **Traps to avoid:**\n\t* Over-reliance on ARCH_CHAOS_REGIME_CONVERGENCE signal: This signal has resulted in 4 losses, suggesting that we should be cautious when using it or consider alternative signals.\n\n**Proposed rules:**\n\n1. RULE: IF (SOL or BTC) AND (signal == ARCH_CHAOS_REGIME_CONVERGENCE) THEN reduce position size by 20% BECAUSE these coins and signal have resulted in repeated losses.\n2. RULE: IF (WLD or INJ) AND (short signal triggered) THEN increase position size by 10% BECAUSE these coins have been profitable for short selling.\n3. RULE: IF (regime unknown) THEN reduce overall portfolio risk by 15% BECAUSE regime uncertainty may be contributing to our poor performance.\n\nThese rules are designed to address the patterns and issues identified in the analysis, and can be tested and refined based on their performance.",
+  "patterns_noticed": [
+    "1. **Patterns in recent losses:**",
+    "2. **Patterns in recent wins:**",
+    "These rules are designed to address the patterns and issues identified in the analysis, and can be tested and refined ba"
+  ],
+  "rule_proposals": [],
+  "self_assessment": {
+    "biggest_mistake": "1. **Patterns in recent losses:**",
+    "biggest_edge": "2. **Patterns in recent wins:**",
+    "confidence_calibration": "Analyzed"
+  }
+}

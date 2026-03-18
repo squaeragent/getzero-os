@@ -1,0 +1,57 @@
+{
+  "coin": "DOT",
+  "direction": "LONG",
+  "signal": "DOJI_REVERSAL_LONG_NARROW_BB_V2_EX0",
+  "sharpe": 1.5982,
+  "win_rate": 70.97,
+  "regime": "shift",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 3.88,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M > 68.2 OR DOJI_DISTANCE < -3",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1 AND RSI_3H30M < 45 AND BB_UPPER_5H_N < 1.012",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_163615_DOT_LONG_001",
+  "thesis": "Hurst 0.67 + TRAP_LONG + funding stable + shift regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "regime transitioning (shift) \u2014 direction unclear; timeframe pattern TRAP_LONG conflicts with LONG; Hurst declining 0.74\u21920.67 \u2014 momentum may be exhausting",
+  "confidence": 0.56,
+  "evidence_for": [
+    "funding stable (rate 0.000048)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "regime transitioning (shift) \u2014 direction unclear",
+    "timeframe pattern TRAP_LONG conflicts with LONG",
+    "Hurst declining 0.74\u21920.67 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "shift",
+    "regime_confidence": 0.647,
+    "hurst_24h": 0.6703,
+    "hurst_48h": 0.7448,
+    "funding_rate": 4.8e-05,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 59.0,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

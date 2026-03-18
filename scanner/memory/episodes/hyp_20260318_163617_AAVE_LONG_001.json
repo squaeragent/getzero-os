@@ -1,0 +1,125 @@
+{
+  "coin": "AAVE",
+  "direction": "LONG",
+  "signal": "DOJI_LONG_VELOCITY_HURST_V1_Q1",
+  "sharpe": 2.0439,
+  "win_rate": 79.49,
+  "regime": "shift",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 4.64,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 72,
+  "exit_expression": "BB_POSITION_15M >= 1.10 OR RSI_3H30M > 75",
+  "entry_expression": "DOJI_SIGNAL_L >= 100 AND DOJI_VELOCITY_L >= 2.0 AND BB_POSITION_15M <= 0.25 AND HURST_48H >= 0.725 AND DFA_24H < 0.535712870",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_163617_AAVE_LONG_001",
+  "thesis": "Hurst 0.76 + TRAP_LONG + funding stable + shift regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "regime transitioning (shift) \u2014 direction unclear; timeframe pattern TRAP_LONG conflicts with LONG",
+  "confidence": 0.695,
+  "evidence_for": [
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 92)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "regime transitioning (shift) \u2014 direction unclear",
+    "timeframe pattern TRAP_LONG conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "shift",
+    "regime_confidence": 0.71,
+    "hurst_24h": 0.7562,
+    "hurst_48h": 0.7256,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 92.1,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_163617_AAVE_LONG_001",
+    "coin": "AAVE",
+    "direction": "LONG",
+    "survival_score": 0.504,
+    "verdict": "PROCEED_WITH_CAUTION",
+    "recommended_size_modifier": 0.7,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "Hurst 0.756 \u2014 kill at 0.5 not near",
+        "conditions_checked": 4,
+        "conditions_near": 1
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $60 (52% of equity), 3% drop = -$1.80",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.8,
+        "directional_pct": 52.2
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.69",
+        "confidence": 0.695,
+        "evidence_for_count": 3,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "signal in shifting regime \u2014 direction unclear",
+        "regime": "shift",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  }
+}

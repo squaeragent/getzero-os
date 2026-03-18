@@ -394,3 +394,31 @@ A bot does what you programmed. Intelligence does what works.
 - Supervisor updated: 10 → 6 processes
 - Bug found: first run had empty API key (env not sourced), loads from .env file correctly
 - Commit: 180083d
+
+## Phase 2 Status: COMPLETE (2026-03-18)
+- hypothesis_generator.py: 1,405 lines
+- 13 hypotheses generated with thesis/anti-thesis/kill conditions/confidence scoring
+- Episode memory foundation: 36 episode files
+- Backward compatible with correlation agent
+
+## Phase 3 Status: COMPLETE (2026-03-18)
+- adversary.py: 370 lines, 6 attack vectors
+- First run: 18 hypotheses → 6 killed, 12 survivors
+- Execution agent wired with size modifiers
+- Commit: 1573ac9
+
+## Phase 4 Status: COMPLETE (2026-03-18)
+- observer.py: kill condition monitoring + structured observations
+- 14 historical trades retroactively observed
+- Kill signals wired into execution agent
+- hypothesis_id stored on positions
+- Commit: 25c1637
+
+## Phase 5 Status: COMPLETE (2026-03-18)
+- reflection.py: Ollama-based, 6h deep reflection + 30min narrative
+- parameter_evolution.py: rule generation from trade patterns
+- Rule lifecycle: proposed → probation → active → killed
+- Rules wired into hypothesis generator + adversary
+- First narrative generated via llama3:8b
+- 9 processes total
+- All phases completed in single session (~45 minutes)

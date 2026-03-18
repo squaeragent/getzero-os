@@ -1,0 +1,130 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+  "sharpe": 1.5877,
+  "win_rate": 60.38,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 8.93,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "MOMENTUM_N_6H > 0.13",
+  "entry_expression": "MOMENTUM_N_6H < 0.025 AND MOMENTUM_N_24H < 0.08 AND LYAPUNOV_48H <= 1.96",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_163617_XPL_SHORT_001",
+  "thesis": "Hurst 0.68 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "spread elevated \u2014 potential MM activity; Hurst declining 0.75\u21920.68 \u2014 momentum may be exhausting; liquidity below tradeable threshold",
+  "confidence": 0.404,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.68 > 0.5 \u2192 trending market",
+    "fast+slow timeframes both bearish (CONFIRMATION_SHORT)",
+    "funding stable (rate 0.001008)"
+  ],
+  "evidence_against": [
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.75\u21920.68 \u2014 momentum may be exhausting",
+    "liquidity below tradeable threshold",
+    "RSI 25 oversold \u2014 limited downside room"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold",
+    "timeframe pattern flips to CONFIRMATION_LONG"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.665,
+    "hurst_24h": 0.6814,
+    "hurst_48h": 0.7519,
+    "funding_rate": 0.001008,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 55.3,
+    "tradeable": false,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_163617_XPL_SHORT_001",
+    "coin": "XPL",
+    "direction": "SHORT",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met; liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 6,
+        "conditions_near": 4
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $69 (60% of equity), 3% adverse move = -$2.07",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 2.07,
+        "directional_pct": 60.0
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.404,
+        "evidence_for_count": 4,
+        "evidence_against_count": 4
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=momentum) in trending regime",
+        "regime": "trending",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001044",
+        "funding_rate": 0.001044,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  }
+}
