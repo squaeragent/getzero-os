@@ -57,24 +57,8 @@ def export():
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
 
-    # ─── PAPER TRADING ───
-    paper_positions = load_json(DATA_DIR / "positions.json", [])
-    paper_portfolio = load_json(DATA_DIR / "portfolio.json", {
-        "capital": 10000, "trades": 0, "wins": 0,
-        "started": now_iso
-    })
-    paper_closed = load_jsonl(DATA_DIR / "closed.jsonl", limit=100)
+    # ─── SIGNAL FIRES (from paper engine — still useful for signal feed) ───
     paper_fires = load_jsonl(DATA_DIR / "fires.jsonl", limit=30)
-
-    total_in_positions = sum(p.get("size", 0) for p in paper_positions)
-    total_value = paper_portfolio.get("capital", 10000) + total_in_positions
-    started = paper_portfolio.get("started", now_iso)
-    try:
-        days = max(1, int((time.time() - datetime.fromisoformat(started).timestamp()) / 86400) + 1)
-    except (ValueError, TypeError):
-        days = 1
-    trades = paper_portfolio.get("trades", 0)
-    wins = paper_portfolio.get("wins", 0)
 
     # ─── LIVE TRADING ───
     live_positions = load_json(LIVE_DIR / "positions.json", [])
@@ -162,17 +146,7 @@ def export():
             "shortCount": len(short_trades),
         }
 
-    paper_stats = compute_stats(paper_closed)
     live_stats = compute_stats(live_closed)
-
-    # ─── PAPER EQUITY CURVE (from closed trades) ───
-    paper_equity_curve = []
-    running_value = 10000.0
-    for trade in paper_closed:
-        pnl = trade.get("pnl_dollars", trade.get("pnl_usd", 0))
-        running_value += pnl
-        t = trade.get("exit_time", trade.get("closed_at", ""))
-        paper_equity_curve.append({"t": t, "v": round(running_value, 2)})
 
     # ─── LIVE EQUITY CURVE (from risk agent) ───
     live_equity_curve = [
@@ -184,18 +158,6 @@ def export():
     snapshot = {
         "live": True,
         "updated": now_iso,
-        "summary": {
-            "startingCapital": 10000,
-            "currentValue": round(total_value, 2),
-            "cash": round(paper_portfolio.get("capital", 10000), 2),
-            "pnl": round(total_value - 10000, 2),
-            "pnlPct": round((total_value - 10000) / 100, 2),
-            "totalTrades": trades,
-            "winRate": round(wins / trades * 100, 1) if trades > 0 else None,
-            "openPositions": len(paper_positions),
-            "daysRunning": days,
-            "started": started,
-        },
         "liveTrading": {
             "enabled": True,
             "capital": live_portfolio.get("capital", 115),
@@ -229,12 +191,8 @@ def export():
             "approved": len(approved.get("approved", [])),
             "blocked": len(approved.get("blocked", [])),
         },
-        "equityCurve": paper_equity_curve,
         "liveEquityCurve": live_equity_curve,
-        "positions": paper_positions,
-        "closed": paper_closed[-50:],
         "recentFires": paper_fires[-20:],
-        "stats": paper_stats,
     }
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

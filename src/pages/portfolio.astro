@@ -1,18 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="ZERO OS — Live Portfolio" description="Paper trading portfolio powered by 300+ signals across 10 coins. Updated every 15 minutes.">
+<BaseLayout title="ZERO OS — Live Trading" description="Live autonomous trading on Hyperliquid. 5-agent system scanning 300+ signals across 10 coins.">
   <div class="page">
     <div class="terminal-border">
 
       <!-- HERO -->
       <div class="hero-pane">
-        <div class="ph">◇ ZERO OS PORTFOLIO — <span class="live-dot">●</span> LIVE</div>
+        <div class="ph">◇ ZERO OS — <span class="live-dot">●</span> LIVE</div>
         <div class="hero-body">
           <div class="stats-row" id="stats-row">
             <div class="stat">
-              <span class="sl">VALUE</span>
-              <span class="sv big" id="s-value">$10,000</span>
+              <span class="sl">EQUITY</span>
+              <span class="sv big" id="s-equity">—</span>
             </div>
             <div class="stat">
               <span class="sl">P&L</span>
@@ -23,12 +23,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span class="sv" id="s-winrate">—</span>
             </div>
             <div class="stat">
-              <span class="sl">TRADES</span>
+              <span class="sl">CLOSED TRADES</span>
               <span class="sv" id="s-trades">0</span>
             </div>
             <div class="stat">
-              <span class="sl">DAYS</span>
-              <span class="sv" id="s-days">1</span>
+              <span class="sl">UPTIME</span>
+              <span class="sv" id="s-uptime">—</span>
             </div>
           </div>
           <div class="hero-meta">
@@ -43,6 +43,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="ph">EQUITY CURVE <span class="dim" id="eq-range"></span></div>
         <div class="sb eq-wrap">
           <canvas id="equity-canvas" width="860" height="200"></canvas>
+          <div class="muted" id="eq-empty" style="display:none">Collecting data...</div>
         </div>
       </div>
 
@@ -52,31 +53,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="sb agent-bar" id="agent-bar"></div>
       </div>
 
-      <!-- LIVE TRADING (REAL MONEY) -->
-      <div class="section live-section" id="live-section" style="display:none">
-        <div class="ph"><span class="live-badge">LIVE</span> HYPERLIQUID TRADING <span class="dim" id="live-count">(0)</span></div>
-        <div class="sb">
-          <div class="live-stats" id="live-stats"></div>
-          <div class="live-eq-wrap">
-            <canvas id="live-equity-canvas" width="860" height="120"></canvas>
-          </div>
-          <div id="live-positions-body"></div>
-          <div id="live-closed-body"></div>
+      <!-- OPEN POSITIONS -->
+      <div class="section">
+        <div class="ph">OPEN POSITIONS <span class="dim" id="pos-count">(0)</span></div>
+        <div class="sb" id="positions-body">
+          <div class="muted">Fetching live data...</div>
         </div>
       </div>
 
-      <!-- STATS DASHBOARD -->
+      <!-- STATS -->
       <div class="section">
-        <div class="ph">STATS DASHBOARD</div>
+        <div class="ph">STATS</div>
         <div class="sb stats-grid" id="stats-dashboard">
           <div class="muted">Loading stats...</div>
         </div>
       </div>
 
-      <!-- PAPER POSITIONS -->
+      <!-- TRADE HISTORY -->
       <div class="section">
-        <div class="ph">PAPER POSITIONS <span class="dim" id="pos-count">(0)</span></div>
-        <div class="sb" id="positions-body">
+        <div class="ph">TRADE HISTORY <span class="dim" id="closed-count">(0)</span></div>
+        <div class="sb" id="closed-body">
           <div class="muted">Fetching live data...</div>
         </div>
       </div>
@@ -85,14 +81,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="section">
         <div class="ph">SIGNAL FEED <span class="dim">last 20 fires</span></div>
         <div class="sb" id="fires-body">
-          <div class="muted">Fetching live data...</div>
-        </div>
-      </div>
-
-      <!-- CLOSED TRADES -->
-      <div class="section">
-        <div class="ph">CLOSED TRADES <span class="dim" id="closed-count">(0)</span></div>
-        <div class="sb" id="closed-body">
           <div class="muted">Fetching live data...</div>
         </div>
       </div>
@@ -148,7 +136,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* ─── HERO ─── */
   .hero-pane { border-bottom: 1px solid var(--border); }
   .live-dot {
-    color: #c8ff00;
+    color: #00ff00;
     animation: pulse-dot 2s ease-in-out infinite;
   }
   @keyframes pulse-dot {
@@ -209,18 +197,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: block;
   }
 
-  .live-eq-wrap {
-    padding: 0 0 0.75rem 0;
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-    overflow: hidden;
-  }
-  #live-equity-canvas {
-    width: 100%;
-    height: 120px;
-    display: block;
-  }
-
   /* ─── AGENT STATUS BAR ─── */
   .agent-bar {
     display: flex;
@@ -260,6 +236,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .pos-card {
     border: 1px solid var(--border);
+    border-left: 2px solid #ff3333;
     padding: 0.75rem 1rem;
     background: rgba(255,255,255,0.02);
   }
@@ -303,12 +280,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .regime-badge.stable { color: var(--text-dim); border-color: var(--border); }
   .regime-badge.shift { color: #ffb000; border-color: rgba(255,176,0,0.4); }
   .regime-badge.chaotic { color: #ff3333; border-color: rgba(255,51,51,0.4); }
-  .pos-signal {
-    font-family: var(--font-head);
-    font-size: 0.55rem;
-    color: var(--text-dim);
-    opacity: 0.7;
-  }
   .pos-pnl {
     margin-left: auto;
     font-family: var(--font-head);
@@ -440,6 +411,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--border);
+    border-left: 2px solid #ff3333;
     background: rgba(255,255,255,0.02);
     align-items: center;
     font-family: var(--font-head);
@@ -466,33 +438,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .c-neg { color: #ff3333; }
   .c-long { color: #c8ff00; }
   .c-short { color: #ff3333; }
-
-  /* ─── LIVE TRADING ─── */
-  .live-section {
-    border-color: rgba(255,51,51,0.3);
-  }
-  .live-section > .ph {
-    border-bottom-color: rgba(255,51,51,0.3);
-  }
-  .live-badge {
-    display: inline-block;
-    font-size: 0.55rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    padding: 0.1rem 0.35rem;
-    background: #ff3333;
-    color: #fff;
-    margin-right: 0.3rem;
-    animation: pulse-dot 2s ease-in-out infinite;
-  }
-  .live-stats {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
 
   /* ─── FOOTER ─── */
   .footer {
@@ -572,18 +517,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     } else {
       pct = ((pos.entry_price - price) / pos.entry_price) * 100;
     }
-    var size = pos.size || pos.size_usd || 0;
+    var size = pos.size_usd || 0;
     return {pct: pct, dollars: size * (pct / 100)};
+  }
+
+  function fmtHold(hours){
+    if(!hours && hours !== 0) return '—';
+    if(hours < 1) return Math.round(hours * 60) + 'm';
+    return hours + 'h';
   }
 
   var riskColors = {green:'#c8ff00',yellow:'#ffb000',orange:'#ff8800',red:'#ff3333'};
 
   // ─── EQUITY CURVE (raw canvas) ───
-  function drawEquityCurve(curve, canvasId, lineColor){
-    canvasId = canvasId || 'equity-canvas';
-    lineColor = lineColor || '#c8ff00';
-    var canvas = document.getElementById(canvasId);
-    if(!canvas || !curve || curve.length < 2) return;
+  function drawEquityCurve(curve){
+    var canvas = document.getElementById('equity-canvas');
+    var emptyMsg = document.getElementById('eq-empty');
+    if(!curve || curve.length < 2){
+      if(canvas) canvas.style.display = 'none';
+      if(emptyMsg) emptyMsg.style.display = 'block';
+      return;
+    }
+    if(canvas) canvas.style.display = 'block';
+    if(emptyMsg) emptyMsg.style.display = 'none';
+
     var dpr = window.devicePixelRatio || 1;
     var rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
@@ -606,7 +563,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var ch = H - pad.t - pad.b;
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(200,255,0,0.08)';
+    ctx.strokeStyle = 'rgba(255,51,51,0.08)';
     ctx.lineWidth = 1;
     var gridLines = 5;
     for(var i=0; i<=gridLines; i++){
@@ -615,16 +572,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       ctx.moveTo(pad.l, y);
       ctx.lineTo(W - pad.r, y);
       ctx.stroke();
-      // Y labels
       var val = maxV - (range * i / gridLines);
-      ctx.fillStyle = 'rgba(200,255,0,0.3)';
+      ctx.fillStyle = 'rgba(255,51,51,0.3)';
       ctx.font = '10px JetBrains Mono, monospace';
       ctx.textAlign = 'left';
       ctx.fillText('$' + val.toFixed(2), W - pad.r + 4, y + 3);
     }
 
     // Time labels
-    ctx.fillStyle = 'rgba(200,255,0,0.2)';
+    ctx.fillStyle = 'rgba(255,51,51,0.2)';
     ctx.font = '9px JetBrains Mono, monospace';
     ctx.textAlign = 'center';
     var tSteps = Math.min(6, curve.length);
@@ -635,7 +591,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       ctx.fillText(d.toISOString().slice(11,16), x, H - 5);
     }
 
-    // Points
     function px(i){ return pad.l + (i / (curve.length-1)) * cw; }
     function py(v){ return pad.t + ch - ((v - minV) / range) * ch; }
 
@@ -646,16 +601,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     ctx.lineTo(px(vals.length-1), pad.t + ch);
     ctx.lineTo(px(0), pad.t + ch);
     ctx.closePath();
-    // Parse fill color from line color
-    var fillAlpha = lineColor === '#ff3333' ? 'rgba(255,51,51,0.08)' : 'rgba(200,255,0,0.1)';
-    ctx.fillStyle = fillAlpha;
+    ctx.fillStyle = 'rgba(255,51,51,0.08)';
     ctx.fill();
 
     // Line
     ctx.beginPath();
     ctx.moveTo(px(0), py(vals[0]));
     for(var i=1; i<vals.length; i++) ctx.lineTo(px(i), py(vals[i]));
-    ctx.strokeStyle = lineColor;
+    ctx.strokeStyle = '#ff3333';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -664,11 +617,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var lastY = py(vals[vals.length-1]);
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI*2);
-    ctx.fillStyle = lineColor;
+    ctx.fillStyle = '#ff3333';
     ctx.fill();
 
     // Range label
-    var el = document.getElementById(canvasId === 'equity-canvas' ? 'eq-range' : 'live-eq-range');
+    var el = document.getElementById('eq-range');
     if(el) el.textContent = curve.length + ' points · $' + minV.toFixed(2) + ' – $' + maxV.toFixed(2);
   }
 
@@ -697,16 +650,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   // ─── STATS DASHBOARD ───
-  function renderStats(stats, liveStats){
+  function renderStats(stats){
     var el = document.getElementById('stats-dashboard');
-    if(!el || !stats) return;
+    if(!el) return;
+    if(!stats || !stats.total || stats.total < 2){
+      el.innerHTML = '<div class="muted" style="grid-column:1/-1">Insufficient data — need more closed trades.</div>';
+      return;
+    }
 
-    // Left panel: P&L by coin table
+    // Left: P&L by coin
     var left = '<div class="stats-panel">';
     left += '<div class="stats-panel-title">P&L by coin</div>';
     left += '<table class="coin-stats-table"><thead><tr><th>Coin</th><th>Trades</th><th>WR%</th><th>P&L</th></tr></thead><tbody>';
     var coins = stats.byCoin || {};
-    // Sort by P&L descending
     var coinKeys = Object.keys(coins).sort(function(a,b){ return (coins[b].pnl||0) - (coins[a].pnl||0); });
     for(var i=0; i<coinKeys.length; i++){
       var c = coinKeys[i];
@@ -720,21 +676,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     left += '</tbody></table></div>';
 
-    // Right panel: key stats
+    // Right: performance
     var right = '<div class="stats-panel">';
     right += '<div class="stats-panel-title">Performance</div>';
-
     var best = stats.bestTrade || {};
     var worst = stats.worstTrade || {};
-    right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+best.coin+' '+best.direction+' '+fmtPct(best.pnlPct)+' ('+fmt$(best.pnl)+')</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Worst Trade</span><span class="stat-row-value c-neg">'+worst.coin+' '+worst.direction+' '+fmtPct(worst.pnlPct)+' ('+fmt$(worst.pnl)+')</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Avg Hold Time</span><span class="stat-row-value">'+(stats.avgHoldHours||0)+'h</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+(best.coin||'—')+' '+(best.direction||'')+' '+fmtPct(best.pnlPct)+' ('+fmt$(best.pnl)+')</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Worst Trade</span><span class="stat-row-value c-neg">'+(worst.coin||'—')+' '+(worst.direction||'')+' '+fmtPct(worst.pnlPct)+' ('+fmt$(worst.pnl)+')</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Avg Hold Time</span><span class="stat-row-value">'+fmtHold(stats.avgHoldHours)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Avg P&L</span><span class="stat-row-value '+pnlClass(stats.avgPnl)+'">'+fmt$(stats.avgPnl)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Total P&L</span><span class="stat-row-value '+pnlClass(stats.totalPnl)+'">'+fmt$(stats.totalPnl)+'</span></div>';
 
     right += '<div class="stats-panel-title" style="margin-top:0.75rem">Long vs Short</div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Long WR ('+stats.longCount+' trades)</span><span class="stat-row-value">'+(stats.longWinRate != null ? stats.longWinRate.toFixed(1)+'%' : '—')+'</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Short WR ('+stats.shortCount+' trades)</span><span class="stat-row-value">'+(stats.shortWinRate != null ? stats.shortWinRate.toFixed(1)+'%' : '—')+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Long WR ('+(stats.longCount||0)+' trades)</span><span class="stat-row-value">'+(stats.longWinRate != null ? stats.longWinRate.toFixed(1)+'%' : '—')+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Short WR ('+(stats.shortCount||0)+' trades)</span><span class="stat-row-value">'+(stats.shortWinRate != null ? stats.shortWinRate.toFixed(1)+'%' : '—')+'</span></div>';
     right += '</div>';
 
     el.innerHTML = left + right;
@@ -743,36 +698,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   // ─── RENDER ───
   function render(){
     var d = portfolioData;
-    if(!d || !d.live) return;
+    if(!d) return;
 
-    var s = d.summary;
-    var positions = d.positions || [];
+    var lt = d.liveTrading;
+    if(!lt || !lt.enabled) return;
 
-    // Compute live portfolio value
+    var livePos = lt.positions || [];
+    var liveClosed = lt.closed || [];
+    var regimes = d.agents && d.agents.regimes;
+
+    // Compute unrealized P&L across live positions
     var totalUnrealized = 0;
-    for(var i=0; i<positions.length; i++){
-      var price = getCurrentPrice(positions[i].coin);
+    for(var i=0; i<livePos.length; i++){
+      var price = getCurrentPrice(livePos[i].coin);
       if(price){
-        var r = calcPnl(positions[i], price);
+        var r = calcPnl(livePos[i], price);
         totalUnrealized += r.dollars;
       }
     }
     var totalInPositions = 0;
-    for(var i=0; i<positions.length; i++) totalInPositions += (positions[i].size||0);
-    var liveValue = s.cash + totalInPositions + totalUnrealized;
-    var livePnl = liveValue - s.startingCapital;
-    var livePnlPct = (livePnl / s.startingCapital) * 100;
+    for(var i=0; i<livePos.length; i++) totalInPositions += (livePos[i].size_usd||0);
 
-    // Hero stats
-    document.getElementById('s-value').textContent = fmt$(liveValue);
+    // Hero: equity = capital + unrealized
+    var equity = lt.capital + totalUnrealized;
+    var realizedPnl = lt.stats ? lt.stats.totalPnl : 0;
+    var totalPnl = realizedPnl + totalUnrealized;
+    var startCapital = lt.capital - realizedPnl; // approximate starting capital
+    var pnlPct = startCapital > 0 ? (totalPnl / startCapital) * 100 : 0;
+
+    // Uptime days
+    var uptimeDays = 0;
+    if(lt.started){
+      uptimeDays = Math.floor((Date.now() - new Date(lt.started).getTime()) / 86400000);
+    }
+
+    document.getElementById('s-equity').textContent = fmt$(equity);
     var pnlEl = document.getElementById('s-pnl');
-    pnlEl.textContent = fmtPct(livePnlPct) + ' (' + fmt$(livePnl) + ')';
-    pnlEl.className = 'sv ' + pnlClass(livePnl);
-    document.getElementById('s-winrate').textContent = s.winRate!==null ? s.winRate+'%' : '—';
-    document.getElementById('s-trades').textContent = s.totalTrades;
-    document.getElementById('s-days').textContent = s.daysRunning;
-    document.getElementById('pos-count').textContent = '('+s.openPositions+')';
-    document.getElementById('closed-count').textContent = '('+(d.closed ? d.closed.length : s.totalTrades)+')';
+    pnlEl.textContent = fmtPct(pnlPct) + ' (' + fmt$(totalPnl) + ')';
+    pnlEl.className = 'sv ' + pnlClass(totalPnl);
+
+    var winRate = lt.trades > 0 ? (lt.wins / lt.trades * 100) : null;
+    document.getElementById('s-winrate').textContent = winRate !== null ? winRate.toFixed(0) + '%' : '—';
+    document.getElementById('s-trades').textContent = lt.trades || 0;
+    document.getElementById('s-uptime').textContent = uptimeDays + 'd';
+
+    document.getElementById('pos-count').textContent = '(' + livePos.length + ')';
+    document.getElementById('closed-count').textContent = '(' + liveClosed.length + ')';
     document.getElementById('updated').textContent = lastPriceUpdate ? 'Prices: ' + ago(lastPriceUpdate) : 'Loading prices...';
 
     // Risk badge
@@ -787,7 +758,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     // Regime summary
-    var regimes = d.agents && d.agents.regimes;
     if(regimes && regimes.summary){
       var rs = regimes.summary;
       var parts = [];
@@ -798,105 +768,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('regime-summary').textContent = parts.join(' · ');
     }
 
-    // Paper equity curve
-    drawEquityCurve(d.equityCurve, 'equity-canvas', '#c8ff00');
-
-    // Live equity curve (in live section)
-    if(d.liveEquityCurve && d.liveEquityCurve.length > 1){
-      drawEquityCurve(d.liveEquityCurve, 'live-equity-canvas', '#ff3333');
-    }
+    // Equity curve (live only)
+    drawEquityCurve(d.liveEquityCurve);
 
     // Agent status
     renderAgents(d.agents);
 
-    // Stats dashboard
-    renderStats(d.stats, d.liveTrading && d.liveTrading.stats);
+    // Stats (live only)
+    renderStats(lt.stats);
 
-    // ─── LIVE TRADING (REAL MONEY) ───
-    var lt = d.liveTrading;
-    var liveSection = document.getElementById('live-section');
-    if(lt && lt.enabled){
-      liveSection.style.display = 'block';
-      var livePos = lt.positions || [];
-      var liveClosed = lt.closed || [];
-      document.getElementById('live-count').textContent = '('+livePos.length+' open, '+liveClosed.length+' closed)';
-
-      // Live stats
-      var liveStatsEl = document.getElementById('live-stats');
-      var liveWR = lt.trades > 0 ? (lt.wins / lt.trades * 100).toFixed(0) + '%' : '—';
-      var wrClass = lt.trades > 0 ? (lt.wins / lt.trades >= 0.5 ? 'c-pos' : 'c-neg') : '';
-      liveStatsEl.innerHTML = '<div class="stat"><span class="sl">CAPITAL</span><span class="sv">$'+lt.capital+'</span></div>'
-        + '<div class="stat"><span class="sl">CLOSED</span><span class="sv">'+lt.trades+'</span></div>'
-        + '<div class="stat"><span class="sl">WIN RATE</span><span class="sv '+wrClass+'">'+liveWR+'</span></div>'
-        + '<div class="stat"><span class="sl">DAILY LOSS</span><span class="sv '+(lt.dailyLoss>0?'c-neg':'')+'">$'+(lt.dailyLoss||0).toFixed(2)+'</span></div>';
-
-      // Live positions
-      var livePosBody = document.getElementById('live-positions-body');
-      if(livePos.length === 0){
-        livePosBody.innerHTML = '<div class="muted">No open live positions.</div>';
-      } else {
-        var html = '<div class="pos-cards">';
-        for(var i=0; i<livePos.length; i++){
-          var p = livePos[i];
-          var dirCls = p.direction==='LONG' ? 'long' : 'short';
-          var curPrice = getCurrentPrice(p.coin);
-          var pnlResult = curPrice ? calcPnl(p, curPrice) : {pct:null, dollars:null};
-          var coinRegime = regimes && regimes.coins && regimes.coins[p.coin];
-          var regimeStr = coinRegime ? coinRegime.regime : '';
-
-          html += '<div class="pos-card" style="border-color:rgba(255,51,51,0.3)">';
-          html += '<div class="pos-card-top">';
-          html += '<span class="pos-coin">'+p.coin+'</span>';
-          html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
-          if(regimeStr) html += '<span class="regime-badge '+regimeStr+'">'+regimeStr+'</span>';
-          if(pnlResult.pct !== null){
-            html += '<span class="pos-pnl '+pnlClass(pnlResult.pct)+'">'+fmtPct(pnlResult.pct)+'</span>';
-          }
-          html += '</div>';
-          html += '<div class="pos-card-grid">';
-          html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pnlResult.pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(pnlResult.dollars!==null?pnlClass(pnlResult.dollars):'')+'">'+(pnlResult.dollars!==null?fmt$(pnlResult.dollars):'—')+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">Stop</span><span class="pos-fv">'+fmt$(p.stop_loss)+'</span></div>';
-          html += '</div>';
-          if(p.exit_expression){
-            html += '<div class="pos-exit">EXIT: '+p.exit_expression+'</div>';
-          }
-          html += '</div>';
-        }
-        html += '</div>';
-        livePosBody.innerHTML = html;
-      }
-
-      // Live closed trades
-      var liveClosedBody = document.getElementById('live-closed-body');
-      if(liveClosed.length > 0){
-        var html = '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--border)"><div class="closed-cards">';
-        for(var j=liveClosed.length-1; j>=0; j--){
-          var c = liveClosed[j];
-          var dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
-          html += '<div class="closed-card" style="border-color:rgba(255,51,51,0.2)">';
-          html += '<span class="closed-coin">'+c.coin+'</span>';
-          html += '<span class="'+dirCls+'">'+c.direction+'</span>';
-          html += '<span class="closed-detail">'+fmt$(c.entry_price)+' → '+fmt$(c.exit_price)+' · '+c.exit_reason+'</span>';
-          html += '<div><div class="closed-pnl '+pnlClass(c.pnl_pct)+'">'+fmtPct(c.pnl_pct)+'</div><div class="closed-sub">'+fmt$(c.pnl_usd)+'</div></div>';
-          html += '</div>';
-        }
-        html += '</div></div>';
-        liveClosedBody.innerHTML = html;
-      }
-    }
-
-    // ─── PAPER POSITIONS ───
+    // ─── OPEN POSITIONS ───
     var posBody = document.getElementById('positions-body');
-    if(positions.length===0){
-      posBody.innerHTML = '<div class="muted">No open positions. Scanning every 15 minutes.</div>';
+    if(livePos.length === 0){
+      posBody.innerHTML = '<div class="muted">No open positions.</div>';
     } else {
       var html = '<div class="pos-cards">';
-      for(var i=0; i<positions.length; i++){
-        var p = positions[i];
+      for(var i=0; i<livePos.length; i++){
+        var p = livePos[i];
         var dirCls = p.direction==='LONG' ? 'long' : 'short';
         var curPrice = getCurrentPrice(p.coin);
         var pnlResult = curPrice ? calcPnl(p, curPrice) : {pct:null, dollars:null};
@@ -908,18 +796,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         html += '<span class="pos-coin">'+p.coin+'</span>';
         html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
         if(regimeStr) html += '<span class="regime-badge '+regimeStr+'">'+regimeStr+'</span>';
-        html += '<span class="pos-signal">'+(p.signal_name||'').replace(/_/g,' ').toLowerCase()+'</span>';
         if(pnlResult.pct !== null){
-          html += '<span class="pos-pnl '+pnlClass(pnlResult.pct)+'">'+fmtPct(pnlResult.pct)+'</span>';
+          html += '<span class="pos-pnl '+pnlClass(pnlResult.pct)+'">'+fmtPct(pnlResult.pct)+' ('+fmt$(pnlResult.dollars)+')</span>';
         }
         html += '</div>';
         html += '<div class="pos-card-grid">';
         html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pnlResult.pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(pnlResult.dollars!==null?pnlClass(pnlResult.dollars):'')+'">'+(pnlResult.dollars!==null?fmt$(pnlResult.dollars):'—')+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Current</span><span class="pos-fv '+(curPrice?pnlClass(pnlResult.pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Win Rate</span><span class="pos-fv">'+(p.win_rate||0).toFixed(0)+'%</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Stop Loss</span><span class="pos-fv">'+fmt$(p.stop_loss)+'</span></div>';
         html += '</div>';
         if(p.exit_expression){
           html += '<div class="pos-exit">EXIT: '+p.exit_expression+'</div>';
@@ -930,10 +816,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       posBody.innerHTML = html;
     }
 
+    // ─── TRADE HISTORY ───
+    var closedBody = document.getElementById('closed-body');
+    if(liveClosed.length === 0){
+      closedBody.innerHTML = '<div class="muted">No closed trades yet.</div>';
+    } else {
+      var html = '<div class="closed-cards">';
+      for(var j=liveClosed.length-1; j>=0; j--){
+        var c = liveClosed[j];
+        var dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
+        var holdH = '';
+        if(c.entry_time && c.exit_time){
+          var ms = new Date(c.exit_time).getTime() - new Date(c.entry_time).getTime();
+          holdH = fmtHold(Math.round(ms / 3600000 * 10) / 10);
+        }
+        html += '<div class="closed-card">';
+        html += '<span class="closed-coin">'+c.coin+'</span>';
+        html += '<span class="'+dirCls+'">'+c.direction+'</span>';
+        html += '<span class="closed-detail">'+fmt$(c.entry_price)+' → '+fmt$(c.exit_price)+' · '+fmtPct(c.pnl_pct)+' · '+c.exit_reason+(holdH ? ' · '+holdH : '')+'</span>';
+        html += '<div><div class="closed-pnl '+pnlClass(c.pnl_pct)+'">'+fmt$(c.pnl_usd)+'</div></div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      closedBody.innerHTML = html;
+    }
+
     // ─── SIGNAL FEED ───
     var firesBody = document.getElementById('fires-body');
     var fires = (d.recentFires||[]).slice().reverse().slice(0, 20);
-    if(fires.length===0){
+    if(fires.length === 0){
       firesBody.innerHTML = '<div class="muted">No signals fired yet.</div>';
     } else {
       var html = '<div class="fire-list">';
@@ -952,27 +863,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       html += '</div>';
       firesBody.innerHTML = html;
-    }
-
-    // ─── CLOSED TRADES ───
-    var closedBody = document.getElementById('closed-body');
-    var closed = (d.closed||[]).slice().reverse().slice(0, 50);
-    if(closed.length===0){
-      closedBody.innerHTML = '<div class="muted">No trades closed yet.</div>';
-    } else {
-      var html = '<div class="closed-cards">';
-      for(var i=0; i<closed.length; i++){
-        var c = closed[i];
-        var dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
-        html += '<div class="closed-card">';
-        html += '<span class="closed-coin">'+c.coin+'</span>';
-        html += '<span class="'+dirCls+'">'+c.direction+'</span>';
-        html += '<span class="closed-detail">'+fmt$(c.entry_price)+' → '+fmt$(c.exit_price)+' · '+(c.hours_held||0)+'h · '+c.exit_reason+'</span>';
-        html += '<div><div class="closed-pnl '+pnlClass(c.pnl_pct)+'">'+fmtPct(c.pnl_pct)+'</div><div class="closed-sub">'+fmt$(c.pnl_dollars)+'</div></div>';
-        html += '</div>';
-      }
-      html += '</div>';
-      closedBody.innerHTML = html;
     }
   }
 
@@ -1023,8 +913,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Redraw equity on resize
   window.addEventListener('resize', function(){
-    if(portfolioData && portfolioData.equityCurve) drawEquityCurve(portfolioData.equityCurve, 'equity-canvas', '#c8ff00');
-    if(portfolioData && portfolioData.liveEquityCurve) drawEquityCurve(portfolioData.liveEquityCurve, 'live-equity-canvas', '#ff3333');
+    if(portfolioData && portfolioData.liveEquityCurve) drawEquityCurve(portfolioData.liveEquityCurve);
   });
 })();
 </script>
