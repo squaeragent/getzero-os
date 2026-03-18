@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-03-18T13:19:49.953359+00:00",
+  "timestamp": "2026-03-18T13:34:52.552615+00:00",
   "approved": [
     {
-      "coin": "kPEPE",
+      "coin": "JUP",
       "direction": "LONG",
       "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-      "sharpe": 2.45,
-      "win_rate": 77.0,
+      "sharpe": 2.48,
+      "win_rate": 77.4,
       "reason": "uncorrelated to portfolio, regime transition active",
       "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
       "max_hold_hours": 24,
@@ -14,23 +14,55 @@
       "regime_match": true,
       "regime_match_score": 1.0,
       "signal_heat": 0.5,
-      "composite_score": 7.35,
+      "composite_score": 7.45,
       "recent_record": "archetype"
     },
     {
-      "coin": "SOL",
-      "direction": "LONG",
-      "signal": "INFLU_CROWD_MOMENTUM_LONG_V1_Q2_MH10",
-      "sharpe": 1.5876,
-      "win_rate": 56.63,
+      "coin": "PAXG",
+      "direction": "SHORT",
+      "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_V2_FR1_EX2_FR4_",
+      "sharpe": 2.3842,
+      "win_rate": 91.67,
       "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M >= 80 OR XONE_I_NET <= 10",
-      "max_hold_hours": 10,
+      "exit_expression": "RSI_3H30M <= 25.2 OR XONE_AVG_NET >= 27.5",
+      "max_hold_hours": 72,
       "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 1.5,
+      "regime_match": false,
+      "regime_match_score": 0.0,
       "signal_heat": 0.5,
       "composite_score": 7.33,
+      "recent_record": "0W/0L"
+    },
+    {
+      "coin": "TRX",
+      "direction": "LONG",
+      "signal": "BB12H_HURST_MEANREV_LONG_V1_EX2_Q1",
+      "sharpe": 1.5923,
+      "win_rate": 61.16,
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "BB_POS_12H >= 0.60 OR RSI_12H >= 62",
+      "max_hold_hours": 72,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
+      "signal_heat": 0.5,
+      "composite_score": 5.97,
+      "recent_record": "0W/0L"
+    },
+    {
+      "coin": "TRX",
+      "direction": "LONG",
+      "signal": "BB12H_HURST_MEANREV_LONG_V1_EX2_Q1",
+      "sharpe": 1.5923,
+      "win_rate": 61.16,
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "BB_POS_12H >= 0.60 OR RSI_12H >= 62",
+      "max_hold_hours": 72,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
+      "signal_heat": 0.5,
+      "composite_score": 5.97,
       "recent_record": "0W/0L"
     },
     {
@@ -48,14 +80,36 @@
       "signal_heat": 0.5,
       "composite_score": 5.73,
       "recent_record": "0W/0L"
+    },
+    {
+      "coin": "DOT",
+      "direction": "LONG",
+      "signal": "WEIGHTED_LONG_MULTI_TIMEFRAME_V1_MH64_MH32_FR18",
+      "sharpe": 1.3678,
+      "win_rate": 62.5,
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "BB_POS_24H > 0.60 OR RSI_6H > 55",
+      "max_hold_hours": 32,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
+      "signal_heat": 0.5,
+      "composite_score": 5.68,
+      "recent_record": "0W/0L"
     }
   ],
   "blocked": [
     {
       "coin": "INJ",
       "direction": "SHORT",
+      "signal": "WEIGHTED_DOWNTREND_48H_SHORT_V1_MH480_FR19",
+      "reason": "already have position in INJ"
+    },
+    {
+      "coin": "INJ",
+      "direction": "SHORT",
       "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
-      "reason": "group 'infra' already has 2 positions (max 2)"
+      "reason": "already have position in INJ"
     },
     {
       "coin": "XPL",
@@ -64,28 +118,40 @@
       "reason": "already have position in XPL"
     },
     {
-      "coin": "BNB",
-      "direction": "LONG",
-      "signal": "SOCIAL_MOMENTUM_LONG_V2_EX5_MH24_EX6",
-      "reason": "group 'infra' already has 2 positions (max 2); correlated to existing HYPE LONG (r=0.70)"
-    },
-    {
-      "coin": "DOT",
-      "direction": "LONG",
-      "signal": "ARCH_TRIPLE_CONVERGENCE_LONG",
-      "reason": "correlated to existing HYPE LONG (r=0.75)"
-    },
-    {
-      "coin": "PAXG",
+      "coin": "HYPE",
       "direction": "LONG",
       "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-      "reason": "correlated to existing TON LONG (r=0.87)"
+      "reason": "already have position in HYPE"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "SHORT",
+      "signal": "DOJI_RSI_EXTREME_SHORT_V2_FR11_MH32_MH21",
+      "reason": "already have position in HYPE"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "SHORT",
+      "signal": "DOJI_RSI_EXTREME_SHORT_V2_FR11_MH32_MH21",
+      "reason": "already have position in HYPE"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "SHORT",
+      "signal": "RSI_OVERBOUGHT_HURST_SHORT_V1_FR8",
+      "reason": "already have position in HYPE"
+    },
+    {
+      "coin": "BCH",
+      "direction": "LONG",
+      "signal": "DOJI_REVERSAL_LONG_EX0_Q4",
+      "reason": "correlated to existing INJ LONG (r=0.82)"
     }
   ],
   "portfolio_state": {
     "net_direction": "LONG",
-    "net_exposure_pct": 17.0,
-    "correlation_risk": "high",
-    "diversification_score": 0.67
+    "net_exposure_pct": 38.7,
+    "correlation_risk": "medium",
+    "diversification_score": 0.6
   }
 }
