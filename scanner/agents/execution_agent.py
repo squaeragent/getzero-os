@@ -23,10 +23,12 @@ Usage:
 
 import json
 import os
+import re
 import sys
 import time
 import math
 import requests
+import urllib.request
 import yaml
 from datetime import datetime, timezone
 from pathlib import Path
@@ -56,16 +58,18 @@ CYCLE_SECONDS = 300  # 5 minutes
 # ─── COIN TABLES (fetched from HL meta on startup) ───
 COIN_TO_ASSET = {}
 COIN_SIZE_DECIMALS = {}
+COIN_MAX_LEVERAGE = {}
 
 def _load_hl_meta():
-    """Fetch asset indices and size decimals from Hyperliquid meta API."""
-    global COIN_TO_ASSET, COIN_SIZE_DECIMALS
+    """Fetch asset indices, size decimals, and max leverage from Hyperliquid meta API."""
+    global COIN_TO_ASSET, COIN_SIZE_DECIMALS, COIN_MAX_LEVERAGE
     try:
         resp = requests.post(f"{HL_URL}/info", json={"type": "meta"}, timeout=10)
         meta = resp.json()
         for i, u in enumerate(meta["universe"]):
             COIN_TO_ASSET[u["name"]] = i
             COIN_SIZE_DECIMALS[u["name"]] = u["szDecimals"]
+            COIN_MAX_LEVERAGE[u["name"]] = u.get("maxLeverage", 10)
         log(f"Loaded {len(COIN_TO_ASSET)} coins from HL meta")
     except Exception as e:
         log(f"WARN: HL meta fetch failed ({e}), using fallback")
@@ -139,6 +143,96 @@ def update_heartbeat():
     hb = load_json(HEARTBEAT_FILE, {})
     hb["execution"] = datetime.now(timezone.utc).isoformat()
     save_json(HEARTBEAT_FILE, hb)
+
+
+# ─── EXIT EXPRESSION EVALUATION ───
+def evaluate_expression(expression, indicator_values):
+    """Evaluate a signal exit expression against current indicator values.
+    Returns (True/False, list of missing indicators)."""
+    if not expression or not expression.strip():
+        return False, []
+
+    missing = []
+    clauses = re.split(r'\s+(AND|OR)\s+', expression)
+    results = []
+    operators = []
+
+    for part in clauses:
+        part = part.strip()
+        if part in ("AND", "OR"):
+            operators.append(part)
+            continue
+
+        m = re.match(r'([A-Z][A-Z0-9_]+)\s*(>=|<=|>|<|==|!=)\s*(-?[\d.]+)', part)
+        if not m:
+            results.append(True)
+            continue
+
+        indicator, op, val_str = m.group(1), m.group(2), m.group(3)
+        val = float(val_str)
+        current = indicator_values.get(indicator)
+        if current is None:
+            missing.append(indicator)
+            results.append(False)
+            continue
+
+        if op == ">=":   results.append(current >= val)
+        elif op == "<=": results.append(current <= val)
+        elif op == ">":  results.append(current > val)
+        elif op == "<":  results.append(current < val)
+        elif op == "==": results.append(current == val)
+        elif op == "!=": results.append(current != val)
+
+    if not results:
+        return False, missing
+
+    final = results[0]
+    for i, op in enumerate(operators):
+        if i + 1 < len(results):
+            if op == "AND":  final = final and results[i + 1]
+            elif op == "OR": final = final or results[i + 1]
+
+    return final, missing
+
+
+def extract_indicators_from_expressions(positions):
+    """Extract all unique indicator codes referenced in exit expressions."""
+    indicators = set()
+    for pos in positions:
+        expr = pos.get("exit_expression", "")
+        if expr:
+            indicators.update(re.findall(r'[A-Z][A-Z0-9_]+', expr))
+    return list(indicators)
+
+
+def fetch_indicators_for_exit(coins, indicators, api_key):
+    """Fetch indicator values from Envy API for exit expression evaluation."""
+    if not indicators or not coins:
+        return {}
+
+    result = {}
+    # Batch: max 10 coins, max 7 indicators per request
+    coin_batches = [coins[i:i+10] for i in range(0, len(coins), 10)]
+    ind_batches = [indicators[i:i+7] for i in range(0, len(indicators), 7)]
+
+    for coin_batch in coin_batches:
+        for ind_batch in ind_batches:
+            try:
+                url = (f"https://gate.getzero.dev/api/claw/paid/indicators/snapshot"
+                       f"?coins={','.join(coin_batch)}&indicators={','.join(ind_batch)}")
+                req = urllib.request.Request(url, headers={"X-API-Key": api_key})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    data = json.loads(resp.read().decode())
+                snapshot = data.get("snapshot", {})
+                for coin, ind_list in snapshot.items():
+                    if coin not in result:
+                        result[coin] = {}
+                    if isinstance(ind_list, list):
+                        for ind in ind_list:
+                            result[coin][ind["indicatorCode"]] = ind["value"]
+            except Exception as e:
+                log(f"  WARN: exit indicator fetch failed: {e}")
+    return result
 
 
 # ─── HYPERLIQUID CLIENT ───
@@ -384,6 +478,27 @@ def should_open(trade, positions, cfg):
     return True, "ok"
 
 
+# Max leverage → volatility-adjusted stop loss
+# Higher leverage = lower vol = tighter stop. Lower leverage = higher vol = wider stop.
+STOP_LOSS_BY_MAX_LEV = {
+    40: 0.03,   # BTC: low vol, tight stop
+    25: 0.04,   # ETH: medium vol
+    20: 0.05,   # SOL: medium-high vol
+    10: 0.07,   # ALTs: high vol, wide stop
+}
+
+
+def get_adjusted_stop_pct(coin, default_stop):
+    """Get volatility-adjusted stop loss percentage based on coin's max leverage."""
+    max_lev = COIN_MAX_LEVERAGE.get(coin, 10)
+
+    # Find closest bucket
+    for lev in sorted(STOP_LOSS_BY_MAX_LEV.keys(), reverse=True):
+        if max_lev >= lev:
+            return STOP_LOSS_BY_MAX_LEV[lev]
+    return default_stop
+
+
 def place_stop_loss(client, coin, direction, size_coins, entry_price, stop_pct, dry):
     """Place a native stop-loss trigger order on HL."""
     is_long = direction == "LONG"
@@ -460,7 +575,8 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
             return None
 
     # Place native stop loss on HL
-    stop_pct = cfg.get("stop_loss_pct", 0.05)
+    default_stop = cfg.get("stop_loss_pct", 0.05)
+    stop_pct = get_adjusted_stop_pct(coin, default_stop)
     _, stop_price = place_stop_loss(client, coin, direction, size_coins, fill_price, stop_pct, dry)
 
     position = {
@@ -473,7 +589,8 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         "size_coins": size_coins,
         "sharpe": trade.get("sharpe", 0),
         "win_rate": trade.get("win_rate", 0),
-        "max_hold_hours": 48,
+        "max_hold_hours": trade.get("max_hold_hours", 48),
+        "exit_expression": trade.get("exit_expression", ""),
         "stop_loss": stop_price,
         "stop_type": "native",  # HL server-side trigger
         "peak_pnl_pct": 0.0,
@@ -519,9 +636,9 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
     log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f})")
 
 
-def check_trailing_stops(client, positions, portfolio, cfg, prices, dry):
-    """Check trailing stop logic for positions where HL native stop is the hard stop.
-    If trailing stop triggers, close position and cancel the native stop."""
+def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry):
+    """Check all exit conditions: exit expressions, trailing stops, max hold time.
+    Exit expressions are evaluated first — they match the paper scanner's behavior."""
     trailing_trigger = cfg.get("trailing_stop_trigger", 0.02)
     trailing_lock = cfg.get("trailing_stop_lock", 0.50)
     remaining = []
@@ -537,13 +654,25 @@ def check_trailing_stops(client, positions, portfolio, cfg, prices, dry):
         is_long = pos["direction"] == "LONG"
         pnl_pct = (current - entry) / entry if is_long else (entry - current) / entry
 
-        # Update peak
+        # ── EXIT EXPRESSION (same logic as paper scanner) ──
+        exit_expr = pos.get("exit_expression", "")
+        if exit_expr and coin in exit_indicators:
+            triggered, missing = evaluate_expression(exit_expr, exit_indicators[coin])
+            if triggered:
+                log(f"EXIT SIGNAL {coin} {pos['direction']} | expression fired | {pnl_pct*100:+.2f}%")
+                log(f"  Expression: {exit_expr}")
+                close_and_record(client, pos, current, pnl_pct, "exit_expression", portfolio, dry)
+                continue
+            elif missing:
+                log(f"  WARN: exit expression missing indicators for {coin}: {missing}")
+
+        # ── Update peak ──
         peak = pos.get("peak_pnl_pct", 0)
         if pnl_pct > peak:
             pos["peak_pnl_pct"] = pnl_pct
             peak = pnl_pct
 
-        # Trailing stop: after trigger% gain, close if drops to lock% of peak
+        # ── TRAILING STOP ──
         if peak >= trailing_trigger:
             floor = peak * trailing_lock
             if pnl_pct <= floor:
@@ -551,7 +680,7 @@ def check_trailing_stops(client, positions, portfolio, cfg, prices, dry):
                 close_and_record(client, pos, current, pnl_pct, "trailing_stop", portfolio, dry)
                 continue
 
-        # Max hold time
+        # ── MAX HOLD TIME ──
         entry_dt = datetime.fromisoformat(pos["entry_time"])
         hours_held = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 3600
         max_hold = pos.get("max_hold_hours", 48)
@@ -668,8 +797,20 @@ def run_cycle(client, cfg, dry):
     if not dry and positions:
         positions = sync_positions_with_hl(client, positions)
 
-    # 3. Check trailing stops & max hold (hard stop is on HL server)
-    positions = check_trailing_stops(client, positions, portfolio, cfg, prices, dry)
+    # 3. Fetch exit indicators and check all exit conditions
+    exit_indicators = {}
+    exit_exprs_exist = any(pos.get("exit_expression") for pos in positions)
+    if exit_exprs_exist:
+        env = load_env()
+        api_key = env.get("ENVY_API_KEY", "")
+        if api_key:
+            coins_with_exits = list({pos["coin"] for pos in positions if pos.get("exit_expression")})
+            needed_indicators = extract_indicators_from_expressions(positions)
+            if coins_with_exits and needed_indicators:
+                log(f"  Fetching {len(needed_indicators)} exit indicators for {coins_with_exits}")
+                exit_indicators = fetch_indicators_for_exit(coins_with_exits, needed_indicators, api_key)
+
+    positions = check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry)
 
     # 4. Open new positions from approved trades
     if throttle > 0:

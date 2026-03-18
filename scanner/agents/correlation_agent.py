@@ -244,14 +244,20 @@ def load_fires_as_candidates():
 
     candidates = []
     for fire in seen.values():
-        candidates.append({
+        cand = {
             "coin": fire.get("coin"),
             "direction": fire.get("direction"),
             "signal": fire.get("signal"),
             "sharpe": fire.get("sharpe", 0),
             "win_rate": fire.get("win_rate", 0),
             "source": "fires.jsonl",
-        })
+        }
+        # Pass through all signal metadata
+        for key in ("exit_expression", "max_hold_hours", "regime", "regime_match",
+                     "regime_match_score", "signal_heat", "composite_score", "recent_record"):
+            if key in fire:
+                cand[key] = fire[key]
+        candidates.append(cand)
 
     print(f"  Loaded {len(candidates)} candidates from fires.jsonl (fallback)")
     return candidates
@@ -400,14 +406,20 @@ def filter_candidates(candidates, positions, roc_data, regimes):
             if coin_regime.get("transition"):
                 reason_parts.append("regime transition active")
 
-            approved.append({
+            entry = {
                 "coin": coin,
                 "direction": direction,
                 "signal": signal,
                 "sharpe": cand.get("sharpe", 0),
                 "win_rate": cand.get("win_rate", 0),
                 "reason": ", ".join(reason_parts),
-            })
+            }
+            # Pass through signal metadata for execution agent
+            for key in ("exit_expression", "max_hold_hours", "regime", "regime_match",
+                         "regime_match_score", "signal_heat", "composite_score", "recent_record"):
+                if key in cand:
+                    entry[key] = cand[key]
+            approved.append(entry)
 
     return approved, blocked
 
