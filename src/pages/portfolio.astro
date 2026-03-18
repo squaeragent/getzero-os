@@ -35,9 +35,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- OPEN POSITIONS -->
+      <!-- LIVE TRADING (REAL MONEY) -->
+      <div class="section" id="live-section" style="display:none">
+        <div class="ph"><span class="live-badge">LIVE</span> HYPERLIQUID TRADING <span class="dim" id="live-count">(0)</span></div>
+        <div class="sb">
+          <div class="live-stats" id="live-stats"></div>
+          <div id="live-positions-body"></div>
+          <div id="live-closed-body"></div>
+        </div>
+      </div>
+
+      <!-- PAPER POSITIONS -->
       <div class="section">
-        <div class="ph">OPEN POSITIONS <span class="dim" id="pos-count">(0)</span></div>
+        <div class="ph">PAPER POSITIONS <span class="dim" id="pos-count">(0)</span></div>
         <div class="sb" id="positions-body">
           <div class="muted">Fetching live data...</div>
         </div>
@@ -294,6 +304,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .c-long { color: #c8ff00; }
   .c-short { color: #cc4422; }
 
+  /* ─── LIVE TRADING ─── */
+  .live-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.1rem 0.35rem;
+    background: #ff3333;
+    color: #fff;
+    border-radius: 2px;
+    margin-right: 0.3rem;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .live-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
   /* ─── FOOTER ─── */
   .footer {
     display: flex;
@@ -473,6 +505,82 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       html += '</div>';
       posBody.innerHTML = html;
+    }
+
+    // ─── LIVE TRADING (REAL MONEY) ───
+    const lt = d.liveTrading;
+    const liveSection = document.getElementById('live-section');
+    if(lt && lt.enabled){
+      liveSection.style.display = 'block';
+      const livePos = lt.positions || [];
+      const liveClosed = lt.closed || [];
+      document.getElementById('live-count').textContent = '('+livePos.length+' open, '+liveClosed.length+' closed)';
+
+      // Live stats
+      const liveStatsEl = document.getElementById('live-stats');
+      const liveWR = lt.trades > 0 ? (lt.wins / lt.trades * 100).toFixed(0) + '%' : '—';
+      liveStatsEl.innerHTML = '<div class="stat"><span class="sl">CAPITAL</span><span class="sv">$'+lt.capital+'</span></div>'
+        + '<div class="stat"><span class="sl">TRADES</span><span class="sv">'+lt.trades+'</span></div>'
+        + '<div class="stat"><span class="sl">WIN RATE</span><span class="sv">'+liveWR+'</span></div>'
+        + '<div class="stat"><span class="sl">DAILY LOSS</span><span class="sv '+(lt.dailyLoss>0?'c-neg':'')+'">$'+lt.dailyLoss.toFixed(2)+'</span></div>';
+
+      // Live positions
+      const livePosBody = document.getElementById('live-positions-body');
+      if(livePos.length === 0){
+        livePosBody.innerHTML = '<div class="muted">No open live positions. Waiting for high-conviction signals.</div>';
+      } else {
+        let html = '<div class="pos-cards">';
+        for(const p of livePos){
+          const dirCls = p.direction==='LONG' ? 'long' : 'short';
+          const curPrice = getCurrentPrice(p.coin);
+          let pct = null, dollars = null;
+          if(curPrice && p.entry_price){
+            if(p.direction === 'LONG'){
+              pct = ((curPrice - p.entry_price) / p.entry_price) * 100;
+            } else {
+              pct = ((p.entry_price - curPrice) / p.entry_price) * 100;
+            }
+            dollars = p.size_usd * (pct / 100);
+          }
+          html += '<div class="pos-card" style="border-color:rgba(255,51,51,0.3)">';
+          html += '<div class="pos-card-top">';
+          html += '<span class="pos-coin">'+p.coin+'</span>';
+          html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
+          html += '<span class="pos-rarity" style="color:#ff3333;border-color:rgba(255,51,51,0.4)">LIVE</span>';
+          if(pct !== null){
+            html += '<span class="pos-pnl '+pnlClass(pct)+'">'+fmtPct(pct)+'</span>';
+          }
+          html += '</div>';
+          html += '<div class="pos-card-grid">';
+          html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(dollars!==null?pnlClass(dollars):'')+'">'+(dollars!==null?fmt$(dollars):'—')+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">Win Rate</span><span class="pos-fv">'+(p.win_rate||0).toFixed(0)+'%</span></div>';
+          html += '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+        livePosBody.innerHTML = html;
+      }
+
+      // Live closed trades
+      const liveClosedBody = document.getElementById('live-closed-body');
+      if(liveClosed.length > 0){
+        let html = '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--border)"><div class="closed-cards">';
+        for(const c of liveClosed.slice().reverse()){
+          const dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
+          html += '<div class="closed-card" style="border-color:rgba(255,51,51,0.2)">';
+          html += '<span class="closed-coin">'+c.coin+'</span>';
+          html += '<span class="'+dirCls+'">'+c.direction+'</span>';
+          html += '<span class="closed-detail">'+fmt$(c.entry_price)+' → '+fmt$(c.exit_price)+' · '+c.exit_reason+'</span>';
+          html += '<div><div class="closed-pnl '+pnlClass(c.pnl_pct)+'">'+fmtPct(c.pnl_pct)+'</div><div class="closed-sub">'+fmt$(c.pnl_usd)+'</div></div>';
+          html += '</div>';
+        }
+        html += '</div></div>';
+        liveClosedBody.innerHTML = html;
+      }
     }
 
     // ─── SIGNAL FEED ───

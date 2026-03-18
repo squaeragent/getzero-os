@@ -386,6 +386,33 @@ def scan():
         print(f"  Closed this run: {len(closed_this_run)}")
     print(f"{'─'*40}\n")
 
+def load_live_state():
+    """Load live trading state from executor data dir."""
+    live_dir = DATA_DIR / "live"
+    live_positions = []
+    live_portfolio = {}
+    live_closed = []
+
+    pos_file = live_dir / "positions.json"
+    if pos_file.exists():
+        try: live_positions = json.loads(pos_file.read_text())
+        except: pass
+
+    port_file = live_dir / "portfolio.json"
+    if port_file.exists():
+        try: live_portfolio = json.loads(port_file.read_text())
+        except: pass
+
+    closed_file = live_dir / "closed.jsonl"
+    if closed_file.exists():
+        for line in closed_file.read_text().strip().split("\n"):
+            if line:
+                try: live_closed.append(json.loads(line))
+                except: pass
+
+    return live_positions, live_portfolio, live_closed
+
+
 def export_snapshot():
     """Export current state as a single JSON for the website API."""
     portfolio = load_portfolio()
@@ -410,6 +437,9 @@ def export_snapshot():
     started = portfolio.get("started", now_iso())
     days = max(1, int((time.time() - datetime.fromisoformat(started).timestamp()) / 86400) + 1)
 
+    # Load live trading state
+    live_positions, live_portfolio, live_closed = load_live_state()
+
     snapshot = {
         "live": True,
         "updated": now_iso(),
@@ -424,6 +454,16 @@ def export_snapshot():
             "openPositions": len(positions),
             "daysRunning": days,
             "started": started
+        },
+        "liveTrading": {
+            "enabled": True,
+            "capital": 115.0,
+            "positions": live_positions,
+            "trades": live_portfolio.get("trades", 0),
+            "wins": live_portfolio.get("wins", 0),
+            "dailyLoss": live_portfolio.get("daily_loss", 0),
+            "closed": live_closed[-20:],
+            "started": live_portfolio.get("started", now_iso())
         },
         "positions": positions,
         "closed": closed[-50:],
