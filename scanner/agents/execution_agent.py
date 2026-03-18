@@ -140,6 +140,33 @@ def append_jsonl(path, record):
         f.write(json.dumps(record) + "\n")
 
 
+def fetch_user_fills(main_address):
+    """Fetch recent fills from Hyperliquid fills endpoint."""
+    try:
+        req = urllib.request.Request(
+            "https://api.hyperliquid.xyz/info",
+            data=json.dumps({"type": "userFills", "user": main_address}).encode(),
+            headers={"Content-Type": "application/json"}
+        )
+        fills = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        return fills if isinstance(fills, list) else []
+    except Exception as e:
+        log(f"WARN: fills fetch failed: {e}")
+        return []
+
+
+def get_fees_for_coin_since(fills, coin, since_ms):
+    """Sum fees for a coin from fills at or after since_ms."""
+    total = 0.0
+    for fill in fills:
+        if fill.get("coin") == coin and fill.get("time", 0) >= since_ms:
+            try:
+                total += float(fill.get("fee", 0))
+            except (TypeError, ValueError):
+                pass
+    return total
+
+
 def update_heartbeat():
     hb = load_json(HEARTBEAT_FILE, {})
     hb["execution"] = datetime.now(timezone.utc).isoformat()
@@ -684,7 +711,7 @@ def place_stop_loss(client, coin, direction, size_coins, entry_price, stop_pct, 
     return {"status": "ok", "response": "dry"}, stop_price
 
 
-def open_trade(client, trade, positions, cfg, throttle, dry):
+def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
     """Open a new position from an approved trade."""
     coin = trade["coin"]
     direction = trade["direction"]
@@ -777,6 +804,17 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
     # Compute mark-price-based slippage for exec quality
     mark_slippage_pct = abs(fill_price - pre_mark) / pre_mark * 100 if pre_mark and pre_mark > 0 else None
 
+    # Fetch open fill fee from HL fills endpoint
+    open_fee = None
+    if not dry:
+        entry_ts_ms = int(time.time() * 1000) - 30000  # 30s lookback for open fill
+        fills = fetch_user_fills(main_address)
+        open_fee = get_fees_for_coin_since(fills, coin, entry_ts_ms) or None
+        if open_fee is not None:
+            log(f"  Open fill fee for {coin}: ${open_fee:.6f}")
+        else:
+            log(f"  WARN: Could not determine open fill fee for {coin}")
+
     position = {
         "coin": coin,
         "direction": direction,
@@ -784,6 +822,7 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         "entry_price": fill_price,
         "intended_price": intended_price,
         "entry_time": datetime.now(timezone.utc).isoformat(),
+        "entry_time_ms": int(time.time() * 1000),
         "size_usd": round(size_usd, 2),
         "size_coins": size_coins,
         "sharpe": trade.get("sharpe", 0),
@@ -794,6 +833,7 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         "stop_loss_pct": round(stop_pct, 4),
         "stop_type": stop_type_label,  # "atr" or "volatility"
         "peak_pnl_pct": 0.0,
+        "open_fee": open_fee,
         "exec_quality": {
             "slippage_pct": round(slippage_pct, 6),
             "slippage_usd": round(slippage_usd, 6),
@@ -808,12 +848,14 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
     return position
 
 
-def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry):
+def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry, main_address=None):
     """Close a position and record to closed.jsonl."""
     coin = pos["coin"]
     is_long = pos["direction"] == "LONG"
     sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
     size = round(pos["size_coins"], sz_dec)
+
+    close_time_ms = int(time.time() * 1000)
 
     if not dry:
         # Cancel any existing triggers for this coin first
@@ -828,6 +870,28 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
     else:
         portfolio["daily_loss"] = portfolio.get("daily_loss", 0) + abs(pnl_usd)
 
+    # Fetch fees from HL fills endpoint
+    fees_usd = None
+    pnl_after_fees = None
+    if not dry and main_address:
+        try:
+            # Look back from entry to now for all fills on this coin
+            entry_ms = pos.get("entry_time_ms", close_time_ms - 86400000)
+            fills = fetch_user_fills(main_address)
+            close_fees = get_fees_for_coin_since(fills, coin, entry_ms)
+            open_fee = pos.get("open_fee") or 0.0
+            # Total fees = open fee + close fee (fills since entry covers both, but
+            # open_fee was already fetched at entry; close fee is in recent fills)
+            # To avoid double-counting, only sum close fills (last 60s)
+            close_fee_only = get_fees_for_coin_since(fills, coin, close_time_ms - 60000)
+            fees_usd = round(open_fee + close_fee_only, 6)
+            pnl_after_fees = round(pnl_usd - fees_usd, 4)
+            log(f"  Fees: open=${open_fee:.6f} close=${close_fee_only:.6f} total=${fees_usd:.6f} | P&L after fees: ${pnl_after_fees:+.4f}")
+        except Exception as e:
+            log(f"  WARN: fee calc failed: {e}")
+            fees_usd = None
+            pnl_after_fees = None
+
     closed = {
         "coin": pos["coin"],
         "direction": pos["direction"],
@@ -841,9 +905,12 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
         "exit_reason": reason,
         "pnl_pct": round(pnl_pct * 100, 2),
         "pnl_usd": round(pnl_usd, 2),
+        "fees_usd": fees_usd,
+        "pnl_after_fees": pnl_after_fees,
     }
     append_jsonl(CLOSED_FILE, closed)
-    log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f})")
+    fee_str = f" (fees=${fees_usd:.4f}, net=${pnl_after_fees:+.4f})" if fees_usd is not None else ""
+    log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f}){fee_str}")
 
 
 def get_mark_price(coin):
@@ -932,7 +999,7 @@ def check_alignment(position, tf_data):
     return pattern in conflicts.get(direction, []), pattern
 
 
-def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry, tf_data=None):
+def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry, tf_data=None, main_address=None):
     """Check all exit conditions: exit expressions, trailing stops, max hold time.
     Exit expressions are evaluated first — they match the paper scanner's behavior."""
     if tf_data is None:
@@ -967,7 +1034,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             if triggered:
                 log(f"EXIT SIGNAL {coin} {pos['direction']} | expression fired | {pnl_pct*100:+.2f}%")
                 log(f"  Expression: {exit_expr}")
-                close_and_record(client, pos, current, pnl_pct, "exit_expression", portfolio, dry)
+                close_and_record(client, pos, current, pnl_pct, "exit_expression", portfolio, dry, main_address=main_address)
                 continue
             elif missing:
                 log(f"  WARN: exit expression missing indicators for {coin}: {missing}")
@@ -978,7 +1045,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             if misaligned:
                 if pnl_pct < 0:
                     log(f"ALIGNMENT EXIT {coin} {pos['direction']} | pattern={pattern} conflicts, in loss {pnl_pct*100:+.2f}%")
-                    close_and_record(client, pos, current, pnl_pct, "alignment_exit", portfolio, dry)
+                    close_and_record(client, pos, current, pnl_pct, "alignment_exit", portfolio, dry, main_address=main_address)
                     continue
                 else:
                     log(f"  WARN [{coin}] alignment conflict (pattern={pattern}) but in profit {pnl_pct*100:+.2f}% — trailing stop will handle")
@@ -994,7 +1061,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             floor = peak * trailing_lock
             if pnl_pct <= floor:
                 log(f"TRAILING STOP {coin} {pos['direction']} | peak {peak*100:.2f}% -> {pnl_pct*100:+.2f}% (floor {floor*100:.2f}%)")
-                close_and_record(client, pos, current, pnl_pct, "trailing_stop", portfolio, dry)
+                close_and_record(client, pos, current, pnl_pct, "trailing_stop", portfolio, dry, main_address=main_address)
                 continue
 
         # ── MAX HOLD TIME ──
@@ -1003,7 +1070,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
         max_hold = pos.get("max_hold_hours", 48)
         if hours_held >= max_hold:
             log(f"MAX HOLD {coin} {pos['direction']} | {hours_held:.1f}h | {pnl_pct*100:+.2f}%")
-            close_and_record(client, pos, current, pnl_pct, "max_hold", portfolio, dry)
+            close_and_record(client, pos, current, pnl_pct, "max_hold", portfolio, dry, main_address=main_address)
             continue
 
         remaining.append(pos)
@@ -1011,7 +1078,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
     return remaining
 
 
-def kill_all_positions(client, positions, portfolio, prices, dry):
+def kill_all_positions(client, positions, portfolio, prices, dry, main_address=None):
     """Emergency: close ALL positions immediately (risk kill switch)."""
     log("KILL ALL — Risk Agent triggered emergency close")
     for pos in positions:
@@ -1022,7 +1089,7 @@ def kill_all_positions(client, positions, portfolio, prices, dry):
             current = entry  # fallback
         is_long = pos["direction"] == "LONG"
         pnl_pct = (current - entry) / entry if is_long else (entry - current) / entry
-        close_and_record(client, pos, current, pnl_pct, "risk_kill", portfolio, dry)
+        close_and_record(client, pos, current, pnl_pct, "risk_kill", portfolio, dry, main_address=main_address)
     return []
 
 
@@ -1079,7 +1146,7 @@ def update_portfolio(portfolio, positions, balance):
     portfolio["last_update"] = datetime.now(timezone.utc).isoformat()
 
 
-def run_cycle(client, cfg, dry):
+def run_cycle(client, cfg, dry, main_address=None):
     """Single execution cycle."""
     log(f"--- Execution cycle {'(DRY)' if dry else '(LIVE)'} ---")
 
@@ -1104,7 +1171,7 @@ def run_cycle(client, cfg, dry):
 
     # 1. Kill switch
     if kill_all:
-        positions = kill_all_positions(client, positions, portfolio, prices, dry)
+        positions = kill_all_positions(client, positions, portfolio, prices, dry, main_address=main_address)
         save_json(POSITIONS_FILE, positions)
         save_json(PORTFOLIO_FILE, portfolio)
         update_heartbeat()
@@ -1137,7 +1204,7 @@ def run_cycle(client, cfg, dry):
         except Exception as e:
             log(f"  WARN: timeframe_signals load failed: {e}")
 
-    positions = check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry, tf_data=tf_data)
+    positions = check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry, tf_data=tf_data, main_address=main_address)
 
     # 4. Open new positions from approved trades
     if throttle > 0:
@@ -1159,7 +1226,7 @@ def run_cycle(client, cfg, dry):
                 processed.append(key)
                 continue
 
-            pos = open_trade(client, trade, positions, cfg, throttle, dry)
+            pos = open_trade(client, trade, positions, cfg, throttle, dry, main_address=main_address)
             if pos:
                 positions.append(pos)
                 processed.append(key)
@@ -1221,14 +1288,14 @@ def main():
         log(f"Looping every {CYCLE_SECONDS}s")
         while True:
             try:
-                run_cycle(client, cfg, dry)
+                run_cycle(client, cfg, dry, main_address=main_addr)
             except Exception as e:
                 log(f"Cycle error: {e}")
                 import traceback
                 traceback.print_exc()
             time.sleep(CYCLE_SECONDS)
     else:
-        run_cycle(client, cfg, dry)
+        run_cycle(client, cfg, dry, main_address=main_addr)
 
 
 if __name__ == "__main__":

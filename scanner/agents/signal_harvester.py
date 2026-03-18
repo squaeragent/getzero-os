@@ -716,6 +716,18 @@ def _compound_score(coin, ind, regime, tf_pattern, coin_funding):
     return round(score_long, 2), round(score_short, 2)
 
 
+# ─── DEDUP ───
+def dedup_candidates(candidates):
+    """Keep only best instance of each signal ID per cycle."""
+    best = {}
+    for c in candidates:
+        sig_id = c.get("signal", "")
+        if sig_id not in best or c.get("composite_score", 0) > best[sig_id].get("composite_score", 0):
+            best[sig_id] = c
+    deduped = sorted(best.values(), key=lambda x: -x.get("composite_score", 0))
+    return deduped
+
+
 # ─── MAIN CYCLE ───
 def run_cycle(api_key):
     ts = datetime.now(timezone.utc)
@@ -932,6 +944,11 @@ def run_cycle(api_key):
 
     # Sort by composite score descending
     candidates.sort(key=lambda c: c["composite_score"], reverse=True)
+
+    # Dedup: keep only best instance of each signal ID per cycle
+    before = len(candidates)
+    candidates = dedup_candidates(candidates)
+    print(f"  Dedup: {before} → {len(candidates)} candidates ({before - len(candidates)} duplicates removed)")
 
     # Write output
     output = {

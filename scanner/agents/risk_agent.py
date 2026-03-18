@@ -345,6 +345,58 @@ def classify_risk(drawdown_pct, daily_pnl, lose_streak, rolling_stats):
     return level, throttle, kill_all, alerts
 
 
+# ─── BALANCE RECONCILIATION ───
+def reconcile_balance(user_addr, expected_capital, positions, closed_trades):
+    """Check if HL balance matches expected. Returns drift in USD."""
+    try:
+        # Get spot balance
+        req = urllib.request.Request(
+            HL_API_URL,
+            data=json.dumps({"type": "spotClearinghouseState", "user": user_addr}).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            spot = json.loads(resp.read().decode())
+
+        # Find USDC balance
+        usdc_balance = 0.0
+        for b in spot.get("balances", []):
+            if b.get("coin") == "USDC":
+                usdc_balance = float(b.get("total", 0))
+                break
+
+        # Get perp account value
+        req2 = urllib.request.Request(
+            HL_API_URL,
+            data=json.dumps({"type": "clearinghouseState", "user": user_addr}).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req2, timeout=10) as resp2:
+            perp = json.loads(resp2.read().decode())
+        perp_value = float(perp.get("marginSummary", {}).get("accountValue", 0))
+
+        actual_total = usdc_balance + perp_value
+
+        # Expected: starting capital + realized P&L
+        realized_pnl = sum(t.get("pnl_usd", 0) for t in closed_trades)
+        expected_total = expected_capital + realized_pnl
+
+        drift = actual_total - expected_total
+
+        return {
+            "usdc_spot": round(usdc_balance, 4),
+            "perp_value": round(perp_value, 4),
+            "actual_total": round(actual_total, 4),
+            "expected_total": round(expected_total, 4),
+            "drift_usd": round(drift, 4),
+            "drift_pct": round(drift / expected_total * 100, 4) if expected_total else 0,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # ─── HEARTBEAT ───
 def check_agent_heartbeats():
     """Check if any agent heartbeat is stale (>10 min)."""
@@ -447,6 +499,17 @@ def run_cycle(main_address):
         drawdown_pct, daily_pnl, lose_streak, rolling
     )
 
+    # 6b. Balance reconciliation
+    recon = reconcile_balance(main_address, STARTING_EQUITY, positions, closed_trades)
+    if "error" in recon:
+        print(f"  [warn] Balance reconciliation failed: {recon['error']}")
+    else:
+        print(f"  Reconciliation: spot=${recon['usdc_spot']:.2f} perp=${recon['perp_value']:.2f} "
+              f"actual=${recon['actual_total']:.2f} expected=${recon['expected_total']:.2f} "
+              f"drift={recon['drift_usd']:+.4f} ({recon['drift_pct']:+.4f}%)")
+        if abs(recon.get("drift_usd", 0)) > 0.50:
+            alerts.append(f"Balance drift: ${recon['drift_usd']:+.2f} ({recon['drift_pct']:+.2f}%)")
+
     # 7. Check heartbeats for stale agents
     stale_agents = check_agent_heartbeats()
     if stale_agents:
@@ -484,6 +547,7 @@ def run_cycle(main_address):
         "blocked_coins": [],
         "open_positions": len(positions),
         "alerts": alerts,
+        "reconciliation": recon,
     }
 
     write_risk(risk_state)
