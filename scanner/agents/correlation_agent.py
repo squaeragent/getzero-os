@@ -68,7 +68,7 @@ for group, coins in CORRELATION_GROUPS.items():
         COIN_TO_GROUP[coin] = group
 
 # ─── PORTFOLIO RULES ───
-MAX_NET_EXPOSURE_PCT = 60  # max % capital in one direction
+MAX_NET_EXPOSURE_PCT = 80  # max % capital in one direction (allows 2 same-direction at $50 each on $115)
 MAX_PER_GROUP = 2  # max positions in same correlation group
 CORRELATION_BLOCK_THRESHOLD = 0.7  # block if correlation > this
 
