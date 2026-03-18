@@ -1,0 +1,172 @@
+{
+  "coin": "HYPE",
+  "direction": "LONG",
+  "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+  "sharpe": 2.56,
+  "win_rate": 78.1,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.0,
+  "signal_heat": 0.5,
+  "recent_record": "archetype",
+  "composite_score": 7.69,
+  "timeframe_pattern": "CONFIRMATION_LONG",
+  "timeframe_confirmation": 1.0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
+  "source": "archetype",
+  "hypothesis_id": "hyp_20260318_210604_HYPE_LONG_001",
+  "thesis": "Hurst 0.83 + CONFIRMATION_LONG + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.931,
+  "evidence_for": [
+    "Hurst 0.83 > 0.55 \u2192 persistent upward momentum",
+    "fast+slow timeframes both bullish (CONFIRMATION_LONG)",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 88)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold",
+    "timeframe pattern flips to CONFIRMATION_SHORT"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "WEIGHTED_REVERSAL_LONG_R2_FR1_EX7",
+      "outcome": "loss",
+      "pnl_pct": -0.28,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:39:11.281719+00:00"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "manual_take_profit",
+      "outcome": "win",
+      "pnl_pct": 6.5193,
+      "exit_reason": "manual_take_profit",
+      "entry_time": "2026-03-18T12:00:00+00:00"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "HURST_PERSISTENT_TREND_LONG_EX2_EX3",
+      "outcome": "loss",
+      "pnl_pct": -0.1,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:01:34.607841+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.867,
+    "hurst_24h": 0.8299,
+    "hurst_48h": 0.6912,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 87.8,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bullish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_210604_HYPE_LONG_001",
+    "coin": "HYPE",
+    "direction": "LONG",
+    "survival_score": 0.1663,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.4,
+        "weight": 1.5,
+        "detail": "7 similar trades lost avg -0.2%",
+        "failures_found": 7,
+        "avg_loss_pct": -0.211
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 6,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.25,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $95 (83% of equity), 3% drop = -$2.85",
+        "same_direction_positions": 2,
+        "stress_impact_usd": 2.85,
+        "directional_pct": 82.7
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.93",
+        "confidence": 0.931,
+        "evidence_for_count": 5,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=momentum) in trending regime",
+        "regime": "trending",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "OI healthy"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.1,
+        "weight": 1.2,
+        "detail": "CHOPPY market \u2014 reduced conviction (fear=36)"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 0 trades in LATE_US+LONG, need 10+"
+      }
+    ],
+    "active_attacks": 5
+  }
+}

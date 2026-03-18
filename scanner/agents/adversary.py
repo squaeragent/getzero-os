@@ -85,6 +85,8 @@ ADVERSARY_FILE = BUS_DIR / "adversary.json"
 HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 POSITIONS_FILE = LIVE_DIR / "positions.json"
 CLOSED_FILE = LIVE_DIR / "closed.jsonl"
+REGIME_PREDICTIONS_FILE = BUS_DIR / "regime_predictions.json"
+GENEALOGY_FILE = BUS_DIR / "genealogy.json"
 
 CYCLE_SECONDS = 300  # 5 minutes
 TOTAL_EQUITY = 115.0  # approximate portfolio equity for stress tests
@@ -949,6 +951,128 @@ def attack_active_rules(hypothesis, active_rules):
         }
 
 
+# ─── SIGNAL FAMILY EXTRACTOR (mirrors genealogy.py) ───
+def extract_signal_family(signal_name: str) -> str:
+    """Extract the conceptual family from a full signal name."""
+    if not signal_name:
+        return signal_name
+    parts = signal_name.split("_")
+    family_parts = []
+    for p in parts:
+        if any(p.startswith(prefix) and (len(p) == 1 or p[1:].isdigit())
+               for prefix in ("V", "EX", "Q", "MH")):
+            break
+        if p in ("LONG", "SHORT") and family_parts:
+            break
+        family_parts.append(p)
+    return "_".join(family_parts) if family_parts else signal_name
+
+
+# ─── REGIME PREDICTIONS LOADER ───
+def load_regime_predictions() -> dict:
+    """Load latest regime transition predictions."""
+    if not REGIME_PREDICTIONS_FILE.exists():
+        return {}
+    try:
+        with open(REGIME_PREDICTIONS_FILE) as f:
+            data = json.load(f)
+        return data.get("predictions", {})
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+# ─── GENEALOGY FAMILY STATS LOADER ───
+def load_genealogy_family_stats() -> dict:
+    """Load genealogy data for family track record attack."""
+    if not GENEALOGY_FILE.exists():
+        return {}
+    try:
+        with open(GENEALOGY_FILE) as f:
+            data = json.load(f)
+        return data.get("families", {})
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+# ─── ATTACK 9 (New): REGIME TRANSITION ───
+def attack_regime_transition(hypothesis, regime_predictions: dict) -> dict:
+    """
+    If the coin is predicted to undergo regime transition, penalize new entries.
+    Extra penalty if destabilizing + going LONG.
+    """
+    coin      = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "")
+    pred      = regime_predictions.get(coin, {})
+    prob      = pred.get("transition_probability", 0)
+    dir_pred  = pred.get("predicted_direction", "")
+
+    severity = 0.0
+    if prob > 0.6:
+        severity = 0.5   # high transition risk
+    elif prob > 0.4:
+        severity = 0.2   # moderate risk
+
+    # Extra penalty: destabilizing + going LONG
+    if dir_pred == "destabilizing" and direction == "LONG":
+        severity = min(1.0, severity + 0.2)
+
+    return {
+        "attack":   "regime_transition",
+        "severity": round(severity, 3),
+        "weight":   1.3,
+        "detail":   (
+            f"transition prob {prob:.0%}, "
+            f"direction: {dir_pred or 'unknown'}"
+        ),
+    }
+
+
+# ─── ATTACK 10 (New): FAMILY TRACK RECORD ───
+def attack_family_track_record(hypothesis, family_stats: dict) -> dict:
+    """
+    Penalize hypotheses from signal families with proven poor track records.
+    Only fires when the family is mature (20+ instances) and 10+ trades.
+    """
+    signal    = hypothesis.get("signal", "")
+    regime    = hypothesis.get("regime", "unknown")
+    direction = hypothesis.get("direction", "?")
+
+    family_key = f"{extract_signal_family(signal)}|{regime}|{direction}"
+    family     = family_stats.get(family_key, {})
+
+    if not family.get("mature") or family.get("traded", 0) < 10:
+        return {
+            "attack":  "family_track_record",
+            "severity": 0,
+            "weight":  1.0,
+            "detail":  f"family immature ({family.get('total_instances', 0)} instances)",
+        }
+
+    wr = family.get("win_rate", 0.5)
+    if wr is None:
+        return {
+            "attack":  "family_track_record",
+            "severity": 0,
+            "weight":  1.0,
+            "detail":  f"family no win_rate data yet ({family.get('traded', 0)} traded)",
+        }
+
+    severity = 0.0
+    if wr < 0.25:
+        severity = 0.6   # proven loser family
+    elif wr < 0.35:
+        severity = 0.4
+    elif wr < 0.45:
+        severity = 0.2
+
+    return {
+        "attack":   "family_track_record",
+        "severity": round(severity, 3),
+        "weight":   1.3,
+        "detail":   f"family WR {wr:.0%} over {family.get('traded', 0)} trades",
+    }
+
+
 def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state_meta=None):
     """
     Run all attacks on each hypothesis. Return (survivors, killed, results).
@@ -972,6 +1096,14 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
     if active_rules:
         log(f"  Loaded {len(active_rules)} active rules for rule-based attacks")
 
+    # Load regime predictions + genealogy family stats (new attacks)
+    regime_predictions = load_regime_predictions()
+    family_stats       = load_genealogy_family_stats()
+    if regime_predictions:
+        log(f"  Loaded regime predictions for {len(regime_predictions)} coins")
+    if family_stats:
+        log(f"  Loaded genealogy family stats ({len(family_stats)} families)")
+
     for hyp in hypotheses:
         coin = hyp.get("coin", "?")
         direction = hyp.get("direction", "?")
@@ -979,7 +1111,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
 
         log(f"  Attacking {hyp_id} ({coin} {direction})...")
 
-        # Run all attacks (standard + rule-based + macro/session upgrades)
+        # Run all attacks (standard + rule-based + macro/session upgrades + new)
         attacks = [
             attack_similar_failure(hyp, closed_trades),
             attack_kill_condition_proximity(hyp, world_coins),
@@ -991,6 +1123,8 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_active_rules(hyp, active_rules),
             attack_macro_regime(hyp, world_state_meta),       # Upgrade 1
             attack_session_risk(hyp, world_state_meta),       # Upgrade 3
+            attack_regime_transition(hyp, regime_predictions),# New: predictive regime risk
+            attack_family_track_record(hyp, family_stats),    # New: genealogy track record
         ]
 
         # Apply evolved weights from counterfactual learning (overrides static weights)

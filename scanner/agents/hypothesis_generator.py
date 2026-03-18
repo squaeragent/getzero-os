@@ -45,6 +45,36 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+# ─── GENEALOGY: SIGNAL FAMILY EXTRACTOR ───
+def extract_signal_family(signal_name: str) -> str:
+    """Extract the conceptual family from a full signal name (mirrors genealogy.py)."""
+    if not signal_name:
+        return signal_name
+    parts = signal_name.split("_")
+    family_parts = []
+    for p in parts:
+        if any(p.startswith(prefix) and (len(p) == 1 or p[1:].isdigit())
+               for prefix in ("V", "EX", "Q", "MH")):
+            break
+        if p in ("LONG", "SHORT") and family_parts:
+            break
+        family_parts.append(p)
+    return "_".join(family_parts) if family_parts else signal_name
+
+
+def load_family_stats() -> dict:
+    """Load genealogy data for confidence adjustment."""
+    gen_file = Path(__file__).parent.parent / "bus" / "genealogy.json"
+    if not gen_file.exists():
+        return {}
+    try:
+        with open(gen_file) as f:
+            data = json.load(f)
+        return data.get("families", {})
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
 # ─── UPGRADE 2: CALIBRATION ADJUSTMENT ───
 def load_calibration_adjustment():
     """
@@ -1178,6 +1208,20 @@ def enrich_with_hypothesis(candidate, ts, world_coins, indicator_data, closed_tr
         adj = calibration[bucket]
         confidence = max(0.1, min(0.95, confidence + adj))
         print(f"  [calibration] adjusted confidence by {adj:+.2f} for bucket {bucket} → {confidence:.3f}")
+
+    # Genealogy: Family-aware confidence blending
+    family_stats = load_family_stats()
+    family_key   = f"{extract_signal_family(signal_name)}|{regime}|{direction}"
+    family       = family_stats.get(family_key, {})
+    if family.get("mature") and family.get("traded", 0) >= 10 and family.get("win_rate") is not None:
+        family_wr  = family["win_rate"]
+        # Blend: 60% family data, 40% individual hypothesis
+        confidence = round(0.6 * family_wr + 0.4 * confidence, 3)
+        confidence = max(0.1, min(0.95, confidence))
+        print(
+            f"  [genealogy] family {family_key}: "
+            f"WR {family_wr:.0%} over {family['traded']} trades → confidence adjusted to {confidence:.3f}"
+        )
 
     # Add hypothesis fields
     candidate["hypothesis_id"] = hyp_id

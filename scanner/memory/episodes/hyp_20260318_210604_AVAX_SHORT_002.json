@@ -1,0 +1,156 @@
+{
+  "coin": "AVAX",
+  "direction": "SHORT",
+  "signal": "DOJI_RSI_SHORT_V3_EX5",
+  "sharpe": 1.2875,
+  "win_rate": 72.32,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.1,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "BB_POSITION_15M <= 0.0 OR RSI_3H30M <= 29.4",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 4.0 AND RSI_3H30M >= 52 AND LYAPUNOV_48H <= 1.95",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_210604_AVAX_SHORT_002",
+  "thesis": "Hurst 0.69 + TRAP_LONG + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.773,
+  "evidence_for": [
+    "Hurst 0.69 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 88)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "AVAX",
+      "direction": "SHORT",
+      "signal": "SCORING_TREND_SHORT_REFINED_V2_FR14_EX3_FR19",
+      "outcome": "loss",
+      "pnl_pct": -0.04,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:30:38.808765+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.681,
+    "hurst_24h": 0.6942,
+    "hurst_48h": 0.6414,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 87.7,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_210604_AVAX_SHORT_002",
+    "coin": "AVAX",
+    "direction": "SHORT",
+    "survival_score": 0.5069,
+    "verdict": "PROCEED_WITH_CAUTION",
+    "recommended_size_modifier": 0.7,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.04
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $61 (53% of equity), 3% adverse move = -$1.84",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.84,
+        "directional_pct": 53.3
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.77",
+        "confidence": 0.773,
+        "evidence_for_count": 4,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 5.5x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.1,
+        "weight": 1.2,
+        "detail": "CHOPPY market \u2014 reduced conviction (fear=36)"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 3 trades in LATE_US+SHORT, need 10+"
+      }
+    ],
+    "active_attacks": 4
+  }
+}

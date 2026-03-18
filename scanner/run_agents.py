@@ -51,6 +51,8 @@ AGENTS = [
     ("reflection",          AGENTS_DIR / "reflection.py",          21600, 1440),  # Phase 5: Ollama reflection (6h)
     ("counterfactual",      AGENTS_DIR / "counterfactual.py",       1800,   90),  # Meta-learning: resolves killed hypotheses (30-min)
     ("adversary_evolution", AGENTS_DIR / "adversary_evolution.py",  7200,  240),  # Meta-learning: evolves attack weights (2h)
+    ("regime_transition",   AGENTS_DIR / "regime_transition.py",     300,   10),  # Predictive regime transition detection (5-min)
+    ("genealogy",           AGENTS_DIR / "genealogy.py",             900,   30),  # Hypothesis genealogy + family learning (15-min)
 ]
 
 processes = {}

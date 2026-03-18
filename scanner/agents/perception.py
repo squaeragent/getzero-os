@@ -1087,6 +1087,27 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     session = get_trading_session(utc_now.hour)
 
     # ── 5. World state ──
+    # Load market_stability from regime_predictions if available
+    _regime_pred_file = BUS_DIR / "regime_predictions.json"
+    _market_stability = None
+    try:
+        if _regime_pred_file.exists():
+            with open(_regime_pred_file) as _f:
+                _rp = json.load(_f)
+            _market_stability = _rp.get("market_stability")
+    except Exception:
+        pass
+
+    _macro_dict = {
+        "state":       macro_state,
+        "fear_score":  round(fear_score, 1),
+        "btc_roc_4h":  round(btc_roc_4h, 4),
+        "btc_roc_24h": round(btc_roc_24h, 4),
+        "chaos_pct":   round(n_chaotic / total_coins * 100, 1),
+    }
+    if _market_stability is not None:
+        _macro_dict["market_stability"] = _market_stability
+
     world_state = {
         "timestamp": ts_iso,
         "coins":     world_coins,
@@ -1097,13 +1118,7 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
             "elevated_spreads":   elevated_spreads,
             "funding_intensifying": funding_intensify,
             "cycle_time_ms":      cycle_ms,
-            "macro": {
-                "state":       macro_state,
-                "fear_score":  round(fear_score, 1),
-                "btc_roc_4h":  round(btc_roc_4h, 4),
-                "btc_roc_24h": round(btc_roc_24h, 4),
-                "chaos_pct":   round(n_chaotic / total_coins * 100, 1),
-            },
+            "macro":              _macro_dict,
             "session":   session,
             "utc_hour":  utc_now.hour,
         },
