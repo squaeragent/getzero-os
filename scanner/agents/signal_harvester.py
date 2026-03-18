@@ -140,10 +140,11 @@ def fetch_indicators(coins, indicators, api_key):
 # ─── SIGNAL PACK REFRESH ───
 # All coins with both Envy API signals AND Hyperliquid markets
 SIGNAL_COINS = [
-    "BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ",
-    "AAVE", "ADA", "APT", "BCH", "BNB", "CRV", "DOT", "ENA", "FARTCOIN", "HYPE",
-    "JUP", "LDO", "LTC", "ONDO", "OP", "PAXG", "PUMP", "SEI", "TIA", "TON",
-    "TRUMP", "TRX", "UNI", "WLD", "XRP", "ZEC",
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
 ]
 PACK_TYPES = ["common", "rare", "trump"]
 CACHE_MAX_AGE_SECONDS = 3600  # refresh every hour
@@ -491,7 +492,13 @@ def write_heartbeat():
 # S-tier multi-domain convergence signals that combine chaos theory,
 # social sentiment, funding rates, cross-timeframe, and technical structure.
 
-ARCHETYPE_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+ARCHETYPE_COINS = [
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
+]
 
 def generate_archetype_signals(indicator_data, regime_data, timeframe_data, funding_data, ts_iso):
     """Generate high-conviction compound signals from multiple data domains."""

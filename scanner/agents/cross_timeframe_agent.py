@@ -38,7 +38,13 @@ CYCLE_SECONDS = 300  # 5 minutes
 COINS_PER_REQUEST = 10
 INDICATORS_PER_REQUEST = 10  # max 16 per snapshot, we use 10 per batch
 
-TRADEABLE_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+TRADEABLE_COINS = [
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
+]
 
 # Indicator batches
 FAST_INDICATORS = [

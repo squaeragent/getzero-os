@@ -42,10 +42,11 @@ CHAOS_INDICATORS = [
 ]
 
 ALL_COINS = [
-    # Verified available on Envy API (2026-03-18)
-    "BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ",
-    "AAVE", "ADA", "APT", "BCH", "BNB", "CRV", "DOT", "LDO", "LTC", "OP",
-    "UNI", "XRP", "TRX", "SEI", "TIA", "JUP", "FARTCOIN", "PUMP", "WLD",
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
 ]
 
 COINS_PER_REQUEST = 10  # API limit
