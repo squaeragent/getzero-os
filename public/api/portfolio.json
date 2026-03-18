@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-18T10:36:55.746777+00:00",
+  "updated": "2026-03-18T10:39:02.688589+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 100.0,
@@ -177,21 +177,21 @@
   "agents": {
     "heartbeat": {
       "regime": "2026-03-18T10:36:46.614233+00:00",
-      "risk": "2026-03-18T10:35:42.232210+00:00",
+      "risk": "2026-03-18T10:37:42.586779+00:00",
       "correlation": "2026-03-18T10:36:40.462245+00:00",
       "harvester": "2026-03-18T10:32:51.736712+00:00",
       "execution": "2026-03-18T10:36:55.688475+00:00",
-      "liquidity": "2026-03-18T10:36:33.266710+00:00",
+      "liquidity": "2026-03-18T10:38:37.827682+00:00",
       "cross_timeframe": "2026-03-18T10:36:46.139081+00:00",
-      "signal_evolution": "2026-03-18T10:36:17.443165+00:00",
+      "signal_evolution": "2026-03-18T10:38:20.727319+00:00",
       "funding": "2026-03-18T10:36:41.347666+00:00",
-      "spread_monitor": "2026-03-18T10:35:44.614772+00:00"
+      "spread_monitor": "2026-03-18T10:37:44.900890+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 0.15,
+      "drawdownPct": 0.16,
       "peakEquity": 115.15,
       "winStreak": 0,
       "loseStreak": 0,
@@ -361,7 +361,151 @@
     },
     "candidates": 8,
     "approved": 8,
-    "blocked": 0
+    "blocked": 0,
+    "spread": {
+      "summary": {
+        "total_monitored": 10,
+        "normal": 9,
+        "elevated": 1,
+        "diverged": 0,
+        "mm_setup": 0,
+        "unwind": 0
+      },
+      "coins": {
+        "BTC": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "ETH": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "SOL": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "DOGE": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "AVAX": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "LINK": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "ARB": {
+          "status": "ELEVATED",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "NEAR": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "SUI": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        },
+        "INJ": {
+          "status": "NORMAL",
+          "spread_bps": null,
+          "anomaly": false
+        }
+      }
+    },
+    "funding": {
+      "coins": {
+        "ARB": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.00125
+        },
+        "AVAX": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.00125
+        },
+        "BTC": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.000476
+        },
+        "DOGE": {
+          "velocity_direction": "stable",
+          "funding_pct": -0.002768
+        },
+        "ETH": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.001168
+        },
+        "INJ": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.00125
+        },
+        "LINK": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.00125
+        },
+        "NEAR": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.00125
+        },
+        "SOL": {
+          "velocity_direction": "stable",
+          "funding_pct": -0.000952
+        },
+        "SUI": {
+          "velocity_direction": "stable",
+          "funding_pct": 0.00125
+        }
+      }
+    },
+    "archetypes": [
+      {
+        "name": "CHAOS",
+        "conditions_met": 3,
+        "conditions_total": 4,
+        "closest_coin": "BTC"
+      },
+      {
+        "name": "SOCIAL",
+        "conditions_met": 0,
+        "conditions_total": 5,
+        "closest_coin": null
+      },
+      {
+        "name": "TRIPLE",
+        "conditions_met": 2,
+        "conditions_total": 5,
+        "closest_coin": "DOGE"
+      },
+      {
+        "name": "DOJI",
+        "conditions_met": 1,
+        "conditions_total": 4,
+        "closest_coin": "SOL"
+      },
+      {
+        "name": "VOLUME",
+        "conditions_met": 0,
+        "conditions_total": 4,
+        "closest_coin": null
+      },
+      {
+        "name": "COMPOUND",
+        "conditions_met": 0,
+        "conditions_total": 10,
+        "closest_coin": null
+      }
+    ]
   },
   "liveEquityCurve": [
     {
@@ -643,6 +787,10 @@
     {
       "t": "2026-03-18T10:35:42.043394+00:00",
       "v": 114.98
+    },
+    {
+      "t": "2026-03-18T10:37:42.383989+00:00",
+      "v": 114.97
     }
   ]
 }
