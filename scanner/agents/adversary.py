@@ -734,6 +734,51 @@ def load_active_rules_for_adversary():
         return []
 
 
+def attack_oi_divergence(hypothesis, world_coins):
+    """
+    Attack 7.5: OI divergence — detect when open interest contradicts position direction.
+    OI rising + price falling = short buildup (bad for longs)
+    OI rising + price rising = real trend (good for longs)
+    OI falling = positions unwinding (caution for new entries)
+    """
+    coin = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "")
+    coin_data = world_coins.get(coin, {})
+    oi_data = coin_data.get("oi", {})
+
+    if not oi_data or not oi_data.get("open_interest"):
+        return {"attack": "oi_divergence", "severity": 0, "weight": 1.0,
+                "detail": "No OI data available"}
+
+    oi = oi_data.get("open_interest", 0)
+    premium = oi_data.get("premium", 0)
+    mark = oi_data.get("mark_price", 0)
+
+    severity = 0.0
+    details = []
+
+    # Premium indicates mark vs index. Negative premium = mark below oracle = selling pressure
+    if direction == "LONG" and premium < -0.001:
+        severity = max(severity, 0.3)
+        details.append(f"negative premium {premium:.4f} — selling pressure against LONG")
+    elif direction == "SHORT" and premium > 0.001:
+        severity = max(severity, 0.3)
+        details.append(f"positive premium {premium:.4f} — buying pressure against SHORT")
+
+    # Very high OI relative to daily volume suggests crowded trade
+    volume = oi_data.get("volume_24h", 0)
+    if volume > 0 and mark > 0:
+        oi_usd = oi * mark
+        oi_vol_ratio = oi_usd / volume if volume > 0 else 0
+        if oi_vol_ratio > 2.0:
+            severity = max(severity, 0.2)
+            details.append(f"OI/volume ratio {oi_vol_ratio:.1f}x — crowded trade risk")
+
+    detail = "; ".join(details) if details else "OI healthy"
+    return {"attack": "oi_divergence", "severity": round(severity, 3), "weight": 1.0,
+            "detail": detail}
+
+
 def attack_active_rules(hypothesis, active_rules):
     """
     Attack based on active rules from rule lifecycle.
@@ -831,6 +876,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins):
             attack_confidence_vs_anti_thesis(hyp),
             attack_regime_mismatch(hyp, world_coins),
             attack_funding_headwind(hyp, world_coins),
+            attack_oi_divergence(hyp, world_coins),
             attack_active_rules(hyp, active_rules),
         ]
 

@@ -1014,6 +1014,12 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
                 "mark_oracle_pct": spread_pct,
                 "status":          spread_status,
             },
+            "oi": {
+                "open_interest": hl.get("open_interest", 0),
+                "volume_24h":    hl.get("volume_24h", 0),
+                "mark_price":    hl.get("mark", 0),
+                "premium":       hl.get("premium", 0),
+            },
             "liquidity": {
                 "score":      liq.get("score", 0),
                 "tradeable":  liq.get("tradeable", False),

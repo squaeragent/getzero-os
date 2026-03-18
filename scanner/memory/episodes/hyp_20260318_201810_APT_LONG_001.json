@@ -1,0 +1,58 @@
+{
+  "coin": "APT",
+  "direction": "LONG",
+  "signal": "DOJI_VELOCITY_MOM_LYAP_LONG_V1_EX6_EX2",
+  "sharpe": 1.4888,
+  "win_rate": 58.82,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 3.5,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "DOJI_VELOCITY <= -5.5 OR MOMENTUM_2H30M_N <= -0.015",
+  "entry_expression": "DOJI_VELOCITY >= 3.5 AND DOJI_DISTANCE >= 6.0 AND MOMENTUM_2H30M_N >= 0.002 AND LYAPUNOV_48H <= 1.95",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_201810_APT_LONG_001",
+  "thesis": "Hurst 0.67 + TRAP_LONG + funding negative (-0.00102) + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG; Hurst declining 0.75\u21920.67 \u2014 momentum may be exhausting",
+  "confidence": 0.488,
+  "evidence_for": [
+    "Hurst 0.67 > 0.55 \u2192 persistent upward momentum",
+    "adequate liquidity (score 74)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern TRAP_LONG conflicts with LONG",
+    "Hurst declining 0.75\u21920.67 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.74,
+    "hurst_24h": 0.6729,
+    "hurst_48h": 0.7519,
+    "funding_rate": -0.001017,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 74.4,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

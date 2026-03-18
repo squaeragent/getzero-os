@@ -1,0 +1,155 @@
+{
+  "coin": "SOL",
+  "direction": "LONG",
+  "signal": "SOCIAL_BULLISH_CONSENSUS_LONG_V2_EX5_Q8_EX2_Q6",
+  "sharpe": 1.013,
+  "win_rate": 69.57,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 4.61,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "XONE_AVG_NET <= -0.010 OR XONE_AVG_NET_DELTA < -22.5",
+  "entry_expression": "XONE_AVG_NET >= 30 AND XONE_AVG_NET_DELTA >= 10 AND XONE_SPREAD < 80.0000000000 AND DOJI_VELOCITY_L >= -3.5229511925",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_201847_SOL_LONG_001",
+  "thesis": "Hurst 0.65 + CONFIRMATION_SHORT + funding negative (-0.00190) + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG; Hurst declining 0.71\u21920.65 \u2014 momentum may be exhausting",
+  "confidence": 0.446,
+  "evidence_for": [
+    "Hurst 0.65 > 0.55 \u2192 persistent upward momentum",
+    "deep liquidity (score 100)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+    "Hurst declining 0.71\u21920.65 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "SOL",
+      "direction": "LONG",
+      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
+      "outcome": "loss",
+      "pnl_pct": -0.27,
+      "exit_reason": "risk_kill",
+      "entry_time": "2026-03-18T06:45:50.866796+00:00"
+    },
+    {
+      "coin": "SOL",
+      "direction": "LONG",
+      "signal": "SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7",
+      "outcome": "loss",
+      "pnl_pct": -2.27,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T08:26:45.345988+00:00"
+    },
+    {
+      "coin": "SOL",
+      "direction": "LONG",
+      "signal": "DOJI_VEL_XONE_NET_LONG_EX1_Q14",
+      "outcome": "loss",
+      "pnl_pct": 0.0,
+      "exit_reason": "alignment_exit_trap",
+      "entry_time": "2026-03-18T18:57:16.878488+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.714,
+    "hurst_24h": 0.6494,
+    "hurst_48h": 0.7123,
+    "funding_rate": -0.001902,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 100,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_201847_SOL_LONG_001",
+    "coin": "SOL",
+    "direction": "LONG",
+    "survival_score": 0.28,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "2 similar trade(s) lost, not enough to penalize",
+        "failures_found": 2,
+        "avg_loss_pct": -1.27
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "funding intensifying \u2014 kill condition 50% met",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $60 (52% of equity), 3% drop = -$1.80",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.8,
+        "directional_pct": 52.2
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.446,
+        "evidence_for_count": 3,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG with funding rate -0.001906",
+        "funding_rate": -0.001906,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  }
+}

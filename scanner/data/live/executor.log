@@ -3354,3 +3354,32 @@
 [2026-03-18 20:18:17 UTC] [EXEC]   Fetching 3 exit indicators for ['ZEC']
 [2026-03-18 20:18:17 UTC] [EXEC] [ZEC] Skipping exit eval — hold 7m < 30m minimum
 [2026-03-18 20:18:17 UTC] [EXEC] Summary: 1 positions, $20.00 notional, trades=28
+[2026-03-18 20:21:50 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:21:50 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:21:51 UTC] [EXEC]   Fetching 3 exit indicators for ['ZEC']
+[2026-03-18 20:21:51 UTC] [EXEC] [ZEC] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 20:21:52 UTC] [EXEC] LIVE OPEN BCH SHORT | $13.06 (0.029) @ $452.4500 | sharpe=1.81
+[2026-03-18 20:21:53 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.029", "avgPx": "452.45", "oid": 353682278415}}]}}}
+[2026-03-18 20:21:53 UTC] [EXEC]   Filled @ $452.4500
+[2026-03-18 20:21:53 UTC] [EXEC]   Execution: intended=$452.4500 filled=$452.4500 slippage=0.0000% ($0.0000) fill_time=1188ms spread=0.002211
+[2026-03-18 20:21:53 UTC] [EXEC]   BCH ATR-stop: ATR=0.231% → stop=3.00%
+[2026-03-18 20:21:53 UTC] [EXEC]   Stop loss: BCH trigger @ $468.7400 (buy 0.029)
+[2026-03-18 20:21:54 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353682301959}}]}}}
+[2026-03-18 20:21:55 UTC] [EXEC]   Open fill fee for BCH: $0.005904
+[2026-03-18 20:21:55 UTC] [EXEC]   Skip INJ SHORT: liquidity: spread=0.075505%, depth=$142234
+[2026-03-18 20:21:55 UTC] [EXEC] Summary: 2 positions, $33.06 notional, trades=28
+[2026-03-18 20:23:19 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:23:19 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:23:20 UTC] [EXEC]   Fetching 5 exit indicators for ['ZEC', 'BCH']
+[2026-03-18 20:23:20 UTC] [EXEC] [ZEC] Skipping exit eval — hold 12m < 30m minimum
+[2026-03-18 20:23:20 UTC] [EXEC] [BCH] Skipping exit eval — hold 1m < 30m minimum
+[2026-03-18 20:23:20 UTC] [EXEC] Summary: 2 positions, $33.06 notional, trades=28
+[2026-03-18 20:26:57 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:26:57 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:26:57 UTC] [EXEC]   Fetching 5 exit indicators for ['BCH', 'ZEC']
+[2026-03-18 20:26:57 UTC] [EXEC] KILL SIGNAL ZEC LONG | condition: 'funding reverses to intensifying short' | +0.43%
+[2026-03-18 20:26:59 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.08", "avgPx": "245.61", "oid": 353685874511}}]}}}
+[2026-03-18 20:26:59 UTC] [EXEC]   Fees: open=$0.008798 close=$0.008841 total=$0.017639 | P&L after fees: $+0.0679
+[2026-03-18 20:26:59 UTC] [EXEC]   Closed ZEC LONG | kill_condition | +0.43% ($+0.09) (fees=$0.0176, net=$+0.0679)
+[2026-03-18 20:26:59 UTC] [EXEC] [BCH] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 20:26:59 UTC] [EXEC] Summary: 1 positions, $13.06 notional, trades=29

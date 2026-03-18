@@ -1,0 +1,158 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2_MH192",
+  "sharpe": 1.5869,
+  "win_rate": 68.18,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.43,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 192,
+  "exit_expression": "ICHIMOKU_BULL == 1 AND CLOUD_POSITION_15M >= 2.2",
+  "entry_expression": "((ICHIMOKU_BULL == 0) * 3) + ((CLOUD_POSITION_15M <= -1) * 2) + ((TENKAN_2H15M_N > 1.003) * 2) + ((DFA_48H > 0.52) * 2) + ((MACD_6H30M_N < -0.001) * 1) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_201847_XPL_SHORT_001",
+  "thesis": "Hurst 0.69 + DIVERGENCE_BULL + funding positive (0.00112) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity; Hurst declining 0.78\u21920.69 \u2014 momentum may be exhausting",
+  "confidence": 0.682,
+  "evidence_for": [
+    "Hurst 0.69 > 0.5 \u2192 trending market"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.78\u21920.69 \u2014 momentum may be exhausting",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "manual_take_profit",
+      "outcome": "win",
+      "pnl_pct": 1.8487,
+      "exit_reason": "manual_take_profit",
+      "entry_time": "2026-03-18T12:45:00+00:00"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+      "outcome": "loss",
+      "pnl_pct": -0.5,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:00:06.065825+00:00"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
+      "outcome": "win",
+      "pnl_pct": 1.39,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:36:58.503194+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.748,
+    "hurst_24h": 0.6904,
+    "hurst_48h": 0.7785,
+    "funding_rate": 0.001116,
+    "funding_direction": "normalizing",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 54.2,
+    "tradeable": false,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_201847_XPL_SHORT_001",
+    "coin": "XPL",
+    "direction": "SHORT",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.5
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met; liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 5,
+        "conditions_near": 4
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $40 (35% of equity), 3% adverse move = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "4 evidence_against vs 1 evidence_for; anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.682,
+        "evidence_for_count": 1,
+        "evidence_against_count": 4
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001063",
+        "funding_rate": 0.001063,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  }
+}
