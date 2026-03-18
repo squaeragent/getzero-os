@@ -47,10 +47,11 @@ RISK_FILE = BUS_DIR / "risk.json"
 HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 CONFIG_FILE = SCANNER_DIR / "config.yaml"
 
-POSITIONS_FILE = LIVE_DIR / "positions.json"
-CLOSED_FILE = LIVE_DIR / "closed.jsonl"
-PORTFOLIO_FILE = LIVE_DIR / "portfolio.json"
-LOG_FILE = LIVE_DIR / "executor.log"
+POSITIONS_FILE    = LIVE_DIR / "positions.json"
+CLOSED_FILE       = LIVE_DIR / "closed.jsonl"
+PORTFOLIO_FILE    = LIVE_DIR / "portfolio.json"
+LOG_FILE          = LIVE_DIR / "executor.log"
+KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
 
 HL_URL = "https://api.hyperliquid.xyz"
 CYCLE_SECONDS = 300  # 5 minutes
@@ -843,6 +844,7 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
         "coin": coin,
         "direction": direction,
         "signal": trade.get("signal", ""),
+        "hypothesis_id": trade.get("hypothesis_id", ""),
         "entry_price": fill_price,
         "intended_price": intended_price,
         "entry_time": datetime.now(timezone.utc).isoformat(),
@@ -1046,6 +1048,28 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
 
         is_long = pos["direction"] == "LONG"
         pnl_pct = (current - entry) / entry if is_long else (entry - current) / entry
+
+        # ── OBSERVER KILL SIGNALS ──
+        kill_signals_data = load_json(KILL_SIGNALS_FILE, {})
+        kill_signals_list = kill_signals_data.get("signals", [])
+        kill_match = next(
+            (s for s in kill_signals_list
+             if s.get("coin") == coin and s.get("direction") == pos["direction"]),
+            None
+        )
+        if kill_match:
+            kc = kill_match.get("kill_condition", "observer_kill")
+            log(f"KILL SIGNAL {coin} {pos['direction']} | condition: '{kc}' | {pnl_pct*100:+.2f}%")
+            close_and_record(client, pos, current, pnl_pct, "kill_condition", portfolio, dry, main_address=main_address)
+            # Remove consumed signal from file
+            remaining_signals = [s for s in kill_signals_list
+                                  if not (s.get("coin") == coin and s.get("direction") == pos["direction"])]
+            if remaining_signals:
+                kill_signals_data["signals"] = remaining_signals
+                save_json(KILL_SIGNALS_FILE, kill_signals_data)
+            else:
+                KILL_SIGNALS_FILE.unlink(missing_ok=True)
+            continue
 
         # ── MINIMUM HOLD TIME CHECK ──
         entry_dt = datetime.fromisoformat(pos["entry_time"])

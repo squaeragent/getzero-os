@@ -1,0 +1,67 @@
+{
+  "coin": "TIA",
+  "direction": "LONG",
+  "signal": "CHAOS_DOJI_MEANREV_LONG_V2_EX1_Q8_MH48",
+  "sharpe": 1.0115,
+  "win_rate": 74.68,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 3.98,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 48,
+  "exit_expression": "BB_POSITION_15M >= 1.10 OR DFA_24H >= 0.80",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DFA_24H < 0.48 AND BB_POSITION_15M <= 0.28 AND LYAPUNOV_48H < 1.98 AND ADX_3H30M < 51.2195122000",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_162025_TIA_LONG_001",
+  "thesis": "Hurst 0.69 + TRAP_LONG + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG; Hurst declining 0.76\u21920.69 \u2014 momentum may be exhausting",
+  "confidence": 0.547,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern TRAP_LONG conflicts with LONG",
+    "Hurst declining 0.76\u21920.69 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "TIA",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.48,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T13:25:24.136883+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.6888,
+    "hurst_48h": 0.762,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 51.1,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

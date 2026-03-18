@@ -19,6 +19,7 @@ Agent execution order:
   8. Risk Agent (2-min)               — reads positions + HL
   9. Signal Evolution Agent (10-min)  — learns from closed trades
  10. Execution Agent (5-min)          — reads approved + risk + liquidity + spread, acts last
+ 11. Observer Agent (2-min)           — kill condition monitoring + observation recording (cognitive loop)
 """
 
 import json
@@ -46,6 +47,7 @@ AGENTS = [
     ("risk",        AGENTS_DIR / "risk_agent.py",             120,   5),
     ("evolution",   AGENTS_DIR / "signal_evolution_agent.py", 600,  20),
     ("execution",   AGENTS_DIR / "execution_agent.py",        300,  10),
+    ("observer",    AGENTS_DIR / "observer.py",               120,   5),   # Phase 4: closes cognitive loop
 ]
 
 processes = {}
