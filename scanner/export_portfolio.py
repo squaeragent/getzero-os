@@ -351,10 +351,10 @@ def export():
         "updated": now_iso,
         "liveTrading": {
             "enabled": True,
-            "capital": live_portfolio.get("capital", 115),
+            "capital": 115,
             "positions": live_positions,
-            "trades": live_portfolio.get("trades", 0),
-            "wins": live_portfolio.get("wins", 0),
+            "trades": total,
+            "wins": wins_count,
             "dailyLoss": live_portfolio.get("daily_loss", 0),
             "closed": live_closed[-20:],
             "started": live_portfolio.get("started", now_iso),

@@ -1,0 +1,71 @@
+{
+  "coin": "ONDO",
+  "direction": "SHORT",
+  "signal": "LYAP_KIJUN_SHORT_R5V1_MH144_MH288",
+  "sharpe": 1.4043,
+  "win_rate": 59.26,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 4.88,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 288,
+  "exit_expression": "RSI_6H >= 48",
+  "entry_expression": "LYAPUNOV_24H <= 1.69 AND KIJUN_6H30M_N <= 0.997 AND RSI_6H <= 45 AND ADX_3H30M >= 27",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_202818_ONDO_SHORT_002",
+  "thesis": "Hurst 0.74 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.643,
+  "evidence_for": [
+    "Hurst 0.74 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 83)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "ONDO",
+      "direction": "SHORT",
+      "signal": "BB_UPPER_REVERSION_SHORT_EX5_FR1_EX0_Q2_MH16",
+      "outcome": "win",
+      "pnl_pct": 0.67,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:05:15.950571+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.766,
+    "hurst_24h": 0.744,
+    "hurst_48h": 0.7312,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 83.1,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

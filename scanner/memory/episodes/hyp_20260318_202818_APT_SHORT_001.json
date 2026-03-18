@@ -1,0 +1,62 @@
+{
+  "coin": "APT",
+  "direction": "SHORT",
+  "signal": "BB_CMO_HURST_DFA_SHORT_V1_EX3",
+  "sharpe": 1.3045,
+  "win_rate": 70.42,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.22,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.15,
+  "max_hold_hours": 48,
+  "exit_expression": "CMO_3H30M <= -15 OR BB_POSITION_15M <= 0.20",
+  "entry_expression": "BB_POSITION_15M >= 0.85 AND CMO_3H30M >= 25 AND HURST_48H >= 0.68 AND DFA_48H >= 0.55",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_202818_APT_SHORT_001",
+  "thesis": "Hurst 0.69 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity; Hurst declining 0.75\u21920.69 \u2014 momentum may be exhausting",
+  "confidence": 0.654,
+  "evidence_for": [
+    "Hurst 0.69 > 0.5 \u2192 trending market",
+    "funding stable (rate -0.001506)",
+    "deep liquidity (score 86)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.75\u21920.69 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.704,
+    "hurst_24h": 0.6887,
+    "hurst_48h": 0.7489,
+    "funding_rate": -0.001506,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 85.7,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

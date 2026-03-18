@@ -34,6 +34,18 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+
+# ── Upgrade 3: session classification (mirrors perception.py) ──
+def get_trading_session(utc_hour):
+    if 0 <= utc_hour < 7:
+        return "ASIA"
+    elif 7 <= utc_hour < 13:
+        return "EUROPE"
+    elif 13 <= utc_hour < 20:
+        return "US"
+    else:
+        return "LATE_US"
+
 # ─── PATHS ───────────────────────────────────────────────────────────────────
 AGENT_DIR   = Path(__file__).parent
 SCANNER_DIR = AGENT_DIR.parent
@@ -49,9 +61,10 @@ WORLD_STATE_FILE  = BUS_DIR  / "world_state.json"
 HYPOTHESES_FILE   = BUS_DIR  / "hypotheses.json"
 ADVERSARY_FILE    = BUS_DIR  / "adversary.json"
 KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
-OBSERVATIONS_FILE = MEMORY_DIR / "observations.jsonl"
-HEARTBEAT_FILE    = BUS_DIR  / "heartbeat.json"
-LOG_FILE          = LIVE_DIR / "observer.log"
+OBSERVATIONS_FILE  = MEMORY_DIR / "observations.jsonl"
+CALIBRATION_FILE   = MEMORY_DIR / "calibration.jsonl"   # Upgrade 2
+HEARTBEAT_FILE     = BUS_DIR  / "heartbeat.json"
+LOG_FILE           = LIVE_DIR / "observer.log"
 
 CYCLE_SECONDS = 120  # 2 minutes
 
@@ -615,8 +628,30 @@ def record_observations():
         if not hyp:
             log(f"    No hypothesis found for {coin} {direction} — using empty")
         observation = _build_observation(trade, hyp, world_state)
+
+        # Upgrade 3: tag observation with trading session
+        observation["session"] = get_trading_session(datetime.now(timezone.utc).hour)
+
         append_jsonl(OBSERVATIONS_FILE, observation)
         log(f"    → {observation['outcome'].upper()} | lesson: {observation['lesson'][:80]}")
+
+        # Upgrade 2: append calibration entry
+        now_iso = datetime.now(timezone.utc).isoformat()
+        pnl_pct_val = trade.get("pnl_pct", 0)
+        pnl_val = trade.get("pnl_usd", 0)
+        calibration_entry = {
+            "timestamp":            now_iso,
+            "hypothesis_id":        observation["hypothesis_id"],
+            "predicted_confidence": hyp.get("confidence", 0.5),
+            "actual_outcome":       1 if pnl_pct_val > 0 else 0,
+            "pnl_pct":              pnl_pct_val,
+            "regime":               world_state.get("coins", {}).get(
+                                        trade.get("coin", ""), {}
+                                    ).get("regime", "unknown"),
+            "direction":            trade.get("direction", ""),
+        }
+        append_jsonl(CALIBRATION_FILE, calibration_entry)
+        log(f"    → calibration entry written (conf={calibration_entry['predicted_confidence']:.2f}, outcome={calibration_entry['actual_outcome']})")
 
         _update_episode(observation["hypothesis_id"], observation)
 

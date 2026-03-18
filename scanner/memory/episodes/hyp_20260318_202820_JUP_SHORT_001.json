@@ -1,0 +1,135 @@
+{
+  "coin": "JUP",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_CHAOS_MEANREV_SHORT_V4_FR9_EX2_FR5_EX3",
+  "sharpe": 1.0052,
+  "win_rate": 62.38,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 4.38,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "BB_POSITION_15M < 0.20 OR CMO_3H30M < 0",
+  "entry_expression": "((DFA_24H < 0.45) * 3) + ((BB_POSITION_15M > 1.265) * 3) + ((RSI_3H30M > 74.8) * 2) + ((LYAPUNOV_24H < 1.70) * 2) + ((CMO_3H30M > 35) * 2) >= 6",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_202820_JUP_SHORT_001",
+  "thesis": "Hurst 0.77 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity; thin liquidity (score 42)",
+  "confidence": 0.574,
+  "evidence_for": [
+    "Hurst 0.77 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity",
+    "thin liquidity (score 42)"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.864,
+    "hurst_24h": 0.7677,
+    "hurst_48h": 0.737,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 42.5,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_202820_JUP_SHORT_001",
+    "coin": "JUP",
+    "direction": "SHORT",
+    "survival_score": 0.392,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "liquidity score 43 \u2014 moderately thin",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $53 (46% of equity), 3% adverse move = -$1.59",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.59,
+        "directional_pct": 46.1
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "3 evidence_against vs 2 evidence_for",
+        "confidence": 0.574,
+        "evidence_for_count": 2,
+        "evidence_against_count": 3
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001146",
+        "funding_rate": 0.001146,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 2.9x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  }
+}

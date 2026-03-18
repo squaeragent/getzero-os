@@ -116,6 +116,22 @@ def log(msg):
 
 
 # ==========================================================================
+# TRADING SESSION CLASSIFICATION (Upgrade 3)
+# ==========================================================================
+
+def get_trading_session(utc_hour):
+    """Classify current UTC hour into trading session."""
+    if 0 <= utc_hour < 7:
+        return "ASIA"
+    elif 7 <= utc_hour < 13:
+        return "EUROPE"
+    elif 13 <= utc_hour < 20:
+        return "US"
+    else:
+        return "LATE_US"
+
+
+# ==========================================================================
 # API KEY
 # ==========================================================================
 
@@ -1041,6 +1057,35 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
 
     cycle_ms = int((time.time() - cycle_start) * 1000)
 
+    # ── Upgrade 1: Market-wide Macro Regime ──
+    total_coins = len(world_coins) or 1
+    n_chaotic  = sum(1 for c in world_coins.values() if c["regime"] == "chaotic")
+    n_trending = sum(1 for c in world_coins.values() if c["regime"] == "trending")
+    n_shift    = sum(1 for c in world_coins.values() if c["regime"] == "shift")
+    n_stable   = sum(1 for c in world_coins.values() if c["regime"] == "stable")
+
+    btc_data     = world_coins.get("BTC", {})
+    btc_roc_24h  = btc_data.get("indicators", {}).get("ROC_24H", 0) or 0
+    btc_roc_4h   = btc_data.get("indicators_own", {}).get("ROC_4H", 0) or 0
+
+    if btc_roc_4h < -3 or (n_chaotic / total_coins > 0.3):
+        macro_state = "RISK_OFF"
+    elif btc_roc_4h > 3 or (n_trending / total_coins > 0.5 and n_chaotic / total_coins < 0.1):
+        macro_state = "RISK_ON"
+    else:
+        macro_state = "CHOPPY"
+
+    fear_score = 50
+    fear_score -= n_chaotic * 3
+    fear_score -= min(0, btc_roc_4h) * 5
+    fear_score += max(0, btc_roc_4h) * 3
+    fear_score -= elevated_spreads * 2
+    fear_score = max(0, min(100, fear_score))
+
+    # ── Upgrade 3: Session detection ──
+    utc_now = datetime.now(timezone.utc)
+    session = get_trading_session(utc_now.hour)
+
     # ── 5. World state ──
     world_state = {
         "timestamp": ts_iso,
@@ -1052,6 +1097,15 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
             "elevated_spreads":   elevated_spreads,
             "funding_intensifying": funding_intensify,
             "cycle_time_ms":      cycle_ms,
+            "macro": {
+                "state":       macro_state,
+                "fear_score":  round(fear_score, 1),
+                "btc_roc_4h":  round(btc_roc_4h, 4),
+                "btc_roc_24h": round(btc_roc_24h, 4),
+                "chaos_pct":   round(n_chaotic / total_coins * 100, 1),
+            },
+            "session":   session,
+            "utc_hour":  utc_now.hour,
         },
     }
     save_json(WORLD_STATE_FILE, world_state)
@@ -1121,6 +1175,7 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     log(f"\n  Regimes: {dict(sorted(regime_dist.items()))}")
     log(f"  Tradeable: {tradeable_count}/{len(ALL_COINS)}")
     log(f"  Elevated spreads: {elevated_spreads} | Funding intensifying: {funding_intensify}")
+    log(f"  Macro: {macro_state} | Fear: {fear_score:.0f}/100 | Session: {session}")
     log(f"  Cycle: {cycle_ms}ms")
     log(f"{'='*60}\n")
 

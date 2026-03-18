@@ -40,6 +40,17 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+# ── Upgrade 3 helper (session classification mirrors perception.py) ──
+def _get_trading_session(utc_hour):
+    if 0 <= utc_hour < 7:
+        return "ASIA"
+    elif 7 <= utc_hour < 13:
+        return "EUROPE"
+    elif 13 <= utc_hour < 20:
+        return "US"
+    else:
+        return "LATE_US"
+
 # ─── PATHS ───
 AGENT_DIR = Path(__file__).parent
 SCANNER_DIR = AGENT_DIR.parent
@@ -126,9 +137,8 @@ def load_positions():
 
 
 def load_world_state():
-    """Load unified world model."""
-    data = load_json_safe(WORLD_STATE_FILE, {})
-    return data.get("coins", {})
+    """Load unified world model — returns full data (coins + meta)."""
+    return load_json_safe(WORLD_STATE_FILE, {})
 
 
 def load_candidates():
@@ -662,6 +672,82 @@ def attack_funding_headwind(hypothesis, world_coins):
     }
 
 
+# ─── ATTACK 7 (Upgrade 1): MACRO REGIME ───
+def attack_macro_regime(hypothesis, world_state_meta):
+    """If market is RISK_OFF, penalize LONG hypotheses heavily."""
+    macro     = world_state_meta.get("macro", {})
+    state     = macro.get("state", "CHOPPY")
+    direction = hypothesis.get("direction", "")
+    fear      = macro.get("fear_score", 50)
+
+    severity = 0.0
+    details  = []
+
+    if state == "RISK_OFF" and direction == "LONG":
+        severity = 0.6
+        details.append(f"RISK_OFF market + LONG = fighting the tide (fear={fear})")
+    elif state == "RISK_OFF" and direction == "SHORT":
+        severity = 0.0
+        details.append("RISK_OFF favors SHORT")
+    elif state == "CHOPPY":
+        severity = 0.1
+        details.append(f"CHOPPY market — reduced conviction (fear={fear})")
+
+    btc_roc = macro.get("btc_roc_4h", 0)
+    if direction == "LONG" and btc_roc < -2:
+        severity = max(severity, 0.4)
+        details.append(f"BTC dumping {btc_roc:.1f}% in 4h — alt longs are traps")
+
+    return {
+        "attack":   "macro_regime",
+        "severity": round(severity, 3),
+        "weight":   1.2,
+        "detail":   "; ".join(details) if details else "macro neutral",
+    }
+
+
+# ─── ATTACK 8 (Upgrade 3): SESSION RISK ───
+def attack_session_risk(hypothesis, world_state_meta):
+    """Check if current session historically produces losses for this direction."""
+    session   = world_state_meta.get("session", "UNKNOWN")
+    direction = hypothesis.get("direction", "")
+
+    obs_file = Path(__file__).parent.parent / "memory" / "observations.jsonl"
+    if not obs_file.exists():
+        return {"attack": "session_risk", "severity": 0, "weight": 1.0,
+                "detail": "no session data yet"}
+
+    session_trades = []
+    with open(obs_file) as f:
+        for line in f:
+            try:
+                obs = json.loads(line.strip())
+                if obs.get("session") == session and obs.get("direction") == direction:
+                    session_trades.append(obs)
+            except Exception:
+                pass
+
+    if len(session_trades) < 10:
+        return {"attack": "session_risk", "severity": 0, "weight": 1.0,
+                "detail": f"only {len(session_trades)} trades in {session}+{direction}, need 10+"}
+
+    wins = sum(1 for t in session_trades if t.get("outcome") == "win")
+    wr   = wins / len(session_trades)
+
+    severity = 0.0
+    if wr < 0.3:
+        severity = 0.5
+    elif wr < 0.4:
+        severity = 0.3
+
+    return {
+        "attack":   "session_risk",
+        "severity": severity,
+        "weight":   1.0,
+        "detail":   f"{session} {direction}: {wins}/{len(session_trades)} WR ({wr:.0%}) over {len(session_trades)} trades",
+    }
+
+
 # ─── SURVIVAL SCORE ───
 def compute_survival_score(attacks):
     """
@@ -846,10 +932,13 @@ def attack_active_rules(hypothesis, active_rules):
         }
 
 
-def run_adversary(hypotheses, closed_trades, positions, world_coins):
+def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state_meta=None):
     """
     Run all attacks on each hypothesis. Return (survivors, killed, results).
     """
+    if world_state_meta is None:
+        world_state_meta = {}
+
     results = []
     survivors = []
     killed_count = 0
@@ -868,7 +957,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins):
 
         log(f"  Attacking {hyp_id} ({coin} {direction})...")
 
-        # Run all attacks (6 standard + 1 rule-based)
+        # Run all attacks (standard + rule-based + macro/session upgrades)
         attacks = [
             attack_similar_failure(hyp, closed_trades),
             attack_kill_condition_proximity(hyp, world_coins),
@@ -878,6 +967,8 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins):
             attack_funding_headwind(hyp, world_coins),
             attack_oi_divergence(hyp, world_coins),
             attack_active_rules(hyp, active_rules),
+            attack_macro_regime(hyp, world_state_meta),       # Upgrade 1
+            attack_session_risk(hyp, world_state_meta),       # Upgrade 3
         ]
 
         # Only include attacks with non-zero severity in summary
@@ -955,15 +1046,18 @@ def run_cycle():
 
     closed_trades = load_closed_trades()
     positions = load_positions()
-    world_coins = load_world_state()
+    world_state_full = load_world_state()
+    world_coins = world_state_full.get("coins", {})
+    world_state_meta = world_state_full.get("meta", {})
 
     log(f"  Closed trades: {len(closed_trades)}")
     log(f"  Open positions: {len(positions)}")
     log(f"  World state coins: {len(world_coins)}")
+    log(f"  Macro: {world_state_meta.get('macro', {}).get('state', 'UNKNOWN')} | Session: {world_state_meta.get('session', 'UNKNOWN')}")
 
     # Run adversary
     survivors, killed, cautioned, proceeded, results = run_adversary(
-        hypotheses, closed_trades, positions, world_coins
+        hypotheses, closed_trades, positions, world_coins, world_state_meta
     )
 
     # ── Write adversary.json ──

@@ -44,6 +44,46 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
+
+# ─── UPGRADE 2: CALIBRATION ADJUSTMENT ───
+def load_calibration_adjustment():
+    """
+    Read calibration.jsonl. Group by confidence bucket (0.3, 0.4, 0.5, etc.).
+    If a bucket has 10+ trades and predicted >> actual, return adjustment.
+    """
+    cal_file = Path(__file__).parent.parent / "memory" / "calibration.jsonl"
+    if not cal_file.exists():
+        return {}
+
+    buckets = {}
+    try:
+        with open(cal_file) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    conf    = entry.get("predicted_confidence", 0.5)
+                    outcome = entry.get("actual_outcome", 0)
+                    bucket  = round(conf, 1)
+                    buckets.setdefault(bucket, []).append(outcome)
+                except (json.JSONDecodeError, ValueError):
+                    pass
+    except OSError:
+        return {}
+
+    adjustments = {}
+    for bucket, outcomes in buckets.items():
+        if len(outcomes) >= 10:
+            actual_wr  = sum(outcomes) / len(outcomes)
+            predicted  = bucket
+            if actual_wr < predicted - 0.15:
+                adjustments[bucket] = actual_wr - predicted  # negative
+            elif actual_wr > predicted + 0.15:
+                adjustments[bucket] = actual_wr - predicted  # positive
+    return adjustments
+
 # ─── PATHS ───
 AGENT_DIR = Path(__file__).parent
 SCANNER_DIR = AGENT_DIR.parent
@@ -1130,6 +1170,14 @@ def enrich_with_hypothesis(candidate, ts, world_coins, indicator_data, closed_tr
         reasoning["evidence_against"],
         similar,
     )
+
+    # Upgrade 2: Calibration adjustment
+    calibration = load_calibration_adjustment()
+    bucket = round(confidence, 1)
+    if bucket in calibration:
+        adj = calibration[bucket]
+        confidence = max(0.1, min(0.95, confidence + adj))
+        print(f"  [calibration] adjusted confidence by {adj:+.2f} for bucket {bucket} → {confidence:.3f}")
 
     # Add hypothesis fields
     candidate["hypothesis_id"] = hyp_id
