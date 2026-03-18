@@ -687,12 +687,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var totalInPositions = 0;
     for(var i=0; i<livePos.length; i++) totalInPositions += (livePos[i].size_usd||0);
 
-    // Hero: equity = total capital (115 USDC) + unrealized P&L
-    // lt.capital tracks available cash (115 - position sizes). True equity = cash + positions at current value.
-    var equity = lt.capital + totalInPositions + totalUnrealized;
+    // Hero: equity from HL account value (reported by risk agent via equity curve)
+    // HL cross-margin: $115 USDC on spot backs all perp positions. HL reports account_value = margin used + unrealized.
+    // True equity = spot balance (~$115) + unrealized P&L from positions.
     var startingEquity = 115; // USDC deposited to HL
-    var realizedPnl = lt.stats ? (lt.stats.totalPnl || 0) : 0;
-    var totalPnl = (equity - startingEquity);
+    var equity = startingEquity + totalUnrealized;
+    var totalPnl = totalUnrealized;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
     // Uptime: show hours when < 1 day, days otherwise
