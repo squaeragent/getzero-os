@@ -36,17 +36,15 @@ BUS_DIR = SCANNER_DIR / "bus"
 PYTHON = "/opt/homebrew/bin/python3"
 
 # Agent definitions: (name, script, cycle_sec, stale_after_min)
+# Phase 1 Cognitive Loop: regime + liquidity + spread + cross_timeframe + funding
+# are merged into the single perception agent.
 AGENTS = [
-    ("regime",          AGENTS_DIR / "regime_agent.py",           300,  10),
-    ("liquidity",       AGENTS_DIR / "liquidity_agent.py",       120,   5),
-    ("spread_monitor",  AGENTS_DIR / "spread_monitor.py",        120,   5),
-    ("cross_timeframe", AGENTS_DIR / "cross_timeframe_agent.py", 300,  10),
-    ("funding",         AGENTS_DIR / "funding_agent.py",         300,  10),
-    ("harvester",       AGENTS_DIR / "signal_harvester.py",      600,  20),
-    ("correlation",     AGENTS_DIR / "correlation_agent.py",     300,  10),
-    ("risk",            AGENTS_DIR / "risk_agent.py",            120,   5),
-    ("evolution",       AGENTS_DIR / "signal_evolution_agent.py", 600,  20),
-    ("execution",       AGENTS_DIR / "execution_agent.py",       300,  10),
+    ("perception",  AGENTS_DIR / "perception.py",             120,   5),  # replaces 5 agents
+    ("harvester",   AGENTS_DIR / "signal_harvester.py",       600,  20),
+    ("correlation", AGENTS_DIR / "correlation_agent.py",      300,  10),
+    ("risk",        AGENTS_DIR / "risk_agent.py",             120,   5),
+    ("evolution",   AGENTS_DIR / "signal_evolution_agent.py", 600,  20),
+    ("execution",   AGENTS_DIR / "execution_agent.py",        300,  10),
 ]
 
 processes = {}
