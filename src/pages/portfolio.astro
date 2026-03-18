@@ -12,35 +12,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <span class="nav-item nav-active">PORTFOLIO</span>
       </div>
 
-      <!-- HERO -->
+      <!-- EQUITY HERO -->
       <div class="hero-pane">
-        <div class="ph">◇ ZERO OS — <span class="live-dot">●</span> LIVE <span class="early-badge" id="early-badge" style="display:none">EARLY DATA</span></div>
+        <div class="ph">◇ ZERO OS — <span class="live-dot">●</span> LIVE</div>
         <div class="hero-body">
-          <div class="stats-row" id="stats-row">
-            <div class="stat">
-              <span class="sl">EQUITY</span>
-              <span class="sv big" id="s-equity">—</span>
+          <div class="equity-hero">
+            <div class="eq-number" id="eq-number">$—</div>
+            <div class="eq-pnl" id="eq-pnl">—</div>
+            <div class="eq-meta" id="eq-meta">— trades · — uptime</div>
+            <div class="eq-badges">
+              <span class="risk-badge" id="risk-badge">—</span>
+              <span class="early-badge" id="early-badge" style="display:none">EARLY DATA</span>
             </div>
-            <div class="stat">
-              <span class="sl">P&L</span>
-              <span class="sv" id="s-pnl">—</span>
-            </div>
-            <div class="stat">
-              <span class="sl">WIN RATE</span>
-              <span class="sv" id="s-winrate">—</span>
-            </div>
-            <div class="stat">
-              <span class="sl">CLOSED TRADES</span>
-              <span class="sv" id="s-trades">0</span>
-            </div>
-            <div class="stat">
-              <span class="sl">UPTIME</span>
-              <span class="sv" id="s-uptime">—</span>
-            </div>
-          </div>
-          <div class="hero-meta">
-            <span class="risk-badge" id="risk-badge">—</span>
-            <span class="regime-summary dim" id="regime-summary"></span>
           </div>
         </div>
       </div>
@@ -49,38 +32,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="section">
         <div class="ph">ACCOUNT VALUE <span class="dim" id="eq-range"></span></div>
         <div class="sb eq-wrap">
-          <canvas id="equity-canvas" width="860" height="200"></canvas>
+          <canvas id="equity-canvas" width="860" height="120"></canvas>
           <div class="muted" id="eq-empty" style="display:none">Collecting data...</div>
-        </div>
-      </div>
-
-      <!-- AGENT PIPELINE -->
-      <div class="section">
-        <div class="ph">PIPELINE STATUS</div>
-        <div class="sb agent-pipeline" id="agent-pipeline"></div>
-      </div>
-
-      <!-- MARKET INTELLIGENCE -->
-      <div class="section" id="intelligence-section">
-        <div class="ph">MARKET INTELLIGENCE</div>
-        <div class="sb">
-          <div class="intel-panels" id="intel-panels">
-            <div class="intel-panel">
-              <div class="intel-panel-label">REGIMES</div>
-              <div class="regime-grid" id="regime-grid"></div>
-            </div>
-            <div class="intel-panel">
-              <div class="intel-panel-label">SPREAD</div>
-              <div class="intel-val" id="spread-val">—</div>
-            </div>
-            <div class="intel-panel">
-              <div class="intel-panel-label">FUNDING</div>
-              <div class="intel-val" id="funding-val">—</div>
-            </div>
-          </div>
-          <div class="archetype-row" id="archetype-row">
-            <div class="muted">Monitoring 6 signal archetypes...</div>
-          </div>
         </div>
       </div>
 
@@ -92,9 +45,48 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- STATS -->
+      <!-- MARKET STATE -->
+      <div class="section" id="market-state-section">
+        <div class="ph">MARKET STATE</div>
+        <div class="sb">
+          <div class="regime-map" id="regime-map"></div>
+          <div class="regime-legend">
+            <span class="leg-dot" style="background:#c8ff00"></span>trending
+            <span class="leg-dot" style="background:#aaa"></span>stable
+            <span class="leg-dot" style="background:#ffb000"></span>shift
+            <span class="leg-dot" style="background:#ff3333"></span>chaotic
+          </div>
+          <div class="status-line" id="status-line">
+            <span class="status-ok">Spreads ✓</span>
+            <span class="status-ok">Funding ✓</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIGNAL ARCHETYPES -->
+      <div class="section" id="archetypes-section">
+        <div class="ph">SIGNAL ARCHETYPES</div>
+        <div class="sb">
+          <div class="archetype-grid" id="archetype-grid">
+            <div class="muted">Monitoring 6 signal archetypes...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM STATUS (collapsed) -->
       <div class="section">
-        <div class="ph">STATS</div>
+        <div class="ph system-ph" id="system-ph">SYSTEM <span id="system-summary">—</span></div>
+        <div class="sb">
+          <div class="system-healthy" id="system-healthy">Pipeline healthy — all agents reporting</div>
+          <div class="system-body" id="system-body">
+            <div class="agent-pipeline" id="agent-pipeline"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERFORMANCE (≥5 trades) -->
+      <div class="section" id="stats-section" style="display:none">
+        <div class="ph">PERFORMANCE</div>
         <div class="sb stats-grid" id="stats-dashboard">
           <div class="muted">Loading stats...</div>
         </div>
@@ -102,7 +94,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <!-- TRADE HISTORY -->
       <div class="section">
-        <div class="ph">TRADE HISTORY <span class="dim" id="closed-count">(0)</span></div>
+        <div class="ph">CLOSED TRADES <span class="dim" id="closed-count">(0)</span></div>
         <div class="sb" id="closed-body">
           <div class="muted">Fetching live data...</div>
         </div>
@@ -127,7 +119,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     min-height: 100vh;
   }
   .terminal-border {
-    border: 1px solid rgba(200,255,0,0.4);
+    border: 1px solid rgba(200,255,0,0.25);
     min-height: 100vh;
   }
 
@@ -154,12 +146,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* ─── SECTION HEADERS ─── */
   .ph {
     font-family: var(--font-head);
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-dim);
-    padding: 0.5rem 1rem;
+    color: var(--text);
+    padding: 0.5rem 1rem 0.5rem 0.75rem;
     border-bottom: 1px solid var(--border);
+    border-left: 2px solid rgba(200,255,0,0.4);
     background: rgba(0,0,0,0.6);
   }
   .section {
@@ -171,12 +164,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .dim { opacity: 0.5; font-size: 0.6rem; }
   .muted {
     font-family: var(--font-head);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-dim);
     opacity: 0.4;
   }
 
-  /* ─── HERO ─── */
+  /* ─── EQUITY HERO ─── */
   .hero-pane { border-bottom: 1px solid var(--border); }
   .live-dot {
     color: #00ff00;
@@ -197,32 +190,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-left: 0.5rem;
   }
   .hero-body { padding: 1.25rem 1rem; }
-  .stats-row {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.75rem;
-  }
-  .stat { display: flex; flex-direction: column; gap: 0.15rem; }
-  .sl {
-    font-family: var(--font-head);
-    font-size: 0.55rem;
-    letter-spacing: 0.15em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-  }
-  .sv {
-    font-family: var(--font-head);
-    font-size: 1.2rem;
-    color: var(--phosphor);
+  .equity-hero { display: flex; flex-direction: column; }
+  .eq-number {
+    font-size: clamp(2rem, 8vw, 3.5rem);
     font-weight: 700;
+    font-family: var(--font-head);
+    color: var(--phosphor);
+    line-height: 1;
   }
-  .sv.big { font-size: 1.5rem; }
-  .hero-meta {
+  .eq-pnl {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 600;
+    font-family: var(--font-head);
+    margin-top: 0.25rem;
+  }
+  .eq-meta {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-family: var(--font-head);
+    margin-top: 0.35rem;
+    letter-spacing: 0.05em;
+  }
+  .eq-badges {
+    margin-top: 0.5rem;
     display: flex;
+    gap: 0.5rem;
     align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
   }
   .risk-badge {
     font-family: var(--font-head);
@@ -232,12 +225,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 0.15rem 0.5rem;
     text-transform: uppercase;
   }
-  .regime-summary {
-    font-family: var(--font-head);
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    color: var(--text-dim);
-  }
 
   /* ─── EQUITY CURVE ─── */
   .eq-wrap {
@@ -246,9 +233,138 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   #equity-canvas {
     width: 100%;
-    height: 200px;
+    height: 120px;
     display: block;
   }
+
+  /* ─── MARKET STATE ─── */
+  .regime-map {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 0.5rem;
+  }
+  .regime-coin-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .regime-dot {
+    width: 10px;
+    height: 10px;
+    display: block;
+  }
+  .regime-coin-name {
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: var(--font-head);
+  }
+  .regime-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-head);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+  }
+  .leg-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 0.2rem;
+    vertical-align: middle;
+  }
+  .status-line {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .status-ok { color: #c8ff00; }
+  .status-warn { color: #ffb000; }
+  .status-err { color: #ff3333; }
+
+  /* ─── SIGNAL ARCHETYPES ─── */
+  .archetype-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .archetype-card {
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.02);
+  }
+  .archetype-card-title {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .archetype-card-main {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+  }
+  .archetype-prog-wrap {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .archetype-prog-fill {
+    height: 100%;
+    background: #c8ff00;
+    transition: width 0.4s ease;
+  }
+  .archetype-fraction {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--phosphor);
+    white-space: nowrap;
+  }
+  .archetype-coin {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .archetype-conditions {
+    font-family: var(--font-head);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    opacity: 0.7;
+  }
+
+  /* ─── SYSTEM STATUS ─── */
+  .system-ph {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+  }
+  .system-ph:hover { color: var(--phosphor); }
+  .system-healthy {
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  .system-body { display: none; margin-top: 0.75rem; }
+  .system-body.expanded { display: block; }
 
   /* ─── PIPELINE ─── */
   .agent-pipeline {
@@ -287,8 +403,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-self: center;
     margin-top: 1.2rem;
   }
-
-  /* ─── AGENT DOT (shared by pipeline + old bar) ─── */
   .agent-item {
     display: flex;
     align-items: center;
@@ -312,87 +426,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     opacity: 0.6;
   }
 
-  /* ─── MARKET INTELLIGENCE ─── */
-  .intel-panels {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.75rem;
-  }
-  .intel-panel {
-    flex: 1;
-    min-width: 160px;
-    font-family: var(--font-head);
-  }
-  .intel-panel-label {
-    font-size: 0.5rem;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-  }
-  .intel-val {
-    font-size: 0.7rem;
-    color: var(--text);
-    line-height: 1.6;
-  }
-  .regime-grid {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    align-items: flex-end;
-  }
-  .regime-coin-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-  }
-  .regime-square {
-    width: 8px;
-    height: 8px;
-    display: block;
-  }
-  .regime-coin-name {
-    font-size: 0.45rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-family: var(--font-head);
-  }
-  .archetype-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    font-family: var(--font-head);
-    font-size: 0.65rem;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--border);
-    align-items: center;
-  }
-  .archetype-item {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .archetype-name {
-    font-size: 0.5rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .archetype-bar {
-    font-size: 0.65rem;
-    color: var(--phosphor);
-    letter-spacing: -0.03em;
-  }
-  .archetype-detail {
-    font-size: 0.5rem;
-    color: var(--text-dim);
-    opacity: 0.7;
-  }
-
   /* ─── POSITION CARDS ─── */
   .pos-cards {
     display: flex;
@@ -401,14 +434,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .pos-card {
     border: 1px solid var(--border);
-    border-left: 2px solid #ff3333;
+    border-left: 3px solid #c8ff00;
     padding: 0.75rem 1rem;
     background: rgba(255,255,255,0.02);
+    position: relative;
+  }
+  .pos-card.short-card {
+    border-left-color: #ff3333;
   }
   .pos-card-top {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
     margin-bottom: 0.5rem;
     flex-wrap: wrap;
   }
@@ -448,13 +485,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .pos-pnl {
     margin-left: auto;
     font-family: var(--font-head);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
   }
   .pos-card-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.25rem 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem 1rem;
+    margin-bottom: 0.4rem;
   }
   .pos-field {
     display: flex;
@@ -463,7 +501,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .pos-fl {
     font-family: var(--font-head);
-    font-size: 0.5rem;
+    font-size: 0.55rem;
     letter-spacing: 0.1em;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -475,22 +513,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .pos-exit {
     margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
     font-family: var(--font-body);
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     color: var(--text-dim);
-    opacity: 0.8;
-    word-break: break-all;
+    opacity: 0.85;
   }
-  .pos-exit-raw {
-    font-size: 0.5rem;
+  /* hold time progress bar */
+  .pos-hold-bar-wrap {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .pos-hold-track {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .pos-hold-fill {
+    height: 100%;
+    background: rgba(200,255,0,0.5);
+  }
+  .pos-hold-label {
+    font-family: var(--font-head);
+    font-size: 0.55rem;
     color: var(--text-dim);
-    opacity: 0.4;
-    word-break: break-all;
-    margin-top: 0.1rem;
-    font-family: var(--font-body);
+    white-space: nowrap;
   }
 
-  /* ─── STATS DASHBOARD ─── */
+  /* ─── STATS / PERFORMANCE ─── */
   .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -498,7 +551,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .stats-panel {
     font-family: var(--font-head);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   .stats-panel-title {
     font-size: 0.55rem;
@@ -544,37 +597,74 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .stat-row-label { color: var(--text-dim); }
   .stat-row-value { color: var(--text); font-weight: 700; }
 
-  /* ─── CLOSED TRADES ─── */
-  .closed-cards {
+  /* ─── TRADE HISTORY (compact rows) ─── */
+  .closed-rows {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-  }
-  .closed-card {
-    display: grid;
-    grid-template-columns: 50px 55px 1fr auto;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border);
-    border-left: 2px solid #ff3333;
-    background: rgba(255,255,255,0.02);
-    align-items: center;
     font-family: var(--font-head);
     font-size: 0.75rem;
   }
-  .closed-coin { color: var(--phosphor); font-weight: 700; }
-  .closed-detail {
-    font-size: 0.6rem;
-    color: var(--text-dim);
+  .closed-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.5rem;
+    flex-wrap: nowrap;
+    overflow: hidden;
   }
-  .closed-pnl {
+  .closed-row:nth-child(even) {
+    background: rgba(255,255,255,0.015);
+  }
+  .cr-coin {
     font-weight: 700;
-    font-size: 0.85rem;
-    text-align: right;
+    color: var(--phosphor);
+    min-width: 40px;
+    flex-shrink: 0;
   }
-  .closed-sub {
-    font-size: 0.6rem;
+  .cr-dir {
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 36px;
+    flex-shrink: 0;
+  }
+  .cr-prices {
+    font-size: 0.65rem;
     color: var(--text-dim);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cr-pct {
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 52px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .cr-pnl {
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 48px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .cr-reason {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+    flex-shrink: 0;
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cr-age {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    opacity: 0.5;
+    flex-shrink: 0;
+    min-width: 28px;
     text-align: right;
   }
 
@@ -599,25 +689,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-decoration: none;
     transition: color 0.2s;
   }
-  .footer-link:hover {
-    color: var(--phosphor);
-  }
+  .footer-link:hover { color: var(--phosphor); }
 
   /* ─── MOBILE ─── */
   @media (max-width: 600px) {
     .page { padding: 0.5rem; }
-    .stats-row { gap: 1.2rem; }
-    .sv { font-size: 1rem; }
-    .sv.big { font-size: 1.3rem; }
     .pos-card-grid { grid-template-columns: repeat(2, 1fr); }
     .stats-grid { grid-template-columns: 1fr; }
-    .closed-card {
-      grid-template-columns: 1fr 1fr;
-      gap: 0.3rem;
-    }
-    .intel-panels { flex-direction: column; gap: 1rem; }
+    .archetype-grid { grid-template-columns: 1fr; }
     .agent-pipeline { gap: 0.3rem; }
     .pipeline-arrow { display: none; }
+    .cr-reason { display: none; }
+    .cr-prices { max-width: 120px; }
   }
 </style>
 
@@ -629,6 +712,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var portfolioData = null;
   var livePrices = {};
   var lastPriceUpdate = 0;
+  var startingEquity = 115;
 
   function fmt$(v){
     if(v==null) return '—';
@@ -639,10 +723,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function fmtPct(v){
     if(v==null) return '—';
     return (v>=0?'+':'')+v.toFixed(2)+'%';
-  }
-  function fmtTime(iso){
-    if(!iso) return '—';
-    return new Date(iso).toISOString().replace('T',' ').slice(5,16)+' UTC';
   }
   function pnlClass(v){ return v>=0?'c-pos':'c-neg'; }
   function ago(ts){
@@ -673,7 +753,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function fmtHold(hours){
     if(!hours && hours !== 0) return '—';
     if(hours < 1) return Math.round(hours * 60) + 'm';
-    return hours + 'h';
+    return hours.toFixed(1) + 'h';
   }
 
   var riskColors = {green:'#c8ff00',yellow:'#ffb000',orange:'#ff8800',red:'#ff3333'};
@@ -696,11 +776,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     for(var i=0; i<rules.length; i++){
       translated = translated.replace(rules[i][0], rules[i][1]);
     }
-    return translated;
+    // Strip remaining raw code tokens to keep it readable
+    translated = translated.replace(/[A-Z0-9_]+_[A-Z0-9H]+\s*[><=!]+\s*[\d.]+/g, '').replace(/\s{2,}/g,' ').trim();
+    return translated || expr;
   }
 
-  // ─── EQUITY CURVE (raw canvas) ───
-  function drawEquityCurve(curve){
+  // ─── EQUITY CURVE ───
+  function drawEquityCurve(curve, currentEquity){
     var canvas = document.getElementById('equity-canvas');
     var emptyMsg = document.getElementById('eq-empty');
 
@@ -710,7 +792,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       return;
     }
 
-    // Early data: < 10 points — draw placeholder dashed line
+    // Determine line color based on current equity vs starting
+    var lineColor = (currentEquity != null && currentEquity >= startingEquity) ? '#c8ff00' : '#ff3333';
+    var fillColor = lineColor === '#c8ff00' ? 'rgba(200,255,0,0.06)' : 'rgba(255,51,51,0.06)';
+    var gridColor = 'rgba(200,255,0,0.05)';
+    var labelColor = 'rgba(200,255,0,0.25)';
+
+    // Early data: < 10 points
     if(curve.length < 10){
       if(emptyMsg) emptyMsg.style.display = 'none';
       if(canvas){
@@ -736,7 +824,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         ctx0.fillStyle = 'rgba(200,255,0,0.35)';
         ctx0.font = '11px JetBrains Mono, monospace';
         ctx0.textAlign = 'center';
-        ctx0.fillText('$115 — COLLECTING DATA', W0 / 2, midY0 - 12);
+        ctx0.fillText('$' + startingEquity + ' — COLLECTING DATA', W0 / 2, midY0 - 12);
         ctx0.font = '9px JetBrains Mono, monospace';
         ctx0.fillStyle = 'rgba(200,255,0,0.2)';
         ctx0.fillText(curve.length + ' of 10 points', W0 / 2, midY0 + 16);
@@ -755,7 +843,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     ctx.scale(dpr, dpr);
     var W = rect.width;
     var H = rect.height;
-    var pad = {t:20, r:50, b:25, l:10};
+    var pad = {t:16, r:50, b:22, l:10};
 
     var vals = curve.map(function(p){ return p.v; });
     var minV = Math.min.apply(null, vals);
@@ -769,9 +857,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var ch = H - pad.t - pad.b;
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(255,51,51,0.08)';
+    ctx.strokeStyle = gridColor;
     ctx.lineWidth = 1;
-    var gridLines = 5;
+    var gridLines = 4;
     for(var i=0; i<=gridLines; i++){
       var y = pad.t + (ch * i / gridLines);
       ctx.beginPath();
@@ -779,22 +867,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       ctx.lineTo(W - pad.r, y);
       ctx.stroke();
       var val = maxV - (range * i / gridLines);
-      ctx.fillStyle = 'rgba(255,51,51,0.3)';
-      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillStyle = labelColor;
+      ctx.font = '9px JetBrains Mono, monospace';
       ctx.textAlign = 'left';
       ctx.fillText('$' + val.toFixed(2), W - pad.r + 4, y + 3);
     }
 
     // Time labels
-    ctx.fillStyle = 'rgba(255,51,51,0.2)';
-    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillStyle = labelColor;
+    ctx.font = '8px JetBrains Mono, monospace';
     ctx.textAlign = 'center';
-    var tSteps = Math.min(6, curve.length);
+    var tSteps = Math.min(5, curve.length);
     for(var i=0; i<tSteps; i++){
       var idx = Math.floor(i * (curve.length-1) / (tSteps-1));
       var x = pad.l + (idx / (curve.length-1)) * cw;
       var d = new Date(curve[idx].t);
-      ctx.fillText(d.toISOString().slice(11,16), x, H - 5);
+      ctx.fillText(d.toISOString().slice(11,16), x, H - 4);
     }
 
     function px(i){ return pad.l + (i / (curve.length-1)) * cw; }
@@ -807,14 +895,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     ctx.lineTo(px(vals.length-1), pad.t + ch);
     ctx.lineTo(px(0), pad.t + ch);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,51,51,0.08)';
+    ctx.fillStyle = fillColor;
     ctx.fill();
 
     // Line
     ctx.beginPath();
     ctx.moveTo(px(0), py(vals[0]));
     for(var i=1; i<vals.length; i++) ctx.lineTo(px(i), py(vals[i]));
-    ctx.strokeStyle = '#ff3333';
+    ctx.strokeStyle = lineColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -823,15 +911,158 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var lastY = py(vals[vals.length-1]);
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI*2);
-    ctx.fillStyle = '#ff3333';
+    ctx.fillStyle = lineColor;
     ctx.fill();
 
-    // Range label
     var el = document.getElementById('eq-range');
-    if(el) el.textContent = curve.length + ' points · $' + minV.toFixed(2) + ' – $' + maxV.toFixed(2);
+    if(el) el.textContent = curve.length + ' points · $' + (minV+range*0.1).toFixed(2) + ' – $' + (maxV-range*0.1).toFixed(2);
   }
 
-  // ─── PIPELINE STATUS ───
+  // ─── MARKET STATE ───
+  function renderMarketState(data){
+    if(!data || !data.agents) return;
+    var agents = data.agents;
+    var regimeColors = {trending:'#c8ff00',stable:'#aaa',shift:'#ffb000',chaotic:'#ff3333'};
+
+    // Regime map
+    var regimeMap = document.getElementById('regime-map');
+    if(regimeMap && agents.regimes && agents.regimes.coins){
+      var coins = agents.regimes.coins;
+      var html = '';
+      for(var coin in coins){
+        var regime = (coins[coin].regime || 'stable').toLowerCase();
+        var color = regimeColors[regime] || '#aaa';
+        var shortName = coin.replace('USDT','').replace('PERP','').slice(0,3);
+        html += '<div class="regime-coin-wrap">';
+        html += '<span class="regime-dot" style="background:'+color+'"></span>';
+        html += '<span class="regime-coin-name">'+shortName+'</span>';
+        html += '</div>';
+      }
+      regimeMap.innerHTML = html || '<span class="muted">No regime data</span>';
+    }
+
+    // Exception-only status line
+    var statusLine = document.getElementById('status-line');
+    if(statusLine){
+      var spreadOk = true;
+      var fundingOk = true;
+      var spreadIssues = [];
+      var fundingIssues = [];
+
+      if(agents.spread && agents.spread.coins){
+        for(var sc in agents.spread.coins){
+          var st = agents.spread.coins[sc];
+          if(st && st.status && st.status.toLowerCase() !== 'normal'){
+            spreadOk = false;
+            var shortSC = sc.replace('USDT','').replace('PERP','').slice(0,4);
+            spreadIssues.push(shortSC);
+          }
+        }
+      }
+      if(agents.funding && agents.funding.coins){
+        for(var fc in agents.funding.coins){
+          var fd = agents.funding.coins[fc];
+          if(fd && fd.velocity_direction && fd.velocity_direction !== 'stable'){
+            fundingOk = false;
+            var shortFC = fc.replace('USDT','').replace('PERP','').slice(0,4);
+            fundingIssues.push(shortFC+'('+fd.velocity_direction+')');
+          }
+        }
+      }
+
+      var sHtml = '';
+      if(spreadOk){
+        sHtml += '<span class="status-ok">Spreads ✓</span>';
+      } else {
+        sHtml += '<span class="status-warn">Spreads: '+spreadIssues.join(', ')+'</span>';
+      }
+      if(fundingOk){
+        sHtml += '<span class="status-ok">Funding ✓</span>';
+      } else {
+        sHtml += '<span class="status-warn">Funding: '+fundingIssues.join(', ')+'</span>';
+      }
+      statusLine.innerHTML = sHtml;
+    }
+  }
+
+  // ─── SIGNAL ARCHETYPES ───
+  function renderArchetypes(archetypes){
+    var grid = document.getElementById('archetype-grid');
+    if(!grid) return;
+
+    if(!archetypes || archetypes.length === 0){
+      grid.innerHTML = '<div class="muted" style="grid-column:1/-1">Not enough data</div>';
+      return;
+    }
+
+    var html = '';
+    for(var i=0; i<archetypes.length; i++){
+      var arch = archetypes[i];
+      var total = arch.conditions_total || 4;
+      var met = arch.conditions_met || 0;
+      var pct = total > 0 ? (met / total * 100) : 0;
+      var coin = arch.closest_coin || '—';
+      var conditions = arch.conditions || [];
+
+      html += '<div class="archetype-card">';
+      html += '<div class="archetype-card-title">'+(arch.name||'UNKNOWN')+'</div>';
+      html += '<div class="archetype-card-main">';
+      html += '<div class="archetype-prog-wrap"><div class="archetype-prog-fill" style="width:'+pct+'%"></div></div>';
+      html += '<span class="archetype-coin">'+coin+'</span>';
+      html += '<span class="archetype-fraction">'+met+'/'+total+'</span>';
+      html += '</div>';
+      if(conditions.length > 0){
+        html += '<div class="archetype-conditions">'+conditions.join(' · ')+'</div>';
+      } else if(arch.conditions_summary){
+        html += '<div class="archetype-conditions">'+arch.conditions_summary+'</div>';
+      }
+      html += '</div>';
+    }
+    grid.innerHTML = html;
+  }
+
+  // ─── SYSTEM STATUS ───
+  function renderSystemStatus(agents){
+    var summaryEl = document.getElementById('system-summary');
+    var healthyEl = document.getElementById('system-healthy');
+    if(!agents || !agents.heartbeat){
+      if(summaryEl) summaryEl.textContent = '—';
+      return;
+    }
+
+    var allAgents = ['regime','liquidity','spread_monitor','cross_timeframe','funding','harvester','correlation','risk','evolution','execution'];
+    var online = 0;
+    var failed = [];
+    for(var i=0; i<allAgents.length; i++){
+      var name = allAgents[i];
+      var ts = agents.heartbeat[name];
+      var secs = agoFromISO(ts);
+      if(secs < 900){
+        online++;
+      } else {
+        failed.push(name);
+      }
+    }
+    var total = allAgents.length;
+    if(summaryEl){
+      if(online === total){
+        summaryEl.innerHTML = '<span class="c-pos">'+total+'/'+total+' ✓</span>';
+      } else {
+        summaryEl.innerHTML = '<span class="c-neg">'+online+'/'+total+'</span>';
+      }
+    }
+    if(healthyEl){
+      if(online === total){
+        healthyEl.textContent = 'Pipeline healthy — all agents reporting';
+        healthyEl.style.color = '';
+      } else {
+        healthyEl.textContent = 'Agents offline: ' + failed.join(', ');
+        healthyEl.style.color = '#ff3333';
+      }
+    }
+  }
+
+  // ─── PIPELINE STAGES ───
   function renderAgents(agents){
     var pipeline = document.getElementById('agent-pipeline');
     if(!pipeline || !agents || !agents.heartbeat) return;
@@ -865,105 +1096,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     pipeline.innerHTML = html;
   }
 
-  // ─── MARKET INTELLIGENCE ───
-  function renderIntelligence(){
-    if(!portfolioData || !portfolioData.agents) return;
-    var agents = portfolioData.agents;
-
-    // REGIMES
-    var regimeGrid = document.getElementById('regime-grid');
-    if(regimeGrid && agents.regimes && agents.regimes.coins){
-      var coins = agents.regimes.coins;
-      var regimeColors = {trending:'#c8ff00',stable:'#666',shift:'#ffb000',chaotic:'#ff3333'};
-      var html = '';
-      for(var coin in coins){
-        var regime = coins[coin].regime || 'stable';
-        var color = regimeColors[regime] || '#666';
-        var shortName = coin.replace('USDT','').replace('PERP','').slice(0,3);
-        html += '<div class="regime-coin-wrap">';
-        html += '<span class="regime-square" style="background:'+color+'"></span>';
-        html += '<span class="regime-coin-name">'+shortName+'</span>';
-        html += '</div>';
-      }
-      regimeGrid.innerHTML = html || '<span class="muted">No data</span>';
-    }
-
-    // SPREAD
-    var spreadVal = document.getElementById('spread-val');
-    if(spreadVal){
-      var spread = agents.spread;
-      if(!spread || !spread.coins){
-        spreadVal.textContent = 'All clear — no anomalies';
-      } else {
-        var anomalies = [];
-        for(var sc in spread.coins){
-          var st = spread.coins[sc];
-          if(st && st.status && st.status !== 'normal'){
-            anomalies.push(sc+': '+st.status);
-          }
-        }
-        spreadVal.textContent = anomalies.length ? anomalies.join(' · ') : 'All clear — no anomalies';
-      }
-    }
-
-    // FUNDING
-    var fundingVal = document.getElementById('funding-val');
-    if(fundingVal){
-      var funding = agents.funding;
-      if(!funding || !funding.coins){
-        fundingVal.textContent = 'Neutral — no pressure';
-      } else {
-        var unstable = [];
-        for(var fc in funding.coins){
-          var fd = funding.coins[fc];
-          if(fd && fd.velocity_direction && fd.velocity_direction !== 'stable'){
-            unstable.push(fc+'('+fd.velocity_direction+')');
-          }
-        }
-        fundingVal.textContent = unstable.length ? unstable.join(' · ') : 'Neutral — no pressure';
-      }
-    }
-
-    // ARCHETYPES
-    var archetypeRow = document.getElementById('archetype-row');
-    if(archetypeRow){
-      var archetypes = agents.archetypes;
-      if(!archetypes || archetypes.length === 0){
-        archetypeRow.innerHTML = '<div class="muted">Monitoring 6 signal archetypes...</div>';
-      } else {
-        var html = '';
-        for(var i=0; i<archetypes.length; i++){
-          var arch = archetypes[i];
-          var total = arch.conditions_total || 4;
-          var met = arch.conditions_met || 0;
-          var filled = Math.round((met / total) * 4);
-          var bar = '';
-          for(var b=0; b<4; b++) bar += (b < filled ? '▓' : '░');
-          html += '<div class="archetype-item">';
-          html += '<span class="archetype-name">'+arch.name+'</span>';
-          html += '<span class="archetype-bar">'+bar+'</span>';
-          if(arch.closest_coin){
-            html += '<span class="archetype-detail">'+arch.closest_coin+' '+met+'/'+total+'</span>';
-          }
-          html += '</div>';
-        }
-        archetypeRow.innerHTML = html;
-      }
-    }
-  }
-
   // ─── STATS DASHBOARD ───
   function renderStats(stats){
+    var section = document.getElementById('stats-section');
     var el = document.getElementById('stats-dashboard');
-    if(!el) return;
-    var section = el.closest('.section');
+    if(!el || !section) return;
     if(!stats || !stats.total || stats.total < 5){
-      if(section) section.style.display = 'none';
+      section.style.display = 'none';
       return;
     }
-    if(section) section.style.display = 'block';
+    section.style.display = 'block';
 
-    // Left: P&L by coin
     var left = '<div class="stats-panel">';
     left += '<div class="stats-panel-title">P&L by coin</div>';
     left += '<table class="coin-stats-table"><thead><tr><th>Coin</th><th>Trades</th><th>WR%</th><th>P&L</th></tr></thead><tbody>';
@@ -981,26 +1124,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     left += '</tbody></table></div>';
 
-    // Right: performance
     var right = '<div class="stats-panel">';
     right += '<div class="stats-panel-title">Performance</div>';
     var best = stats.bestTrade || {};
     var worst = stats.worstTrade || {};
     right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+(best.coin||'—')+' '+(best.direction||'')+' '+fmtPct(best.pnlPct)+' ('+fmt$(best.pnl)+')</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Worst Trade</span><span class="stat-row-value c-neg">'+(worst.coin||'—')+' '+(worst.direction||'')+' '+fmtPct(worst.pnlPct)+' ('+fmt$(worst.pnl)+')</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Avg Hold Time</span><span class="stat-row-value">'+fmtHold(stats.avgHoldHours)+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Avg Hold</span><span class="stat-row-value">'+fmtHold(stats.avgHoldHours)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Avg P&L</span><span class="stat-row-value '+pnlClass(stats.avgPnl)+'">'+fmt$(stats.avgPnl)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Total P&L</span><span class="stat-row-value '+pnlClass(stats.totalPnl)+'">'+fmt$(stats.totalPnl)+'</span></div>';
-
     right += '<div class="stats-panel-title" style="margin-top:0.75rem">Long vs Short</div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Long WR ('+(stats.longCount||0)+' trades)</span><span class="stat-row-value">'+(stats.longWinRate != null ? stats.longWinRate.toFixed(1)+'%' : '—')+'</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Short WR ('+(stats.shortCount||0)+' trades)</span><span class="stat-row-value">'+(stats.shortWinRate != null ? stats.shortWinRate.toFixed(1)+'%' : '—')+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Long WR ('+(stats.longCount||0)+')</span><span class="stat-row-value">'+(stats.longWinRate != null ? stats.longWinRate.toFixed(1)+'%' : '—')+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Short WR ('+(stats.shortCount||0)+')</span><span class="stat-row-value">'+(stats.shortWinRate != null ? stats.shortWinRate.toFixed(1)+'%' : '—')+'</span></div>';
     right += '</div>';
 
     el.innerHTML = left + right;
   }
 
-  // ─── RENDER ───
+  // ─── MAIN RENDER ───
   function render(){
     var d = portfolioData;
     if(!d) return;
@@ -1012,7 +1153,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var liveClosed = lt.closed || [];
     var regimes = d.agents && d.agents.regimes;
 
-    // Compute unrealized P&L across live positions
+    // Compute unrealized P&L
     var totalUnrealized = 0;
     for(var i=0; i<livePos.length; i++){
       var price = getCurrentPrice(livePos[i].coin);
@@ -1021,11 +1162,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         totalUnrealized += r.dollars;
       }
     }
-    var totalInPositions = 0;
-    for(var i=0; i<livePos.length; i++) totalInPositions += (livePos[i].size_usd||0);
 
-    // Hero: equity from HL account value
-    var startingEquity = 115;
     var equity = startingEquity + totalUnrealized;
     var totalPnl = totalUnrealized;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
@@ -1042,36 +1179,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
-    document.getElementById('s-equity').textContent = fmt$(equity);
-    var pnlEl = document.getElementById('s-pnl');
-    pnlEl.textContent = fmtPct(pnlPct) + ' (' + fmt$(totalPnl) + ')';
-    pnlEl.className = 'sv ' + pnlClass(totalPnl);
-
-    // Win rate: early data context vs normal
-    var winRateEl = document.getElementById('s-winrate');
     var trades = lt.trades || 0;
     var wins = lt.wins || 0;
-    if(trades < 20){
-      var losses = trades - wins;
-      var closedPnl = 0;
-      for(var j=0; j<liveClosed.length; j++){
-        closedPnl += (liveClosed[j].pnl_dollars || liveClosed[j].pnl_usd || 0);
-      }
-      winRateEl.textContent = wins+'W '+losses+'L · '+fmt$(closedPnl);
-    } else {
-      winRateEl.textContent = (wins / trades * 100).toFixed(0) + '%';
+
+    // Equity hero
+    var eqNumEl = document.getElementById('eq-number');
+    if(eqNumEl) eqNumEl.textContent = fmt$(equity);
+
+    var pnlEl = document.getElementById('eq-pnl');
+    if(pnlEl){
+      pnlEl.textContent = fmtPct(pnlPct) + ' (' + fmt$(totalPnl) + ')';
+      pnlEl.style.color = totalPnl >= 0 ? '#c8ff00' : '#ff3333';
     }
 
-    document.getElementById('s-trades').textContent = trades;
-    document.getElementById('s-uptime').textContent = uptimeStr;
+    var metaEl = document.getElementById('eq-meta');
+    if(metaEl) metaEl.textContent = trades + ' trades · ' + uptimeStr + ' uptime';
 
-    // EARLY DATA badge
+    // Early data badge
     var earlyBadge = document.getElementById('early-badge');
     if(earlyBadge) earlyBadge.style.display = (trades < 20) ? 'inline' : 'none';
-
-    document.getElementById('pos-count').textContent = '(' + livePos.length + ')';
-    document.getElementById('closed-count').textContent = '(' + liveClosed.length + ')';
-    document.getElementById('updated').textContent = lastPriceUpdate ? 'Prices: ' + ago(lastPriceUpdate) : 'Loading prices...';
 
     // Risk badge
     var risk = d.agents && d.agents.risk;
@@ -1084,25 +1210,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       badge.style.background = col;
     }
 
-    // Regime summary
-    if(regimes && regimes.summary){
-      var rs = regimes.summary;
-      var parts = [];
-      if(rs.trending) parts.push(rs.trending + ' trending');
-      if(rs.stable) parts.push(rs.stable + ' stable');
-      if(rs.shift) parts.push(rs.shift + ' shift');
-      if(rs.chaotic) parts.push(rs.chaotic + ' chaotic');
-      document.getElementById('regime-summary').textContent = parts.join(' · ');
-    }
+    document.getElementById('pos-count').textContent = '(' + livePos.length + ')';
+    document.getElementById('closed-count').textContent = '(' + liveClosed.length + ')';
+    document.getElementById('updated').textContent = lastPriceUpdate ? 'Prices: ' + ago(lastPriceUpdate) : 'Loading prices...';
 
     // Equity curve
-    drawEquityCurve(d.liveEquityCurve);
+    drawEquityCurve(d.liveEquityCurve, equity);
 
-    // Pipeline
+    // System status
+    renderSystemStatus(d.agents);
+
+    // Pipeline (inside collapsed body)
     renderAgents(d.agents);
 
-    // Market intelligence
-    renderIntelligence();
+    // Market state
+    renderMarketState(d);
+
+    // Archetypes
+    renderArchetypes(d.agents && d.agents.archetypes);
 
     // Stats
     renderStats(lt.stats);
@@ -1115,13 +1240,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var html = '<div class="pos-cards">';
       for(var i=0; i<livePos.length; i++){
         var p = livePos[i];
-        var dirCls = p.direction==='LONG' ? 'long' : 'short';
+        var isLong = p.direction === 'LONG';
+        var dirCls = isLong ? 'long' : 'short';
+        var cardCls = isLong ? '' : ' short-card';
         var curPrice = getCurrentPrice(p.coin);
         var pnlResult = curPrice ? calcPnl(p, curPrice) : {pct:null, dollars:null};
         var coinRegime = regimes && regimes.coins && regimes.coins[p.coin];
         var regimeStr = coinRegime ? coinRegime.regime : '';
 
-        html += '<div class="pos-card">';
+        // Stop loss display
+        var stopDisplay = '—';
+        if(p.stop_loss && p.entry_price){
+          var stopPct = isLong
+            ? ((p.stop_loss - p.entry_price) / p.entry_price * 100)
+            : ((p.entry_price - p.stop_loss) / p.entry_price * 100);
+          stopDisplay = fmt$(p.stop_loss) + ' (' + stopPct.toFixed(1) + '%)';
+        } else if(p.stop_loss){
+          stopDisplay = fmt$(p.stop_loss);
+        }
+
+        // Hold time progress bar
+        var holdPct = 0;
+        var holdLabel = '—';
+        var maxHoldH = p.max_hold_hours || 24;
+        if(p.entry_time){
+          var entryMs = new Date(p.entry_time).getTime();
+          var holdMs = Date.now() - entryMs;
+          var holdH = holdMs / 3600000;
+          holdPct = Math.min(100, (holdH / maxHoldH) * 100);
+          holdLabel = fmtHold(holdH) + ' / ' + maxHoldH + 'h max';
+        } else if(p.entry_time_ms){
+          var holdMs2 = Date.now() - p.entry_time_ms;
+          var holdH2 = holdMs2 / 3600000;
+          holdPct = Math.min(100, (holdH2 / maxHoldH) * 100);
+          holdLabel = fmtHold(holdH2) + ' / ' + maxHoldH + 'h max';
+        }
+
+        // Signal name
+        var signalName = p.signal_type || p.archetype || p.strategy || '';
+
+        html += '<div class="pos-card'+cardCls+'">';
         html += '<div class="pos-card-top">';
         html += '<span class="pos-coin">'+p.coin+'</span>';
         html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
@@ -1130,46 +1288,63 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           html += '<span class="pos-pnl '+pnlClass(pnlResult.pct)+'">'+fmtPct(pnlResult.pct)+' ('+fmt$(pnlResult.dollars)+')</span>';
         }
         html += '</div>';
+
         html += '<div class="pos-card-grid">';
         html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Current</span><span class="pos-fv '+(curPrice?pnlClass(pnlResult.pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice && pnlResult.pct!=null ? pnlClass(pnlResult.pct) : '')+'">'+(curPrice ? fmt$(curPrice) : '—')+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Stop Loss</span><span class="pos-fv">'+fmt$(p.stop_loss)+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Stop</span><span class="pos-fv c-neg">'+stopDisplay+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe != null ? p.sharpe.toFixed(2) : '—')+'</span></div>';
+        if(signalName) html += '<div class="pos-field"><span class="pos-fl">Signal</span><span class="pos-fv">'+signalName+'</span></div>';
         html += '</div>';
+
         if(p.exit_expression){
           var translated = translateExit(p.exit_expression);
-          html += '<div class="pos-exit">EXIT: '+translated;
-          if(translated !== p.exit_expression){
-            html += '<div class="pos-exit-raw">'+p.exit_expression+'</div>';
-          }
+          html += '<div class="pos-exit">Exit when: '+translated+'</div>';
+        }
+
+        if(holdLabel !== '—'){
+          html += '<div class="pos-hold-bar-wrap">';
+          html += '<div class="pos-hold-track"><div class="pos-hold-fill" style="width:'+holdPct.toFixed(1)+'%"></div></div>';
+          html += '<span class="pos-hold-label">'+holdLabel+'</span>';
           html += '</div>';
         }
+
         html += '</div>';
       }
       html += '</div>';
       posBody.innerHTML = html;
     }
 
-    // ─── TRADE HISTORY ───
+    // ─── TRADE HISTORY (compact rows) ───
     var closedBody = document.getElementById('closed-body');
     if(liveClosed.length === 0){
       closedBody.innerHTML = '<div class="muted">No closed trades yet.</div>';
     } else {
-      var html = '<div class="closed-cards">';
-      for(var j=liveClosed.length-1; j>=0; j--){
-        var c = liveClosed[j];
-        var dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
-        var holdH = '';
+      var html = '<div class="closed-rows">';
+      // Most recent first, show last 20
+      var recentTrades = liveClosed.slice().reverse().slice(0,20);
+      for(var j=0; j<recentTrades.length; j++){
+        var c = recentTrades[j];
+        var dirCls2 = c.direction === 'LONG' ? 'c-long' : 'c-short';
+        var pnlVal = c.pnl_usd || c.pnl_dollars || 0;
+        var holdStr = '';
         if(c.entry_time && c.exit_time){
           var ms = new Date(c.exit_time).getTime() - new Date(c.entry_time).getTime();
-          holdH = fmtHold(Math.round(ms / 3600000 * 10) / 10);
+          holdStr = fmtHold(Math.round(ms / 360000) / 10);
         }
-        html += '<div class="closed-card">';
-        html += '<span class="closed-coin">'+c.coin+'</span>';
-        html += '<span class="'+dirCls+'">'+c.direction+'</span>';
-        html += '<span class="closed-detail">'+fmt$(c.entry_price)+' → '+fmt$(c.exit_price)+' · '+fmtPct(c.pnl_pct)+' · '+c.exit_reason+(holdH ? ' · '+holdH : '')+'</span>';
-        html += '<div><div class="closed-pnl '+pnlClass(c.pnl_pct)+'">'+fmt$(c.pnl_usd)+'</div></div>';
+        var entryAge = '';
+        if(c.exit_time){
+          entryAge = ago(new Date(c.exit_time).getTime());
+        }
+        html += '<div class="closed-row">';
+        html += '<span class="cr-coin">'+c.coin+'</span>';
+        html += '<span class="cr-dir '+dirCls2+'">'+c.direction+'</span>';
+        html += '<span class="cr-prices">'+fmt$(c.entry_price)+'→'+fmt$(c.exit_price)+'</span>';
+        html += '<span class="cr-pct '+pnlClass(c.pnl_pct||pnlVal)+'">'+fmtPct(c.pnl_pct)+'</span>';
+        html += '<span class="cr-pnl '+pnlClass(pnlVal)+'">'+fmt$(pnlVal)+'</span>';
+        html += '<span class="cr-reason">'+(c.exit_reason||'')+'</span>';
+        html += '<span class="cr-age">'+(holdStr||entryAge)+'</span>';
         html += '</div>';
       }
       html += '</div>';
@@ -1197,20 +1372,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }).catch(function(e){ console.error('Portfolio fetch failed:', e); });
   }
 
+  // ─── SYSTEM STATUS TOGGLE ───
+  document.addEventListener('DOMContentLoaded', function(){
+    var ph = document.getElementById('system-ph');
+    var body = document.getElementById('system-body');
+    if(ph && body){
+      ph.addEventListener('click', function(){
+        body.classList.toggle('expanded');
+      });
+    }
+  });
+
   // Initial load
   loadPortfolio().then(function(){
     render();
-    renderIntelligence();
     fetchPrices().then(function(){ render(); }).catch(function(){});
   }).catch(function(e){ console.error('Initial load failed:', e); });
 
-  // Tick agent status every 5s
+  // Tick every 5s (agent status + timestamp)
   setInterval(function(){
     if(lastPriceUpdate){
       var el = document.getElementById('updated');
       if(el) el.textContent = 'Prices: ' + ago(lastPriceUpdate);
     }
-    if(portfolioData && portfolioData.agents) renderAgents(portfolioData.agents);
+    if(portfolioData && portfolioData.agents){
+      renderAgents(portfolioData.agents);
+      renderSystemStatus(portfolioData.agents);
+    }
   }, 5000);
 
   // Prices every 30s
@@ -1220,12 +1408,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Portfolio every 5min
   setInterval(function(){
-    loadPortfolio().then(function(){ render(); renderIntelligence(); }).catch(function(){});
+    loadPortfolio().then(function(){ render(); }).catch(function(){});
   }, 300000);
 
-  // Redraw equity on resize
+  // Redraw on resize
   window.addEventListener('resize', function(){
-    if(portfolioData && portfolioData.liveEquityCurve) drawEquityCurve(portfolioData.liveEquityCurve);
+    if(portfolioData){
+      var lt = portfolioData.liveTrading;
+      var eq = null;
+      if(lt && lt.enabled){
+        var livePos = lt.positions || [];
+        var totalUnrealized = 0;
+        for(var i=0; i<livePos.length; i++){
+          var price = getCurrentPrice(livePos[i].coin);
+          if(price){ totalUnrealized += calcPnl(livePos[i], price).dollars; }
+        }
+        eq = startingEquity + totalUnrealized;
+      }
+      drawEquityCurve(portfolioData.liveEquityCurve, eq);
+    }
   });
 })();
 </script>

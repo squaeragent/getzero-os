@@ -607,3 +607,44 @@
 [2026-03-18 10:36:55 UTC] [EXEC]   Skip BNB LONG: coin BNB not approved for live trading (paper-only)
 [2026-03-18 10:36:55 UTC] [EXEC]   Skip HYPE SHORT: coin HYPE not approved for live trading (paper-only)
 [2026-03-18 10:36:55 UTC] [EXEC] Summary: 2 positions, $99.40 notional, trades=4
+[2026-03-18 10:41:57 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 10:41:57 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-18 10:41:58 UTC] [EXEC]   Fetching 6 exit indicators for ['BTC', 'SOL']
+[2026-03-18 10:41:58 UTC] [EXEC] EXIT SIGNAL BTC LONG | expression fired | -0.05%
+[2026-03-18 10:41:58 UTC] [EXEC]   Expression: HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90
+[2026-03-18 10:41:59 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.00067", "avgPx": "73968.0", "oid": 353072576723}}]}}}
+[2026-03-18 10:41:59 UTC] [EXEC]   Closed BTC LONG | exit_expression | -0.05% ($-0.02)
+[2026-03-18 10:42:00 UTC] [EXEC] Summary: 1 positions, $50.00 notional, trades=5
+[2026-03-18 10:47:01 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 10:47:01 UTC] [EXEC] Positions: 1 | Throttle: 1.0 | Kill: False
+[2026-03-18 10:47:02 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-18 10:47:02 UTC] [EXEC] LIVE OPEN ARB LONG | $44.48 (414.8) @ $0.1072 | sharpe=2.22
+[2026-03-18 10:47:03 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "414.8", "avgPx": "0.10724", "oid": 353076868431}}]}}}
+[2026-03-18 10:47:03 UTC] [EXEC]   Filled @ $0.1072
+[2026-03-18 10:47:03 UTC] [EXEC]   Execution: intended=$0.1072 filled=$0.1072 slippage=0.0187% ($0.0083) fill_time=1508ms spread=0.018667
+[2026-03-18 10:47:04 UTC] [EXEC]   ARB ATR-stop: ATR=0.201% → stop=1.50%
+[2026-03-18 10:47:04 UTC] [EXEC]   Stop loss: ARB trigger @ $0.1056 (sell 414.8)
+[2026-03-18 10:47:05 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353076885398}}]}}}
+[2026-03-18 10:47:05 UTC] [EXEC]   Skip BCH LONG: coin BCH not approved for live trading (paper-only)
+[2026-03-18 10:47:05 UTC] [EXEC]   Skip TIA SHORT: coin TIA not approved for live trading (paper-only)
+[2026-03-18 10:47:05 UTC] [EXEC]   Skip HYPE LONG: coin HYPE not approved for live trading (paper-only)
+[2026-03-18 10:47:05 UTC] [EXEC]   Skip HYPE LONG: coin HYPE not approved for live trading (paper-only)
+[2026-03-18 10:47:05 UTC] [EXEC]   Skip HYPE LONG: coin HYPE not approved for live trading (paper-only)
+[2026-03-18 10:47:05 UTC] [EXEC] Summary: 2 positions, $94.48 notional, trades=5
+[2026-03-18 10:52:07 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 10:52:07 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-18 10:52:07 UTC] [EXEC]   Fetching 4 exit indicators for ['ARB', 'SOL']
+[2026-03-18 10:52:07 UTC] [EXEC]   WARN: exit indicator fetch failed: HTTP Error 503: Service Temporarily Unavailable
+[2026-03-18 10:52:07 UTC] [EXEC] Summary: 2 positions, $94.48 notional, trades=5
+[2026-03-18 10:57:09 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 10:57:09 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-18 10:57:09 UTC] [EXEC]   Fetching 4 exit indicators for ['ARB', 'SOL']
+[2026-03-18 10:57:10 UTC] [EXEC] Summary: 2 positions, $94.48 notional, trades=5
+[2026-03-18 11:02:11 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 11:02:11 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-18 11:02:12 UTC] [EXEC]   Fetching 4 exit indicators for ['ARB', 'SOL']
+[2026-03-18 11:02:12 UTC] [EXEC] EXIT SIGNAL ARB LONG | expression fired | +0.12%
+[2026-03-18 11:02:12 UTC] [EXEC]   Expression: RSI_3H30M >= 69.575 OR BB_POSITION_15M >= 0.90
+[2026-03-18 11:02:13 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "414.8", "avgPx": "0.10736", "oid": 353087611079}}]}}}
+[2026-03-18 11:02:13 UTC] [EXEC]   Closed ARB LONG | exit_expression | +0.12% ($+0.05)
+[2026-03-18 11:02:13 UTC] [EXEC] Summary: 1 positions, $50.00 notional, trades=6
