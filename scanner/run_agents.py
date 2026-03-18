@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZERO OS — Agent Supervisor
-Runs all 8 trading agents in the correct order, monitors health, restarts on failure.
+Runs all 10 trading agents in the correct order, monitors health, restarts on failure.
 
 Usage:
   python3 scanner/run_agents.py          # run all agents
@@ -11,12 +11,14 @@ Usage:
 Agent execution order:
   1. Regime Agent (5-min cycle)       — foundation: regime classification
   2. Liquidity Agent (2-min)          — HL order book depth monitoring
-  3. Cross-Timeframe Agent (5-min)    — fast/slow timeframe divergence detection
-  4. Signal Harvester (10-min)        — reads regime + timeframe + weights
-  5. Correlation Agent (5-min)        — reads harvester + regime
-  6. Risk Agent (2-min)               — reads positions + HL
-  7. Signal Evolution Agent (10-min)  — learns from closed trades
-  8. Execution Agent (5-min)          — reads approved + risk + liquidity, acts last
+  3. Spread Monitor (2-min)           — mark-oracle spread divergence + MM detection
+  4. Cross-Timeframe Agent (5-min)    — fast/slow timeframe divergence detection
+  5. Funding Agent (5-min)            — funding rates, velocity, reversals
+  6. Signal Harvester (10-min)        — reads regime + timeframe + weights + archetypes
+  7. Correlation Agent (5-min)        — reads harvester + regime
+  8. Risk Agent (2-min)               — reads positions + HL
+  9. Signal Evolution Agent (10-min)  — learns from closed trades
+ 10. Execution Agent (5-min)          — reads approved + risk + liquidity + spread, acts last
 """
 
 import json
@@ -37,6 +39,7 @@ PYTHON = "/opt/homebrew/bin/python3"
 AGENTS = [
     ("regime",          AGENTS_DIR / "regime_agent.py",           300,  10),
     ("liquidity",       AGENTS_DIR / "liquidity_agent.py",       120,   5),
+    ("spread_monitor",  AGENTS_DIR / "spread_monitor.py",        120,   5),
     ("cross_timeframe", AGENTS_DIR / "cross_timeframe_agent.py", 300,  10),
     ("funding",         AGENTS_DIR / "funding_agent.py",         300,  10),
     ("harvester",       AGENTS_DIR / "signal_harvester.py",      600,  20),

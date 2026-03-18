@@ -36,6 +36,10 @@ EXTREME_FUNDING_PCT = 0.005   # ±0.005% per 8h = ±5.5% annualized
 VERY_EXTREME_PCT = 0.01      # ±0.01% per 8h = ±10.9% annualized
 CONVERGENCE_BONUS = 2.0       # Composite score bonus for funding+regime convergence
 
+# Velocity & reversal detection
+FUNDING_VELOCITY_WINDOW = 6   # Last 6 readings (30 min at 5-min cycle) for velocity
+FUNDING_REVERSAL_THRESHOLD = 0.003  # Rate changed by 0.003% = reversal underway
+
 # Our tradeable coins
 TRADED_COINS = {"BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"}
 
@@ -89,6 +93,65 @@ def fetch_funding():
             "open_interest": round(oi, 2),
             "mark_price": mark,
             "volume_24h": round(vol, 2),
+        }
+    
+    return result
+
+
+def compute_funding_velocities(prev_coins, current_funding):
+    """
+    Compute funding rate velocity and detect reversals.
+    
+    Velocity = change in funding rate per cycle.
+    Reversal = rate was extreme and is now moving back toward 0,
+               OR rate changed sign.
+    """
+    result = {}
+    
+    for coin in TRADED_COINS:
+        prev = prev_coins.get(coin, {})
+        curr = current_funding.get(coin, {})
+        if not curr:
+            continue
+        
+        curr_rate = curr.get("funding_pct", curr.get("funding_rate", 0) * 100)
+        prev_rate = prev.get("funding_pct", 0)
+        
+        # Get history from previous state, append current
+        history = prev.get("rate_history", [])
+        history.append(curr_rate)
+        if len(history) > FUNDING_VELOCITY_WINDOW:
+            history = history[-FUNDING_VELOCITY_WINDOW:]
+        
+        # Velocity: change from previous reading
+        velocity = curr_rate - prev_rate if prev_rate != 0 else 0
+        
+        # Direction
+        if abs(velocity) < 0.0001:
+            direction = "stable"
+        elif abs(curr_rate) < abs(prev_rate):
+            direction = "normalizing"  # moving toward 0
+        else:
+            direction = "intensifying"  # moving away from 0
+        
+        # Reversal detection
+        is_reversal = False
+        if prev_rate != 0:
+            # Case 1: Rate was extreme and is normalizing fast
+            was_extreme = abs(prev_rate) >= EXTREME_FUNDING_PCT * 100
+            normalizing_fast = abs(velocity) >= FUNDING_REVERSAL_THRESHOLD and direction == "normalizing"
+            
+            # Case 2: Rate changed sign
+            sign_flip = (prev_rate > 0 and curr_rate < 0) or (prev_rate < 0 and curr_rate > 0)
+            
+            is_reversal = (was_extreme and normalizing_fast) or sign_flip
+        
+        result[coin] = {
+            "velocity": round(velocity, 6),
+            "direction": direction,
+            "is_reversal": is_reversal,
+            "prev_rate": prev_rate,
+            "history": history,
         }
     
     return result
@@ -205,12 +268,20 @@ def run_cycle():
     # Load regime data
     regimes = load_json(REGIMES_FILE)
     
+    # Load previous state for velocity tracking
+    prev_state = load_json(FUNDING_FILE)
+    prev_coins = prev_state.get("coins", {})
+    
+    # Load funding rate history from HL for velocity (hourly snapshots)
+    funding_velocities = compute_funding_velocities(prev_coins, all_funding)
+    
     # Process our traded coins
     output = {
         "timestamp": ts.isoformat(),
         "coins": {},
         "convergence_signals": [],
         "extreme_funding": [],
+        "reversals": [],
     }
     
     for coin in sorted(TRADED_COINS):
@@ -220,6 +291,15 @@ def run_cycle():
         
         f_class = classify_funding(fd["funding_pct"])
         fd["classification"] = f_class
+        
+        # Add velocity data
+        vel = funding_velocities.get(coin, {})
+        fd["velocity"] = vel.get("velocity", 0)
+        fd["velocity_direction"] = vel.get("direction", "stable")
+        fd["is_reversal"] = vel.get("is_reversal", False)
+        fd["prev_rate"] = vel.get("prev_rate", 0)
+        fd["rate_history"] = vel.get("history", [])
+        
         output["coins"][coin] = fd
         
         # Check for convergence
@@ -230,12 +310,24 @@ def run_cycle():
             conv["annualized_pct"] = fd["annualized_pct"]
             output["convergence_signals"].append(conv)
         
+        # Check for reversal
+        if fd["is_reversal"]:
+            reversal = {
+                "coin": coin,
+                "from_rate": fd["prev_rate"],
+                "to_rate": fd["funding_pct"],
+                "velocity": fd["velocity"],
+                "direction": "normalizing" if abs(fd["funding_pct"]) < abs(fd["prev_rate"]) else "intensifying",
+            }
+            output["reversals"].append(reversal)
+            log(f"  ⚡ {coin} FUNDING REVERSAL: {fd['prev_rate']:+.4f}% → {fd['funding_pct']:+.4f}% (vel={fd['velocity']:+.4f}%)")
+        
         # Log extreme funding
         if f_class != "neutral":
             output["extreme_funding"].append(coin)
-            log(f"  {coin:6s} [{f_class:8s}]  funding={fd['funding_pct']:+.4f}%  ({fd['annualized_pct']:+.1f}% ann)  OI=${fd['open_interest']/1e6:.1f}M")
+            log(f"  {coin:6s} [{f_class:8s}]  funding={fd['funding_pct']:+.4f}%  ({fd['annualized_pct']:+.1f}% ann)  vel={fd['velocity']:+.4f}%  OI=${fd['open_interest']/1e6:.1f}M")
         else:
-            log(f"  {coin:6s} [neutral ]  funding={fd['funding_pct']:+.4f}%")
+            log(f"  {coin:6s} [neutral ]  funding={fd['funding_pct']:+.4f}%  vel={fd['velocity']:+.4f}%")
     
     # Log convergence signals
     if output["convergence_signals"]:

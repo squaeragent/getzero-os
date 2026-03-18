@@ -499,6 +499,18 @@ def load_liquidity():
     return {}
 
 
+def load_spread_data():
+    """Load spread monitor data."""
+    spread_file = BUS_DIR / "spread.json"
+    if spread_file.exists():
+        try:
+            with open(spread_file) as f:
+                return json.load(f).get("coins", {})
+        except Exception:
+            return {}
+    return {}
+
+
 def should_open(trade, positions, cfg):
     """Check if an approved trade should be opened."""
     coin = trade["coin"]
@@ -519,6 +531,20 @@ def should_open(trade, positions, cfg):
     coin_liq = liquidity.get(coin, {})
     if coin_liq and not coin_liq.get("tradeable", True):
         return False, f"liquidity: spread={coin_liq.get('spread_pct', '?')}%, depth=${coin_liq.get('bid_depth_50', 0):.0f}"
+
+    # Check spread monitor — reject trades when MM_SETUP detected
+    spread_data = load_spread_data()
+    coin_spread = spread_data.get(coin, {})
+    if coin_spread.get("status") == "MM_SETUP":
+        return False, f"spread: MM_SETUP detected (spread={coin_spread.get('spread_pct', '?')}% + extreme funding)"
+    if coin_spread.get("status") == "UNWIND":
+        # Unwind = MMs exiting. Only allow trades in the unwind direction
+        # If spread was positive (mark > oracle) and collapsing → SHORT is safer
+        # If spread was negative (mark < oracle) and collapsing → LONG is safer
+        spread_pct = coin_spread.get("spread_pct", 0)
+        safe_dir = "SHORT" if spread_pct > 0 else "LONG"
+        if direction != safe_dir:
+            return False, f"spread: UNWIND in progress, only {safe_dir} allowed (spread={spread_pct:+.4f}%)"
 
     if trade.get("sharpe", 0) < min_sharpe:
         return False, f"sharpe {trade.get('sharpe', 0):.2f} < {min_sharpe}"
