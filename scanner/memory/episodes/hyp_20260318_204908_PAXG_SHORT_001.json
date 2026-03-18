@@ -55,5 +55,91 @@
   },
   "applied_rules": [
     "RULE_001"
-  ]
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_204908_PAXG_SHORT_001",
+    "coin": "PAXG",
+    "direction": "SHORT",
+    "survival_score": 0.3456,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "3 existing SHORT positions + this one = high concentration. adding SHORT increases short exposure to $85 (74% of equity), 3% adverse move = -$2.56",
+        "same_direction_positions": 3,
+        "stress_impact_usd": 2.56,
+        "directional_pct": 74.1
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.95",
+        "confidence": 0.95,
+        "evidence_for_count": 4,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 3.6x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 0 trades in LATE_US+SHORT, need 10+"
+      }
+    ],
+    "active_attacks": 4
+  }
 }

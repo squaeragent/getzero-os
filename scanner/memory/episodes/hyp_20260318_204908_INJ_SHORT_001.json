@@ -84,5 +84,92 @@
   },
   "applied_rules": [
     "RULE_001"
-  ]
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_204908_INJ_SHORT_001",
+    "coin": "INJ",
+    "direction": "SHORT",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.05
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met; liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 4,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "3 existing SHORT positions + this one = high concentration. adding SHORT increases short exposure to $85 (74% of equity), 3% adverse move = -$2.56",
+        "same_direction_positions": 3,
+        "stress_impact_usd": 2.56,
+        "directional_pct": 74.1
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "3 evidence_against vs 2 evidence_for",
+        "confidence": 0.517,
+        "evidence_for_count": 2,
+        "evidence_against_count": 3
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "momentum signal in stable/low-vol regime \u2014 may not trigger",
+        "regime": "stable",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 2.3x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 0 trades in LATE_US+SHORT, need 10+"
+      }
+    ],
+    "active_attacks": 5
+  }
 }

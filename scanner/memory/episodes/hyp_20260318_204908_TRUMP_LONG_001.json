@@ -54,5 +54,91 @@
     "timeframe_pattern": "CONFIRMATION_SHORT",
     "fast_bias": "bearish",
     "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_204908_TRUMP_LONG_001",
+    "coin": "TRUMP",
+    "direction": "LONG",
+    "survival_score": 0.336,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $40 (35% of equity), 3% drop = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "3 evidence_against vs 2 evidence_for",
+        "confidence": 0.548,
+        "evidence_for_count": 2,
+        "evidence_against_count": 3
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG with funding rate -0.012547",
+        "funding_rate": -0.012547,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "OI healthy"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 0 trades in LATE_US+LONG, need 10+"
+      }
+    ],
+    "active_attacks": 3
   }
 }

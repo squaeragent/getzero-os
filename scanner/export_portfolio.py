@@ -287,7 +287,18 @@ def export():
         wins_count = sum(1 for c in closed_list if c.get("pnl_dollars", c.get("pnl_usd", 0)) > 0)
         losses = total - wins_count
         pnl_values = [c.get("pnl_dollars", c.get("pnl_usd", 0)) for c in closed_list]
-        hold_times = [c.get("hours_held", 0) for c in closed_list if c.get("hours_held")]
+        # Compute hold times from entry/exit timestamps (hours_held is never set)
+        hold_times = []
+        for c in closed_list:
+            try:
+                from datetime import datetime
+                entry = datetime.fromisoformat(c["entry_time"])
+                exit_t = datetime.fromisoformat(c["exit_time"])
+                hours = (exit_t - entry).total_seconds() / 3600
+                if hours > 0:
+                    hold_times.append(round(hours, 2))
+            except (KeyError, ValueError):
+                pass
         by_coin = {}
         for c in closed_list:
             coin = c.get("coin", "?")

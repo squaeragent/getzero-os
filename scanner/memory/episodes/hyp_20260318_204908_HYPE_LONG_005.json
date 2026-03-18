@@ -82,5 +82,92 @@
     "timeframe_pattern": "CONFIRMATION_LONG",
     "fast_bias": "bullish",
     "slow_bias": "bullish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_204908_HYPE_LONG_005",
+    "coin": "HYPE",
+    "direction": "LONG",
+    "survival_score": 0.504,
+    "verdict": "PROCEED_WITH_CAUTION",
+    "recommended_size_modifier": 0.7,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "2 similar trade(s) lost, not enough to penalize",
+        "failures_found": 2,
+        "avg_loss_pct": -0.19
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 6,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $40 (35% of equity), 3% drop = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.80",
+        "confidence": 0.798,
+        "evidence_for_count": 5,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "OI healthy"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 0 trades in LATE_US+LONG, need 10+"
+      }
+    ],
+    "active_attacks": 3
   }
 }
