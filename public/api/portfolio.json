@@ -1,30 +1,13 @@
 {
   "live": true,
-  "updated": "2026-03-18T11:52:41.210551+00:00",
+  "updated": "2026-03-18T11:54:28.398680+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 100.0,
-    "positions": [
-      {
-        "coin": "SOL",
-        "direction": "LONG",
-        "signal": "SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7",
-        "entry_price": 94.072,
-        "entry_time": "2026-03-18T08:26:45.345988+00:00",
-        "size_usd": 50.0,
-        "size_coins": 0.53,
-        "sharpe": 2.8345,
-        "win_rate": 81.13,
-        "max_hold_hours": 72,
-        "exit_expression": "XONE_I_NET <= 10 OR RSI_3H30M >= 84",
-        "stop_loss": 89.368,
-        "stop_type": "native",
-        "peak_pnl_pct": 0.0028754570966918786
-      }
-    ],
-    "trades": 6,
+    "positions": [],
+    "trades": 7,
     "wins": 2,
-    "dailyLoss": 0.12672846903510654,
+    "dailyLoss": 1.2612318281642856,
     "closed": [
       {
         "coin": "BTC",
@@ -122,16 +105,30 @@
         "exit_reason": "exit_expression",
         "pnl_pct": 0.12,
         "pnl_usd": 0.05
+      },
+      {
+        "coin": "SOL",
+        "direction": "LONG",
+        "signal": "SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7",
+        "entry_price": 94.072,
+        "entry_time": "2026-03-18T08:26:45.345988+00:00",
+        "size_usd": 50.0,
+        "size_coins": 0.53,
+        "exit_price": 91.9375,
+        "exit_time": "2026-03-18T11:54:28.174606+00:00",
+        "exit_reason": "alignment_exit",
+        "pnl_pct": -2.27,
+        "pnl_usd": -1.13
       }
     ],
     "started": "2026-03-18T05:14:39.354756+00:00",
     "stats": {
-      "total": 7,
+      "total": 8,
       "wins": 3,
-      "losses": 4,
-      "winRate": 42.9,
-      "totalPnl": 0.1,
-      "avgPnl": 0.01,
+      "losses": 5,
+      "winRate": 37.5,
+      "totalPnl": -1.03,
+      "avgPnl": -0.13,
       "bestTrade": {
         "coin": "WLD",
         "direction": "SHORT",
@@ -141,8 +138,8 @@
       "worstTrade": {
         "coin": "SOL",
         "direction": "LONG",
-        "pnl": -0.09,
-        "pnlPct": -0.27
+        "pnl": -1.13,
+        "pnlPct": -2.27
       },
       "avgHoldHours": 0,
       "byCoin": {
@@ -172,35 +169,35 @@
           "pnl": -0.03
         },
         "SOL": {
-          "trades": 1,
+          "trades": 2,
           "winRate": 0.0,
-          "pnl": -0.09
+          "pnl": -1.22
         }
       },
-      "longWinRate": 20.0,
+      "longWinRate": 16.7,
       "shortWinRate": 100.0,
-      "longCount": 5,
+      "longCount": 6,
       "shortCount": 2
     }
   },
   "agents": {
     "heartbeat": {
-      "regime": "2026-03-18T11:52:07.350664+00:00",
-      "risk": "2026-03-18T11:51:53.526977+00:00",
-      "correlation": "2026-03-18T11:51:44.552619+00:00",
+      "regime": "2026-03-18T11:54:26.540537+00:00",
+      "risk": "2026-03-18T11:54:25.496188+00:00",
+      "correlation": "2026-03-18T11:54:25.461904+00:00",
       "harvester": "2026-03-18T11:47:02.879031+00:00",
-      "execution": "2026-03-18T11:52:41.150355+00:00",
-      "liquidity": "2026-03-18T11:51:05.718039+00:00",
-      "cross_timeframe": "2026-03-18T11:52:04.683867+00:00",
-      "signal_evolution": "2026-03-18T11:52:19.629301+00:00",
-      "funding": "2026-03-18T11:51:48.112106+00:00",
-      "spread_monitor": "2026-03-18T11:52:03.969097+00:00"
+      "execution": "2026-03-18T11:54:28.337800+00:00",
+      "liquidity": "2026-03-18T11:53:09.891514+00:00",
+      "cross_timeframe": "2026-03-18T11:54:26.536215+00:00",
+      "signal_evolution": "2026-03-18T11:54:25.307940+00:00",
+      "funding": "2026-03-18T11:54:25.683812+00:00",
+      "spread_monitor": "2026-03-18T11:54:25.680459+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 1.03,
+      "drawdownPct": 1.12,
       "peakEquity": 115.15,
       "winStreak": 0,
       "loseStreak": 0,
@@ -365,7 +362,7 @@
           "transition": true
         }
       },
-      "updated": "2026-03-18T11:52:06.144539+00:00"
+      "updated": "2026-03-18T11:54:25.315183+00:00"
     },
     "candidates": 5,
     "approved": 1,
@@ -435,8 +432,8 @@
     "funding": {
       "coins": {
         "ARB": {
-          "velocity_direction": "stable",
-          "funding_pct": 0.001174
+          "velocity_direction": "normalizing",
+          "funding_pct": 0.001038
         },
         "AVAX": {
           "velocity_direction": "stable",
@@ -444,19 +441,19 @@
         },
         "BTC": {
           "velocity_direction": "stable",
-          "funding_pct": -0.00039
+          "funding_pct": -0.000398
         },
         "DOGE": {
           "velocity_direction": "normalizing",
-          "funding_pct": -0.002144
+          "funding_pct": -0.002002
         },
         "ETH": {
-          "velocity_direction": "intensifying",
-          "funding_pct": 0.000757
+          "velocity_direction": "stable",
+          "funding_pct": 0.00081
         },
         "INJ": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000705
+          "funding_pct": 0.000768
         },
         "LINK": {
           "velocity_direction": "stable",
@@ -468,7 +465,7 @@
         },
         "SOL": {
           "velocity_direction": "stable",
-          "funding_pct": -0.002659
+          "funding_pct": -0.002584
         },
         "SUI": {
           "velocity_direction": "stable",
@@ -947,6 +944,14 @@
     {
       "t": "2026-03-18T11:51:53.377692+00:00",
       "v": 113.97
+    },
+    {
+      "t": "2026-03-18T11:53:53.678195+00:00",
+      "v": 113.82
+    },
+    {
+      "t": "2026-03-18T11:54:25.321170+00:00",
+      "v": 113.86
     }
   ]
 }
