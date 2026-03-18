@@ -54,6 +54,7 @@ LOG_FILE = LIVE_DIR / "executor.log"
 
 HL_URL = "https://api.hyperliquid.xyz"
 CYCLE_SECONDS = 300  # 5 minutes
+MIN_HOLD_BEFORE_EXIT_MINS = 30  # don't evaluate exit expressions before 30 minutes
 
 # ─── COIN TABLES (fetched from HL meta on startup) ───
 COIN_TO_ASSET = {}
@@ -717,6 +718,7 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
 
     # Capture pre-trade execution quality data
     intended_price = price
+    pre_mark = get_mark_price(coin)  # current mark price for slippage measurement
     spread_at_entry = None
     depth_at_entry = None
     liquidity = load_liquidity()
@@ -758,10 +760,23 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
     slippage_usd = slippage_pct / 100 * size_usd
     log(f"  Execution: intended=${intended_price:,.4f} filled=${fill_price:,.4f} slippage={slippage_pct:.4f}% (${slippage_usd:.4f}) fill_time={fill_time_ms}ms spread={spread_at_entry}")
 
-    # Place native stop loss on HL
+    # Place native stop loss on HL — try ATR-based first, fallback to volatility
     default_stop = cfg.get("stop_loss_pct", 0.05)
-    stop_pct = get_adjusted_stop_pct(coin, default_stop)
-    _, stop_price = place_stop_loss(client, coin, direction, size_coins, fill_price, stop_pct, dry)
+    atr_result = get_atr_stop(coin, direction, fill_price)
+    if atr_result:
+        stop_price_atr, stop_pct = atr_result
+        stop_type_label = "atr"
+        # Use the ATR-computed stop price directly
+        _, stop_price = place_stop_loss(client, coin, direction, size_coins, fill_price,
+                                         stop_pct / 100, dry)
+    else:
+        stop_pct_frac = get_adjusted_stop_pct(coin, default_stop)
+        stop_pct = stop_pct_frac * 100
+        stop_type_label = "volatility"
+        _, stop_price = place_stop_loss(client, coin, direction, size_coins, fill_price, stop_pct_frac, dry)
+
+    # Compute mark-price-based slippage for exec quality
+    mark_slippage_pct = abs(fill_price - pre_mark) / pre_mark * 100 if pre_mark and pre_mark > 0 else None
 
     position = {
         "coin": coin,
@@ -777,12 +792,16 @@ def open_trade(client, trade, positions, cfg, throttle, dry):
         "max_hold_hours": trade.get("max_hold_hours", 48),
         "exit_expression": trade.get("exit_expression", ""),
         "stop_loss": stop_price,
-        "stop_type": "native",  # HL server-side trigger
+        "stop_loss_pct": round(stop_pct, 4),
+        "stop_type": stop_type_label,  # "atr" or "volatility"
         "peak_pnl_pct": 0.0,
         "exec_quality": {
             "slippage_pct": round(slippage_pct, 6),
             "slippage_usd": round(slippage_usd, 6),
+            "mark_slippage_pct": round(mark_slippage_pct, 4) if mark_slippage_pct is not None else None,
             "fill_time_ms": fill_time_ms,
+            "pre_mark": pre_mark,
+            "fill_price": fill_price,
             "spread_at_entry": spread_at_entry,
             "depth_at_entry": round(depth_at_entry, 2) if depth_at_entry else None,
         },
@@ -828,9 +847,97 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
     log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f})")
 
 
-def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry):
+def get_mark_price(coin):
+    """Get current mark price from Hyperliquid."""
+    try:
+        req = urllib.request.Request(
+            "https://api.hyperliquid.xyz/info",
+            data=json.dumps({"type": "metaAndAssetCtxs"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        resp = json.loads(urllib.request.urlopen(req, timeout=5).read())
+        for i, ctx in enumerate(resp[1]):
+            if resp[0]["universe"][i]["name"] == coin:
+                return float(ctx.get("markPx", 0))
+    except Exception:
+        pass
+    return None
+
+
+def get_atr_stop(coin, direction, entry_price):
+    """Calculate stop loss based on ATR from Envy API."""
+    try:
+        env_path = os.path.expanduser("~/.config/openclaw/.env")
+        api_key = None
+        with open(env_path) as f:
+            for line in f:
+                if line.startswith("ENVY_API_KEY="):
+                    api_key = line.strip().split("=", 1)[1].strip().strip('"').strip("'")
+        if not api_key:
+            return None
+
+        url = f"https://gate.getzero.dev/api/claw/paid/indicators/snapshot?coins={coin}&indicators=ATR_24H"
+        req = urllib.request.Request(url, headers={"X-API-Key": api_key})
+        resp = json.loads(urllib.request.urlopen(req, timeout=10).read())
+
+        atr = None
+        for item in resp.get("data", []):
+            if item.get("indicator") == "ATR_24H":
+                atr = float(item.get("value", 0))
+                break
+
+        if not atr or atr <= 0:
+            return None
+
+        # Stop at 2x ATR from entry
+        multiplier = 2.0
+        if direction == "LONG":
+            stop = entry_price - (atr * multiplier)
+        else:
+            stop = entry_price + (atr * multiplier)
+
+        stop_pct = abs(stop - entry_price) / entry_price * 100
+
+        # Clamp between 1% and 10% — don't let ATR go crazy
+        if stop_pct < 1.0:
+            if direction == "LONG":
+                stop = entry_price * 0.99
+            else:
+                stop = entry_price * 1.01
+            stop_pct = 1.0
+        elif stop_pct > 10.0:
+            if direction == "LONG":
+                stop = entry_price * 0.90
+            else:
+                stop = entry_price * 1.10
+            stop_pct = 10.0
+
+        log(f"[{coin}] ATR-based stop: ATR=${atr:.4f}, stop=${stop:.4f} ({stop_pct:.1f}%)")
+        return stop, stop_pct
+    except Exception as e:
+        log(f"[{coin}] ATR stop calc failed: {e}")
+        return None
+
+
+def check_alignment(position, tf_data):
+    """Check if cross-timeframe still supports position direction."""
+    coin = position["coin"]
+    direction = position["direction"]
+    pattern = tf_data.get("coins", {}).get(coin, {}).get("pattern", "NEUTRAL")
+
+    conflicts = {
+        "LONG": ["CONFIRMATION_SHORT", "DIVERGENCE_BEAR", "TRAP_LONG"],
+        "SHORT": ["CONFIRMATION_LONG", "DIVERGENCE_BULL", "TRAP_SHORT"],
+    }
+
+    return pattern in conflicts.get(direction, []), pattern
+
+
+def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry, tf_data=None):
     """Check all exit conditions: exit expressions, trailing stops, max hold time.
     Exit expressions are evaluated first — they match the paper scanner's behavior."""
+    if tf_data is None:
+        tf_data = {}
     trailing_trigger = cfg.get("trailing_stop_trigger", 0.02)
     trailing_lock = cfg.get("trailing_stop_lock", 0.50)
     remaining = []
@@ -846,6 +953,14 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry)
         is_long = pos["direction"] == "LONG"
         pnl_pct = (current - entry) / entry if is_long else (entry - current) / entry
 
+        # ── MINIMUM HOLD TIME CHECK ──
+        entry_dt = datetime.fromisoformat(pos["entry_time"])
+        hold_mins = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 60
+        if hold_mins < MIN_HOLD_BEFORE_EXIT_MINS:
+            log(f"[{coin}] Skipping exit eval — hold {hold_mins:.0f}m < {MIN_HOLD_BEFORE_EXIT_MINS}m minimum")
+            remaining.append(pos)
+            continue
+
         # ── EXIT EXPRESSION (same logic as paper scanner) ──
         exit_expr = pos.get("exit_expression", "")
         if exit_expr and coin in exit_indicators:
@@ -857,6 +972,17 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry)
                 continue
             elif missing:
                 log(f"  WARN: exit expression missing indicators for {coin}: {missing}")
+
+        # ── CROSS-TIMEFRAME ALIGNMENT CHECK ──
+        if tf_data:
+            misaligned, pattern = check_alignment(pos, tf_data)
+            if misaligned:
+                if pnl_pct < 0:
+                    log(f"ALIGNMENT EXIT {coin} {pos['direction']} | pattern={pattern} conflicts, in loss {pnl_pct*100:+.2f}%")
+                    close_and_record(client, pos, current, pnl_pct, "alignment_exit", portfolio, dry)
+                    continue
+                else:
+                    log(f"  WARN [{coin}] alignment conflict (pattern={pattern}) but in profit {pnl_pct*100:+.2f}% — trailing stop will handle")
 
         # ── Update peak ──
         peak = pos.get("peak_pnl_pct", 0)
@@ -1002,7 +1128,17 @@ def run_cycle(client, cfg, dry):
                 log(f"  Fetching {len(needed_indicators)} exit indicators for {coins_with_exits}")
                 exit_indicators = fetch_indicators_for_exit(coins_with_exits, needed_indicators, api_key)
 
-    positions = check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry)
+    # Load cross-timeframe alignment signals
+    tf_path = os.path.join(BUS_DIR, "timeframe_signals.json")
+    tf_data = {}
+    if os.path.exists(tf_path):
+        try:
+            with open(tf_path) as f:
+                tf_data = json.load(f)
+        except Exception as e:
+            log(f"  WARN: timeframe_signals load failed: {e}")
+
+    positions = check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry, tf_data=tf_data)
 
     # 4. Open new positions from approved trades
     if throttle > 0:
