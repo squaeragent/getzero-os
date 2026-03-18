@@ -383,3 +383,14 @@ The cognitive loop runs entirely on existing hardware with existing data sources
 
 This is the difference between a bot and intelligence.
 A bot does what you programmed. Intelligence does what works.
+
+---
+
+## Phase 1 Status: COMPLETE (2026-03-18)
+
+- perception.py: 1,151 lines, fully operational
+- 40 coins, 23 indicators per coin, 20s cycle time
+- Legacy bus files written for backward compatibility
+- Supervisor updated: 10 → 6 processes
+- Bug found: first run had empty API key (env not sourced), loads from .env file correctly
+- Commit: 180083d

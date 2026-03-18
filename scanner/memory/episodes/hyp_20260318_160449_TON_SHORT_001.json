@@ -1,0 +1,67 @@
+{
+  "coin": "TON",
+  "direction": "SHORT",
+  "signal": "RSI_EXTREME_OVERBOUGHT_SHORT_V2_EX2_EX2",
+  "sharpe": 2.1875,
+  "win_rate": 64.6,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.97,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 36,
+  "exit_expression": "RSI_3H30M <= 30.78 AND BB_POSITION_15M <= 0.35",
+  "entry_expression": "RSI_3H30M >= 85 AND BB_POSITION_15M >= 0.88 AND ADX_3H30M >= 20",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_160449_TON_SHORT_001",
+  "thesis": "Hurst 0.70 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.496,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 86)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "TON",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.24,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:54:53.418482+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7037,
+    "hurst_48h": 0.5838,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 86.1,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

@@ -39,8 +39,8 @@ PYTHON = "/opt/homebrew/bin/python3"
 # Phase 1 Cognitive Loop: regime + liquidity + spread + cross_timeframe + funding
 # are merged into the single perception agent.
 AGENTS = [
-    ("perception",  AGENTS_DIR / "perception.py",             120,   5),  # replaces 5 agents
-    ("harvester",   AGENTS_DIR / "signal_harvester.py",       600,  20),
+    ("perception",  AGENTS_DIR / "perception.py",               120,   5),  # replaces 5 agents
+    ("hypothesis",  AGENTS_DIR / "hypothesis_generator.py",   600,  20),  # Phase 2: replaces harvester
     ("correlation", AGENTS_DIR / "correlation_agent.py",      300,  10),
     ("risk",        AGENTS_DIR / "risk_agent.py",             120,   5),
     ("evolution",   AGENTS_DIR / "signal_evolution_agent.py", 600,  20),
@@ -152,7 +152,7 @@ def check_health():
             cands = json.load(f)
         print(f"  Candidates: {len(cands.get('candidates', []))}")
     else:
-        print("  Candidates: 0 (harvester not run)")
+        print("  Candidates: 0 (hypothesis generator not run)")
     if appr_file.exists():
         with open(appr_file) as f:
             appr = json.load(f)
