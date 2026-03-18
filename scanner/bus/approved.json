@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-18T15:45:18.398337+00:00",
+  "timestamp": "2026-03-18T15:49:08.661483+00:00",
   "approved": [
     {
       "coin": "INJ",
@@ -16,6 +16,22 @@
       "signal_heat": 0.5,
       "composite_score": 7.69,
       "recent_record": "0W/0L"
+    },
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "sharpe": 2.54,
+      "win_rate": 77.8,
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
+      "max_hold_hours": 24,
+      "regime": "trending",
+      "regime_match": true,
+      "regime_match_score": 1.0,
+      "signal_heat": 0.5,
+      "composite_score": 7.61,
+      "recent_record": "archetype"
     },
     {
       "coin": "INJ",
@@ -50,20 +66,20 @@
       "recent_record": "0W/0L"
     },
     {
-      "coin": "CRV",
-      "direction": "LONG",
-      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-      "sharpe": 2.5,
-      "win_rate": 77.5,
+      "coin": "TON",
+      "direction": "SHORT",
+      "signal": "BB_UPPER_SHORT_FR3_EX3_EX3_EX2",
+      "sharpe": 2.3471,
+      "win_rate": 70.73,
       "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
-      "max_hold_hours": 24,
-      "regime": "trending",
+      "exit_expression": "BB_POSITION_15M <= 0.00",
+      "max_hold_hours": 36,
+      "regime": "stable",
       "regime_match": true,
-      "regime_match_score": 1.0,
+      "regime_match_score": 0.5,
       "signal_heat": 0.5,
-      "composite_score": 7.51,
-      "recent_record": "archetype"
+      "composite_score": 7.39,
+      "recent_record": "0W/0L"
     },
     {
       "coin": "INJ",
@@ -82,51 +98,19 @@
       "recent_record": "0W/0L"
     },
     {
-      "coin": "ONDO",
+      "coin": "TON",
       "direction": "SHORT",
-      "signal": "WEIGHTED_SHORT_MOM_R5V1_FR16_MH12_FR18_FR8",
-      "sharpe": 1.4752,
-      "win_rate": 66.39,
+      "signal": "BB_UPPER_SHORT_FR3_EX3_EX3",
+      "sharpe": 1.7947,
+      "win_rate": 65.27,
       "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "BB_POSITION_15M <= 0.30",
-      "max_hold_hours": 12,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
+      "exit_expression": "BB_POSITION_15M <= 0.10",
+      "max_hold_hours": 36,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
       "signal_heat": 0.5,
-      "composite_score": 5.2,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "ONDO",
-      "direction": "SHORT",
-      "signal": "WEIGHTED_SHORT_MOM_R5V1_FR16_MH12",
-      "sharpe": 1.3612,
-      "win_rate": 68.02,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "BB_POSITION_15M <= 0.30",
-      "max_hold_hours": 12,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 5.08,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "APT",
-      "direction": "SHORT",
-      "signal": "BB_CMO_HURST_DFA_SHORT_V1_EX3_EX1",
-      "sharpe": 1.302,
-      "win_rate": 70.32,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "CMO_3H30M <= -18 OR BB_POSITION_15M <= 0.20",
-      "max_hold_hours": 48,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 5.06,
+      "composite_score": 6.4,
       "recent_record": "0W/0L"
     }
   ],
