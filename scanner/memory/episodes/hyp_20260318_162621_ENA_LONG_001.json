@@ -1,0 +1,57 @@
+{
+  "coin": "ENA",
+  "direction": "LONG",
+  "signal": "CMO_REVERSAL_LYAP_LONG_V1_FR7_EX6_FR7",
+  "sharpe": 1.8695,
+  "win_rate": 70.83,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.93,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "CMO_3H30M > 15 OR BB_POSITION_15M > 0.80",
+  "entry_expression": "CMO_3H30M < -40 AND LYAPUNOV_48H < 1.6632 AND BB_POSITION_15M < 0.15",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_162621_ENA_LONG_001",
+  "thesis": "Hurst 0.79 + CONFIRMATION_SHORT + funding negative (-0.00119) + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+  "confidence": 0.658,
+  "evidence_for": [
+    "Hurst 0.79 > 0.55 \u2192 persistent upward momentum",
+    "adequate liquidity (score 79)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.794,
+    "hurst_24h": 0.7851,
+    "hurst_48h": 0.7335,
+    "funding_rate": -0.001188,
+    "funding_direction": "normalizing",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 78.9,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "coin": "PAXG",
+  "direction": "SHORT",
+  "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_V2_FR1_EX2_FR4",
+  "sharpe": 2.2965,
+  "win_rate": 83.33,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.94,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "RSI_3H30M <= 25.2 OR XONE_AVG_NET >= 25",
+  "entry_expression": "RSI_3H30M >= 51 AND XONE_AVG_NET <= -16 AND DFA_24H >= 0.35",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_162621_PAXG_SHORT_001",
+  "thesis": "Hurst 0.60 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; Hurst declining 0.67\u21920.60 \u2014 momentum may be exhausting",
+  "confidence": 0.733,
+  "evidence_for": [
+    "Hurst 0.60 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 100)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "Hurst declining 0.67\u21920.60 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.76,
+    "hurst_24h": 0.6044,
+    "hurst_48h": 0.6736,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 100,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

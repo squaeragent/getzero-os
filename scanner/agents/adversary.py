@@ -48,6 +48,8 @@ DATA_DIR = SCANNER_DIR / "data"
 LIVE_DIR = DATA_DIR / "live"
 MEMORY_DIR = SCANNER_DIR / "memory"
 EPISODES_DIR = MEMORY_DIR / "episodes"
+RULES_DIR = MEMORY_DIR / "rules"
+ACTIVE_RULES_FILE = RULES_DIR / "active.json"
 
 CANDIDATES_FILE = BUS_DIR / "candidates.json"
 WORLD_STATE_FILE = BUS_DIR / "world_state.json"
@@ -720,6 +722,85 @@ def update_episode(hypothesis_id, adversary_result):
 
 
 # ─── MAIN ADVERSARY LOGIC ───
+def load_active_rules_for_adversary():
+    """Load active rules for adversary rule-based attacks."""
+    if not ACTIVE_RULES_FILE.exists():
+        return []
+    try:
+        with open(ACTIVE_RULES_FILE) as f:
+            rules = json.load(f)
+        return rules if isinstance(rules, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def attack_active_rules(hypothesis, active_rules):
+    """
+    Attack based on active rules from rule lifecycle.
+    - If a 'kill' rule matches: severity 1.0
+    - If 'reduce_confidence' rule matches: severity 0.4
+    Returns attack dict.
+    """
+    if not active_rules:
+        return {"attack": "rule_based", "severity": 0.0, "weight": 1.2,
+                "detail": "No active rules", "matched_rules": []}
+
+    coin = hypothesis.get("coin", "").lower()
+    direction = hypothesis.get("direction", "").upper().lower()
+    regime = hypothesis.get("regime", "").lower()
+    pattern = str(hypothesis.get("signal", "")).lower()
+
+    matched_kill = []
+    matched_reduce = []
+
+    for rule in active_rules:
+        condition = rule.get("condition", "").lower()
+        action = rule.get("action", "")
+
+        # Match condition
+        matched = False
+        if f"regime == '{regime}'" in condition or f'regime == "{regime}"' in condition:
+            matched = True
+        elif f"direction == '{direction}'" in condition or f'direction == "{direction}"' in condition:
+            matched = True
+        elif f"pattern == '{pattern}'" in condition or f'pattern == "{pattern}"' in condition:
+            matched = True
+
+        if not matched:
+            continue
+
+        rule_id = rule.get("id", "?")
+        if action == "kill":
+            matched_kill.append(rule_id)
+        elif action == "reduce_confidence":
+            matched_reduce.append(rule_id)
+
+    if matched_kill:
+        return {
+            "attack": "rule_based",
+            "severity": 1.0,
+            "weight": 1.2,
+            "detail": f"Active KILL rules matched: {', '.join(matched_kill)}",
+            "matched_rules": matched_kill,
+        }
+    elif matched_reduce:
+        return {
+            "attack": "rule_based",
+            "severity": 0.4,
+            "weight": 1.0,
+            "detail": f"Active reduce rules matched: {', '.join(matched_reduce)}",
+            "matched_rules": matched_reduce,
+        }
+    else:
+        return {
+            "attack": "rule_based",
+            "severity": 0.0,
+            "weight": 1.0,
+            "detail": "No matching active rules",
+            "matched_rules": [],
+        }
+
+
 def run_adversary(hypotheses, closed_trades, positions, world_coins):
     """
     Run all attacks on each hypothesis. Return (survivors, killed, results).
@@ -730,6 +811,11 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins):
     cautioned_count = 0
     proceeded_count = 0
 
+    # Load active rules once for all hypotheses
+    active_rules = load_active_rules_for_adversary()
+    if active_rules:
+        log(f"  Loaded {len(active_rules)} active rules for rule-based attacks")
+
     for hyp in hypotheses:
         coin = hyp.get("coin", "?")
         direction = hyp.get("direction", "?")
@@ -737,7 +823,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins):
 
         log(f"  Attacking {hyp_id} ({coin} {direction})...")
 
-        # Run all 6 attacks
+        # Run all attacks (6 standard + 1 rule-based)
         attacks = [
             attack_similar_failure(hyp, closed_trades),
             attack_kill_condition_proximity(hyp, world_coins),
@@ -745,6 +831,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins):
             attack_confidence_vs_anti_thesis(hyp),
             attack_regime_mismatch(hyp, world_coins),
             attack_funding_headwind(hyp, world_coins),
+            attack_active_rules(hyp, active_rules),
         ]
 
         # Only include attacks with non-zero severity in summary

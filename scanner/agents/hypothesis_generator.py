@@ -58,6 +58,8 @@ HYPOTHESES_FILE = BUS_DIR / "hypotheses.json"
 HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 MEMORY_DIR = SCANNER_DIR / "memory"
 EPISODES_DIR = MEMORY_DIR / "episodes"
+RULES_DIR = MEMORY_DIR / "rules"
+ACTIVE_RULES_FILE = RULES_DIR / "active.json"
 
 # ─── CONFIG ───
 BASE_URL = "https://gate.getzero.dev/api/claw"
@@ -772,6 +774,88 @@ def make_hypothesis_id(ts, coin, direction):
     return f"hyp_{date_str}_{coin}_{direction}_{_hyp_counter[key]:03d}"
 
 
+# ─── ACTIVE RULES INTEGRATION ───
+def load_active_rules():
+    """Load active rules from rule lifecycle store."""
+    if not ACTIVE_RULES_FILE.exists():
+        return []
+    try:
+        with open(ACTIVE_RULES_FILE) as f:
+            rules = json.load(f)
+        return rules if isinstance(rules, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def apply_active_rules(hypothesis, active_rules):
+    """
+    Check hypothesis against active rules. Apply matching rule actions.
+    Actions: boost_confidence, reduce_confidence, kill, boost_size, reduce_size.
+    Returns modified hypothesis and list of applied rule IDs.
+    """
+    if not active_rules:
+        return hypothesis, []
+
+    applied = []
+    coin = hypothesis.get("coin", "").lower()
+    direction = hypothesis.get("direction", "").upper().lower()
+    regime = hypothesis.get("regime", "").lower()
+    pattern = str(hypothesis.get("signal", "")).lower()
+
+    for rule in active_rules:
+        condition = rule.get("condition", "").lower()
+        action = rule.get("action", "")
+        value = float(rule.get("value", 0.0))
+
+        # Match condition to hypothesis fields
+        matched = False
+        if f"regime == '{regime}'" in condition or f'regime == "{regime}"' in condition:
+            matched = True
+        elif f"direction == '{direction}'" in condition or f'direction == "{direction}"' in condition:
+            matched = True
+        elif f"pattern == '{pattern}'" in condition or f'pattern == "{pattern}"' in condition:
+            matched = True
+
+        if not matched:
+            continue
+
+        rule_id = rule.get("id", "?")
+
+        # Apply action
+        if action == "boost_confidence":
+            old = hypothesis.get("confidence", 0.5)
+            hypothesis["confidence"] = round(min(0.95, old + value), 3)
+            applied.append(rule_id)
+        elif action == "reduce_confidence":
+            old = hypothesis.get("confidence", 0.5)
+            hypothesis["confidence"] = round(max(0.05, old - value), 3)
+            hypothesis.setdefault("evidence_against", []).append(
+                f"Rule {rule_id}: {rule.get('evidence', 'active rule')[:80]}"
+            )
+            applied.append(rule_id)
+        elif action == "kill":
+            hypothesis["adversary_verdict"] = "KILLED"
+            hypothesis["killed_by_rule"] = rule_id
+            hypothesis.setdefault("evidence_against", []).append(
+                f"Rule {rule_id} KILL: {rule.get('evidence', '')[:80]}"
+            )
+            applied.append(rule_id)
+            break  # killed, stop processing rules
+        elif action == "boost_size":
+            old = hypothesis.get("recommended_size_modifier", 1.0)
+            hypothesis["recommended_size_modifier"] = round(min(2.0, old + value), 3)
+            applied.append(rule_id)
+        elif action == "reduce_size":
+            old = hypothesis.get("recommended_size_modifier", 1.0)
+            hypothesis["recommended_size_modifier"] = round(max(0.1, old - value), 3)
+            applied.append(rule_id)
+
+    if applied:
+        hypothesis["applied_rules"] = applied
+
+    return hypothesis, applied
+
+
 # ─── EPISODE MEMORY ───
 def write_episode(hypothesis):
     """Write hypothesis to scanner/memory/episodes/ as individual JSON file."""
@@ -1319,10 +1403,27 @@ def run_cycle(api_key):
 
     # ── HYPOTHESIS ENRICHMENT ──
     print(f"  Building hypotheses for {len(candidates)} candidates...")
+    active_rules = load_active_rules()
+    if active_rules:
+        print(f"  Loaded {len(active_rules)} active rules for hypothesis adjustment")
+
     hypotheses = []
+    rules_applied_total = 0
+    rules_killed_total = 0
     for candidate in candidates:
         enriched = enrich_with_hypothesis(candidate, ts, world_coins, indicator_data, closed_trades)
+        # Apply active rules from rule lifecycle
+        enriched, applied = apply_active_rules(enriched, active_rules)
+        if applied:
+            rules_applied_total += len(applied)
+            if enriched.get("killed_by_rule"):
+                rules_killed_total += 1
+                print(f"    Rule-killed: {enriched['coin']} {enriched['direction']} by {enriched['killed_by_rule']}")
+                continue  # don't add rule-killed hypotheses
         hypotheses.append(enriched)
+
+    if active_rules:
+        print(f"  Rules applied: {rules_applied_total} adjustments, {rules_killed_total} killed")
 
     # Write episode files
     episodes_written = 0

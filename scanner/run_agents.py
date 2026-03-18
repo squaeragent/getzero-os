@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZERO OS — Agent Supervisor
-Runs all 10 trading agents in the correct order, monitors health, restarts on failure.
+Runs all agents in the correct order, monitors health, restarts on failure.
 
 Usage:
   python3 scanner/run_agents.py          # run all agents
@@ -9,17 +9,15 @@ Usage:
   python3 scanner/run_agents.py --check  # check agent health
 
 Agent execution order:
-  1. Regime Agent (5-min cycle)       — foundation: regime classification
-  2. Liquidity Agent (2-min)          — HL order book depth monitoring
-  3. Spread Monitor (2-min)           — mark-oracle spread divergence + MM detection
-  4. Cross-Timeframe Agent (5-min)    — fast/slow timeframe divergence detection
-  5. Funding Agent (5-min)            — funding rates, velocity, reversals
-  6. Signal Harvester (10-min)        — reads regime + timeframe + weights + archetypes
-  7. Correlation Agent (5-min)        — reads harvester + regime
-  8. Risk Agent (2-min)               — reads positions + HL
-  9. Signal Evolution Agent (10-min)  — learns from closed trades
- 10. Execution Agent (5-min)          — reads approved + risk + liquidity + spread, acts last
- 11. Observer Agent (2-min)           — kill condition monitoring + observation recording (cognitive loop)
+  1. Perception (2-min)          — replaces 5 agents: regime + liquidity + spread + timeframe + funding
+  2. Hypothesis (10-min)         — structured hypothesis reasoning with rule application
+  3. Adversary (5-min)           — kills weak hypotheses (+ rule-based attacks)
+  4. Correlation (5-min)         — reads candidates + regime
+  5. Risk (2-min)                — reads positions + HL
+  6. Parameter Evolution (10-min)— replaces signal_evolution; data-driven rule generation
+  7. Execution (5-min)           — reads approved + risk + liquidity + spread, acts last
+  8. Observer (2-min)            — kill condition monitoring + observation recording
+  9. Reflection (6h)             — LLM-based self-assessment via Ollama; proposes rules
 """
 
 import json
@@ -40,14 +38,15 @@ PYTHON = "/opt/homebrew/bin/python3"
 # Phase 1 Cognitive Loop: regime + liquidity + spread + cross_timeframe + funding
 # are merged into the single perception agent.
 AGENTS = [
-    ("perception",  AGENTS_DIR / "perception.py",               120,   5),  # replaces 5 agents
-    ("hypothesis",  AGENTS_DIR / "hypothesis_generator.py",   600,  20),  # Phase 2: replaces harvester
-    ("adversary",   AGENTS_DIR / "adversary.py",              300,  10),  # Phase 3: kills weak hypotheses
-    ("correlation", AGENTS_DIR / "correlation_agent.py",      300,  10),
-    ("risk",        AGENTS_DIR / "risk_agent.py",             120,   5),
-    ("evolution",   AGENTS_DIR / "signal_evolution_agent.py", 600,  20),
-    ("execution",   AGENTS_DIR / "execution_agent.py",        300,  10),
-    ("observer",    AGENTS_DIR / "observer.py",               120,   5),   # Phase 4: closes cognitive loop
+    ("perception",          AGENTS_DIR / "perception.py",            120,    5),  # replaces 5 agents
+    ("hypothesis",          AGENTS_DIR / "hypothesis_generator.py",  600,   20),  # Phase 2: replaces harvester
+    ("adversary",           AGENTS_DIR / "adversary.py",             300,   10),  # Phase 3: kills weak hypotheses
+    ("correlation",         AGENTS_DIR / "correlation_agent.py",     300,   10),
+    ("risk",                AGENTS_DIR / "risk_agent.py",            120,    5),
+    ("parameter_evolution", AGENTS_DIR / "parameter_evolution.py",   600,   20),  # Phase 5: replaces evolution
+    ("execution",           AGENTS_DIR / "execution_agent.py",       300,   10),
+    ("observer",            AGENTS_DIR / "observer.py",              120,    5),   # Phase 4: closes cognitive loop
+    ("reflection",          AGENTS_DIR / "reflection.py",          21600, 1440),  # Phase 5: Ollama reflection (6h)
 ]
 
 processes = {}
