@@ -692,6 +692,20 @@ def get_adjusted_stop_pct(coin, default_stop):
     return round(base_stop, 4)
 
 
+def update_hl_stop(client, coin, direction, new_stop_price, sz, main_address=None):
+    """Update the on-chain stop to trailing floor price."""
+    try:
+        # Cancel existing stops for this coin
+        client.cancel_all_triggers(coin)
+        # Place new stop at trailing floor
+        is_long = direction == "LONG"
+        is_buy = not is_long  # sell to close long, buy to close short
+        result = client.place_trigger_order(coin, is_buy, sz, new_stop_price, tpsl="sl")
+        log(f"  HL stop updated: {coin} → ${new_stop_price:.6f}")
+    except Exception as e:
+        log(f"  ⚠ Failed to update HL stop for {coin}: {e}")
+
+
 def place_stop_loss(client, coin, direction, size_coins, entry_price, stop_pct, dry):
     """Place a native stop-loss trigger order on HL."""
     is_long = direction == "LONG"
@@ -1008,6 +1022,10 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
     trailing_lock = cfg.get("trailing_stop_lock", 0.50)
     remaining = []
 
+    # Log if Envy API is completely down
+    if not exit_indicators:
+        log("⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.")
+
     for pos in positions:
         coin = pos["coin"]
         entry = pos["entry_price"]
@@ -1029,6 +1047,8 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
 
         # ── EXIT EXPRESSION (same logic as paper scanner) ──
         exit_expr = pos.get("exit_expression", "")
+        if exit_expr and coin not in exit_indicators:
+            log(f"  ⚠ No indicator data for {coin} — exit expression skipped (HL stop + max hold protect)")
         if exit_expr and coin in exit_indicators:
             triggered, missing = evaluate_expression(exit_expr, exit_indicators[coin])
             if triggered:
@@ -1043,9 +1063,11 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
         if tf_data:
             misaligned, pattern = check_alignment(pos, tf_data)
             if misaligned:
-                if pnl_pct < 0:
-                    log(f"ALIGNMENT EXIT {coin} {pos['direction']} | pattern={pattern} conflicts, in loss {pnl_pct*100:+.2f}%")
-                    close_and_record(client, pos, current, pnl_pct, "alignment_exit", portfolio, dry, main_address=main_address)
+                is_trap = pattern in ("TRAP_LONG", "TRAP_SHORT")
+                if pnl_pct < 0 or is_trap:
+                    reason = "alignment_exit_trap" if is_trap else "alignment_exit"
+                    log(f"{reason.upper()} {coin} {pos['direction']} | pattern={pattern} | {pnl_pct*100:+.2f}%")
+                    close_and_record(client, pos, current, pnl_pct, reason, portfolio, dry, main_address=main_address)
                     continue
                 else:
                     log(f"  WARN [{coin}] alignment conflict (pattern={pattern}) but in profit {pnl_pct*100:+.2f}% — trailing stop will handle")
@@ -1058,9 +1080,25 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
 
         # ── TRAILING STOP ──
         if peak >= trailing_trigger:
-            floor = peak * trailing_lock
-            if pnl_pct <= floor:
-                log(f"TRAILING STOP {coin} {pos['direction']} | peak {peak*100:.2f}% -> {pnl_pct*100:+.2f}% (floor {floor*100:.2f}%)")
+            floor_pct = peak * trailing_lock
+            # Compute floor price for on-chain stop update
+            if is_long:
+                floor_price = entry * (1 + floor_pct)
+            else:
+                floor_price = entry * (1 - floor_pct)
+            # Update HL on-chain stop to trailing floor if it's better than current
+            current_stop = pos.get("stop_loss", 0)
+            if not dry:
+                if is_long and floor_price > current_stop:
+                    update_hl_stop(client, coin, direction, floor_price, pos.get("size_coins", 0), main_address)
+                    pos["stop_loss"] = floor_price
+                    pos["stop_type"] = "trailing"
+                elif not is_long and (current_stop == 0 or floor_price < current_stop):
+                    update_hl_stop(client, coin, direction, floor_price, pos.get("size_coins", 0), main_address)
+                    pos["stop_loss"] = floor_price
+                    pos["stop_type"] = "trailing"
+            if pnl_pct <= floor_pct:
+                log(f"TRAILING STOP {coin} {pos['direction']} | peak {peak*100:.2f}% -> {pnl_pct*100:+.2f}% (floor {floor_pct*100:.2f}%)")
                 close_and_record(client, pos, current, pnl_pct, "trailing_stop", portfolio, dry, main_address=main_address)
                 continue
 

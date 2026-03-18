@@ -341,7 +341,22 @@ def filter_candidates(candidates, positions, roc_data, regimes):
     # Coins already in portfolio
     position_coins = {p.get("coin") for p in positions}
 
-    for cand in candidates:
+    # Sort candidates by composite_score descending — best signals get priority in concentration limits
+    sorted_candidates = sorted(candidates, key=lambda c: c.get("composite_score", 0), reverse=True)
+
+    # Count signal usage in open positions (for signal concentration limit)
+    signal_counts_open = {}
+    for pos in positions:
+        sig = pos.get("signal", "")
+        if sig:
+            signal_counts_open[sig] = signal_counts_open.get(sig, 0) + 1
+
+    # Track signal counts approved in this batch
+    signal_counts_batch = {}
+
+    MAX_SIGNAL_POSITIONS = 2
+
+    for cand in sorted_candidates:
         coin = cand.get("coin")
         direction = cand.get("direction", "").upper()
         signal = cand.get("signal", "")
@@ -354,6 +369,28 @@ def filter_candidates(candidates, positions, roc_data, regimes):
                 "reason": f"already have position in {coin}",
             })
             continue
+
+        # ── Rule: signal concentration limit (open positions) ──
+        if signal:
+            open_count = signal_counts_open.get(signal, 0)
+            if open_count >= MAX_SIGNAL_POSITIONS:
+                print(f"  Signal concentration: {signal} already has {open_count} positions, blocking {coin}")
+                blocked.append({
+                    "coin": coin, "direction": direction, "signal": signal,
+                    "reason": f"signal concentration: {signal} already has {open_count} open positions (max {MAX_SIGNAL_POSITIONS})",
+                })
+                continue
+
+        # ── Rule: signal concentration limit (this batch) ──
+        if signal:
+            batch_count = signal_counts_batch.get(signal, 0)
+            if batch_count >= MAX_SIGNAL_POSITIONS:
+                print(f"  Signal concentration: {signal} already has {batch_count} approved in this batch, blocking {coin}")
+                blocked.append({
+                    "coin": coin, "direction": direction, "signal": signal,
+                    "reason": f"signal concentration: {signal} already approved {batch_count} in this batch (max {MAX_SIGNAL_POSITIONS})",
+                })
+                continue
 
         # ── Rule: chaotic regime block ──
         coin_regime = regime_coins.get(coin, {})
@@ -422,6 +459,9 @@ def filter_candidates(candidates, positions, roc_data, regimes):
                 if key in cand:
                     entry[key] = cand[key]
             approved.append(entry)
+            # Track signal usage in this batch
+            if signal:
+                signal_counts_batch[signal] = signal_counts_batch.get(signal, 0) + 1
 
     return approved, blocked
 

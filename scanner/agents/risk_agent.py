@@ -499,6 +499,14 @@ def run_cycle(main_address):
         drawdown_pct, daily_pnl, lose_streak, rolling
     )
 
+    # Grace period: insufficient closed trades to judge strategy health
+    total_closed = len(closed_trades)
+    if total_closed < 10 and not kill_all:
+        print(f"  Grace period: {total_closed}/10 trades — forcing GREEN")
+        level = "green"
+        throttle = 1.0
+        alerts = [a for a in alerts if "Win rate" not in a and "Win/loss" not in a]
+
     # 6b. Balance reconciliation
     recon = reconcile_balance(main_address, STARTING_EQUITY, positions, closed_trades)
     if "error" in recon:
