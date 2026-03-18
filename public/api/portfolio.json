@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-18T07:40:28.543660+00:00",
+  "updated": "2026-03-18T07:43:32.535121+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 100.0,
@@ -93,17 +93,17 @@
   },
   "agents": {
     "heartbeat": {
-      "regime": "2026-03-18T07:36:58.331712+00:00",
-      "risk": "2026-03-18T07:39:51.553960+00:00",
-      "correlation": "2026-03-18T07:36:47.303896+00:00",
-      "harvester": "2026-03-18T07:32:11.753395+00:00",
-      "execution": "2026-03-18T07:36:58.320048+00:00"
+      "regime": "2026-03-18T07:41:59.772245+00:00",
+      "risk": "2026-03-18T07:41:51.879783+00:00",
+      "correlation": "2026-03-18T07:41:47.632447+00:00",
+      "harvester": "2026-03-18T07:42:17.008574+00:00",
+      "execution": "2026-03-18T07:41:59.105069+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 0.97,
+      "drawdownPct": 0.98,
       "peakEquity": 6.63,
       "winStreak": 0,
       "loseStreak": 0,
@@ -118,9 +118,9 @@
     "regimes": {
       "summary": {
         "stable": 17,
-        "trending": 3,
-        "chaotic": 5,
-        "shift": 4
+        "chaotic": 6,
+        "trending": 1,
+        "shift": 5
       },
       "coins": {
         "BTC": {
@@ -134,8 +134,8 @@
           "transition": true
         },
         "SOL": {
-          "regime": "trending",
-          "confidence": 0.713,
+          "regime": "stable",
+          "confidence": 0.5,
           "transition": true
         },
         "DOGE": {
@@ -150,17 +150,17 @@
         },
         "LINK": {
           "regime": "chaotic",
-          "confidence": 0.78,
+          "confidence": 0.766,
           "transition": true
         },
         "ARB": {
           "regime": "chaotic",
-          "confidence": 0.981,
+          "confidence": 0.873,
           "transition": true
         },
         "NEAR": {
           "regime": "chaotic",
-          "confidence": 0.61,
+          "confidence": 0.616,
           "transition": true
         },
         "SUI": {
@@ -169,33 +169,33 @@
           "transition": true
         },
         "INJ": {
-          "regime": "trending",
-          "confidence": 0.741,
+          "regime": "stable",
+          "confidence": 0.5,
           "transition": true
         },
         "AAVE": {
           "regime": "trending",
-          "confidence": 0.792,
+          "confidence": 0.787,
           "transition": true
         },
         "ADA": {
-          "regime": "stable",
-          "confidence": 0.5,
+          "regime": "chaotic",
+          "confidence": 0.689,
           "transition": true
         },
         "APT": {
-          "regime": "stable",
-          "confidence": 0.5,
+          "regime": "shift",
+          "confidence": 0.71,
           "transition": true
         },
         "BCH": {
-          "regime": "stable",
-          "confidence": 0.5,
+          "regime": "chaotic",
+          "confidence": 0.652,
           "transition": true
         },
         "BNB": {
           "regime": "shift",
-          "confidence": 0.789,
+          "confidence": 0.748,
           "transition": true
         },
         "CRV": {
@@ -209,8 +209,8 @@
           "transition": true
         },
         "LDO": {
-          "regime": "chaotic",
-          "confidence": 0.72,
+          "regime": "stable",
+          "confidence": 0.5,
           "transition": true
         },
         "LTC": {
@@ -230,17 +230,17 @@
         },
         "XRP": {
           "regime": "shift",
-          "confidence": 0.808,
+          "confidence": 0.767,
           "transition": true
         },
         "TRX": {
           "regime": "shift",
-          "confidence": 0.675,
+          "confidence": 0.727,
           "transition": true
         },
         "SEI": {
-          "regime": "shift",
-          "confidence": 0.58,
+          "regime": "stable",
+          "confidence": 0.5,
           "transition": true
         },
         "TIA": {
@@ -255,12 +255,12 @@
         },
         "FARTCOIN": {
           "regime": "chaotic",
-          "confidence": 0.689,
+          "confidence": 0.648,
           "transition": false
         },
         "PUMP": {
-          "regime": "stable",
-          "confidence": 0.5,
+          "regime": "shift",
+          "confidence": 0.64,
           "transition": true
         },
         "WLD": {
@@ -269,9 +269,9 @@
           "transition": true
         }
       },
-      "updated": "2026-03-18T07:36:57.164720+00:00"
+      "updated": "2026-03-18T07:41:58.466446+00:00"
     },
-    "candidates": 2,
+    "candidates": 0,
     "approved": 0,
     "blocked": 2
   },
@@ -383,308 +383,10 @@
     {
       "t": "2026-03-18T07:39:51.399029+00:00",
       "v": 6.57
-    }
-  ],
-  "recentFires": [
-    {
-      "coin": "SUI",
-      "signal": "MOMENTUM_COLLAPSE_ICHIMOKU_SHORT_FR5_Q1_FR3_Q11",
-      "rarity": "Common",
-      "direction": "SHORT",
-      "sharpe": 0.0318,
-      "win_rate": 50,
-      "max_drawdown": 1.3873,
-      "total_return": 0.0433,
-      "expression": "MOMENTUM_2H30M_N <= -0.004 AND ICHIMOKU_BULL == 0 AND ADX_3H30M >= 21.25 AND DFA_24H >= 0.50 AND LYAPUNOV_24H < 1.753366430 AND SENKOU_B_13H_N < 1.0111040425",
-      "exit_expression": "MOMENTUM_2H30M_N >= 0.003 OR ICHIMOKU_BULL == 1",
-      "max_hold_hours": 24,
-      "price": 1.03465,
-      "time": "2026-03-18T04:32:43.014562+00:00"
     },
     {
-      "coin": "SUI",
-      "signal": "MOMENTUM_COLLAPSE_ICHIMOKU_SHORT_FR5_Q1_FR3_Q8",
-      "rarity": "Common",
-      "direction": "SHORT",
-      "sharpe": -0.0608,
-      "win_rate": 42.8571,
-      "max_drawdown": 4.9313,
-      "total_return": -0.4194,
-      "expression": "MOMENTUM_2H30M_N <= -0.004 AND ICHIMOKU_BULL == 0 AND ADX_3H30M >= 21.25 AND DFA_24H >= 0.50 AND LYAPUNOV_24H < 1.753366430 AND BB_POSITION_15M < 0.7500702300",
-      "exit_expression": "MOMENTUM_2H30M_N >= 0.003 OR ICHIMOKU_BULL == 1",
-      "max_hold_hours": 24,
-      "price": 1.03465,
-      "time": "2026-03-18T04:32:43.016609+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.105,
-      "time": "2026-03-18T04:47:44.951322+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLU_CROWD_MOMENTUM_LONG_V2_EX3_Q1",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 0.7751,
-      "win_rate": 57.5,
-      "max_drawdown": 19.0192,
-      "total_return": 12.8291,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 30 AND XONE_AVG_NET >= 25 AND RSI_3H30M <= 45 AND XONE_A_NET < 70.000000000",
-      "exit_expression": "RSI_3H30M >= 86.25 OR XONE_I_NET <= 5",
-      "max_hold_hours": 24,
-      "price": 94.105,
-      "time": "2026-03-18T04:47:44.953026+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.2465,
-      "time": "2026-03-18T05:17:48.729179+00:00"
-    },
-    {
-      "coin": "ETH",
-      "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.1692,
-      "win_rate": 62.963,
-      "max_drawdown": 10.0411,
-      "total_return": 17.9206,
-      "expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1.0 AND DOJI_VELOCITY >= 1.5 AND CMO_3H30M <= -10 AND DOJI_VELOCITY_L >= 3.4069866700",
-      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
-      "max_hold_hours": 18,
-      "price": 2326.35,
-      "time": "2026-03-18T05:32:50.671292+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.1505,
-      "time": "2026-03-18T05:32:50.675681+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLU_CROWD_MOMENTUM_LONG_V2_EX3_Q1",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 0.7751,
-      "win_rate": 57.5,
-      "max_drawdown": 19.0192,
-      "total_return": 12.8291,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 30 AND XONE_AVG_NET >= 25 AND RSI_3H30M <= 45 AND XONE_A_NET < 70.000000000",
-      "exit_expression": "RSI_3H30M >= 86.25 OR XONE_I_NET <= 5",
-      "max_hold_hours": 24,
-      "price": 94.1505,
-      "time": "2026-03-18T05:32:50.676914+00:00"
-    },
-    {
-      "coin": "ARB",
-      "signal": "BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.4095,
-      "win_rate": 83.3333,
-      "max_drawdown": 4.172,
-      "total_return": 11.7101,
-      "expression": "BB_POSITION_15M <= 0.30 AND RSI_3H30M <= 33 AND LYAPUNOV_48H <= 1.6575 AND DOJI_DISTANCE_L < -2.063771445",
-      "exit_expression": "RSI_3H30M >= 55 OR BB_POSITION_15M >= 0.90",
-      "max_hold_hours": 48,
-      "price": 0.10868,
-      "time": "2026-03-18T05:32:50.689370+00:00"
-    },
-    {
-      "coin": "ARB",
-      "signal": "BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1_EX3",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.9648,
-      "win_rate": 87.5,
-      "max_drawdown": 4.172,
-      "total_return": 18.6205,
-      "expression": "BB_POSITION_15M <= 0.30 AND RSI_3H30M <= 33 AND LYAPUNOV_48H <= 1.6575 AND DOJI_DISTANCE_L < -2.063771445",
-      "exit_expression": "RSI_3H30M >= 63.25 OR BB_POSITION_15M >= 0.90",
-      "max_hold_hours": 48,
-      "price": 0.10868,
-      "time": "2026-03-18T05:32:50.691615+00:00"
-    },
-    {
-      "coin": "NEAR",
-      "signal": "WEIGHTED_MOMENTUM_LONG_FR6_EX2_FR11_FR3_Q6",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 0.0443,
-      "win_rate": 61.9048,
-      "max_drawdown": 1.7167,
-      "total_return": 0.0704,
-      "expression": "((RSI_3H30M <= 28) * 3) + ((BB_POSITION_15M <= 0.10) * 3) + ((CMO_3H30M <= -24) * 2) + ((EMA_CROSS_15M_N >= 0.0005) * 2) >= 5 AND EMA_N_24H >= 0.9936686425",
-      "exit_expression": "RSI_3H30M >= 78 OR BB_POSITION_15M >= 0.7",
-      "max_hold_hours": 48,
-      "price": 1.4554,
-      "time": "2026-03-18T05:32:50.694885+00:00"
-    },
-    {
-      "coin": "ETH",
-      "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.1692,
-      "win_rate": 62.963,
-      "max_drawdown": 10.0411,
-      "total_return": 17.9206,
-      "expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1.0 AND DOJI_VELOCITY >= 1.5 AND CMO_3H30M <= -10 AND DOJI_VELOCITY_L >= 3.4069866700",
-      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
-      "max_hold_hours": 18,
-      "price": 2322.25,
-      "time": "2026-03-18T05:44:46.572330+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.0595,
-      "time": "2026-03-18T05:44:46.574715+00:00"
-    },
-    {
-      "coin": "ETH",
-      "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.1692,
-      "win_rate": 62.963,
-      "max_drawdown": 10.0411,
-      "total_return": 17.9206,
-      "expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1.0 AND DOJI_VELOCITY >= 1.5 AND CMO_3H30M <= -10 AND DOJI_VELOCITY_L >= 3.4069866700",
-      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
-      "max_hold_hours": 18,
-      "price": 2321.95,
-      "time": "2026-03-18T05:51:44.849660+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.0175,
-      "time": "2026-03-18T05:51:44.853947+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLU_CROWD_MOMENTUM_LONG_V2_EX3_Q1",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 0.7751,
-      "win_rate": 57.5,
-      "max_drawdown": 19.0192,
-      "total_return": 12.8291,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 30 AND XONE_AVG_NET >= 25 AND RSI_3H30M <= 45 AND XONE_A_NET < 70.000000000",
-      "exit_expression": "RSI_3H30M >= 86.25 OR XONE_I_NET <= 5",
-      "max_hold_hours": 24,
-      "price": 94.0175,
-      "time": "2026-03-18T05:51:44.855031+00:00"
-    },
-    {
-      "coin": "ARB",
-      "signal": "BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.4095,
-      "win_rate": 83.3333,
-      "max_drawdown": 4.172,
-      "total_return": 11.7101,
-      "expression": "BB_POSITION_15M <= 0.30 AND RSI_3H30M <= 33 AND LYAPUNOV_48H <= 1.6575 AND DOJI_DISTANCE_L < -2.063771445",
-      "exit_expression": "RSI_3H30M >= 55 OR BB_POSITION_15M >= 0.90",
-      "max_hold_hours": 48,
-      "price": 0.10827,
-      "time": "2026-03-18T05:51:44.867173+00:00"
-    },
-    {
-      "coin": "ARB",
-      "signal": "BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1_EX3",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.9648,
-      "win_rate": 87.5,
-      "max_drawdown": 4.172,
-      "total_return": 18.6205,
-      "expression": "BB_POSITION_15M <= 0.30 AND RSI_3H30M <= 33 AND LYAPUNOV_48H <= 1.6575 AND DOJI_DISTANCE_L < -2.063771445",
-      "exit_expression": "RSI_3H30M >= 63.25 OR BB_POSITION_15M >= 0.90",
-      "max_hold_hours": 48,
-      "price": 0.10827,
-      "time": "2026-03-18T05:51:44.869223+00:00"
-    },
-    {
-      "coin": "ETH",
-      "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 1.1692,
-      "win_rate": 62.963,
-      "max_drawdown": 10.0411,
-      "total_return": 17.9206,
-      "expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1.0 AND DOJI_VELOCITY >= 1.5 AND CMO_3H30M <= -10 AND DOJI_VELOCITY_L >= 3.4069866700",
-      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
-      "max_hold_hours": 18,
-      "price": 2319.65,
-      "time": "2026-03-18T06:06:49.087082+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.0595,
-      "time": "2026-03-18T06:06:49.091477+00:00"
+      "t": "2026-03-18T07:41:51.702159+00:00",
+      "v": 6.57
     }
   ]
 }
