@@ -57,16 +57,31 @@ MIN_WIN_RATE = 60.0             # require 60%+ win rate
 MAX_PER_COIN = 1                # 1 position per coin (concentrate, don't double up)
 
 # Coin configs
-COIN_TO_ASSET = {
-    "BTC": 0, "ETH": 1, "SOL": 5, "DOGE": 12,
-    "AVAX": 6, "LINK": 18, "ARB": 11, "NEAR": 74,
-    "SUI": 14, "INJ": 13
-}
-COIN_SIZE_DECIMALS = {
-    "BTC": 5, "ETH": 4, "SOL": 2, "DOGE": 0,
-    "AVAX": 2, "LINK": 1, "ARB": 1, "NEAR": 1,
-    "SUI": 1, "INJ": 1
-}
+COIN_TO_ASSET = {}
+COIN_SIZE_DECIMALS = {}
+
+def _load_hl_meta():
+    """Fetch asset indices and size decimals from Hyperliquid meta API."""
+    global COIN_TO_ASSET, COIN_SIZE_DECIMALS
+    try:
+        resp = requests.post("https://api.hyperliquid.xyz/info", json={"type": "meta"}, timeout=10)
+        meta = resp.json()
+        for i, u in enumerate(meta["universe"]):
+            COIN_TO_ASSET[u["name"]] = i
+            COIN_SIZE_DECIMALS[u["name"]] = u["szDecimals"]
+        print(f"[{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}] Loaded {len(COIN_TO_ASSET)} coins from HL meta")
+    except Exception as e:
+        print(f"WARN: HL meta fetch failed ({e}), using fallback")
+        COIN_TO_ASSET.update({
+            "BTC": 0, "ETH": 1, "SOL": 5, "DOGE": 12,
+            "AVAX": 6, "LINK": 18, "ARB": 11, "NEAR": 74,
+            "SUI": 14, "INJ": 13
+        })
+        COIN_SIZE_DECIMALS.update({
+            "BTC": 5, "ETH": 4, "SOL": 2, "DOGE": 0,
+            "AVAX": 2, "LINK": 1, "ARB": 1, "NEAR": 1,
+            "SUI": 1, "INJ": 1
+        })
 COIN_PRICE_DECIMALS = {
     "BTC": 1, "ETH": 1, "SOL": 2, "DOGE": 5,
     "AVAX": 2, "LINK": 3, "ARB": 4, "NEAR": 3,
@@ -420,6 +435,7 @@ def sync_positions_with_hl(client, positions):
 def run():
     log(f"═══ ZERO OS EXECUTOR {'🔴 LIVE' if LIVE_MODE else '⚪ DRY RUN'} ═══")
 
+    _load_hl_meta()
     env = load_env()
     secret = env.get("HYPERLIQUID_SECRET_KEY")
     if not secret:
