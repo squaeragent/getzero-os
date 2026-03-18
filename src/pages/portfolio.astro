@@ -715,7 +715,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <script is:inline>
 (function(){
   var PORTFOLIO_API = '/api/portfolio.json';
-  var PRICE_API = '/api/envy?coins=BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ&indicators=CLOSE_PRICE_15M';
+  var BASE_PRICE_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','NEAR','SUI','INJ'];
+  var PRICE_API = '/api/envy?coins=' + BASE_PRICE_COINS.join(',') + '&indicators=CLOSE_PRICE_15M';
 
   var portfolioData = null;
   var livePrices = {};
@@ -1421,10 +1422,53 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   });
 
+  function buildPriceUrl(){
+    var coins = BASE_PRICE_COINS.slice();
+    if(portfolioData && portfolioData.liveTrading){
+      var positions = portfolioData.liveTrading.positions || [];
+      for(var i=0; i<positions.length; i++){
+        var c = positions[i].coin;
+        if(coins.indexOf(c) === -1) coins.push(c);
+      }
+    }
+    // Envy API max 10 coins per request
+    return '/api/envy?coins=' + coins.slice(0, 10).join(',') + '&indicators=CLOSE_PRICE_15M';
+  }
+
+  function fetchAllPrices(){
+    var coins = BASE_PRICE_COINS.slice();
+    if(portfolioData && portfolioData.liveTrading){
+      var positions = portfolioData.liveTrading.positions || [];
+      for(var i=0; i<positions.length; i++){
+        var c = positions[i].coin;
+        if(coins.indexOf(c) === -1) coins.push(c);
+      }
+    }
+    // Batch into groups of 10 (Envy API limit)
+    var batches = [];
+    for(var i=0; i<coins.length; i+=10){
+      batches.push(coins.slice(i, i+10));
+    }
+    var promises = batches.map(function(batch){
+      return fetch('/api/envy?coins=' + batch.join(',') + '&indicators=CLOSE_PRICE_15M')
+        .then(function(res){ return res.json(); })
+        .then(function(d){
+          if(d.matrix){
+            for(var coin in d.matrix){
+              if(d.matrix[coin].CLOSE_PRICE_15M != null){
+                livePrices[coin] = d.matrix[coin].CLOSE_PRICE_15M;
+              }
+            }
+          }
+        }).catch(function(){});
+    });
+    return Promise.all(promises).then(function(){ lastPriceUpdate = Date.now(); });
+  }
+
   // Initial load
   loadPortfolio().then(function(){
     render();
-    fetchPrices().then(function(){ render(); }).catch(function(){});
+    fetchAllPrices().then(function(){ render(); }).catch(function(){});
   }).catch(function(e){ console.error('Initial load failed:', e); });
 
   // Tick every 5s (agent status + timestamp)
@@ -1441,7 +1485,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Prices every 30s
   setInterval(function(){
-    fetchPrices().then(function(){ render(); }).catch(function(){});
+    fetchAllPrices().then(function(){ render(); }).catch(function(){});
   }, 30000);
 
   // Portfolio every 5min
