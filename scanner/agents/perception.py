@@ -46,7 +46,7 @@ SPREAD_HISTORY    = BUS_DIR / "spread_history.jsonl"
 HEARTBEAT_FILE    = BUS_DIR / "heartbeat.json"
 
 # -- CONFIG --
-ENVY_BASE_URL  = "https://nvprotocol.com/api/claw"
+ENVY_BASE_URL  = "https://gate.getzero.dev/api/claw"
 HL_INFO_URL    = "https://api.hyperliquid.xyz/info"
 
 CYCLE_FAST     = 120   # HL data fetched every 2 min
@@ -235,10 +235,10 @@ def fetch_hl_meta():
     result = {}
     for i, ctx in enumerate(ctxs):
         coin   = meta_list["universe"][i]["name"]
-        mark   = float(ctx.get("markPx", 0))
-        oracle = float(ctx.get("oraclePx", 0))
-        mid    = float(ctx.get("midPx", 0))
-        fund   = float(ctx.get("funding", 0))
+        mark   = float(ctx.get("markPx")   or 0)
+        oracle = float(ctx.get("oraclePx") or 0)
+        mid    = float(ctx.get("midPx")    or 0)
+        fund   = float(ctx.get("funding")  or 0)
         oi     = float(ctx.get("openInterest", 0))
         vol    = float(ctx.get("dayNtlVlm", 0))
 
