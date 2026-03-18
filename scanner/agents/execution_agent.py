@@ -487,6 +487,18 @@ def compute_size(trade, cfg, throttle):
     return round(size_usd, 2)
 
 
+def load_liquidity():
+    """Load liquidity data from the liquidity agent."""
+    liq_file = BUS_DIR / "liquidity.json"
+    if liq_file.exists():
+        try:
+            with open(liq_file) as f:
+                return json.load(f).get("coins", {})
+        except Exception:
+            return {}
+    return {}
+
+
 def should_open(trade, positions, cfg):
     """Check if an approved trade should be opened."""
     coin = trade["coin"]
@@ -496,6 +508,12 @@ def should_open(trade, positions, cfg):
     max_pos = cfg.get("max_positions", 3)
     max_per_coin = cfg.get("max_per_coin", 1)
     max_notional = cfg.get("max_notional", 100)
+
+    # Check liquidity
+    liquidity = load_liquidity()
+    coin_liq = liquidity.get(coin, {})
+    if coin_liq and not coin_liq.get("tradeable", True):
+        return False, f"liquidity: spread={coin_liq.get('spread_pct', '?')}%, depth=${coin_liq.get('bid_depth_50', 0):.0f}"
 
     if trade.get("sharpe", 0) < min_sharpe:
         return False, f"sharpe {trade.get('sharpe', 0):.2f} < {min_sharpe}"

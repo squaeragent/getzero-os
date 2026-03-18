@@ -138,7 +138,13 @@ def fetch_indicators(coins, indicators, api_key):
 
 
 # ─── SIGNAL PACK REFRESH ───
-SIGNAL_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+# All coins with both Envy API signals AND Hyperliquid markets
+SIGNAL_COINS = [
+    "BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ",
+    "AAVE", "ADA", "APT", "BCH", "BNB", "CRV", "DOT", "ENA", "FARTCOIN", "HYPE",
+    "JUP", "LDO", "LTC", "ONDO", "OP", "PAXG", "PUMP", "SEI", "TIA", "TON",
+    "TRUMP", "TRX", "UNI", "WLD", "XRP", "ZEC",
+]
 PACK_TYPES = ["common", "rare", "trump"]
 CACHE_MAX_AGE_SECONDS = 3600  # refresh every hour
 
@@ -513,6 +519,30 @@ def run_cycle(api_key):
     closed_trades = load_closed_trades()
     print(f"  Loaded {len(closed_trades)} closed trades for heat scoring")
 
+    # Load cross-timeframe signals (from Agent 7)
+    timeframe_data = {}
+    tf_file = BUS_DIR / "timeframe_signals.json"
+    if tf_file.exists():
+        try:
+            with open(tf_file) as f:
+                tf_raw = json.load(f)
+            timeframe_data = tf_raw.get("coins", {})
+            print(f"  Loaded timeframe signals for {len(timeframe_data)} coins")
+        except Exception:
+            pass
+
+    # Load signal weights (from Agent 8)
+    signal_weights = {}
+    sw_file = BUS_DIR / "signal_weights.json"
+    if sw_file.exists():
+        try:
+            with open(sw_file) as f:
+                sw_raw = json.load(f)
+            signal_weights = sw_raw.get("weights", {})
+            print(f"  Loaded signal weights for {len(signal_weights)} signals")
+        except Exception:
+            pass
+
     # Extract all indicators needed from expressions
     all_indicators = extract_indicators_from_packs(packs)
     print(f"  Need {len(all_indicators)} unique indicators")
@@ -574,6 +604,27 @@ def run_cycle(api_key):
             composite = compute_composite_score(sharpe, win_rate, heat, regime_match_score)
             record = compute_recent_record(signal_name, closed_trades)
 
+            # Apply cross-timeframe confirmation/penalty
+            tf_info = timeframe_data.get(coin, {})
+            tf_pattern = tf_info.get("pattern", "")
+            tf_conf = tf_info.get("confirmation_score", 0)
+            if tf_pattern.startswith("CONFIRMATION") and (
+                (direction == "LONG" and tf_pattern == "CONFIRMATION_LONG") or
+                (direction == "SHORT" and tf_pattern == "CONFIRMATION_SHORT")
+            ):
+                composite *= 1.2  # 20% boost for timeframe confirmation
+            elif tf_pattern.startswith("TRAP") and (
+                (direction == "LONG" and tf_pattern == "TRAP_LONG") or
+                (direction == "SHORT" and tf_pattern == "TRAP_SHORT")
+            ):
+                composite *= 0.7  # 30% penalty for trap signals
+
+            # Apply signal evolution weight
+            sig_weight = signal_weights.get(signal_name, 1.0)
+            composite *= sig_weight
+
+            composite = round(max(0.0, min(10.0, composite)), 2)
+
             candidates.append({
                 "coin": coin,
                 "direction": direction,
@@ -586,6 +637,9 @@ def run_cycle(api_key):
                 "signal_heat": round(heat, 3),
                 "recent_record": record,
                 "composite_score": composite,
+                "timeframe_pattern": tf_pattern,
+                "timeframe_confirmation": round(tf_conf, 2),
+                "signal_weight": round(sig_weight, 2),
                 "max_hold_hours": pack.get("max_hold_hours"),
                 "exit_expression": pack.get("exit_expression", ""),
             })

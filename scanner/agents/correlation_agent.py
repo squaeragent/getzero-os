@@ -53,10 +53,12 @@ ROC_INDICATORS = ["ROC_3H", "ROC_6H", "ROC_12H"]
 # ─── CORRELATION GROUPS ───
 CORRELATION_GROUPS = {
     "majors": ["BTC", "ETH", "SOL"],
-    "l1_alts": ["AVAX", "NEAR", "SUI", "ARB"],
-    "defi": ["LINK", "UNI", "AAVE"],
-    "meme": ["DOGE", "FARTCOIN", "PUMP"],
-    "solo": ["INJ"],
+    "l1_alts": ["AVAX", "NEAR", "SUI", "ARB", "APT", "SEI", "TIA"],
+    "l1_legacy": ["ADA", "DOT", "LTC", "XRP", "BCH", "TRX", "ZEC"],
+    "defi": ["LINK", "UNI", "AAVE", "CRV", "LDO", "JUP", "ONDO"],
+    "meme": ["DOGE", "FARTCOIN", "PUMP", "TRUMP", "WLD"],
+    "infra": ["OP", "BNB", "INJ", "ENA", "HYPE", "TON"],
+    "stable_hedge": ["PAXG"],
 }
 
 # Reverse lookup: coin -> group name

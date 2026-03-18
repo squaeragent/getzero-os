@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZERO OS — Agent Supervisor
-Runs all 5 trading agents in the correct order, monitors health, restarts on failure.
+Runs all 8 trading agents in the correct order, monitors health, restarts on failure.
 
 Usage:
   python3 scanner/run_agents.py          # run all agents
@@ -9,11 +9,14 @@ Usage:
   python3 scanner/run_agents.py --check  # check agent health
 
 Agent execution order:
-  1. Regime Agent (5-min cycle)  — foundation
-  2. Signal Harvester (10-min)   — reads regime output
-  3. Correlation Agent (5-min)   — reads harvester + regime
-  4. Risk Agent (2-min)          — reads positions + HL
-  5. Execution Agent (5-min)     — reads approved + risk, acts last
+  1. Regime Agent (5-min cycle)       — foundation: regime classification
+  2. Liquidity Agent (2-min)          — HL order book depth monitoring
+  3. Cross-Timeframe Agent (5-min)    — fast/slow timeframe divergence detection
+  4. Signal Harvester (10-min)        — reads regime + timeframe + weights
+  5. Correlation Agent (5-min)        — reads harvester + regime
+  6. Risk Agent (2-min)               — reads positions + HL
+  7. Signal Evolution Agent (10-min)  — learns from closed trades
+  8. Execution Agent (5-min)          — reads approved + risk + liquidity, acts last
 """
 
 import json
@@ -32,11 +35,14 @@ PYTHON = "/opt/homebrew/bin/python3"
 
 # Agent definitions: (name, script, cycle_sec, stale_after_min)
 AGENTS = [
-    ("regime",      AGENTS_DIR / "regime_agent.py",      300,  10),
-    ("harvester",   AGENTS_DIR / "signal_harvester.py",  600,  20),
-    ("correlation", AGENTS_DIR / "correlation_agent.py", 300,  10),
-    ("risk",        AGENTS_DIR / "risk_agent.py",        120,   5),
-    ("execution",   AGENTS_DIR / "execution_agent.py",   300,  10),
+    ("regime",          AGENTS_DIR / "regime_agent.py",           300,  10),
+    ("liquidity",       AGENTS_DIR / "liquidity_agent.py",       120,   5),
+    ("cross_timeframe", AGENTS_DIR / "cross_timeframe_agent.py", 300,  10),
+    ("harvester",       AGENTS_DIR / "signal_harvester.py",      600,  20),
+    ("correlation",     AGENTS_DIR / "correlation_agent.py",     300,  10),
+    ("risk",            AGENTS_DIR / "risk_agent.py",            120,   5),
+    ("evolution",       AGENTS_DIR / "signal_evolution_agent.py", 600,  20),
+    ("execution",       AGENTS_DIR / "execution_agent.py",       300,  10),
 ]
 
 processes = {}
