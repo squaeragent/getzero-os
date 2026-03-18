@@ -38,8 +38,10 @@ SCAN_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI",
 
 # Portfolio config
 INITIAL_CAPITAL = 10000.0
-POSITION_SIZE_PCT = 0.05  # 5% per trade
+POSITION_SIZE_PCT = 0.05  # 5% base per trade (scales with Sharpe)
 MAX_OPEN_POSITIONS = 10
+MAX_PER_COIN = 5  # max open trades on any single coin
+MIN_SHARPE = 2.0  # raised from 1.5
 
 # ─── API ───
 def get_api_key():
@@ -308,6 +310,11 @@ def scan():
         open_keys = {(p["coin"], p["direction"]) for p in remaining_positions}
         coin_trades_this_scan = {}
 
+        # Count existing open positions per coin
+        coin_open_count = {}
+        for p in remaining_positions:
+            coin_open_count[p["coin"]] = coin_open_count.get(p["coin"], 0) + 1
+
         for fire in fires_this_run:
             if len(remaining_positions) >= MAX_OPEN_POSITIONS:
                 break
@@ -315,9 +322,13 @@ def scan():
             if key in open_keys:
                 continue
 
-            # Max 2 entries per coin per scan (prevents INJ spam)
+            # Max 2 entries per coin per scan (prevents spam)
             ct = coin_trades_this_scan.get(fire["coin"], 0)
             if ct >= 2:
+                continue
+
+            # Max open trades per coin across all time
+            if coin_open_count.get(fire["coin"], 0) >= MAX_PER_COIN:
                 continue
 
             # No opposing positions on same coin
@@ -326,12 +337,15 @@ def scan():
                 continue
 
             # Minimum quality
-            if fire.get("sharpe", 0) < 1.5:
+            sharpe = fire.get("sharpe", 0)
+            if sharpe < MIN_SHARPE:
                 continue
             if fire.get("win_rate", 0) < 50:
                 continue
 
-            size = portfolio["capital"] * POSITION_SIZE_PCT
+            # Sharpe-weighted position sizing: base 5%, up to 10% for Sharpe 3.0+
+            size_mult = min(sharpe / 2.0, 2.0)  # 1.0x at Sharpe 2.0, 1.5x at 3.0, 2.0x cap at 4.0+
+            size = portfolio["capital"] * POSITION_SIZE_PCT * size_mult
             if size < 10:
                 continue  # too small
 
@@ -352,7 +366,8 @@ def scan():
             remaining_positions.append(position)
             open_keys.add(key)
             coin_trades_this_scan[fire["coin"]] = ct + 1
-            print(f"    📈 OPENED {fire['coin']} {fire['direction']} | ${size:.2f} @ ${fire['price']:,.2f} | Sharpe {fire['sharpe']:.2f}")
+            coin_open_count[fire["coin"]] = coin_open_count.get(fire["coin"], 0) + 1
+            print(f"    📈 OPENED {fire['coin']} {fire['direction']} | ${size:.2f} @ ${fire['price']:,.2f} | Sharpe {fire['sharpe']:.2f} | size_mult {size_mult:.1f}x")
 
     # Save state
     save_positions(remaining_positions)
