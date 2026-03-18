@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-18T06:06:49.119990+00:00",
+  "updated": "2026-03-18T07:06:06.003345+00:00",
   "summary": {
     "startingCapital": 10000,
     "currentValue": 10040.74,
@@ -15,8 +15,45 @@
   },
   "liveTrading": {
     "enabled": true,
-    "capital": 115.0,
+    "capital": 100.0,
     "positions": [
+      {
+        "coin": "SOL",
+        "direction": "LONG",
+        "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
+        "entry_price": 94.293,
+        "entry_time": "2026-03-18T06:45:50.866796+00:00",
+        "size_usd": 33.11,
+        "size_coins": 0.35,
+        "sharpe": 1.6557,
+        "win_rate": 66.27,
+        "max_hold_hours": 24,
+        "stop_loss": 89.578,
+        "stop_type": "native",
+        "peak_pnl_pct": 0.0005143541938424908,
+        "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10"
+      },
+      {
+        "coin": "INJ",
+        "direction": "SHORT",
+        "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
+        "entry_price": 3.2311,
+        "entry_time": "2026-03-18T06:45:53.896982+00:00",
+        "size_usd": 32.63,
+        "size_coins": 10.1,
+        "sharpe": 1.6317,
+        "win_rate": 61.9,
+        "max_hold_hours": 216,
+        "stop_loss": 3.3927,
+        "stop_type": "native",
+        "peak_pnl_pct": 0.0016557828603261941,
+        "exit_expression": "EMA_N_48H >= 1.1523 OR ROC_24H >= 1.2"
+      }
+    ],
+    "trades": 1,
+    "wins": 0,
+    "dailyLoss": 0.007346104088618171,
+    "closed": [
       {
         "coin": "BTC",
         "direction": "LONG",
@@ -25,32 +62,273 @@
         "entry_time": "2026-03-18T05:14:40.644333+00:00",
         "size_usd": 12.25,
         "size_coins": 0.00017,
-        "sharpe": 2.4494,
-        "win_rate": 72.2222,
-        "max_hold_hours": 30,
-        "stop_loss": 70495.7
-      },
-      {
-        "coin": "SOL",
-        "direction": "LONG",
-        "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-        "entry_price": 94.014,
-        "entry_time": "2026-03-18T05:44:50.115009+00:00",
-        "size_usd": 10.0,
-        "size_coins": 0.11,
-        "sharpe": 1.6557,
-        "win_rate": 66.2651,
-        "max_hold_hours": 24,
-        "stop_loss": 89.3133,
-        "peak_pnl_pct": 0.0005584274682495065
+        "exit_price": 74161.5,
+        "exit_time": "2026-03-18T06:31:40.417815+00:00",
+        "exit_reason": "risk_kill",
+        "pnl_pct": -0.06,
+        "pnl_usd": -0.01
       }
     ],
-    "trades": 0,
-    "wins": 0,
-    "dailyLoss": 0,
-    "closed": [],
-    "started": "2026-03-18T05:14:39.354756+00:00"
+    "started": "2026-03-18T05:14:39.354756+00:00",
+    "stats": {
+      "total": 1,
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0.0,
+      "totalPnl": -0.01,
+      "avgPnl": -0.01,
+      "bestTrade": {
+        "coin": "BTC",
+        "direction": "LONG",
+        "pnl": -0.01,
+        "pnlPct": -0.06
+      },
+      "worstTrade": {
+        "coin": "BTC",
+        "direction": "LONG",
+        "pnl": -0.01,
+        "pnlPct": -0.06
+      },
+      "avgHoldHours": 0,
+      "byCoin": {
+        "BTC": {
+          "trades": 1,
+          "winRate": 0.0,
+          "pnl": -0.01
+        }
+      },
+      "longWinRate": 0.0,
+      "shortWinRate": 0,
+      "longCount": 1,
+      "shortCount": 0
+    }
   },
+  "agents": {
+    "heartbeat": {
+      "regime": "2026-03-18T07:01:48.824056+00:00",
+      "risk": "2026-03-18T07:05:46.537770+00:00",
+      "correlation": "2026-03-18T07:01:45.414053+00:00",
+      "harvester": "2026-03-18T07:01:56.471770+00:00",
+      "execution": "2026-03-18T07:01:52.378128+00:00"
+    },
+    "risk": {
+      "status": "green",
+      "throttle": 1.0,
+      "killAll": false,
+      "drawdownPct": 0.37,
+      "peakEquity": 6.58,
+      "winStreak": 0,
+      "loseStreak": 0,
+      "rollingStats": {
+        "win_rate": 0.0,
+        "win_loss_ratio": 0.0,
+        "sharpe": 0,
+        "n_trades": 1
+      },
+      "alerts": []
+    },
+    "regimes": {
+      "summary": {
+        "stable": 18,
+        "shift": 4,
+        "chaotic": 3,
+        "trending": 4
+      },
+      "coins": {
+        "BTC": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "ETH": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "SOL": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "DOGE": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "AVAX": {
+          "regime": "shift",
+          "confidence": 0.746,
+          "transition": true
+        },
+        "LINK": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "ARB": {
+          "regime": "chaotic",
+          "confidence": 0.739,
+          "transition": true
+        },
+        "NEAR": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "SUI": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "INJ": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "AAVE": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "ADA": {
+          "regime": "shift",
+          "confidence": 0.683,
+          "transition": true
+        },
+        "APT": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "BCH": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "BNB": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "CRV": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "DOT": {
+          "regime": "trending",
+          "confidence": 0.965,
+          "transition": true
+        },
+        "LDO": {
+          "regime": "chaotic",
+          "confidence": 0.897,
+          "transition": true
+        },
+        "LTC": {
+          "regime": "trending",
+          "confidence": 0.731,
+          "transition": true
+        },
+        "OP": {
+          "regime": "trending",
+          "confidence": 0.751,
+          "transition": true
+        },
+        "UNI": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "XRP": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "TRX": {
+          "regime": "shift",
+          "confidence": 0.749,
+          "transition": true
+        },
+        "SEI": {
+          "regime": "shift",
+          "confidence": 0.642,
+          "transition": true
+        },
+        "TIA": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "JUP": {
+          "regime": "trending",
+          "confidence": 0.825,
+          "transition": true
+        },
+        "FARTCOIN": {
+          "regime": "chaotic",
+          "confidence": 0.708,
+          "transition": false
+        },
+        "PUMP": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        },
+        "WLD": {
+          "regime": "stable",
+          "confidence": 0.5,
+          "transition": true
+        }
+      },
+      "updated": "2026-03-18T07:01:47.464566+00:00"
+    },
+    "candidates": 3,
+    "approved": 1,
+    "blocked": 0
+  },
+  "equityCurve": [
+    {
+      "t": "2026-03-18T06:47:47.587436+00:00",
+      "v": 6.58
+    },
+    {
+      "t": "2026-03-18T06:49:47.780193+00:00",
+      "v": 6.57
+    },
+    {
+      "t": "2026-03-18T06:51:44.685511+00:00",
+      "v": 6.58
+    },
+    {
+      "t": "2026-03-18T06:53:44.981211+00:00",
+      "v": 6.57
+    },
+    {
+      "t": "2026-03-18T06:55:45.150431+00:00",
+      "v": 6.56
+    },
+    {
+      "t": "2026-03-18T06:57:45.310849+00:00",
+      "v": 6.55
+    },
+    {
+      "t": "2026-03-18T06:59:45.537359+00:00",
+      "v": 6.54
+    },
+    {
+      "t": "2026-03-18T07:01:45.822466+00:00",
+      "v": 6.57
+    },
+    {
+      "t": "2026-03-18T07:03:46.105265+00:00",
+      "v": 6.58
+    },
+    {
+      "t": "2026-03-18T07:05:46.387064+00:00",
+      "v": 6.56
+    }
+  ],
   "positions": [
     {
       "coin": "ETH",
@@ -1195,5 +1473,77 @@
       "price": 94.0595,
       "time": "2026-03-18T06:06:49.091477+00:00"
     }
-  ]
+  ],
+  "stats": {
+    "total": 73,
+    "wins": 48,
+    "losses": 25,
+    "winRate": 65.8,
+    "totalPnl": 40.78,
+    "avgPnl": 0.56,
+    "bestTrade": {
+      "coin": "SUI",
+      "direction": "SHORT",
+      "pnl": 9.25,
+      "pnlPct": 2.3619
+    },
+    "worstTrade": {
+      "coin": "SOL",
+      "direction": "SHORT",
+      "pnl": -8.49,
+      "pnlPct": -1.7879
+    },
+    "avgHoldHours": 2.1,
+    "byCoin": {
+      "LINK": {
+        "trades": 7,
+        "winRate": 100.0,
+        "pnl": 18.95
+      },
+      "SUI": {
+        "trades": 2,
+        "winRate": 100.0,
+        "pnl": 13.4
+      },
+      "INJ": {
+        "trades": 45,
+        "winRate": 56.0,
+        "pnl": 6.0
+      },
+      "AVAX": {
+        "trades": 4,
+        "winRate": 75.0,
+        "pnl": 4.48
+      },
+      "DOGE": {
+        "trades": 1,
+        "winRate": 100.0,
+        "pnl": 1.31
+      },
+      "ETH": {
+        "trades": 1,
+        "winRate": 100.0,
+        "pnl": 0.79
+      },
+      "BTC": {
+        "trades": 1,
+        "winRate": 100.0,
+        "pnl": 0.35
+      },
+      "ARB": {
+        "trades": 4,
+        "winRate": 75.0,
+        "pnl": 0.08
+      },
+      "SOL": {
+        "trades": 8,
+        "winRate": 62.0,
+        "pnl": -4.58
+      }
+    },
+    "longWinRate": 77.3,
+    "shortWinRate": 60.8,
+    "longCount": 22,
+    "shortCount": 51
+  }
 }
