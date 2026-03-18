@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-18T10:42:00.107273+00:00",
+  "updated": "2026-03-18T10:47:05.611238+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 100.0,
@@ -20,6 +20,30 @@
         "stop_loss": 89.368,
         "stop_type": "native",
         "peak_pnl_pct": 0.0028754570966918786
+      },
+      {
+        "coin": "ARB",
+        "direction": "LONG",
+        "signal": "BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1_EX3_EX2",
+        "entry_price": 0.10724,
+        "intended_price": 0.10722,
+        "entry_time": "2026-03-18T10:47:05.366343+00:00",
+        "size_usd": 44.48,
+        "size_coins": 414.8,
+        "sharpe": 2.2239,
+        "win_rate": 87.5,
+        "max_hold_hours": 48,
+        "exit_expression": "RSI_3H30M >= 69.575 OR BB_POSITION_15M >= 0.90",
+        "stop_loss": 0.10563,
+        "stop_type": "native",
+        "peak_pnl_pct": 0.0,
+        "exec_quality": {
+          "slippage_pct": 0.018653,
+          "slippage_usd": 0.008297,
+          "fill_time_ms": 1508,
+          "spread_at_entry": 0.018667,
+          "depth_at_entry": 311142.84
+        }
       }
     ],
     "trades": 5,
@@ -166,22 +190,22 @@
   },
   "agents": {
     "heartbeat": {
-      "regime": "2026-03-18T10:41:48.078178+00:00",
-      "risk": "2026-03-18T10:41:43.192884+00:00",
-      "correlation": "2026-03-18T10:41:40.779129+00:00",
-      "harvester": "2026-03-18T10:32:51.736712+00:00",
-      "execution": "2026-03-18T10:42:00.049041+00:00",
-      "liquidity": "2026-03-18T10:40:42.128005+00:00",
-      "cross_timeframe": "2026-03-18T10:41:47.366915+00:00",
-      "signal_evolution": "2026-03-18T10:40:24.246504+00:00",
-      "funding": "2026-03-18T10:41:41.739862+00:00",
-      "spread_monitor": "2026-03-18T10:41:46.114893+00:00"
+      "regime": "2026-03-18T10:46:49.374687+00:00",
+      "risk": "2026-03-18T10:45:43.553850+00:00",
+      "correlation": "2026-03-18T10:46:41.025180+00:00",
+      "harvester": "2026-03-18T10:43:16.694026+00:00",
+      "execution": "2026-03-18T10:47:05.552427+00:00",
+      "liquidity": "2026-03-18T10:46:55.145294+00:00",
+      "cross_timeframe": "2026-03-18T10:46:48.678942+00:00",
+      "signal_evolution": "2026-03-18T10:46:34.467255+00:00",
+      "funding": "2026-03-18T10:46:42.017901+00:00",
+      "spread_monitor": "2026-03-18T10:45:47.079299+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 0.25,
+      "drawdownPct": 0.37,
       "peakEquity": 115.15,
       "winStreak": 0,
       "loseStreak": 0,
@@ -189,7 +213,7 @@
         "win_rate": 0.0,
         "win_loss_ratio": 0.0,
         "sharpe": 0,
-        "n_trades": 5
+        "n_trades": 6
       },
       "alerts": []
     },
@@ -347,16 +371,16 @@
           "transition": true
         }
       },
-      "updated": "2026-03-18T10:41:46.784797+00:00"
+      "updated": "2026-03-18T10:46:48.164821+00:00"
     },
-    "candidates": 8,
-    "approved": 2,
-    "blocked": 6,
+    "candidates": 16,
+    "approved": 13,
+    "blocked": 3,
     "spread": {
       "summary": {
         "total_monitored": 10,
-        "normal": 10,
-        "elevated": 0,
+        "normal": 9,
+        "elevated": 1,
         "diverged": 0,
         "mm_setup": 0,
         "unwind": 0
@@ -393,7 +417,7 @@
           "anomaly": false
         },
         "ARB": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
@@ -417,8 +441,8 @@
     "funding": {
       "coins": {
         "ARB": {
-          "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "velocity_direction": "normalizing",
+          "funding_pct": 0.00097
         },
         "AVAX": {
           "velocity_direction": "stable",
@@ -426,15 +450,15 @@
         },
         "BTC": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000413
+          "funding_pct": 0.000352
         },
         "DOGE": {
           "velocity_direction": "stable",
-          "funding_pct": -0.002795
+          "funding_pct": -0.002774
         },
         "ETH": {
-          "velocity_direction": "stable",
-          "funding_pct": 0.001078
+          "velocity_direction": "normalizing",
+          "funding_pct": 0.000958
         },
         "INJ": {
           "velocity_direction": "stable",
@@ -450,7 +474,7 @@
         },
         "SOL": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001048
+          "funding_pct": -0.001082
         },
         "SUI": {
           "velocity_direction": "stable",
@@ -789,6 +813,14 @@
     {
       "t": "2026-03-18T10:41:43.048279+00:00",
       "v": 114.87
+    },
+    {
+      "t": "2026-03-18T10:43:43.231092+00:00",
+      "v": 114.8
+    },
+    {
+      "t": "2026-03-18T10:45:43.398320+00:00",
+      "v": 114.73
     }
   ]
 }
