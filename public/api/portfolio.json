@@ -1,14 +1,14 @@
 {
   "live": true,
-  "updated": "2026-03-18T03:17:33.117659+00:00",
+  "updated": "2026-03-18T03:32:35.010877+00:00",
   "summary": {
     "startingCapital": 10000,
-    "currentValue": 10039.27,
-    "cash": 8725.56,
-    "pnl": 39.27,
-    "pnlPct": 0.39,
-    "totalTrades": 70,
-    "winRate": 65.7,
+    "currentValue": 10039.65,
+    "cash": 8687.44,
+    "pnl": 39.65,
+    "pnlPct": 0.4,
+    "totalTrades": 71,
+    "winRate": 66.2,
     "openPositions": 3,
     "daysRunning": 2,
     "started": "2026-03-16T18:22:43.099450+00:00"
@@ -28,19 +28,6 @@
       "win_rate": 59.542
     },
     {
-      "coin": "SOL",
-      "signal_name": "SOCIAL_CLOUD_CMO_DIP_LONG_V3_MH9_EX3_EX3",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "entry_price": 95.307,
-      "entry_time": "2026-03-17T19:01:27.651637+00:00",
-      "exit_expression": "CMO_3H30M >= 66.125 OR XONE_AVG_NET_DELTA <= -20",
-      "max_hold_hours": 9,
-      "size": 418.73,
-      "sharpe": 1.6456,
-      "win_rate": 58.156
-    },
-    {
       "coin": "INJ",
       "signal_name": "WEIGHTED_EMA_MACD_TREND_SHORT_NEW_EX7_EX2",
       "rarity": "Common",
@@ -52,25 +39,22 @@
       "size": 438.41,
       "sharpe": 1.6159,
       "win_rate": 64
+    },
+    {
+      "coin": "SOL",
+      "signal_name": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3_EX3",
+      "rarity": "Rare",
+      "direction": "SHORT",
+      "entry_price": 95.3935,
+      "entry_time": "2026-03-18T03:32:34.983231+00:00",
+      "exit_expression": "RSI_3H30M <= 18.42375 OR XONE_AVG_NET_DELTA >= 20",
+      "max_hold_hours": 24,
+      "size": 457.23,
+      "sharpe": 1.9649,
+      "win_rate": 57.193
     }
   ],
   "closed": [
-    {
-      "coin": "INJ",
-      "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
-      "rarity": "Rare",
-      "direction": "SHORT",
-      "entry_price": 3.2985,
-      "exit_price": 3.31255,
-      "entry_time": "2026-03-16T23:09:48.724323+00:00",
-      "exit_time": "2026-03-16T23:24:50.624191+00:00",
-      "hours_held": 0.3,
-      "exit_reason": "signal",
-      "pnl_pct": -0.426,
-      "pnl_dollars": -1.85,
-      "size": 433.74,
-      "portfolio_after": 8260.93
-    },
     {
       "coin": "INJ",
       "signal": "HURST_MEANREV_LONG_EX3",
@@ -854,39 +838,25 @@
       "pnl_dollars": 1.97,
       "size": 393.76,
       "portfolio_after": 8725.56
+    },
+    {
+      "coin": "SOL",
+      "signal": "SOCIAL_CLOUD_CMO_DIP_LONG_V3_MH9_EX3_EX3",
+      "rarity": "Rare",
+      "direction": "LONG",
+      "entry_price": 95.307,
+      "exit_price": 95.3935,
+      "entry_time": "2026-03-17T19:01:27.651637+00:00",
+      "exit_time": "2026-03-18T03:32:34.963563+00:00",
+      "hours_held": 8.5,
+      "exit_reason": "signal",
+      "pnl_pct": 0.0908,
+      "pnl_dollars": 0.38,
+      "size": 418.73,
+      "portfolio_after": 9144.67
     }
   ],
   "recentFires": [
-    {
-      "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.5805,
-      "time": "2026-03-18T01:17:17.563351+00:00"
-    },
-    {
-      "coin": "SOL",
-      "signal": "INFLU_CROWD_MOMENTUM_LONG_V2_EX3_Q1",
-      "rarity": "Common",
-      "direction": "LONG",
-      "sharpe": 0.7751,
-      "win_rate": 57.5,
-      "max_drawdown": 19.0192,
-      "total_return": 12.8291,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 30 AND XONE_AVG_NET >= 25 AND RSI_3H30M <= 45 AND XONE_A_NET < 70.000000000",
-      "exit_expression": "RSI_3H30M >= 86.25 OR XONE_I_NET <= 5",
-      "max_hold_hours": 24,
-      "price": 94.5805,
-      "time": "2026-03-18T01:17:17.564445+00:00"
-    },
     {
       "coin": "NEAR",
       "signal": "WEIGHTED_MOMENTUM_LONG_FR6_EX2_FR11_FR3_Q6",
@@ -1156,6 +1126,36 @@
       "max_hold_hours": 24,
       "price": 94.8505,
       "time": "2026-03-18T03:17:33.092306+00:00"
+    },
+    {
+      "coin": "ETH",
+      "signal": "RSI_OVERBOUGHT_SHORT_FR3_EX0_Q2",
+      "rarity": "Common",
+      "direction": "SHORT",
+      "sharpe": 0.0642,
+      "win_rate": 64.1791,
+      "max_drawdown": 12.4455,
+      "total_return": 0.0752,
+      "expression": "RSI_3H30M >= 86.4 AND XONE_AVG_NET_DELTA < 10.0000000000",
+      "exit_expression": "RSI_3H30M <= 40.5",
+      "max_hold_hours": 48,
+      "price": 2339.65,
+      "time": "2026-03-18T03:32:34.975245+00:00"
+    },
+    {
+      "coin": "SOL",
+      "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3_EX3",
+      "rarity": "Rare",
+      "direction": "SHORT",
+      "sharpe": 1.9649,
+      "win_rate": 57.193,
+      "max_drawdown": 11.8033,
+      "total_return": 74.9189,
+      "expression": "((XONE_AVG_NET_DELTA <= -15) * 3) + ((XONE_A_NET <= -20) * 2) + ((RSI_3H30M >= 60) * 2) + ((BB_POS_6H >= 0.85) * 3) + ((XONE_I_NET <= 0) * 2) >= 5",
+      "exit_expression": "RSI_3H30M <= 18.42375 OR XONE_AVG_NET_DELTA >= 20",
+      "max_hold_hours": 24,
+      "price": 95.3935,
+      "time": "2026-03-18T03:32:34.983231+00:00"
     }
   ]
 }
