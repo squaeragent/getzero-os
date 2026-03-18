@@ -1,0 +1,124 @@
+{
+  "coin": "JUP",
+  "direction": "LONG",
+  "signal": "WEIGHTED_DOJI_CHAOS_LONG_V2_FR15_EX2_FR2_MH30_FR9_",
+  "sharpe": 2.4249,
+  "win_rate": 78.79,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 4.95,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.05,
+  "max_hold_hours": 30,
+  "exit_expression": "RSI_3H30M > 88.4 OR BB_POSITION_15M > 0.8925",
+  "entry_expression": "((DOJI_SIGNAL >= 115) * 3) + ((RSI_3H30M < 45) * 2) + ((ICHIMOKU_BULL >= 1.10) * 2) + ((DFA_24H >= 0.70) * 2) + ((DOJI_DISTANCE >= 0) * 1) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_200823_JUP_LONG_001",
+  "thesis": "Hurst 0.71 + TRAP_LONG + funding positive (0.00051) + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG; spread elevated \u2014 potential MM activity; funding reversal detected",
+  "confidence": 0.588,
+  "evidence_for": [
+    "Hurst 0.71 > 0.55 \u2192 persistent upward momentum",
+    "funding positive supports LONG (rate 0.000509)"
+  ],
+  "evidence_against": [
+    "timeframe pattern TRAP_LONG conflicts with LONG",
+    "spread elevated \u2014 potential MM activity",
+    "funding reversal detected",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.891,
+    "hurst_24h": 0.7138,
+    "hurst_48h": 0.7421,
+    "funding_rate": 0.000509,
+    "funding_direction": "intensifying",
+    "funding_reversal": true,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 51.2,
+    "tradeable": false,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_200823_JUP_LONG_001",
+    "coin": "JUP",
+    "direction": "LONG",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "funding reversal detected \u2014 kill condition nearly met; liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 5,
+        "conditions_near": 4
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "4 evidence_against vs 2 evidence_for",
+        "confidence": 0.588,
+        "evidence_for_count": 2,
+        "evidence_against_count": 4
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00118% \u2014 paying ~$0.18/day to hold $50 position (funding intensifying against LONG)",
+        "funding_rate": 0.001184,
+        "funding_velocity": "intensifying",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 4
+  }
+}

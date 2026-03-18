@@ -1,0 +1,126 @@
+{
+  "coin": "PUMP",
+  "direction": "SHORT",
+  "signal": "RSI_HIGH_MACD_DFA_SHORT_V2_EX0_MH16",
+  "sharpe": 1.6308,
+  "win_rate": 66.1,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.18,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 16,
+  "exit_expression": "RSI_3H30M <= 25.2",
+  "entry_expression": "RSI_3H30M >= 65 AND MACD_6H30M_N >= 0.002 AND DFA_48H <= 0.55",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_181143_PUMP_SHORT_005",
+  "thesis": "Hurst 0.70 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
+  "confidence": 0.561,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 70)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7022,
+    "hurst_48h": 0.7018,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 70.0,
+    "tradeable": false,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_181143_PUMP_SHORT_005",
+    "coin": "PUMP",
+    "direction": "SHORT",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 4,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $53 (46% of equity), 3% adverse move = -$1.58",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.58,
+        "directional_pct": 45.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.56",
+        "confidence": 0.561,
+        "evidence_for_count": 4,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 1
+  }
+}

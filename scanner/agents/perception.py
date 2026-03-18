@@ -977,6 +977,30 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
                 "timestamp":  ts_iso,
             })
 
+        # ── Own indicators (parallel computation via IndicatorEngine) ──
+        # Runs in parallel/shadow mode: never blocks the main cycle.
+        # Stores results under indicators_own; logs drift to drift_log.jsonl.
+        _own_indicators = {}
+        try:
+            from scanner.indicators.engine import IndicatorEngine, fetch_hl_candles
+            from scanner.indicators.signal_logger import log_indicator_drift
+            _own_candles = fetch_hl_candles(coin, "1h", 300)
+            if len(_own_candles) >= 50:
+                _eng = IndicatorEngine(_own_candles)
+                _own_indicators = {
+                    "HURST_24H":    _eng.hurst(window=200),
+                    "DFA_24H":      _eng.dfa(window=200),
+                    "LYAPUNOV_24H": _eng.lyapunov(window=200),
+                }
+                # Log drift vs Envy source
+                for _ind_key in ("HURST_24H", "DFA_24H", "LYAPUNOV_24H"):
+                    _theirs = ind.get(_ind_key)
+                    _ours   = _own_indicators.get(_ind_key)
+                    if _theirs is not None and _ours is not None:
+                        log_indicator_drift(coin, _ind_key, float(_theirs), _ours)
+        except Exception as _e:
+            log(f"  [own_indicators] {coin} failed (non-fatal): {_e}")
+
         # ── Assemble world_state coin entry ──
         world_coins[coin] = {
             "regime":            regime,
@@ -1003,8 +1027,10 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
                 "slow_bias": slow_bias,
                 "pattern":   pattern,
             },
-            "indicators": {k: round(v, 6) if isinstance(v, float) else v
-                           for k, v in ind.items()},
+            "indicators":     {k: round(v, 6) if isinstance(v, float) else v
+                               for k, v in ind.items()},
+            "indicators_own": {k: round(v, 6) if isinstance(v, float) and not __import__("math").isnan(v) else v
+                               for k, v in _own_indicators.items()},
         }
 
     cycle_ms = int((time.time() - cycle_start) * 1000)

@@ -1,0 +1,154 @@
+{
+  "coin": "ONDO",
+  "direction": "SHORT",
+  "signal": "BB_UPPER_REVERSION_SHORT_EX5_FR1_EX0_Q2_MH16",
+  "sharpe": 1.7719,
+  "win_rate": 70.42,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.77,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 16,
+  "exit_expression": "BB_POSITION_15M <= 0.30 OR MOMENTUM_2H30M_N <= -0.040",
+  "entry_expression": "BB_POSITION_15M >= 0.98 AND MOMENTUM_2H30M_N >= 0.01 AND CLOUD_POSITION_15M < 2.0000000000",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_180119_ONDO_SHORT_001",
+  "thesis": "Hurst 0.74 + TRAP_LONG + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.754,
+  "evidence_for": [
+    "Hurst 0.74 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.722,
+    "hurst_24h": 0.7354,
+    "hurst_48h": 0.7217,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 52.5,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_180119_ONDO_SHORT_001",
+    "coin": "ONDO",
+    "direction": "SHORT",
+    "survival_score": 0.72,
+    "verdict": "PROCEED",
+    "recommended_size_modifier": 1.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $40 (35% of equity), 3% adverse move = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.75",
+        "confidence": 0.754,
+        "evidence_for_count": 3,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  },
+  "observations": [
+    {
+      "trade_id": "ONDO_SHORT_2026-03-18_18-05-15",
+      "hypothesis_id": "hyp_20260318_180119_ONDO_SHORT_001",
+      "observed_at": "2026-03-18T18:36:28.066649+00:00",
+      "coin": "ONDO",
+      "direction": "SHORT",
+      "signal": "BB_UPPER_REVERSION_SHORT_EX5_FR1_EX0_Q2_MH16",
+      "outcome": "win",
+      "pnl_pct": 0.67,
+      "pnl_usd": 0.08,
+      "hold_hours": 0.51,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:05:15.950571+00:00",
+      "exit_time": "2026-03-18T18:35:43.292225+00:00",
+      "thesis_correct": true,
+      "anti_thesis_correct": false,
+      "kill_condition_hit": "kill_condition (from signal)",
+      "adversary_verdict": "OK",
+      "adversary_was_right": false,
+      "world_state_at_exit": {
+        "regime": "trending",
+        "hurst": 0.754543,
+        "funding_direction": "stable",
+        "spread_status": "ELEVATED",
+        "pattern": "TRAP_LONG"
+      },
+      "lesson": "Thesis held \u2014 trending regime supported SHORT"
+    }
+  ],
+  "last_updated": "2026-03-18T18:36:28.066854+00:00"
+}

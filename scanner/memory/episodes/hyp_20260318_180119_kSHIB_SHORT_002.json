@@ -1,0 +1,127 @@
+{
+  "coin": "kSHIB",
+  "direction": "SHORT",
+  "signal": "DOJI_MOMENTUM_SHORT_V1_EX2",
+  "sharpe": 1.0696,
+  "win_rate": 80.77,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.04,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 36,
+  "exit_expression": "BB_POSITION_15M < -0.20 OR RSI_3H30M < 35",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 3 AND RSI_3H30M > 60 AND MACD_CROSS_15M_N < -0.00002",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_180119_kSHIB_SHORT_002",
+  "thesis": "Hurst 0.75 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "spread elevated \u2014 potential MM activity",
+  "confidence": 0.758,
+  "evidence_for": [
+    "Hurst 0.75 > 0.5 \u2192 trending market",
+    "fast+slow timeframes both bearish (CONFIRMATION_SHORT)",
+    "funding stable (rate -0.007442)",
+    "deep liquidity (score 93)"
+  ],
+  "evidence_against": [
+    "spread elevated \u2014 potential MM activity"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold",
+    "timeframe pattern flips to CONFIRMATION_LONG"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.729,
+    "hurst_24h": 0.7471,
+    "hurst_48h": 0.6744,
+    "funding_rate": -0.007442,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 92.7,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_180119_kSHIB_SHORT_002",
+    "coin": "kSHIB",
+    "direction": "SHORT",
+    "survival_score": 0.42,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met",
+        "conditions_checked": 6,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $40 (35% of equity), 3% adverse move = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.76",
+        "confidence": 0.758,
+        "evidence_for_count": 4,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate -0.00147% \u2014 paying ~$0.22/day to hold $50 position",
+        "funding_rate": -0.001471,
+        "funding_velocity": "normalizing",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  }
+}

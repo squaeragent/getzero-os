@@ -1,0 +1,157 @@
+{
+  "coin": "LINK",
+  "direction": "LONG",
+  "signal": "ARCH_DOJI_BREAKOUT",
+  "sharpe": 2.29,
+  "win_rate": 75.6,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.0,
+  "signal_heat": 0.5,
+  "recent_record": "archetype",
+  "composite_score": 6.86,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 1.0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 8,
+  "exit_expression": "ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0",
+  "source": "archetype",
+  "hypothesis_id": "hyp_20260318_180038_LINK_LONG_001",
+  "thesis": "Hurst 0.61 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG; Hurst declining 0.70\u21920.61 \u2014 momentum may be exhausting",
+  "confidence": 0.656,
+  "evidence_for": [
+    "Hurst 0.61 > 0.55 \u2192 persistent upward momentum",
+    "funding stable (rate 0.001204)",
+    "adequate liquidity (score 75)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+    "Hurst declining 0.70\u21920.61 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.643,
+    "hurst_24h": 0.6069,
+    "hurst_48h": 0.6974,
+    "funding_rate": 0.001204,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 75.0,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_180038_LINK_LONG_001",
+    "coin": "LINK",
+    "direction": "LONG",
+    "survival_score": 0.441,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $40 (35% of equity), 3% drop = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.656,
+        "evidence_for_count": 4,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00120% \u2014 paying ~$0.18/day to hold $50 position",
+        "funding_rate": 0.001204,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  },
+  "observations": [
+    {
+      "trade_id": "LINK_LONG_2026-03-18_18-01-30",
+      "hypothesis_id": "hyp_20260318_180038_LINK_LONG_001",
+      "observed_at": "2026-03-18T18:32:27.737363+00:00",
+      "coin": "LINK",
+      "direction": "LONG",
+      "signal": "ARCH_DOJI_BREAKOUT",
+      "outcome": "loss",
+      "pnl_pct": -0.2,
+      "pnl_usd": -0.04,
+      "hold_hours": 0.51,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T18:01:30.974919+00:00",
+      "exit_time": "2026-03-18T18:31:52.681386+00:00",
+      "thesis_correct": false,
+      "anti_thesis_correct": true,
+      "kill_condition_hit": null,
+      "adversary_verdict": "OK",
+      "adversary_was_right": false,
+      "world_state_at_exit": {
+        "regime": "trending",
+        "hurst": 0.649768,
+        "funding_direction": "stable",
+        "spread_status": "NORMAL",
+        "pattern": "CONFIRMATION_SHORT"
+      },
+      "lesson": "Anti-thesis 'timeframe pattern CONFIRMATION_SHORT conflicts with LONG; Hurst declining 0.70\u21920\u2026' was correct \u2014 alignment_exit"
+    }
+  ],
+  "last_updated": "2026-03-18T18:32:27.737578+00:00"
+}

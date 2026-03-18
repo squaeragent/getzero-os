@@ -1453,6 +1453,33 @@ def run_cycle(api_key):
 
     write_heartbeat()
 
+    # ── LOG ALL SIGNAL FIRES (for training dataset) ──
+    # Captures every candidate that fired — including filtered/killed ones.
+    # Non-blocking: wrapped in try/except so any failure is logged, not raised.
+    try:
+        from scanner.indicators.signal_logger import log_all_fires
+        all_fired = []
+        for h in hypotheses:
+            all_fired.append({
+                "coin":          h.get("coin"),
+                "direction":     h.get("direction"),
+                "signal_name":   h.get("signal"),
+                "score":         h.get("composite_score"),
+                "passed_filter": True,
+            })
+        # Also capture rule-killed candidates if accessible
+        if all_fired:
+            load_world = {}
+            if WORLD_STATE_FILE.exists():
+                try:
+                    with open(WORLD_STATE_FILE) as _f:
+                        load_world = json.load(_f)
+                except Exception:
+                    pass
+            log_all_fires(all_fired, load_world)
+    except Exception as _e:
+        print(f"  [signal_logger] non-fatal: {_e}")
+
     # ── SUMMARY ──
     print(f"\n  Evaluated: {stats['evaluated']}")
     print(f"  Filtered (quality): {stats['filtered']}")

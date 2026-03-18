@@ -1,0 +1,137 @@
+{
+  "coin": "BNB",
+  "direction": "LONG",
+  "signal": "SOCIAL_MOMENTUM_LONG_V2_EX5",
+  "sharpe": 1.2727,
+  "win_rate": 66.27,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.26,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.11,
+  "max_hold_hours": 48,
+  "exit_expression": "XONE_AVG_NET_DELTA <= -8 OR RSI_3H30M >= 88.4",
+  "entry_expression": "XONE_AVG_NET_DELTA >= 10 AND XONE_U_NET >= 40 AND RSI_3H30M <= 50",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_192649_BNB_LONG_003",
+  "thesis": "Hurst 0.75 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.613,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.75 > 0.55 \u2192 persistent upward momentum",
+    "fast bullish divergence building (DIVERGENCE_BULL)",
+    "funding stable (rate 0.001099)",
+    "adequate liquidity (score 73)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18",
+      "outcome": "loss",
+      "pnl_pct": -0.17,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T13:25:27.507664+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.954,
+    "hurst_24h": 0.7462,
+    "hurst_48h": 0.6886,
+    "funding_rate": 0.001099,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 72.6,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_192649_BNB_LONG_003",
+    "coin": "BNB",
+    "direction": "LONG",
+    "survival_score": 0.4725,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.17
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.25,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $75 (65% of equity), 3% drop = -$2.24",
+        "same_direction_positions": 2,
+        "stress_impact_usd": 2.24,
+        "directional_pct": 65.0
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.61",
+        "confidence": 0.613,
+        "evidence_for_count": 6,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00098% \u2014 paying ~$0.15/day to hold $50 position",
+        "funding_rate": 0.000979,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "coin": "AVAX",
+  "direction": "SHORT",
+  "signal": "SCORING_TREND_SHORT_REFINED_V2_FR14_EX3_FR19",
+  "sharpe": 1.9799,
+  "win_rate": 63.64,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 8.13,
+  "timeframe_pattern": "NEUTRAL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "EMA_N_6H >= 1.1523",
+  "entry_expression": "((EMA_N_6H <= 0.997) * 2) + ((MACD_N_6H <= -0.001) * 2) + ((ROC_6H <= -0.8) * 2) + ((HURST_24H >= 0.93) * 2) + ((ADX_3H30M >= 33.25) * 2) >= 6",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_185427_AVAX_SHORT_001",
+  "thesis": "Hurst 0.71 + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.686,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.71 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 77)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.974,
+    "hurst_24h": 0.7099,
+    "hurst_48h": 0.6717,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 77.0,
+    "tradeable": true,
+    "timeframe_pattern": "NEUTRAL",
+    "fast_bias": "neutral",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_185427_AVAX_SHORT_001",
+    "coin": "AVAX",
+    "direction": "SHORT",
+    "survival_score": 0.54,
+    "verdict": "PROCEED_WITH_CAUTION",
+    "recommended_size_modifier": 0.7,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "3 existing SHORT positions + this one = high concentration. adding SHORT increases short exposure to $85 (74% of equity), 3% adverse move = -$2.54",
+        "same_direction_positions": 3,
+        "stress_impact_usd": 2.54,
+        "directional_pct": 73.7
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.69",
+        "confidence": 0.686,
+        "evidence_for_count": 5,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=momentum) in trending regime",
+        "regime": "trending",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  },
+  "observations": [
+    {
+      "trade_id": "AVAX_SHORT_2026-03-18_18-30-38",
+      "hypothesis_id": "hyp_20260318_185427_AVAX_SHORT_001",
+      "observed_at": "2026-03-18T19:06:31.257068+00:00",
+      "coin": "AVAX",
+      "direction": "SHORT",
+      "signal": "SCORING_TREND_SHORT_REFINED_V2_FR14_EX3_FR19",
+      "outcome": "loss",
+      "pnl_pct": -0.04,
+      "pnl_usd": -0.01,
+      "hold_hours": 0.59,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:30:38.808765+00:00",
+      "exit_time": "2026-03-18T19:05:59.775789+00:00",
+      "thesis_correct": false,
+      "anti_thesis_correct": false,
+      "kill_condition_hit": "kill_condition (from signal)",
+      "adversary_verdict": "OK",
+      "adversary_was_right": false,
+      "world_state_at_exit": {
+        "regime": "trending",
+        "hurst": 0.709924,
+        "funding_direction": "stable",
+        "spread_status": "NORMAL",
+        "pattern": "CONFIRMATION_SHORT"
+      },
+      "lesson": "Kill condition 'kill_condition (from signal)' triggered as predicted"
+    }
+  ],
+  "last_updated": "2026-03-18T19:06:31.257317+00:00"
+}

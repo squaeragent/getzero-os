@@ -1,0 +1,58 @@
+{
+  "coin": "PUMP",
+  "direction": "SHORT",
+  "signal": "DOJI_REVERSAL_SHORT_EX5_Q9",
+  "sharpe": 1.495,
+  "win_rate": 69.77,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.09,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M <= 40 OR BB_POSITION_15M <= -0.10",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_VELOCITY <= -3.0 AND RSI_3H30M >= 60 AND DOJI_VELOCITY_L < -3.4498224100",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_181103_PUMP_SHORT_004",
+  "thesis": "Hurst 0.70 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
+  "confidence": 0.598,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 70)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7022,
+    "hurst_48h": 0.7018,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 70.0,
+    "tradeable": false,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

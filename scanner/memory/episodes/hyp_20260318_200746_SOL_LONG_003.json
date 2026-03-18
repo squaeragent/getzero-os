@@ -1,0 +1,87 @@
+{
+  "coin": "SOL",
+  "direction": "LONG",
+  "signal": "SOCIAL_BULLISH_CONSENSUS_LONG_V2_EX5_Q8_EX2_Q6_Q3",
+  "sharpe": 1.0122,
+  "win_rate": 69.57,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 3.23,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "XONE_AVG_NET <= -0.010 OR XONE_AVG_NET_DELTA < -22.5",
+  "entry_expression": "XONE_AVG_NET >= 30 AND XONE_AVG_NET_DELTA >= 10 AND XONE_SPREAD < 80.0000000000 AND DOJI_VELOCITY_L >= -3.5229511925 AND ADX_3H30M >= 15.9292035400",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_200746_SOL_LONG_003",
+  "thesis": "Hurst 0.67 + TRAP_LONG + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG; Hurst declining 0.73\u21920.67 \u2014 momentum may be exhausting",
+  "confidence": 0.446,
+  "evidence_for": [
+    "Hurst 0.67 > 0.55 \u2192 persistent upward momentum",
+    "funding stable (rate -0.000877)",
+    "deep liquidity (score 100)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern TRAP_LONG conflicts with LONG",
+    "Hurst declining 0.73\u21920.67 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "SOL",
+      "direction": "LONG",
+      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
+      "outcome": "loss",
+      "pnl_pct": -0.27,
+      "exit_reason": "risk_kill",
+      "entry_time": "2026-03-18T06:45:50.866796+00:00"
+    },
+    {
+      "coin": "SOL",
+      "direction": "LONG",
+      "signal": "SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7",
+      "outcome": "loss",
+      "pnl_pct": -2.27,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T08:26:45.345988+00:00"
+    },
+    {
+      "coin": "SOL",
+      "direction": "LONG",
+      "signal": "DOJI_VEL_XONE_NET_LONG_EX1_Q14",
+      "outcome": "loss",
+      "pnl_pct": 0.0,
+      "exit_reason": "alignment_exit_trap",
+      "entry_time": "2026-03-18T18:57:16.878488+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.767,
+    "hurst_24h": 0.6737,
+    "hurst_48h": 0.7318,
+    "funding_rate": -0.000877,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 100,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

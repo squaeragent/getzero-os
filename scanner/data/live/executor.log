@@ -2803,3 +2803,554 @@
 [2026-03-18 17:56:23 UTC] [EXEC] SYNC HYPE: gone from HL, removing local tracker
 [2026-03-18 17:56:23 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
 [2026-03-18 17:56:23 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=13
+[2026-03-18 18:00:01 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:00:01 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:00:01 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-18 18:00:02 UTC] [EXEC] LIVE OPEN XPL SHORT | $10.88 (100.0) @ $0.1089 | sharpe=1.59
+[2026-03-18 18:00:04 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "100.0", "avgPx": "0.10884", "oid": 353540825835}}]}}}
+[2026-03-18 18:00:04 UTC] [EXEC]   Filled @ $0.1088
+[2026-03-18 18:00:04 UTC] [EXEC]   Execution: intended=$0.1089 filled=$0.1088 slippage=0.0184% ($0.0020) fill_time=1979ms spread=0.036755
+[2026-03-18 18:00:04 UTC] [EXEC]   XPL ATR-stop: ATR=0.437% → stop=3.00%
+[2026-03-18 18:00:04 UTC] [EXEC]   Stop loss: XPL trigger @ $0.1128 (buy 100.0)
+[2026-03-18 18:00:05 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353540859128}}]}}}
+[2026-03-18 18:00:06 UTC] [EXEC]   WARN: Could not determine open fill fee for XPL
+[2026-03-18 18:00:06 UTC] [EXEC]   Skip XPL SHORT: max 1 on XPL
+[2026-03-18 18:00:06 UTC] [EXEC] Summary: 1 positions, $10.88 notional, trades=13
+[2026-03-18 18:01:24 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:01:24 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:01:25 UTC] [EXEC]   Fetching 1 exit indicators for ['XPL']
+[2026-03-18 18:01:25 UTC] [EXEC] KILL SIGNAL XPL SHORT | condition: 'liquidity drops below tradeable threshold' | -0.50%
+[2026-03-18 18:01:26 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "100.0", "avgPx": "0.10941", "oid": 353542980897}}]}}}
+[2026-03-18 18:01:27 UTC] [EXEC]   Fees: open=$0.000000 close=$0.004923 total=$0.004923 | P&L after fees: $-0.0589
+[2026-03-18 18:01:27 UTC] [EXEC]   Closed XPL SHORT | kill_condition | -0.50% ($-0.05) (fees=$0.0049, net=$-0.0589)
+[2026-03-18 18:01:27 UTC] [EXEC] LIVE OPEN LINK LONG | $17.90 (1.9) @ $9.2753 | sharpe=2.29
+[2026-03-18 18:01:29 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "1.9", "avgPx": "9.2735", "oid": 353543022777}}]}}}
+[2026-03-18 18:01:29 UTC] [EXEC]   Filled @ $9.2735
+[2026-03-18 18:01:29 UTC] [EXEC]   Execution: intended=$9.2753 filled=$9.2735 slippage=0.0199% ($0.0036) fill_time=1574ms spread=0.020579
+[2026-03-18 18:01:29 UTC] [EXEC]   LINK ATR-stop: ATR=0.255% → stop=3.00%
+[2026-03-18 18:01:29 UTC] [EXEC]   Stop loss: LINK trigger @ $8.9397 (sell 1.9)
+[2026-03-18 18:01:30 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353543057139}}]}}}
+[2026-03-18 18:01:30 UTC] [EXEC]   Open fill fee for LINK: $0.007928
+[2026-03-18 18:01:31 UTC] [EXEC] LIVE OPEN HYPE LONG | $11.77 (0.27) @ $43.5005 | sharpe=1.68
+[2026-03-18 18:01:32 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.27", "avgPx": "43.503", "oid": 353543101666}}]}}}
+[2026-03-18 18:01:32 UTC] [EXEC]   Filled @ $43.5030
+[2026-03-18 18:01:32 UTC] [EXEC]   Execution: intended=$43.5005 filled=$43.5030 slippage=0.0057% ($0.0007) fill_time=1388ms spread=0.027714
+[2026-03-18 18:01:33 UTC] [EXEC]   HYPE ATR-stop: ATR=0.571% → stop=3.00%
+[2026-03-18 18:01:33 UTC] [EXEC]   Stop loss: HYPE trigger @ $42.1980 (sell 0.27)
+[2026-03-18 18:01:34 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353543128996}}]}}}
+[2026-03-18 18:01:34 UTC] [EXEC]   Open fill fee for HYPE: $0.005285
+[2026-03-18 18:01:34 UTC] [EXEC]   Skip HYPE LONG: sharpe 1.13 < 1.5
+[2026-03-18 18:01:34 UTC] [EXEC] Summary: 2 positions, $29.67 notional, trades=14
+[2026-03-18 18:05:07 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:05:08 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:05:08 UTC] [EXEC]   Fetching 5 exit indicators for ['LINK', 'HYPE']
+[2026-03-18 18:05:08 UTC] [EXEC] [LINK] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 18:05:08 UTC] [EXEC] [HYPE] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 18:05:09 UTC] [EXEC] LIVE OPEN kSHIB SHORT | $19.24 (3310.0) @ $0.0058 | sharpe=2.42
+[2026-03-18 18:05:10 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3310.0", "avgPx": "0.00581", "oid": 353547774075}}]}}}
+[2026-03-18 18:05:10 UTC] [EXEC]   Filled @ $0.0058
+[2026-03-18 18:05:10 UTC] [EXEC]   Execution: intended=$0.0058 filled=$0.0058 slippage=0.0344% ($0.0066) fill_time=1644ms spread=0.017201
+[2026-03-18 18:05:11 UTC] [EXEC]   kSHIB ATR-stop: ATR=0.215% → stop=3.00%
+[2026-03-18 18:05:11 UTC] [EXEC]   Stop loss: kSHIB trigger @ $0.0060 (buy 3310.0)
+[2026-03-18 18:05:12 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353547800407}}]}}}
+[2026-03-18 18:05:12 UTC] [EXEC]   Open fill fee for kSHIB: $0.008653
+[2026-03-18 18:05:13 UTC] [EXEC] LIVE OPEN ONDO SHORT | $12.72 (47.0) @ $0.2679 | sharpe=1.77
+[2026-03-18 18:05:14 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "47.0", "avgPx": "0.2679", "oid": 353547836558}}]}}}
+[2026-03-18 18:05:14 UTC] [EXEC]   Filled @ $0.2679
+[2026-03-18 18:05:14 UTC] [EXEC]   Execution: intended=$0.2679 filled=$0.2679 slippage=0.0131% ($0.0017) fill_time=1386ms spread=0.014926
+[2026-03-18 18:05:14 UTC] [EXEC]   ONDO ATR-stop: ATR=0.256% → stop=3.00%
+[2026-03-18 18:05:14 UTC] [EXEC]   Stop loss: ONDO trigger @ $0.2775 (buy 47.0)
+[2026-03-18 18:05:15 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353547864441}}]}}}
+[2026-03-18 18:05:15 UTC] [EXEC]   Open fill fee for ONDO: $0.005666
+[2026-03-18 18:05:16 UTC] [EXEC] LIVE OPEN INJ SHORT | $11.32 (3.7) @ $3.0793 | sharpe=1.63
+[2026-03-18 18:05:17 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3.7", "avgPx": "3.0782", "oid": 353547900095}}]}}}
+[2026-03-18 18:05:17 UTC] [EXEC]   Filled @ $3.0782
+[2026-03-18 18:05:17 UTC] [EXEC]   Execution: intended=$3.0793 filled=$3.0782 slippage=0.0373% ($0.0042) fill_time=1317ms spread=0.02598
+[2026-03-18 18:05:18 UTC] [EXEC]   INJ ATR-stop: ATR=0.243% → stop=3.00%
+[2026-03-18 18:05:18 UTC] [EXEC]   Stop loss: INJ trigger @ $3.1890 (buy 3.7)
+[2026-03-18 18:05:19 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353547914570}}]}}}
+[2026-03-18 18:05:19 UTC] [EXEC]   Open fill fee for INJ: $0.005125
+[2026-03-18 18:05:19 UTC] [EXEC]   Skip TON LONG: max positions (5)
+[2026-03-18 18:05:19 UTC] [EXEC]   Skip BCH SHORT: sharpe 1.30 < 1.5
+[2026-03-18 18:05:19 UTC] [EXEC]   Skip kSHIB SHORT: sharpe 1.07 < 1.5
+[2026-03-18 18:05:19 UTC] [EXEC] Summary: 5 positions, $72.95 notional, trades=14
+[2026-03-18 18:06:36 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:06:36 UTC] [EXEC] Positions: 5 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:06:36 UTC] [EXEC]   Fetching 10 exit indicators for ['LINK', 'INJ', 'kSHIB', 'ONDO', 'HYPE']
+[2026-03-18 18:06:37 UTC] [EXEC] [LINK] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 18:06:37 UTC] [EXEC] [HYPE] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 18:06:37 UTC] [EXEC] KILL SIGNAL kSHIB SHORT | condition: 'funding reverses to intensifying long' | +0.03%
+[2026-03-18 18:06:38 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3310.0", "avgPx": "0.005809", "oid": 353549130411}}]}}}
+[2026-03-18 18:06:38 UTC] [EXEC]   Fees: open=$0.008653 close=$0.008652 total=$0.017305 | P&L after fees: $-0.0107
+[2026-03-18 18:06:38 UTC] [EXEC]   Closed kSHIB SHORT | kill_condition | +0.03% ($+0.01) (fees=$0.0173, net=$-0.0107)
+[2026-03-18 18:06:38 UTC] [EXEC] [ONDO] Skipping exit eval — hold 1m < 30m minimum
+[2026-03-18 18:06:38 UTC] [EXEC] [INJ] Skipping exit eval — hold 1m < 30m minimum
+[2026-03-18 18:06:39 UTC] [EXEC] Summary: 4 positions, $53.71 notional, trades=15
+[2026-03-18 18:10:21 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:10:21 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:10:21 UTC] [EXEC]   Fetching 9 exit indicators for ['INJ', 'ONDO', 'LINK', 'HYPE']
+[2026-03-18 18:10:21 UTC] [EXEC] [LINK] Skipping exit eval — hold 9m < 30m minimum
+[2026-03-18 18:10:21 UTC] [EXEC] KILL SIGNAL HYPE LONG | condition: 'funding reverses to intensifying short' | -0.10%
+[2026-03-18 18:10:23 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.27", "avgPx": "43.465", "oid": 353553421395}}]}}}
+[2026-03-18 18:10:23 UTC] [EXEC]   Fees: open=$0.005285 close=$0.005280 total=$0.010565 | P&L after fees: $-0.0226
+[2026-03-18 18:10:23 UTC] [EXEC]   Closed HYPE LONG | kill_condition | -0.10% ($-0.01) (fees=$0.0106, net=$-0.0226)
+[2026-03-18 18:10:23 UTC] [EXEC] [ONDO] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 18:10:23 UTC] [EXEC] KILL SIGNAL INJ SHORT | condition: 'funding reverses to intensifying long' | -0.05%
+[2026-03-18 18:10:25 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3.7", "avgPx": "3.081", "oid": 353553444595}}]}}}
+[2026-03-18 18:10:25 UTC] [EXEC]   Fees: open=$0.005125 close=$0.005129 total=$0.010254 | P&L after fees: $-0.0158
+[2026-03-18 18:10:25 UTC] [EXEC]   Closed INJ SHORT | kill_condition | -0.05% ($-0.01) (fees=$0.0103, net=$-0.0158)
+[2026-03-18 18:10:25 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:11:40 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:11:40 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:11:41 UTC] [EXEC]   Fetching 5 exit indicators for ['LINK', 'ONDO']
+[2026-03-18 18:11:41 UTC] [EXEC] [LINK] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 18:11:41 UTC] [EXEC] [ONDO] Skipping exit eval — hold 6m < 30m minimum
+[2026-03-18 18:11:41 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:15:27 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:15:27 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:15:27 UTC] [EXEC]   Fetching 5 exit indicators for ['ONDO', 'LINK']
+[2026-03-18 18:15:27 UTC] [EXEC] [LINK] Skipping exit eval — hold 14m < 30m minimum
+[2026-03-18 18:15:27 UTC] [EXEC] [ONDO] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 18:15:27 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:16:43 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:16:43 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:16:43 UTC] [EXEC]   Fetching 5 exit indicators for ['LINK', 'ONDO']
+[2026-03-18 18:16:43 UTC] [EXEC] [LINK] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 18:16:43 UTC] [EXEC] [ONDO] Skipping exit eval — hold 11m < 30m minimum
+[2026-03-18 18:16:44 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:20:29 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:20:29 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:20:30 UTC] [EXEC]   Fetching 5 exit indicators for ['ONDO', 'LINK']
+[2026-03-18 18:20:30 UTC] [EXEC] [LINK] Skipping exit eval — hold 19m < 30m minimum
+[2026-03-18 18:20:30 UTC] [EXEC] [ONDO] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 18:20:30 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:21:45 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:21:45 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:21:46 UTC] [EXEC]   Fetching 5 exit indicators for ['LINK', 'ONDO']
+[2026-03-18 18:21:46 UTC] [EXEC] [LINK] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 18:21:46 UTC] [EXEC] [ONDO] Skipping exit eval — hold 17m < 30m minimum
+[2026-03-18 18:21:46 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:25:32 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:25:32 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:25:32 UTC] [EXEC]   Fetching 5 exit indicators for ['ONDO', 'LINK']
+[2026-03-18 18:25:32 UTC] [EXEC] [LINK] Skipping exit eval — hold 24m < 30m minimum
+[2026-03-18 18:25:32 UTC] [EXEC] [ONDO] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 18:25:32 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:26:47 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:26:47 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:26:48 UTC] [EXEC]   Fetching 5 exit indicators for ['LINK', 'ONDO']
+[2026-03-18 18:26:48 UTC] [EXEC] [LINK] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 18:26:48 UTC] [EXEC] [ONDO] Skipping exit eval — hold 22m < 30m minimum
+[2026-03-18 18:26:48 UTC] [EXEC]   Skip HYPE LONG: sharpe 1.14 < 1.5
+[2026-03-18 18:26:48 UTC] [EXEC] Summary: 2 positions, $30.62 notional, trades=17
+[2026-03-18 18:30:34 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:30:34 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:30:34 UTC] [EXEC]   Fetching 5 exit indicators for ['ONDO', 'LINK']
+[2026-03-18 18:30:34 UTC] [EXEC] [LINK] Skipping exit eval — hold 29m < 30m minimum
+[2026-03-18 18:30:34 UTC] [EXEC] [ONDO] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 18:30:35 UTC] [EXEC] LIVE OPEN AVAX SHORT | $14.80 (1.54) @ $9.6409 | sharpe=1.98
+[2026-03-18 18:30:36 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "1.54", "avgPx": "9.6412", "oid": 353575286860}}]}}}
+[2026-03-18 18:30:36 UTC] [EXEC]   Filled @ $9.6412
+[2026-03-18 18:30:36 UTC] [EXEC]   Execution: intended=$9.6409 filled=$9.6412 slippage=0.0031% ($0.0005) fill_time=1462ms spread=0.018689
+[2026-03-18 18:30:37 UTC] [EXEC]   AVAX ATR-stop: ATR=0.298% → stop=3.00%
+[2026-03-18 18:30:37 UTC] [EXEC]   Stop loss: AVAX trigger @ $9.9883 (buy 1.54)
+[2026-03-18 18:30:38 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353575319524}}]}}}
+[2026-03-18 18:30:38 UTC] [EXEC]   Open fill fee for AVAX: $0.006681
+[2026-03-18 18:30:38 UTC] [EXEC]   Skip AVAX SHORT: sharpe 1.11 < 1.5
+[2026-03-18 18:30:38 UTC] [EXEC] Summary: 3 positions, $45.42 notional, trades=17
+[2026-03-18 18:31:50 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:31:50 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:31:50 UTC] [EXEC]   Fetching 6 exit indicators for ['AVAX', 'LINK', 'ONDO']
+[2026-03-18 18:31:50 UTC] [EXEC]   WARN: exit indicator fetch failed: HTTP Error 503: Service Temporarily Unavailable
+[2026-03-18 18:31:50 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-18 18:31:50 UTC] [EXEC]   ⚠ No indicator data for LINK — exit expression skipped (HL stop + max hold protect)
+[2026-03-18 18:31:50 UTC] [EXEC] ALIGNMENT_EXIT LINK LONG | pattern=CONFIRMATION_SHORT | -0.20%
+[2026-03-18 18:31:52 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "1.9", "avgPx": "9.252", "oid": 353577111287}}]}}}
+[2026-03-18 18:31:52 UTC] [EXEC]   Fees: open=$0.007928 close=$0.007910 total=$0.015838 | P&L after fees: $-0.0517
+[2026-03-18 18:31:52 UTC] [EXEC]   Closed LINK LONG | alignment_exit | -0.20% ($-0.04) (fees=$0.0158, net=$-0.0517)
+[2026-03-18 18:31:52 UTC] [EXEC] [ONDO] Skipping exit eval — hold 27m < 30m minimum
+[2026-03-18 18:31:52 UTC] [EXEC] [AVAX] Skipping exit eval — hold 1m < 30m minimum
+[2026-03-18 18:31:52 UTC] [EXEC] Summary: 2 positions, $27.52 notional, trades=18
+[2026-03-18 18:35:40 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:35:40 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:35:40 UTC] [EXEC]   Fetching 4 exit indicators for ['ONDO', 'AVAX']
+[2026-03-18 18:35:41 UTC] [EXEC] KILL SIGNAL ONDO SHORT | condition: 'liquidity drops below tradeable threshold' | +0.67%
+[2026-03-18 18:35:43 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "47.0", "avgPx": "0.26627", "oid": 353581705949}}]}}}
+[2026-03-18 18:35:43 UTC] [EXEC]   Fees: open=$0.005666 close=$0.005631 total=$0.011297 | P&L after fees: $+0.0737
+[2026-03-18 18:35:43 UTC] [EXEC]   Closed ONDO SHORT | kill_condition | +0.67% ($+0.08) (fees=$0.0113, net=$+0.0737)
+[2026-03-18 18:35:43 UTC] [EXEC] [AVAX] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 18:35:43 UTC] [EXEC] Summary: 1 positions, $14.80 notional, trades=19
+[2026-03-18 18:36:54 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:36:54 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:36:54 UTC] [EXEC]   Fetching 1 exit indicators for ['AVAX']
+[2026-03-18 18:36:54 UTC] [EXEC] [AVAX] Skipping exit eval — hold 6m < 30m minimum
+[2026-03-18 18:36:55 UTC] [EXEC] LIVE OPEN XPL SHORT | $10.67 (98.0) @ $0.1088 | sharpe=1.57
+[2026-03-18 18:36:56 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "98.0", "avgPx": "0.1088", "oid": 353583275084}}]}}}
+[2026-03-18 18:36:56 UTC] [EXEC]   Filled @ $0.1088
+[2026-03-18 18:36:56 UTC] [EXEC]   Execution: intended=$0.1088 filled=$0.1088 slippage=0.0368% ($0.0039) fill_time=1206ms spread=0.036782
+[2026-03-18 18:36:56 UTC] [EXEC]   XPL ATR-stop: ATR=0.395% → stop=3.00%
+[2026-03-18 18:36:56 UTC] [EXEC]   Stop loss: XPL trigger @ $0.1127 (buy 98.0)
+[2026-03-18 18:36:58 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353583334053}}]}}}
+[2026-03-18 18:36:58 UTC] [EXEC]   Open fill fee for XPL: $0.004798
+[2026-03-18 18:36:58 UTC] [EXEC] Summary: 2 positions, $25.47 notional, trades=19
+[2026-03-18 18:40:45 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:40:45 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:40:45 UTC] [EXEC]   Fetching 4 exit indicators for ['XPL', 'AVAX']
+[2026-03-18 18:40:45 UTC] [EXEC] [AVAX] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 18:40:45 UTC] [EXEC] [XPL] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 18:40:45 UTC] [EXEC] Summary: 2 positions, $25.47 notional, trades=19
+[2026-03-18 18:42:00 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:42:00 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:42:00 UTC] [EXEC]   Fetching 4 exit indicators for ['AVAX', 'XPL']
+[2026-03-18 18:42:00 UTC] [EXEC] [AVAX] Skipping exit eval — hold 11m < 30m minimum
+[2026-03-18 18:42:00 UTC] [EXEC] [XPL] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 18:42:01 UTC] [EXEC] Summary: 2 positions, $25.47 notional, trades=19
+[2026-03-18 18:45:47 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:45:47 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:45:48 UTC] [EXEC]   Fetching 4 exit indicators for ['XPL', 'AVAX']
+[2026-03-18 18:45:48 UTC] [EXEC] [AVAX] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 18:45:48 UTC] [EXEC] [XPL] Skipping exit eval — hold 9m < 30m minimum
+[2026-03-18 18:45:48 UTC] [EXEC] Summary: 2 positions, $25.47 notional, trades=19
+[2026-03-18 18:47:02 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:47:02 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:47:03 UTC] [EXEC]   Fetching 4 exit indicators for ['AVAX', 'XPL']
+[2026-03-18 18:47:03 UTC] [EXEC] [AVAX] Skipping exit eval — hold 16m < 30m minimum
+[2026-03-18 18:47:03 UTC] [EXEC] [XPL] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 18:47:03 UTC] [EXEC] LIVE OPEN TON SHORT | $19.30 (14.9) @ $1.2967 | sharpe=2.43
+[2026-03-18 18:47:05 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "14.9", "avgPx": "1.2966", "oid": 353594683802}}]}}}
+[2026-03-18 18:47:05 UTC] [EXEC]   Filled @ $1.2966
+[2026-03-18 18:47:05 UTC] [EXEC]   Execution: intended=$1.2967 filled=$1.2966 slippage=0.0039% ($0.0007) fill_time=1385ms spread=0.046282
+[2026-03-18 18:47:05 UTC] [EXEC]   TON ATR-stop: ATR=0.348% → stop=3.00%
+[2026-03-18 18:47:05 UTC] [EXEC]   Stop loss: TON trigger @ $1.3433 (buy 14.9)
+[2026-03-18 18:47:06 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353594703198}}]}}}
+[2026-03-18 18:47:06 UTC] [EXEC]   Open fill fee for TON: $0.008693
+[2026-03-18 18:47:06 UTC] [EXEC]   Skip TON LONG: sharpe 1.40 < 1.5
+[2026-03-18 18:47:07 UTC] [EXEC] Summary: 3 positions, $44.77 notional, trades=19
+[2026-03-18 18:50:50 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:50:50 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:50:50 UTC] [EXEC]   Fetching 7 exit indicators for ['XPL', 'TON', 'AVAX']
+[2026-03-18 18:50:50 UTC] [EXEC] [AVAX] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 18:50:50 UTC] [EXEC] [XPL] Skipping exit eval — hold 14m < 30m minimum
+[2026-03-18 18:50:50 UTC] [EXEC] [TON] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 18:50:50 UTC] [EXEC] Summary: 3 positions, $44.77 notional, trades=19
+[2026-03-18 18:52:08 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:52:08 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:52:09 UTC] [EXEC]   Fetching 7 exit indicators for ['AVAX', 'TON', 'XPL']
+[2026-03-18 18:52:09 UTC] [EXEC] [AVAX] Skipping exit eval — hold 22m < 30m minimum
+[2026-03-18 18:52:09 UTC] [EXEC] [XPL] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 18:52:09 UTC] [EXEC] [TON] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 18:52:09 UTC] [EXEC] Summary: 3 positions, $44.77 notional, trades=19
+[2026-03-18 18:55:52 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:55:52 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:55:52 UTC] [EXEC]   Fetching 7 exit indicators for ['XPL', 'TON', 'AVAX']
+[2026-03-18 18:55:52 UTC] [EXEC] [AVAX] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 18:55:52 UTC] [EXEC] [XPL] Skipping exit eval — hold 19m < 30m minimum
+[2026-03-18 18:55:52 UTC] [EXEC] [TON] Skipping exit eval — hold 9m < 30m minimum
+[2026-03-18 18:55:53 UTC] [EXEC] Summary: 3 positions, $44.77 notional, trades=19
+[2026-03-18 18:57:11 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 18:57:11 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 18:57:11 UTC] [EXEC]   Fetching 7 exit indicators for ['AVAX', 'TON', 'XPL']
+[2026-03-18 18:57:11 UTC] [EXEC] [AVAX] Skipping exit eval — hold 27m < 30m minimum
+[2026-03-18 18:57:11 UTC] [EXEC] KILL SIGNAL XPL SHORT | condition: 'liquidity drops below tradeable threshold' | +1.39%
+[2026-03-18 18:57:13 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "98.0", "avgPx": "0.10734", "oid": 353605371927}}]}}}
+[2026-03-18 18:57:13 UTC] [EXEC]   Fees: open=$0.004798 close=$0.004733 total=$0.009531 | P&L after fees: $+0.1386
+[2026-03-18 18:57:13 UTC] [EXEC]   Closed XPL SHORT | kill_condition | +1.39% ($+0.15) (fees=$0.0095, net=$+0.1386)
+[2026-03-18 18:57:13 UTC] [EXEC] [TON] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 18:57:13 UTC] [EXEC] LIVE OPEN SOL LONG | $19.56 (0.22) @ $89.3985 | sharpe=2.46
+[2026-03-18 18:57:15 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.22", "avgPx": "89.4342", "oid": 353605412696}}]}}}
+[2026-03-18 18:57:15 UTC] [EXEC]   Filled @ $89.4342
+[2026-03-18 18:57:15 UTC] [EXEC]   Execution: intended=$89.3985 filled=$89.4342 slippage=0.0399% ($0.0078) fill_time=1256ms spread=0.011187
+[2026-03-18 18:57:15 UTC] [EXEC]   SOL ATR-stop: ATR=0.280% → stop=3.00%
+[2026-03-18 18:57:15 UTC] [EXEC]   Stop loss: SOL trigger @ $86.2150 (sell 0.22)
+[2026-03-18 18:57:16 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353605435936}}]}}}
+[2026-03-18 18:57:16 UTC] [EXEC]   Open fill fee for SOL: $0.008853
+[2026-03-18 18:57:16 UTC] [EXEC]   Skip SOL LONG: max 1 on SOL
+[2026-03-18 18:57:16 UTC] [EXEC]   Skip SOL LONG: max 1 on SOL
+[2026-03-18 18:57:17 UTC] [EXEC] LIVE OPEN AAVE LONG | $11.90 (0.1) @ $113.4600 | sharpe=1.69
+[2026-03-18 18:57:18 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.1", "avgPx": "113.45", "oid": 353605475573}}]}}}
+[2026-03-18 18:57:18 UTC] [EXEC]   Filled @ $113.4500
+[2026-03-18 18:57:18 UTC] [EXEC]   Execution: intended=$113.4600 filled=$113.4500 slippage=0.0088% ($0.0010) fill_time=1297ms spread=0.017593
+[2026-03-18 18:57:18 UTC] [EXEC]   AAVE ATR-stop: ATR=0.224% → stop=3.00%
+[2026-03-18 18:57:18 UTC] [EXEC]   Stop loss: AAVE trigger @ $109.3700 (sell 0.1)
+[2026-03-18 18:57:20 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353605514793}}]}}}
+[2026-03-18 18:57:20 UTC] [EXEC]   Open fill fee for AAVE: $0.005105
+[2026-03-18 18:57:20 UTC] [EXEC]   Skip SOL LONG: max 1 on SOL
+[2026-03-18 18:57:20 UTC] [EXEC]   Skip AAVE LONG: max 1 on AAVE
+[2026-03-18 18:57:20 UTC] [EXEC]   Skip AAVE LONG: max 1 on AAVE
+[2026-03-18 18:57:20 UTC] [EXEC]   Skip XRP LONG: sharpe 1.48 < 1.5
+[2026-03-18 18:57:20 UTC] [EXEC]   Skip CRV LONG: liquidity: spread=0.075166%, depth=$129013
+[2026-03-18 18:57:20 UTC] [EXEC] Summary: 4 positions, $65.56 notional, trades=20
+[2026-03-18 19:00:54 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:00:54 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:00:55 UTC] [EXEC]   Fetching 8 exit indicators for ['TON', 'SOL', 'AVAX', 'AAVE']
+[2026-03-18 19:00:55 UTC] [EXEC] [TON] Skipping exit eval — hold 14m < 30m minimum
+[2026-03-18 19:00:55 UTC] [EXEC] [SOL] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 19:00:55 UTC] [EXEC] [AAVE] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 19:00:55 UTC] [EXEC] Summary: 4 positions, $65.56 notional, trades=20
+[2026-03-18 19:02:22 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:02:22 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:02:22 UTC] [EXEC]   Fetching 8 exit indicators for ['AVAX', 'TON', 'AAVE', 'SOL']
+[2026-03-18 19:02:23 UTC] [EXEC] [TON] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 19:02:23 UTC] [EXEC] [SOL] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 19:02:23 UTC] [EXEC] [AAVE] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 19:02:23 UTC] [EXEC] Summary: 4 positions, $65.56 notional, trades=20
+[2026-03-18 19:05:57 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:05:57 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:05:57 UTC] [EXEC]   Fetching 8 exit indicators for ['TON', 'SOL', 'AVAX', 'AAVE']
+[2026-03-18 19:05:58 UTC] [EXEC] KILL SIGNAL AVAX SHORT | condition: 'funding reverses to intensifying long' | -0.04%
+[2026-03-18 19:05:59 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "1.54", "avgPx": "9.6441", "oid": 353614906865}}]}}}
+[2026-03-18 19:05:59 UTC] [EXEC]   Fees: open=$0.006681 close=$0.006683 total=$0.013364 | P&L after fees: $-0.0187
+[2026-03-18 19:05:59 UTC] [EXEC]   Closed AVAX SHORT | kill_condition | -0.04% ($-0.01) (fees=$0.0134, net=$-0.0187)
+[2026-03-18 19:05:59 UTC] [EXEC] [TON] Skipping exit eval — hold 19m < 30m minimum
+[2026-03-18 19:05:59 UTC] [EXEC] [SOL] Skipping exit eval — hold 9m < 30m minimum
+[2026-03-18 19:05:59 UTC] [EXEC] [AAVE] Skipping exit eval — hold 9m < 30m minimum
+[2026-03-18 19:05:59 UTC] [EXEC] Summary: 3 positions, $50.76 notional, trades=21
+[2026-03-18 19:07:24 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:07:24 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:07:25 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'AAVE']
+[2026-03-18 19:07:25 UTC] [EXEC] [TON] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 19:07:25 UTC] [EXEC] [SOL] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 19:07:25 UTC] [EXEC] [AAVE] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 19:07:25 UTC] [EXEC]   Skip JUP LONG: sharpe 1.23 < 1.5
+[2026-03-18 19:07:25 UTC] [EXEC] Summary: 3 positions, $50.76 notional, trades=21
+[2026-03-18 19:11:01 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:11:01 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:11:01 UTC] [EXEC]   Fetching 7 exit indicators for ['TON', 'SOL', 'AAVE']
+[2026-03-18 19:11:02 UTC] [EXEC] [TON] Skipping exit eval — hold 24m < 30m minimum
+[2026-03-18 19:11:02 UTC] [EXEC] [SOL] Skipping exit eval — hold 14m < 30m minimum
+[2026-03-18 19:11:02 UTC] [EXEC] [AAVE] Skipping exit eval — hold 14m < 30m minimum
+[2026-03-18 19:11:02 UTC] [EXEC] Summary: 3 positions, $50.76 notional, trades=21
+[2026-03-18 19:12:27 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:12:27 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:12:27 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'AAVE']
+[2026-03-18 19:12:27 UTC] [EXEC] [TON] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 19:12:27 UTC] [EXEC] [SOL] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 19:12:27 UTC] [EXEC] [AAVE] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 19:12:28 UTC] [EXEC] Summary: 3 positions, $50.76 notional, trades=21
+[2026-03-18 19:16:04 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:16:04 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:16:04 UTC] [EXEC]   Fetching 7 exit indicators for ['TON', 'SOL', 'AAVE']
+[2026-03-18 19:16:04 UTC] [EXEC] [TON] Skipping exit eval — hold 29m < 30m minimum
+[2026-03-18 19:16:04 UTC] [EXEC] [SOL] Skipping exit eval — hold 19m < 30m minimum
+[2026-03-18 19:16:04 UTC] [EXEC] [AAVE] Skipping exit eval — hold 19m < 30m minimum
+[2026-03-18 19:16:04 UTC] [EXEC] Summary: 3 positions, $50.76 notional, trades=21
+[2026-03-18 19:17:29 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:17:29 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:17:30 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'AAVE']
+[2026-03-18 19:17:30 UTC] [EXEC]   WARN [TON] alignment conflict (pattern=DIVERGENCE_BULL) but in profit +0.13% — trailing stop will handle
+[2026-03-18 19:17:30 UTC] [EXEC] [SOL] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 19:17:30 UTC] [EXEC] [AAVE] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 19:17:30 UTC] [EXEC] LIVE OPEN DOGE SHORT | $17.16 (180.0) @ $0.0951 | sharpe=2.22
+[2026-03-18 19:17:32 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "180.0", "avgPx": "0.095129", "oid": 353624650320}}]}}}
+[2026-03-18 19:17:32 UTC] [EXEC]   Filled @ $0.0951
+[2026-03-18 19:17:32 UTC] [EXEC]   Execution: intended=$0.0951 filled=$0.0951 slippage=0.0000% ($0.0000) fill_time=1653ms spread=0.001051
+[2026-03-18 19:17:32 UTC] [EXEC]   DOGE ATR-stop: ATR=0.373% → stop=3.00%
+[2026-03-18 19:17:32 UTC] [EXEC]   Stop loss: DOGE trigger @ $0.0986 (buy 180.0)
+[2026-03-18 19:17:34 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353624687329}}]}}}
+[2026-03-18 19:17:34 UTC] [EXEC]   Open fill fee for DOGE: $0.007705
+[2026-03-18 19:17:34 UTC] [EXEC] LIVE OPEN XPL SHORT | $11.02 (102.0) @ $0.1084 | sharpe=1.60
+[2026-03-18 19:17:36 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "102.0", "avgPx": "0.10836", "oid": 353624709273}}]}}}
+[2026-03-18 19:17:36 UTC] [EXEC]   Filled @ $0.1084
+[2026-03-18 19:17:36 UTC] [EXEC]   Execution: intended=$0.1084 filled=$0.1084 slippage=0.0138% ($0.0015) fill_time=1264ms spread=0.03689
+[2026-03-18 19:17:36 UTC] [EXEC]   XPL ATR-stop: ATR=0.446% → stop=3.00%
+[2026-03-18 19:17:36 UTC] [EXEC]   Stop loss: XPL trigger @ $0.1123 (buy 102.0)
+[2026-03-18 19:17:37 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353624732843}}]}}}
+[2026-03-18 19:17:38 UTC] [EXEC]   Open fill fee for XPL: $0.004973
+[2026-03-18 19:17:38 UTC] [EXEC]   Skip XPL SHORT: max positions (5)
+[2026-03-18 19:17:38 UTC] [EXEC]   Skip XPL SHORT: max positions (5)
+[2026-03-18 19:17:38 UTC] [EXEC] Summary: 5 positions, $78.94 notional, trades=21
+[2026-03-18 19:21:06 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:21:06 UTC] [EXEC] Positions: 5 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:21:06 UTC] [EXEC]   Fetching 7 exit indicators for ['XPL', 'DOGE', 'SOL', 'AAVE', 'TON']
+[2026-03-18 19:21:06 UTC] [EXEC]   WARN [TON] alignment conflict (pattern=DIVERGENCE_BULL) but in profit +0.06% — trailing stop will handle
+[2026-03-18 19:21:06 UTC] [EXEC] [SOL] Skipping exit eval — hold 24m < 30m minimum
+[2026-03-18 19:21:06 UTC] [EXEC] [AAVE] Skipping exit eval — hold 24m < 30m minimum
+[2026-03-18 19:21:06 UTC] [EXEC] KILL SIGNAL DOGE SHORT | condition: 'funding reverses to intensifying long' | +0.03%
+[2026-03-18 19:21:08 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "180.0", "avgPx": "0.095116", "oid": 353627970037}}]}}}
+[2026-03-18 19:21:08 UTC] [EXEC]   Fees: open=$0.007705 close=$0.007704 total=$0.015409 | P&L after fees: $-0.0107
+[2026-03-18 19:21:08 UTC] [EXEC]   Closed DOGE SHORT | kill_condition | +0.03% ($+0.00) (fees=$0.0154, net=$-0.0107)
+[2026-03-18 19:21:08 UTC] [EXEC] [XPL] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 19:21:08 UTC] [EXEC] Summary: 4 positions, $61.78 notional, trades=22
+[2026-03-18 19:22:39 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:22:39 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:22:40 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'AAVE', 'XPL']
+[2026-03-18 19:22:40 UTC] [EXEC] [SOL] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 19:22:40 UTC] [EXEC] [AAVE] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 19:22:40 UTC] [EXEC] [XPL] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 19:22:40 UTC] [EXEC] Summary: 4 positions, $61.78 notional, trades=22
+[2026-03-18 19:26:10 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:26:10 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:26:10 UTC] [EXEC]   Fetching 7 exit indicators for ['XPL', 'TON', 'SOL', 'AAVE']
+[2026-03-18 19:26:11 UTC] [EXEC] [SOL] Skipping exit eval — hold 29m < 30m minimum
+[2026-03-18 19:26:11 UTC] [EXEC] [AAVE] Skipping exit eval — hold 29m < 30m minimum
+[2026-03-18 19:26:11 UTC] [EXEC] KILL SIGNAL XPL SHORT | condition: 'liquidity drops below tradeable threshold' | +0.20%
+[2026-03-18 19:26:12 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "102.0", "avgPx": "0.10817", "oid": 353632671795}}]}}}
+[2026-03-18 19:26:13 UTC] [EXEC]   Fees: open=$0.004973 close=$0.004965 total=$0.009938 | P&L after fees: $+0.0119
+[2026-03-18 19:26:13 UTC] [EXEC]   Closed XPL SHORT | kill_condition | +0.20% ($+0.02) (fees=$0.0099, net=$+0.0119)
+[2026-03-18 19:26:13 UTC] [EXEC] Summary: 3 positions, $50.76 notional, trades=23
+[2026-03-18 19:27:42 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:27:42 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:27:42 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'AAVE']
+[2026-03-18 19:27:43 UTC] [EXEC] LIVE OPEN BNB LONG | $15.14 (0.023) @ $648.6500 | sharpe=2.01
+[2026-03-18 19:27:44 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.023", "avgPx": "648.72", "oid": 353633713236}}]}}}
+[2026-03-18 19:27:44 UTC] [EXEC]   Filled @ $648.7200
+[2026-03-18 19:27:44 UTC] [EXEC]   Execution: intended=$648.6500 filled=$648.7200 slippage=0.0108% ($0.0016) fill_time=1388ms spread=0.01542
+[2026-03-18 19:27:45 UTC] [EXEC]   BNB ATR-stop: ATR=0.255% → stop=3.00%
+[2026-03-18 19:27:45 UTC] [EXEC]   Stop loss: BNB trigger @ $625.3700 (sell 0.023)
+[2026-03-18 19:27:46 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353633727396}}]}}}
+[2026-03-18 19:27:46 UTC] [EXEC]   Open fill fee for BNB: $0.006714
+[2026-03-18 19:27:46 UTC] [EXEC]   Skip BNB LONG: max 1 on BNB
+[2026-03-18 19:27:46 UTC] [EXEC]   Skip HYPE LONG: sharpe 1.11 < 1.5
+[2026-03-18 19:27:46 UTC] [EXEC]   Skip HYPE LONG: sharpe 1.09 < 1.5
+[2026-03-18 19:27:46 UTC] [EXEC] Summary: 4 positions, $65.90 notional, trades=23
+[2026-03-18 19:31:15 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:31:15 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:31:15 UTC] [EXEC]   Fetching 8 exit indicators for ['BNB', 'TON', 'SOL', 'AAVE']
+[2026-03-18 19:31:15 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.40% — trailing stop will handle
+[2026-03-18 19:31:15 UTC] [EXEC] ALIGNMENT_EXIT_TRAP AAVE LONG | pattern=TRAP_LONG | +0.60%
+[2026-03-18 19:31:17 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.1", "avgPx": "114.12", "oid": 353637161890}}]}}}
+[2026-03-18 19:31:17 UTC] [EXEC]   Fees: open=$0.005105 close=$0.005135 total=$0.010240 | P&L after fees: $+0.0611
+[2026-03-18 19:31:17 UTC] [EXEC]   Closed AAVE LONG | alignment_exit_trap | +0.60% ($+0.07) (fees=$0.0102, net=$+0.0611)
+[2026-03-18 19:31:17 UTC] [EXEC] [BNB] Skipping exit eval — hold 4m < 30m minimum
+[2026-03-18 19:31:17 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:32:52 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:32:52 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:32:52 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'BNB']
+[2026-03-18 19:32:52 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.38% — trailing stop will handle
+[2026-03-18 19:32:52 UTC] [EXEC] [BNB] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 19:32:52 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:36:19 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:36:19 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:36:19 UTC] [EXEC]   Fetching 7 exit indicators for ['BNB', 'TON', 'SOL']
+[2026-03-18 19:36:19 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.40% — trailing stop will handle
+[2026-03-18 19:36:19 UTC] [EXEC] [BNB] Skipping exit eval — hold 9m < 30m minimum
+[2026-03-18 19:36:20 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:37:55 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:37:55 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:37:55 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'BNB']
+[2026-03-18 19:37:55 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.41% — trailing stop will handle
+[2026-03-18 19:37:55 UTC] [EXEC] [BNB] Skipping exit eval — hold 10m < 30m minimum
+[2026-03-18 19:37:55 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:41:21 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:41:21 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:41:22 UTC] [EXEC]   Fetching 7 exit indicators for ['BNB', 'TON', 'SOL']
+[2026-03-18 19:41:22 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.17% — trailing stop will handle
+[2026-03-18 19:41:22 UTC] [EXEC] [BNB] Skipping exit eval — hold 14m < 30m minimum
+[2026-03-18 19:41:22 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:42:57 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:42:57 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:42:57 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'BNB']
+[2026-03-18 19:42:58 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.24% — trailing stop will handle
+[2026-03-18 19:42:58 UTC] [EXEC] [BNB] Skipping exit eval — hold 15m < 30m minimum
+[2026-03-18 19:42:58 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:46:24 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:46:24 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:46:24 UTC] [EXEC]   Fetching 7 exit indicators for ['BNB', 'TON', 'SOL']
+[2026-03-18 19:46:24 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.21% — trailing stop will handle
+[2026-03-18 19:46:24 UTC] [EXEC] [BNB] Skipping exit eval — hold 19m < 30m minimum
+[2026-03-18 19:46:24 UTC] [EXEC] Summary: 3 positions, $54.00 notional, trades=24
+[2026-03-18 19:47:59 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:47:59 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:48:00 UTC] [EXEC]   Fetching 7 exit indicators for ['SOL', 'TON', 'BNB']
+[2026-03-18 19:48:00 UTC] [EXEC] EXIT SIGNAL TON SHORT | expression fired | +0.24%
+[2026-03-18 19:48:00 UTC] [EXEC]   Expression: ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0
+[2026-03-18 19:48:01 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "14.9", "avgPx": "1.2939", "oid": 353651198798}}]}}}
+[2026-03-18 19:48:02 UTC] [EXEC]   Fees: open=$0.008693 close=$0.000000 total=$0.008693 | P&L after fees: $+0.0375
+[2026-03-18 19:48:02 UTC] [EXEC]   Closed TON SHORT | exit_expression | +0.24% ($+0.05) (fees=$0.0087, net=$+0.0375)
+[2026-03-18 19:48:02 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.17% — trailing stop will handle
+[2026-03-18 19:48:02 UTC] [EXEC] [BNB] Skipping exit eval — hold 20m < 30m minimum
+[2026-03-18 19:48:02 UTC] [EXEC] Summary: 2 positions, $34.70 notional, trades=25
+[2026-03-18 19:51:26 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:51:26 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:51:26 UTC] [EXEC]   Fetching 5 exit indicators for ['BNB', 'SOL']
+[2026-03-18 19:51:26 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.18% — trailing stop will handle
+[2026-03-18 19:51:26 UTC] [EXEC] [BNB] Skipping exit eval — hold 24m < 30m minimum
+[2026-03-18 19:51:26 UTC] [EXEC]   Skip CRV SHORT: liquidity: spread=0.062553%, depth=$91059
+[2026-03-18 19:51:26 UTC] [EXEC]   Skip TON LONG: sharpe 1.40 < 1.5
+[2026-03-18 19:51:26 UTC] [EXEC] Summary: 2 positions, $34.70 notional, trades=25
+[2026-03-18 19:53:04 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:53:04 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:53:04 UTC] [EXEC]   Fetching 5 exit indicators for ['SOL', 'BNB']
+[2026-03-18 19:53:04 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.14% — trailing stop will handle
+[2026-03-18 19:53:04 UTC] [EXEC] [BNB] Skipping exit eval — hold 25m < 30m minimum
+[2026-03-18 19:53:04 UTC] [EXEC] Summary: 2 positions, $34.70 notional, trades=25
+[2026-03-18 19:56:28 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:56:28 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:56:28 UTC] [EXEC]   Fetching 5 exit indicators for ['BNB', 'SOL']
+[2026-03-18 19:56:29 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.23% — trailing stop will handle
+[2026-03-18 19:56:29 UTC] [EXEC] [BNB] Skipping exit eval — hold 29m < 30m minimum
+[2026-03-18 19:56:29 UTC] [EXEC]   Skip CRV LONG: liquidity: spread=0.079198%, depth=$93583
+[2026-03-18 19:56:29 UTC] [EXEC] Summary: 2 positions, $34.70 notional, trades=25
+[2026-03-18 19:58:06 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 19:58:06 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 19:58:06 UTC] [EXEC]   Fetching 5 exit indicators for ['SOL', 'BNB']
+[2026-03-18 19:58:06 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.17% — trailing stop will handle
+[2026-03-18 19:58:06 UTC] [EXEC] ALIGNMENT_EXIT BNB LONG | pattern=CONFIRMATION_SHORT | -0.19%
+[2026-03-18 19:58:08 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.023", "avgPx": "647.48", "oid": 353659750115}}]}}}
+[2026-03-18 19:58:08 UTC] [EXEC]   Fees: open=$0.006714 close=$0.000000 total=$0.006714 | P&L after fees: $-0.0354
+[2026-03-18 19:58:08 UTC] [EXEC]   Closed BNB LONG | alignment_exit | -0.19% ($-0.03) (fees=$0.0067, net=$-0.0354)
+[2026-03-18 19:58:08 UTC] [EXEC] Summary: 1 positions, $19.56 notional, trades=26
+[2026-03-18 20:01:30 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:01:30 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:01:31 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-18 20:01:31 UTC] [EXEC] LIVE OPEN BNB LONG | $15.40 (0.024) @ $647.5000 | sharpe=2.04
+[2026-03-18 20:01:33 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.024", "avgPx": "647.49", "oid": 353663055146}}]}}}
+[2026-03-18 20:01:33 UTC] [EXEC]   Filled @ $647.4900
+[2026-03-18 20:01:33 UTC] [EXEC]   Execution: intended=$647.5000 filled=$647.4900 slippage=0.0015% ($0.0002) fill_time=1351ms spread=0.012354
+[2026-03-18 20:01:33 UTC] [EXEC]   BNB ATR-stop: ATR=0.210% → stop=3.00%
+[2026-03-18 20:01:33 UTC] [EXEC]   Stop loss: BNB trigger @ $624.1800 (sell 0.024)
+[2026-03-18 20:01:34 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353663063923}}]}}}
+[2026-03-18 20:01:34 UTC] [EXEC]   Open fill fee for BNB: $0.006992
+[2026-03-18 20:01:34 UTC] [EXEC]   Skip HYPE SHORT: sharpe 1.39 < 1.5
+[2026-03-18 20:01:34 UTC] [EXEC] Summary: 2 positions, $34.96 notional, trades=26
+[2026-03-18 20:03:10 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:03:10 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:03:10 UTC] [EXEC]   Fetching 4 exit indicators for ['SOL', 'BNB']
+[2026-03-18 20:03:11 UTC] [EXEC]   WARN [SOL] alignment conflict (pattern=CONFIRMATION_SHORT) but in profit +0.22% — trailing stop will handle
+[2026-03-18 20:03:11 UTC] [EXEC] [BNB] Skipping exit eval — hold 2m < 30m minimum
+[2026-03-18 20:03:11 UTC] [EXEC] Summary: 2 positions, $34.96 notional, trades=26
+[2026-03-18 20:06:36 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:06:36 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:06:36 UTC] [EXEC]   Fetching 4 exit indicators for ['BNB', 'SOL']
+[2026-03-18 20:06:37 UTC] [EXEC] ALIGNMENT_EXIT_TRAP SOL LONG | pattern=TRAP_LONG | +0.00%
+[2026-03-18 20:06:38 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.22", "avgPx": "89.436", "oid": 353667581983}}]}}}
+[2026-03-18 20:06:39 UTC] [EXEC]   Fees: open=$0.008853 close=$0.008854 total=$0.017707 | P&L after fees: $-0.0174
+[2026-03-18 20:06:39 UTC] [EXEC]   Closed SOL LONG | alignment_exit_trap | +0.00% ($+0.00) (fees=$0.0177, net=$-0.0174)
+[2026-03-18 20:06:39 UTC] [EXEC] KILL SIGNAL BNB LONG | condition: 'funding reverses to intensifying short' | -0.12%
+[2026-03-18 20:06:40 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.024", "avgPx": "646.63", "oid": 353667603566}}]}}}
+[2026-03-18 20:06:40 UTC] [EXEC]   Fees: open=$0.006992 close=$0.000000 total=$0.006992 | P&L after fees: $-0.0252
+[2026-03-18 20:06:40 UTC] [EXEC]   Closed BNB LONG | kill_condition | -0.12% ($-0.02) (fees=$0.0070, net=$-0.0252)
+[2026-03-18 20:06:40 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=28
+[2026-03-18 20:08:12 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:08:12 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:08:13 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-18 20:08:13 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=28
+[2026-03-18 20:11:42 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:11:42 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:11:42 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-18 20:11:42 UTC] [EXEC] LIVE OPEN ZEC LONG | $20.00 (0.08) @ $244.2850 | sharpe=2.57
+[2026-03-18 20:11:44 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.08", "avgPx": "244.41", "oid": 353672598491}}]}}}
+[2026-03-18 20:11:44 UTC] [EXEC]   Filled @ $244.4100
+[2026-03-18 20:11:44 UTC] [EXEC]   Execution: intended=$244.2850 filled=$244.4100 slippage=0.0512% ($0.0102) fill_time=1306ms spread=0.004083
+[2026-03-18 20:11:44 UTC] [EXEC]   ZEC ATR-stop: ATR=0.656% → stop=3.00%
+[2026-03-18 20:11:44 UTC] [EXEC]   Stop loss: ZEC trigger @ $235.6100 (sell 0.08)
+[2026-03-18 20:11:45 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353672641259}}]}}}
+[2026-03-18 20:11:46 UTC] [EXEC]   Open fill fee for ZEC: $0.008798
+[2026-03-18 20:11:46 UTC] [EXEC]   Skip ZEC LONG: max 1 on ZEC
+[2026-03-18 20:11:46 UTC] [EXEC]   Skip SOL LONG: sharpe 1.01 < 1.5
+[2026-03-18 20:11:46 UTC] [EXEC] Summary: 1 positions, $20.00 notional, trades=28
+[2026-03-18 20:13:14 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:13:14 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:13:15 UTC] [EXEC]   Fetching 3 exit indicators for ['ZEC']
+[2026-03-18 20:13:15 UTC] [EXEC] [ZEC] Skipping exit eval — hold 1m < 30m minimum
+[2026-03-18 20:13:15 UTC] [EXEC] Summary: 1 positions, $20.00 notional, trades=28
+[2026-03-18 20:16:48 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:16:48 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:16:48 UTC] [EXEC]   Fetching 3 exit indicators for ['ZEC']
+[2026-03-18 20:16:48 UTC] [EXEC] [ZEC] Skipping exit eval — hold 5m < 30m minimum
+[2026-03-18 20:16:48 UTC] [EXEC] Summary: 1 positions, $20.00 notional, trades=28
+[2026-03-18 20:18:17 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-18 20:18:17 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-18 20:18:17 UTC] [EXEC]   Fetching 3 exit indicators for ['ZEC']
+[2026-03-18 20:18:17 UTC] [EXEC] [ZEC] Skipping exit eval — hold 7m < 30m minimum
+[2026-03-18 20:18:17 UTC] [EXEC] Summary: 1 positions, $20.00 notional, trades=28

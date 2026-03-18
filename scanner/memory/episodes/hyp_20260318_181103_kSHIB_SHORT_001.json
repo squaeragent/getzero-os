@@ -1,0 +1,68 @@
+{
+  "coin": "kSHIB",
+  "direction": "SHORT",
+  "signal": "DOJI_REVERSAL_SHORT_EX2_Q2_EX0_Q5_EX3",
+  "sharpe": 2.306,
+  "win_rate": 71.88,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.62,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 36,
+  "exit_expression": "RSI_3H30M < 21.42",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 3.0 AND RSI_3H30M > 65 AND CLOUD_POSITION_15M < 2.0000000000 AND LYAPUNOV_24H < 1.8545472075",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_181103_kSHIB_SHORT_001",
+  "thesis": "Hurst 0.80 + DIVERGENCE_BULL + funding negative (-0.00669) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity",
+  "confidence": 0.619,
+  "evidence_for": [
+    "Hurst 0.80 > 0.5 \u2192 trending market",
+    "funding negative supports SHORT (rate -0.006693)",
+    "deep liquidity (score 93)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "kSHIB",
+      "direction": "SHORT",
+      "signal": "DOJI_REVERSAL_SHORT_EX2_Q2_EX0_Q5",
+      "outcome": "win",
+      "pnl_pct": 0.03,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:05:12.538159+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.729,
+    "hurst_24h": 0.7988,
+    "hurst_48h": 0.6855,
+    "funding_rate": -0.006693,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 92.8,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

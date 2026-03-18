@@ -1,0 +1,123 @@
+{
+  "coin": "CRV",
+  "direction": "LONG",
+  "signal": "CMO_OVERSOLD_LYAP_LONG_FR9_EX2_Q0",
+  "sharpe": 2.2515,
+  "win_rate": 72.34,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.67,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 48,
+  "exit_expression": "CMO_3H30M >= 26",
+  "entry_expression": "CMO_3H30M <= -44 AND LYAPUNOV_48H <= 2.29 AND BB_POSITION_15M <= 0.00 AND HURST_48H < 0.6626554800",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_200823_CRV_LONG_001",
+  "thesis": "Hurst 0.72 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG; liquidity below tradeable threshold",
+  "confidence": 0.623,
+  "evidence_for": [
+    "Hurst 0.72 > 0.55 \u2192 persistent upward momentum",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.755,
+    "hurst_24h": 0.7229,
+    "hurst_48h": 0.659,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 55.7,
+    "tradeable": false,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_200823_CRV_LONG_001",
+    "coin": "CRV",
+    "direction": "LONG",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.62",
+        "confidence": 0.623,
+        "evidence_for_count": 3,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  }
+}

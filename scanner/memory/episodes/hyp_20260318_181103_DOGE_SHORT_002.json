@@ -1,0 +1,58 @@
+{
+  "coin": "DOGE",
+  "direction": "SHORT",
+  "signal": "CMO_BB_LYAPUNOV_SHORT_V1_EX2_Q2_EX5",
+  "sharpe": 2.2156,
+  "win_rate": 72.67,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.27,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.02,
+  "max_hold_hours": 48,
+  "exit_expression": "CMO_3H30M <= -19.5 OR BB_POSITION_15M <= 0.30",
+  "entry_expression": "CMO_3H30M >= 30 AND BB_POSITION_15M >= 0.70 AND LYAPUNOV_24H <= 1.66 AND CLOUD_POSITION_15M < 2.0000000000",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_181103_DOGE_SHORT_002",
+  "thesis": "Hurst 0.65 + DIVERGENCE_BULL + funding negative (-0.00019) + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; Hurst declining 0.71\u21920.65 \u2014 momentum may be exhausting",
+  "confidence": 0.627,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding negative supports SHORT (rate -0.000191)",
+    "deep liquidity (score 94)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "Hurst declining 0.71\u21920.65 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.6481,
+    "hurst_48h": 0.71,
+    "funding_rate": -0.000191,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 94.3,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}
