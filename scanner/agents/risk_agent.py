@@ -404,18 +404,27 @@ def run_cycle(main_address):
         print(f"  HL unavailable, using local capital: ${account_value:.2f}")
 
     # 4. Equity tracking
+    # When no positions are open, HL returns account_value=0 because capital
+    # sits on spot (not cross-margin). This is NOT a drawdown — skip equity tracking.
     equity_history = load_equity_history()
-    peak_equity = compute_peak_equity(equity_history, account_value)
-    drawdown_pct = compute_drawdown(peak_equity, account_value)
+    if account_value <= 0 and len(positions) == 0:
+        # Idle state — use last known peak, drawdown is 0
+        peak_equity = compute_peak_equity(equity_history, 0)
+        drawdown_pct = 0.0
+        print("  Idle (no positions, capital on spot) — drawdown N/A")
+    else:
+        peak_equity = compute_peak_equity(equity_history, account_value)
+        drawdown_pct = compute_drawdown(peak_equity, account_value)
 
-    # Append to equity curve
-    equity_entry = {
-        "timestamp": ts_iso,
-        "account_value": round(account_value, 2),
-        "unrealized_pnl": round(unrealized_pnl, 2),
-        "n_positions": len(positions),
-    }
-    append_equity(equity_entry)
+    # Append to equity curve (only when positions are open — idle $0 pollutes peak tracking)
+    if len(positions) > 0 or account_value > 0:
+        equity_entry = {
+            "timestamp": ts_iso,
+            "account_value": round(account_value, 2),
+            "unrealized_pnl": round(unrealized_pnl, 2),
+            "n_positions": len(positions),
+        }
+        append_equity(equity_entry)
 
     # 5. Trade statistics
     win_streak, lose_streak = compute_streaks(closed_trades)
