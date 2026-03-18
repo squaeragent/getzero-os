@@ -10,11 +10,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <a href="/" class="nav-item">◇ ZERO OS</a>
         <a href="/thesis" class="nav-item">THESIS</a>
         <span class="nav-item nav-active">PORTFOLIO</span>
+        <span class="nav-live"><span class="live-dot">●</span> LIVE</span>
       </div>
 
       <!-- EQUITY HERO -->
       <div class="hero-pane">
-        <div class="ph">◇ ZERO OS — <span class="live-dot">●</span> LIVE</div>
         <div class="hero-body">
           <div class="equity-hero">
             <div class="eq-number" id="eq-number">$—</div>
@@ -142,6 +142,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .nav-item:hover { color: var(--phosphor); }
   .nav-active { color: var(--phosphor); }
+  .nav-live {
+    margin-left: auto;
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--phosphor);
+    text-transform: uppercase;
+  }
 
   /* ─── SECTION HEADERS ─── */
   .ph {
@@ -762,22 +770,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function translateExit(expr){
     if(!expr) return '';
     var rules = [
-      [/RSI_3H30M\s*>=\s*85/g, 'RSI overbought'],
-      [/RSI_3H30M\s*<=\s*15/g, 'RSI oversold'],
-      [/XONE_I_NET\s*<=\s*10/g, 'social sentiment drops'],
-      [/XONE_I_NET\s*>=\s*90/g, 'social sentiment peaks'],
-      [/HURST_24H\s*<\s*0\.50/g, 'trend breaks'],
-      [/LYAPUNOV_24H\s*>=\s*1\.90/g, 'chaos detected'],
-      [/ADX_3H30M\s*>=\s*40/g, 'trend established'],
-      [/DOJI_VELOCITY\s*<\s*1\.0/g, 'indecision resolves'],
-      [/EMA_N_24H\s*<\s*1\.0/g, 'below average'],
+      [/RSI_3H30M\s*>=\s*[\d.]+/g, 'RSI overbought'],
+      [/RSI_3H30M\s*<=\s*[\d.]+/g, 'RSI oversold'],
+      [/RSI_24H\s*>=\s*[\d.]+/g, 'daily RSI overbought'],
+      [/RSI_24H\s*<=\s*[\d.]+/g, 'daily RSI oversold'],
+      [/XONE_I_NET\s*<=\s*[\d.]+/g, 'social sentiment drops'],
+      [/XONE_I_NET\s*>=\s*[\d.]+/g, 'social sentiment peaks'],
+      [/XONE_AVG_NET\s*[<>]=?\s*[\d.-]+/g, 'crowd sentiment shifts'],
+      [/HURST_24H\s*<\s*[\d.]+/g, 'trend breaks'],
+      [/HURST_24H\s*>\s*[\d.]+/g, 'trend strengthens'],
+      [/LYAPUNOV_24H\s*>=\s*[\d.]+/g, 'chaos detected'],
+      [/LYAPUNOV_24H\s*<\s*[\d.]+/g, 'chaos subsides'],
+      [/ADX_3H30M\s*>=\s*[\d.]+/g, 'trend established'],
+      [/ADX_3H30M\s*<\s*[\d.]+/g, 'trend weakens'],
+      [/DOJI_VELOCITY\s*<\s*[\d.]+/g, 'indecision resolves'],
+      [/DOJI_VELOCITY\s*>=\s*[\d.]+/g, 'indecision spikes'],
+      [/EMA_N_24H\s*<\s*[\d.]+/g, 'price below average'],
+      [/EMA_N_24H\s*>=?\s*[\d.]+/g, 'price above average'],
+      [/EMA_N_48H\s*[<>]=?\s*[\d.]+/g, 'long-term trend shifts'],
+      [/BB_POSITION_15M\s*>=\s*[\d.]+/g, 'price hits upper band'],
+      [/BB_POSITION_15M\s*<=\s*[\d.]+/g, 'price hits lower band'],
+      [/BB_POS_24H\s*>=\s*[\d.]+/g, 'daily upper band hit'],
+      [/BB_POS_24H\s*<=\s*[\d.]+/g, 'daily lower band hit'],
+      [/MACD_N_24H\s*[<>]=?\s*[\d.-]+/g, 'MACD crosses'],
+      [/CMO_3H30M\s*>=\s*[\d.]+/g, 'momentum peaks'],
+      [/CMO_3H30M\s*<=\s*[\d.-]+/g, 'momentum drops'],
+      [/ROC_24H\s*>=\s*[\d.]+/g, 'rate of change spikes'],
+      [/ROC_24H\s*<=\s*[\d.]+/g, 'rate of change drops'],
+      [/EMA_CROSS_15M_N\s*[<>]=?\s*[\d.-]+/g, 'EMA crossover'],
+      [/CLOSE_PRICE_15M\s*[<>]=?\s*[\d.]+/g, 'price target hit'],
     ];
     var translated = expr;
     for(var i=0; i<rules.length; i++){
       translated = translated.replace(rules[i][0], rules[i][1]);
     }
-    // Strip remaining raw code tokens to keep it readable
-    translated = translated.replace(/[A-Z0-9_]+_[A-Z0-9H]+\s*[><=!]+\s*[\d.]+/g, '').replace(/\s{2,}/g,' ').trim();
+    // Strip any remaining raw indicator codes
+    translated = translated.replace(/[A-Z][A-Z0-9_]{3,}\s*[><=!]+\s*[\d.-]+/g, 'condition met');
+    // Clean up dangling OR/AND
+    translated = translated.replace(/\bOR\s*$/g, '').replace(/^\s*OR\b/g, '');
+    translated = translated.replace(/\bAND\s*$/g, '').replace(/^\s*AND\b/g, '');
+    translated = translated.replace(/\s{2,}/g, ' ').trim();
     return translated || expr;
   }
 
