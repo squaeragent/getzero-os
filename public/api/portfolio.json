@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-18T10:31:49.929850+00:00",
+  "updated": "2026-03-18T10:36:55.746777+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 100.0,
@@ -20,6 +20,30 @@
         "stop_loss": 89.368,
         "stop_type": "native",
         "peak_pnl_pct": 0.0028754570966918786
+      },
+      {
+        "coin": "BTC",
+        "direction": "LONG",
+        "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+        "entry_price": 74003.0,
+        "intended_price": 74002.5,
+        "entry_time": "2026-03-18T10:36:55.527420+00:00",
+        "size_usd": 49.4,
+        "size_coins": 0.00067,
+        "sharpe": 2.47,
+        "win_rate": 77.3,
+        "max_hold_hours": 24,
+        "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
+        "stop_loss": 72893.0,
+        "stop_type": "native",
+        "peak_pnl_pct": 0.0,
+        "exec_quality": {
+          "slippage_pct": 0.000676,
+          "slippage_usd": 0.000334,
+          "fill_time_ms": 1586,
+          "spread_at_entry": 0.001352,
+          "depth_at_entry": 5975559.01
+        }
       }
     ],
     "trades": 4,
@@ -152,22 +176,22 @@
   },
   "agents": {
     "heartbeat": {
-      "regime": "2026-03-18T10:31:45.193679+00:00",
-      "risk": "2026-03-18T10:31:41.606012+00:00",
-      "correlation": "2026-03-18T10:31:40.072177+00:00",
-      "harvester": "2026-03-18T10:22:27.069573+00:00",
-      "execution": "2026-03-18T10:31:49.870051+00:00",
-      "liquidity": "2026-03-18T10:30:20.977901+00:00",
-      "cross_timeframe": "2026-03-18T10:31:44.791698+00:00",
-      "signal_evolution": "2026-03-18T10:30:07.820380+00:00",
-      "funding": "2026-03-18T10:31:40.889771+00:00",
-      "spread_monitor": "2026-03-18T10:31:43.689965+00:00"
+      "regime": "2026-03-18T10:36:46.614233+00:00",
+      "risk": "2026-03-18T10:35:42.232210+00:00",
+      "correlation": "2026-03-18T10:36:40.462245+00:00",
+      "harvester": "2026-03-18T10:32:51.736712+00:00",
+      "execution": "2026-03-18T10:36:55.688475+00:00",
+      "liquidity": "2026-03-18T10:36:33.266710+00:00",
+      "cross_timeframe": "2026-03-18T10:36:46.139081+00:00",
+      "signal_evolution": "2026-03-18T10:36:17.443165+00:00",
+      "funding": "2026-03-18T10:36:41.347666+00:00",
+      "spread_monitor": "2026-03-18T10:35:44.614772+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 0.0,
+      "drawdownPct": 0.15,
       "peakEquity": 115.15,
       "winStreak": 0,
       "loseStreak": 0,
@@ -333,10 +357,10 @@
           "transition": true
         }
       },
-      "updated": "2026-03-18T10:31:43.862688+00:00"
+      "updated": "2026-03-18T10:36:45.301268+00:00"
     },
-    "candidates": 1,
-    "approved": 1,
+    "candidates": 8,
+    "approved": 8,
     "blocked": 0
   },
   "liveEquityCurve": [
@@ -611,6 +635,14 @@
     {
       "t": "2026-03-18T10:31:41.458612+00:00",
       "v": 115.15
+    },
+    {
+      "t": "2026-03-18T10:33:41.746470+00:00",
+      "v": 115.09
+    },
+    {
+      "t": "2026-03-18T10:35:42.043394+00:00",
+      "v": 114.98
     }
   ]
 }
