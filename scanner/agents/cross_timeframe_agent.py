@@ -191,10 +191,10 @@ def classify_fast(vals):
         elif momentum < 0:
             bearish_count += 1
 
-    # Core classification: need all 3 core indicators to agree
-    if rsi > 50 and ema_cross > 0 and cmo > 0:
+    # Core classification: 2-of-3 majority
+    if bullish_count >= 2 and bearish_count == 0:
         return "bullish", sub
-    if rsi < 50 and ema_cross < 0 and cmo < 0:
+    if bearish_count >= 2 and bullish_count == 0:
         return "bearish", sub
     return "neutral", sub
 
@@ -268,10 +268,10 @@ def classify_slow(vals):
     if ema_48 is not None:
         sub["ema_48h"] = "bullish" if ema_48 > 1.0 else ("bearish" if ema_48 < 1.0 else "neutral")
 
-    # Core classification
-    if rsi > 50 and ema > 1.0 and macd > 0:
+    # Core classification: 2-of-3 majority (not unanimous)
+    if bullish_count >= 2 and bearish_count == 0:
         return "bullish", sub
-    if rsi < 50 and ema < 1.0 and macd < 0:
+    if bearish_count >= 2 and bullish_count == 0:
         return "bearish", sub
     return "neutral", sub
 

@@ -1,62 +1,13 @@
 {
   "live": true,
-  "updated": "2026-03-18T08:14:56.989090+00:00",
+  "updated": "2026-03-18T08:21:03.984691+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 100.0,
-    "positions": [
-      {
-        "coin": "SOL",
-        "direction": "LONG",
-        "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-        "entry_price": 94.293,
-        "entry_time": "2026-03-18T06:45:50.866796+00:00",
-        "size_usd": 33.11,
-        "size_coins": 0.35,
-        "sharpe": 1.6557,
-        "win_rate": 66.27,
-        "max_hold_hours": 24,
-        "stop_loss": 89.578,
-        "stop_type": "native",
-        "peak_pnl_pct": 0.0005143541938424908,
-        "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10"
-      },
-      {
-        "coin": "INJ",
-        "direction": "SHORT",
-        "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
-        "entry_price": 3.2311,
-        "entry_time": "2026-03-18T06:45:53.896982+00:00",
-        "size_usd": 32.63,
-        "size_coins": 10.1,
-        "sharpe": 1.6317,
-        "win_rate": 61.9,
-        "max_hold_hours": 216,
-        "stop_loss": 3.3927,
-        "stop_type": "native",
-        "peak_pnl_pct": 0.005400637553774314,
-        "exit_expression": "EMA_N_48H >= 1.1523 OR ROC_24H >= 1.2"
-      },
-      {
-        "coin": "WLD",
-        "direction": "SHORT",
-        "signal": "BB_TOP_SHORT_FR2_EX2_Q2_EX0_Q1_EX2",
-        "entry_price": 0.39509,
-        "entry_time": "2026-03-18T08:04:17.423147+00:00",
-        "size_usd": 68.508606,
-        "size_coins": 173.4,
-        "sharpe": 2.5507,
-        "win_rate": 69.66,
-        "max_hold_hours": 36,
-        "exit_expression": "BB_POSITION_15M <= -0.20",
-        "stop_loss": 0.42275,
-        "stop_type": "native",
-        "peak_pnl_pct": 0.0031638360879798866
-      }
-    ],
-    "trades": 1,
-    "wins": 0,
-    "dailyLoss": 0.007346104088618171,
+    "positions": [],
+    "trades": 3,
+    "wins": 1,
+    "dailyLoss": 0.09635997574399112,
     "closed": [
       {
         "coin": "BTC",
@@ -71,58 +22,114 @@
         "exit_reason": "risk_kill",
         "pnl_pct": -0.06,
         "pnl_usd": -0.01
+      },
+      {
+        "coin": "WLD",
+        "direction": "SHORT",
+        "entry_price": 0.39509,
+        "exit_price": 0.39435,
+        "size_usd": 68.51,
+        "pnl_pct": 0.19,
+        "pnl_usd": 0.13,
+        "entry_time": "2026-03-18T08:04:00+00:00",
+        "exit_time": "2026-03-18T08:18:21.411354+00:00",
+        "exit_reason": "manual_close_oversize",
+        "signal": "unknown_expanded_coin"
+      },
+      {
+        "coin": "SOL",
+        "direction": "LONG",
+        "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
+        "entry_price": 94.293,
+        "entry_time": "2026-03-18T06:45:50.866796+00:00",
+        "size_usd": 33.11,
+        "size_coins": 0.35,
+        "exit_price": 94.0395,
+        "exit_time": "2026-03-18T08:20:00.416629+00:00",
+        "exit_reason": "risk_kill",
+        "pnl_pct": -0.27,
+        "pnl_usd": -0.09
+      },
+      {
+        "coin": "INJ",
+        "direction": "SHORT",
+        "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
+        "entry_price": 3.2311,
+        "entry_time": "2026-03-18T06:45:53.896982+00:00",
+        "size_usd": 32.63,
+        "size_coins": 10.1,
+        "exit_price": 3.22625,
+        "exit_time": "2026-03-18T08:20:02.252054+00:00",
+        "exit_reason": "risk_kill",
+        "pnl_pct": 0.15,
+        "pnl_usd": 0.05
       }
     ],
     "started": "2026-03-18T05:14:39.354756+00:00",
     "stats": {
-      "total": 1,
-      "wins": 0,
-      "losses": 1,
-      "winRate": 0.0,
-      "totalPnl": -0.01,
-      "avgPnl": -0.01,
+      "total": 4,
+      "wins": 2,
+      "losses": 2,
+      "winRate": 50.0,
+      "totalPnl": 0.08,
+      "avgPnl": 0.02,
       "bestTrade": {
-        "coin": "BTC",
-        "direction": "LONG",
-        "pnl": -0.01,
-        "pnlPct": -0.06
+        "coin": "WLD",
+        "direction": "SHORT",
+        "pnl": 0.13,
+        "pnlPct": 0.19
       },
       "worstTrade": {
-        "coin": "BTC",
+        "coin": "SOL",
         "direction": "LONG",
-        "pnl": -0.01,
-        "pnlPct": -0.06
+        "pnl": -0.09,
+        "pnlPct": -0.27
       },
       "avgHoldHours": 0,
       "byCoin": {
+        "WLD": {
+          "trades": 1,
+          "winRate": 100.0,
+          "pnl": 0.13
+        },
+        "INJ": {
+          "trades": 1,
+          "winRate": 100.0,
+          "pnl": 0.05
+        },
         "BTC": {
           "trades": 1,
           "winRate": 0.0,
           "pnl": -0.01
+        },
+        "SOL": {
+          "trades": 1,
+          "winRate": 0.0,
+          "pnl": -0.09
         }
       },
       "longWinRate": 0.0,
-      "shortWinRate": 0,
-      "longCount": 1,
-      "shortCount": 0
+      "shortWinRate": 100.0,
+      "longCount": 2,
+      "shortCount": 2
     }
   },
   "agents": {
     "heartbeat": {
-      "regime": "2026-03-18T08:14:55.293751+00:00",
-      "risk": "2026-03-18T08:14:53.124946+00:00",
-      "correlation": "2026-03-18T08:14:52.157745+00:00",
-      "harvester": "2026-03-18T08:05:13.793666+00:00",
-      "execution": "2026-03-18T08:14:56.927404+00:00",
-      "liquidity": "2026-03-18T08:13:11.669769+00:00",
-      "cross_timeframe": "2026-03-18T08:14:55.083953+00:00",
-      "signal_evolution": "2026-03-18T08:13:04.537767+00:00"
+      "regime": "2026-03-18T08:19:56.602833+00:00",
+      "risk": "2026-03-18T08:20:53.943893+00:00",
+      "correlation": "2026-03-18T08:19:52.461186+00:00",
+      "harvester": "2026-03-18T08:15:36.094107+00:00",
+      "execution": "2026-03-18T08:20:02.256295+00:00",
+      "liquidity": "2026-03-18T08:19:24.674129+00:00",
+      "cross_timeframe": "2026-03-18T08:19:56.282641+00:00",
+      "signal_evolution": "2026-03-18T08:19:13.403330+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 0.3,
+      "drawdownPct": 0.0,
       "peakEquity": 13.64,
       "winStreak": 0,
       "loseStreak": 0,
@@ -130,7 +137,7 @@
         "win_rate": 0.0,
         "win_loss_ratio": 0.0,
         "sharpe": 0,
-        "n_trades": 1
+        "n_trades": 4
       },
       "alerts": []
     },
@@ -288,11 +295,11 @@
           "transition": true
         }
       },
-      "updated": "2026-03-18T08:14:54.152516+00:00"
+      "updated": "2026-03-18T08:19:55.405526+00:00"
     },
-    "candidates": 13,
-    "approved": 0,
-    "blocked": 13
+    "candidates": 5,
+    "approved": 4,
+    "blocked": 1
   },
   "liveEquityCurve": [
     {
@@ -490,6 +497,14 @@
     {
       "t": "2026-03-18T08:14:52.968404+00:00",
       "v": 13.6
+    },
+    {
+      "t": "2026-03-18T08:16:53.279341+00:00",
+      "v": 13.64
+    },
+    {
+      "t": "2026-03-18T08:18:53.574174+00:00",
+      "v": 6.54
     }
   ]
 }

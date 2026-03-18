@@ -509,6 +509,11 @@ def should_open(trade, positions, cfg):
     max_per_coin = cfg.get("max_per_coin", 1)
     max_notional = cfg.get("max_notional", 100)
 
+    # Only trade coins with paper validation data (original 10 + proven new ones)
+    LIVE_APPROVED_COINS = {"BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"}
+    if coin not in LIVE_APPROVED_COINS:
+        return False, f"coin {coin} not approved for live trading (paper-only)"
+
     # Check liquidity
     liquidity = load_liquidity()
     coin_liq = liquidity.get(coin, {})
@@ -551,14 +556,27 @@ STOP_LOSS_BY_MAX_LEV = {
 
 
 def get_adjusted_stop_pct(coin, default_stop):
-    """Get volatility-adjusted stop loss percentage based on coin's max leverage."""
+    """Get volatility-adjusted stop loss percentage, tightened by regime."""
     max_lev = COIN_MAX_LEVERAGE.get(coin, 10)
 
-    # Find closest bucket
+    # Base stop from leverage bucket
+    base_stop = default_stop
     for lev in sorted(STOP_LOSS_BY_MAX_LEV.keys(), reverse=True):
         if max_lev >= lev:
-            return STOP_LOSS_BY_MAX_LEV[lev]
-    return default_stop
+            base_stop = STOP_LOSS_BY_MAX_LEV[lev]
+            break
+
+    # Regime adjustment: tighter in chaos, wider in trending
+    regimes_data = load_json(BUS_DIR / "regimes.json", {})
+    coin_regime = regimes_data.get("coins", {}).get(coin, {}).get("regime", "stable")
+    if coin_regime == "chaotic":
+        base_stop *= 0.7  # 30% tighter in chaotic markets
+    elif coin_regime == "trending":
+        base_stop *= 1.2  # 20% wider in trending markets (let winners run)
+    elif coin_regime == "shift":
+        base_stop *= 0.85  # 15% tighter during regime shifts
+
+    return round(base_stop, 4)
 
 
 def place_stop_loss(client, coin, direction, size_coins, entry_price, stop_pct, dry):

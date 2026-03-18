@@ -98,13 +98,15 @@ def fetch_hl_account(main_address):
         return None
 
 
+STARTING_EQUITY = 115.0  # USDC deposited to HL (spot as cross-margin collateral)
+
 def parse_hl_state(hl_data):
     """Extract account value, unrealized PnL, and margin from HL response."""
     if not hl_data:
         return None
     try:
         margin_summary = hl_data.get("marginSummary", {})
-        account_value = float(margin_summary.get("accountValue", 0))
+        margin_account_value = float(margin_summary.get("accountValue", 0))
         total_margin = float(margin_summary.get("totalMarginUsed", 0))
         total_ntl = float(margin_summary.get("totalNtlPos", 0))
 
@@ -114,8 +116,13 @@ def parse_hl_state(hl_data):
             p = pos.get("position", {})
             unrealized_pnl += float(p.get("unrealizedPnl", 0))
 
+        # True equity = starting capital + unrealized P&L
+        # HL margin_account_value only shows margin portion, not full capital
+        account_value = STARTING_EQUITY + unrealized_pnl
+
         return {
             "account_value": account_value,
+            "margin_account_value": margin_account_value,
             "total_margin": total_margin,
             "total_ntl_pos": total_ntl,
             "unrealized_pnl": unrealized_pnl,
