@@ -1,0 +1,84 @@
+{
+  "coin": "BNB",
+  "direction": "LONG",
+  "signal": "SOCIAL_SPREAD_CHAOS_LONG_EX1_Q11",
+  "sharpe": 1.3729,
+  "win_rate": 60,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.61,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "XONE_SPREAD >= 90 OR XONE_AVG_NET <= -5",
+  "entry_expression": "XONE_SPREAD <= 50 AND XONE_AVG_NET >= 13 AND DFA_24H >= 0.50 AND MACD_CROSS_15M_N < 0.0004329600",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_204908_BNB_LONG_003",
+  "thesis": "Hurst 0.78 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.5,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "fast bullish divergence building (DIVERGENCE_BULL)",
+    "funding stable (rate -0.001125)",
+    "deep liquidity (score 86)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18",
+      "outcome": "loss",
+      "pnl_pct": -0.17,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T13:25:27.507664+00:00"
+    },
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "SOCIAL_MOMENTUM_LONG_V2_EX5_MH24",
+      "outcome": "loss",
+      "pnl_pct": -0.19,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T19:27:46.729854+00:00"
+    },
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18_EX6",
+      "outcome": "loss",
+      "pnl_pct": -0.12,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T20:01:34.790882+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7794,
+    "hurst_48h": 0.7032,
+    "funding_rate": -0.001125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 86.2,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

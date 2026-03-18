@@ -510,11 +510,12 @@ def run_cycle(main_address):
 
     # 5. Trade statistics
     win_streak, lose_streak = compute_streaks(closed_trades)
+    current_streak = compute_current_streak(closed_trades)  # Upgrade 4
     rolling = compute_rolling_stats(closed_trades)
     daily_pnl = compute_daily_pnl(closed_trades)
 
     print(f"  Peak equity: ${peak_equity:.2f} | Drawdown: {drawdown_pct:.1f}%")
-    print(f"  Streaks: W{win_streak} / L{lose_streak} | Daily PnL: ${daily_pnl:+.2f}")
+    print(f"  Streaks: W{win_streak} / L{lose_streak} (signed={current_streak:+d}) | Daily PnL: ${daily_pnl:+.2f}")
     print(f"  Rolling({rolling['n_trades']}): WR={rolling['win_rate']}% WL={rolling['win_loss_ratio']} Sharpe={rolling['sharpe']}")
 
     # 6. Risk classification
@@ -571,6 +572,7 @@ def run_cycle(main_address):
         "peak_equity": round(peak_equity, 2),
         "win_streak": win_streak,
         "lose_streak": lose_streak,
+        "current_streak": current_streak,  # Upgrade 4: signed streak
         "rolling_stats": rolling,
         "strategy_health": level,
         "throttle": throttle,
