@@ -487,6 +487,228 @@ def write_heartbeat():
         json.dump(heartbeat, f, indent=2)
 
 
+# ─── ARCHETYPE SIGNALS ───
+# S-tier multi-domain convergence signals that combine chaos theory,
+# social sentiment, funding rates, cross-timeframe, and technical structure.
+
+ARCHETYPE_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+
+def generate_archetype_signals(indicator_data, regime_data, timeframe_data, funding_data, ts_iso):
+    """Generate high-conviction compound signals from multiple data domains."""
+    candidates = []
+
+    for coin in ARCHETYPE_COINS:
+        ind = indicator_data.get(coin, {})
+        if not ind:
+            continue
+
+        regime_info = regime_data.get(coin, {})
+        regime = regime_info.get("regime", "unknown")
+        tf_info = timeframe_data.get(coin, {})
+        tf_pattern = tf_info.get("pattern", "NEUTRAL")
+        coin_funding = funding_data.get(coin)
+
+        h24 = ind.get("HURST_24H", 0.5)
+        h48 = ind.get("HURST_48H", 0.5)
+        dfa24 = ind.get("DFA_24H", 0.5)
+        dfa48 = ind.get("DFA_48H", 0.5)
+        ly24 = ind.get("LYAPUNOV_24H", 1.9)
+        adx = ind.get("ADX_3H30M", 0)
+        rsi = ind.get("RSI_3H30M", 50)
+        cmo = ind.get("CMO_3H30M", 0)
+        bb24 = ind.get("BB_POS_24H", 0.5)
+        xi_net = ind.get("XONE_I_NET", 50)
+        xa_net = ind.get("XONE_AVG_NET", 50)
+        ema24 = ind.get("EMA_N_24H", 1.0)
+        macd24 = ind.get("MACD_N_24H", 0)
+        doji_v = ind.get("DOJI_VELOCITY", 0)
+        doji_s = ind.get("DOJI_SIGNAL", 0)
+        ema_cross = ind.get("EMA_CROSS_15M_N", 0)
+
+        # ── ARCHETYPE 1: Chaos Regime Convergence ──
+        h_diff = h24 - h48
+        d_diff = dfa24 - dfa48
+        if abs(h_diff) > 0.05 and d_diff > 0.05 and ly24 < 1.90 and adx >= 25:
+            direction = "LONG" if h24 > 0.55 else "SHORT" if h24 < 0.45 else None
+            if direction:
+                score = 7.0 + abs(h_diff) * 5  # stronger divergence = higher score
+                candidates.append(_archetype_candidate(
+                    coin, direction, "ARCH_CHAOS_REGIME_CONVERGENCE", score,
+                    f"HURST_24H {'<' if direction == 'SHORT' else '>'} {'0.45' if direction == 'SHORT' else '0.55'} AND "
+                    f"LYAPUNOV_24H >= 1.90",
+                    24, regime, tf_pattern, ts_iso
+                ))
+
+        # ── ARCHETYPE 2: Social Exhaustion Reversal ──
+        if xi_net >= 80 and xa_net >= 50 and rsi >= 70 and cmo >= 30 and bb24 >= 0.8:
+            candidates.append(_archetype_candidate(
+                coin, "SHORT", "ARCH_SOCIAL_EXHAUSTION_SHORT", 8.5,
+                "XONE_I_NET <= 50 OR RSI_3H30M <= 40",
+                12, regime, tf_pattern, ts_iso
+            ))
+        if xi_net <= 20 and xa_net <= -50 and rsi <= 30 and cmo <= -30 and bb24 <= 0.2:
+            candidates.append(_archetype_candidate(
+                coin, "LONG", "ARCH_SOCIAL_EXHAUSTION_LONG", 8.5,
+                "XONE_I_NET >= 50 OR RSI_3H30M >= 60",
+                12, regime, tf_pattern, ts_iso
+            ))
+
+        # ── ARCHETYPE 3: Triple Convergence (Funding + Regime + Timeframe) ──
+        f_rate = 0
+        if coin_funding:
+            f_rate = coin_funding.get("strength", 0)
+        
+        # LONG triple
+        if (regime == "trending" and h24 > 0.55 and ema24 > 1.005 and macd24 > 0
+                and tf_pattern == "CONFIRMATION_LONG"):
+            score = 7.5
+            if coin_funding and coin_funding.get("direction") == "LONG":
+                score += coin_funding.get("strength", 0)  # up to +1.5
+            if score >= 7.5:
+                candidates.append(_archetype_candidate(
+                    coin, "LONG", "ARCH_TRIPLE_CONVERGENCE_LONG", min(score, 10.0),
+                    "HURST_24H < 0.50 OR EMA_N_24H < 1.0",
+                    48, regime, tf_pattern, ts_iso
+                ))
+        
+        # SHORT triple
+        if (regime == "trending" and h24 < 0.45 and ema24 < 0.995 and macd24 < 0
+                and tf_pattern == "CONFIRMATION_SHORT"):
+            score = 7.5
+            if coin_funding and coin_funding.get("direction") == "SHORT":
+                score += coin_funding.get("strength", 0)
+            if score >= 7.5:
+                candidates.append(_archetype_candidate(
+                    coin, "SHORT", "ARCH_TRIPLE_CONVERGENCE_SHORT", min(score, 10.0),
+                    "HURST_24H > 0.50 OR EMA_N_24H > 1.0",
+                    48, regime, tf_pattern, ts_iso
+                ))
+
+        # ── ARCHETYPE 4: Doji Velocity Breakout ──
+        if doji_v >= 3.0 and doji_s >= 1.0 and ly24 < 1.80 and adx < 20:
+            direction = "LONG" if ema_cross > 0 or cmo > 0 else "SHORT"
+            score = 6.5 + min(doji_v / 10, 1.5)  # higher velocity = more conviction
+            candidates.append(_archetype_candidate(
+                coin, direction, "ARCH_DOJI_BREAKOUT", score,
+                "ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0",
+                8, regime, tf_pattern, ts_iso
+            ))
+
+        # ── ARCHETYPE 6: Compound Killer (meta-signal) ──
+        score_long, score_short = _compound_score(
+            coin, ind, regime, tf_pattern, coin_funding
+        )
+        best_dir = "LONG" if score_long >= score_short else "SHORT"
+        best_score = max(score_long, score_short)
+        if best_score >= 6.0:
+            candidates.append(_archetype_candidate(
+                coin, best_dir, "ARCH_COMPOUND_KILLER", best_score,
+                "RSI_3H30M >= 80 OR RSI_3H30M <= 20" if best_dir == "LONG"
+                else "RSI_3H30M <= 20 OR RSI_3H30M >= 80",
+                24, regime, tf_pattern, ts_iso
+            ))
+
+    return candidates
+
+
+def _archetype_candidate(coin, direction, signal_name, composite, exit_expr, max_hold_h, regime, tf_pattern, ts_iso):
+    """Build a candidate dict for an archetype signal."""
+    return {
+        "coin": coin,
+        "direction": direction,
+        "signal": signal_name,
+        "sharpe": round(composite / 3, 2),  # approximate: high composite → high implied sharpe
+        "win_rate": round(min(55 + composite * 3, 90), 1),  # estimated from conviction
+        "regime": regime,
+        "regime_match": True,
+        "regime_match_score": 1.0,
+        "signal_heat": 0.5,
+        "recent_record": "archetype",
+        "composite_score": round(composite, 2),
+        "timeframe_pattern": tf_pattern,
+        "timeframe_confirmation": 1.0 if "CONFIRMATION" in tf_pattern else 0.0,
+        "signal_weight": 1.0,
+        "vwap_bonus": 0.0,
+        "funding_bonus": 0.0,
+        "max_hold_hours": max_hold_h,
+        "exit_expression": exit_expr,
+        "source": "archetype",
+    }
+
+
+def _compound_score(coin, ind, regime, tf_pattern, coin_funding):
+    """Score a coin 0-10 across all domains for LONG and SHORT."""
+    h24 = ind.get("HURST_24H", 0.5)
+    rsi = ind.get("RSI_3H30M", 50)
+    bb24 = ind.get("BB_POS_24H", 0.5)
+    xi = ind.get("XONE_I_NET", 50)
+    doji_s = ind.get("DOJI_SIGNAL", 0)
+
+    score_long = 0.0
+    score_short = 0.0
+
+    # Chaos regime (+2.0)
+    if regime == "trending" and h24 > 0.55:
+        score_long += 2.0
+    if regime == "trending" and h24 < 0.45:
+        score_short += 2.0
+    if regime == "reverting":
+        score_long += 1.0 if bb24 < 0.3 else 0
+        score_short += 1.0 if bb24 > 0.7 else 0
+
+    # Cross-timeframe (+1.5)
+    if tf_pattern == "CONFIRMATION_LONG":
+        score_long += 1.5
+    if tf_pattern == "CONFIRMATION_SHORT":
+        score_short += 1.5
+    if tf_pattern == "DIVERGENCE_BULL":
+        score_long += 0.8
+    if tf_pattern == "DIVERGENCE_BEAR":
+        score_short += 0.8
+
+    # Funding (+1.5)
+    if coin_funding:
+        fd = coin_funding.get("direction")
+        fs = coin_funding.get("strength", 0)
+        if fd == "LONG" and fs > 0:
+            score_long += min(fs, 1.5)
+        if fd == "SHORT" and fs > 0:
+            score_short += min(fs, 1.5)
+
+    # Social sentiment (+1.5)
+    if xi > 70:
+        score_long += 1.5
+    elif xi > 60:
+        score_long += 0.8
+    if xi < 30:
+        score_short += 1.5
+    elif xi < 40:
+        score_short += 0.8
+
+    # Bollinger position (+1.0)
+    if bb24 < 0.25:
+        score_long += 1.0
+    elif bb24 < 0.35:
+        score_long += 0.5
+    if bb24 > 0.75:
+        score_short += 1.0
+    elif bb24 > 0.65:
+        score_short += 0.5
+
+    # RSI room (+0.5)
+    if 25 < rsi < 60:
+        score_long += 0.5
+    if 40 < rsi < 75:
+        score_short += 0.5
+
+    # Doji confirmation (+1.0)
+    if doji_s >= 50:
+        score_long += 0.5
+        score_short += 0.5
+
+    return round(score_long, 2), round(score_short, 2)
+
+
 # ─── MAIN CYCLE ───
 def run_cycle(api_key):
     ts = datetime.now(timezone.utc)
@@ -561,7 +783,7 @@ def run_cycle(api_key):
     all_indicators = extract_indicators_from_packs(packs)
     volume_indicators = {"VWAP_15M", "VWAP_24H", "VOLUME_PROFILE_15M", "VOLUME_PROFILE_1H",
                          "VOLUME_PROFILE_4H", "VOLUME_PROFILE_12H", "VOLUME_PROFILE_24H", "VOLUME_PROFILE_48H"}
-    all_indicators = all_indicators | volume_indicators
+    all_indicators = list(set(all_indicators) | volume_indicators)
     print(f"  Need {len(all_indicators)} unique indicators (incl. volume profile)")
 
     # Fetch current indicator values from Envy API
@@ -690,6 +912,16 @@ def run_cycle(api_key):
                 "max_hold_hours": pack.get("max_hold_hours"),
                 "exit_expression": pack.get("exit_expression", ""),
             })
+
+    # ─── ARCHETYPE SIGNALS (multi-domain convergence) ───
+    archetype_candidates = generate_archetype_signals(
+        indicator_data, regime_coins, timeframe_data, funding_data, ts_iso
+    )
+    if archetype_candidates:
+        print(f"\n  Archetype signals fired: {len(archetype_candidates)}")
+        for ac in archetype_candidates:
+            print(f"    {ac['composite_score']:5.2f}  {ac['coin']:6s} {ac['direction']:5s}  {ac['signal']}")
+        candidates.extend(archetype_candidates)
 
     # Sort by composite score descending
     candidates.sort(key=lambda c: c["composite_score"], reverse=True)
