@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZERO OS — Portfolio Exporter
-Reads from the 5-agent bus + live data, exports portfolio.json for the website.
+Reads from the 10-agent bus + live data, exports portfolio.json for the website.
 Pushes to git → Vercel auto-deploys.
 
 Run after each execution cycle or on its own schedule.
@@ -53,11 +53,194 @@ def load_jsonl(path, limit=None):
     return records
 
 
+def compute_spread(spread_data):
+    """Build spread export: summary + per-coin status."""
+    if not spread_data:
+        return {}
+    coins = {}
+    raw_coins = spread_data.get("coins", spread_data.get("data", {}))
+    for coin, data in raw_coins.items():
+        if isinstance(data, dict):
+            coins[coin] = {
+                "status": data.get("status", "normal"),
+                "spread_bps": data.get("spread_bps", data.get("spread", None)),
+                "anomaly": data.get("anomaly", False),
+            }
+        else:
+            coins[coin] = {"status": "normal"}
+    summary = spread_data.get("summary", {})
+    if not summary:
+        # build summary from coins
+        normal_count = sum(1 for c in coins.values() if c.get("status") == "normal")
+        anomaly_count = len(coins) - normal_count
+        summary = {"normal": normal_count, "anomalies": anomaly_count}
+    return {"summary": summary, "coins": coins}
+
+
+def compute_funding(funding_data):
+    """Build funding export: per-coin velocity_direction + funding_pct."""
+    if not funding_data:
+        return {}
+    coins = {}
+    raw_coins = funding_data.get("coins", funding_data.get("data", {}))
+    for coin, data in raw_coins.items():
+        if isinstance(data, dict):
+            coins[coin] = {
+                "velocity_direction": data.get("velocity_direction", data.get("direction", "stable")),
+                "funding_pct": data.get("funding_pct", data.get("rate", data.get("funding_rate", 0))),
+            }
+        else:
+            coins[coin] = {"velocity_direction": "stable", "funding_pct": 0}
+    return {"coins": coins}
+
+
+def compute_archetypes(regimes_data, timeframe_data):
+    """
+    Compute proximity scores for 6 archetypes across all coins.
+    Returns list of {name, conditions_met, conditions_total, closest_coin}.
+    """
+    archetypes = []
+
+    # Gather per-coin regime indicators
+    coins_data = regimes_data.get("coins", {})
+
+    # Build per-coin indicator map from regimes.json
+    coin_indicators = {}
+    for coin, data in coins_data.items():
+        if not isinstance(data, dict):
+            continue
+        indicators = data.get("indicators", data)
+        coin_indicators[coin] = {
+            "HURST_24H": indicators.get("HURST_24H", indicators.get("hurst_24h")),
+            "HURST_48H": indicators.get("HURST_48H", indicators.get("hurst_48h")),
+            "DFA_24H": indicators.get("DFA_24H", indicators.get("dfa_24h")),
+            "DFA_48H": indicators.get("DFA_48H", indicators.get("dfa_48h")),
+            "LYAPUNOV_24H": indicators.get("LYAPUNOV_24H", indicators.get("lyapunov_24h")),
+            "ADX_3H30M": indicators.get("ADX_3H30M", indicators.get("adx")),
+            "XONE_I_NET": indicators.get("XONE_I_NET", indicators.get("xone_i_net")),
+            "XONE_AVG_NET": indicators.get("XONE_AVG_NET", indicators.get("xone_avg_net")),
+            "RSI_3H30M": indicators.get("RSI_3H30M", indicators.get("rsi")),
+            "CMO_3H30M": indicators.get("CMO_3H30M", indicators.get("cmo")),
+            "BB_POS_24H": indicators.get("BB_POS_24H", indicators.get("bb_pos")),
+            "EMA_N_24H": indicators.get("EMA_N_24H", indicators.get("ema_n")),
+            "MACD_N_24H": indicators.get("MACD_N_24H", indicators.get("macd_n")),
+            "DOJI_VELOCITY": indicators.get("DOJI_VELOCITY", indicators.get("doji_velocity")),
+            "DOJI_SIGNAL": indicators.get("DOJI_SIGNAL", indicators.get("doji_signal")),
+            "regime": data.get("regime", "unknown"),
+        }
+
+    # Merge timeframe signals if available
+    tf_coins = timeframe_data.get("coins", timeframe_data.get("signals", {})) if timeframe_data else {}
+    for coin, tf in tf_coins.items():
+        if coin not in coin_indicators:
+            coin_indicators[coin] = {}
+        if isinstance(tf, dict):
+            for k, v in tf.items():
+                if k not in coin_indicators[coin] or coin_indicators[coin][k] is None:
+                    coin_indicators[coin][k] = v
+
+    def safe(val):
+        return val is not None
+
+    def best_score_for_archetype(name):
+        """Returns (conditions_met, conditions_total, closest_coin) for an archetype."""
+        best_met = 0
+        best_coin = None
+        total = 0
+
+        for coin, ind in coin_indicators.items():
+            met = 0
+            t = 0
+
+            if name == "CHAOS":
+                t = 4
+                h24 = ind.get("HURST_24H")
+                h48 = ind.get("HURST_48H")
+                d24 = ind.get("DFA_24H")
+                d48 = ind.get("DFA_48H")
+                lya = ind.get("LYAPUNOV_24H")
+                adx = ind.get("ADX_3H30M")
+                if safe(h24) and safe(h48) and abs(h24 - h48) > 0.05:
+                    met += 1
+                if safe(d24) and safe(d48) and (d24 - d48) > 0.05:
+                    met += 1
+                if safe(lya) and lya < 1.90:
+                    met += 1
+                if safe(adx) and adx >= 25:
+                    met += 1
+
+            elif name == "SOCIAL":
+                t = 5
+                xone_i = ind.get("XONE_I_NET")
+                xone_a = ind.get("XONE_AVG_NET")
+                rsi = ind.get("RSI_3H30M")
+                cmo = ind.get("CMO_3H30M")
+                bb = ind.get("BB_POS_24H")
+                if safe(xone_i) and xone_i >= 80: met += 1
+                if safe(xone_a) and xone_a >= 50: met += 1
+                if safe(rsi) and rsi >= 70: met += 1
+                if safe(cmo) and cmo >= 30: met += 1
+                if safe(bb) and bb >= 0.8: met += 1
+
+            elif name == "TRIPLE":
+                t = 5
+                regime = ind.get("regime", "")
+                h24 = ind.get("HURST_24H")
+                ema = ind.get("EMA_N_24H")
+                macd = ind.get("MACD_N_24H")
+                tf_signal = ind.get("timeframe_signal", ind.get("tf_signal", ""))
+                if regime == "trending": met += 1
+                if safe(h24) and h24 > 0.55: met += 1
+                if safe(ema) and ema > 1.005: met += 1
+                if safe(macd) and macd > 0: met += 1
+                if tf_signal == "CONFIRMATION_LONG": met += 1
+
+            elif name == "DOJI":
+                t = 4
+                dv = ind.get("DOJI_VELOCITY")
+                ds = ind.get("DOJI_SIGNAL")
+                lya = ind.get("LYAPUNOV_24H")
+                adx = ind.get("ADX_3H30M")
+                if safe(dv) and dv >= 3.0: met += 1
+                if safe(ds) and ds >= 1.0: met += 1
+                if safe(lya) and lya < 1.80: met += 1
+                if safe(adx) and adx < 20: met += 1
+
+            elif name == "VOLUME":
+                t = 4
+                met = 0  # skip for now
+
+            elif name == "COMPOUND":
+                t = 10
+                # Use score_long or score_short if present
+                score_l = ind.get("score_long", ind.get("score", 0)) or 0
+                score_s = ind.get("score_short", 0) or 0
+                best_s = max(score_l, score_s)
+                # Clamp to t
+                met = min(int(round(best_s)), t)
+
+            if met > best_met:
+                best_met = met
+                best_coin = coin
+            total = t
+
+        return best_met, total, best_coin
+
+    for arch_name in ["CHAOS", "SOCIAL", "TRIPLE", "DOJI", "VOLUME", "COMPOUND"]:
+        met, total, closest = best_score_for_archetype(arch_name)
+        archetypes.append({
+            "name": arch_name,
+            "conditions_met": met,
+            "conditions_total": total,
+            "closest_coin": closest,
+        })
+
+    return archetypes
+
+
 def export():
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
-
-    # (paper fires removed from public export)
 
     # ─── LIVE TRADING ───
     live_positions = load_json(LIVE_DIR / "positions.json", [])
@@ -71,6 +254,15 @@ def export():
     candidates = load_json(BUS_DIR / "candidates.json", {})
     approved = load_json(BUS_DIR / "approved.json", {})
     equity_history = load_jsonl(BUS_DIR / "equity_history.jsonl", limit=500)
+
+    # ─── NEW: spread, funding, archetypes ───
+    spread_raw = load_json(BUS_DIR / "spread.json", {})
+    funding_raw = load_json(BUS_DIR / "funding.json", {})
+    timeframe_raw = load_json(BUS_DIR / "timeframe_signals.json", {})
+
+    spread_export = compute_spread(spread_raw)
+    funding_export = compute_funding(funding_raw)
+    archetypes_export = compute_archetypes(regimes, timeframe_raw)
 
     # ─── REGIME MAP (coin → regime) ───
     regime_map = {}
@@ -189,6 +381,9 @@ def export():
             "candidates": len(candidates.get("candidates", [])),
             "approved": len(approved.get("approved", [])),
             "blocked": len(approved.get("blocked", [])),
+            "spread": spread_export,
+            "funding": funding_export,
+            "archetypes": archetypes_export,
         },
         "liveEquityCurve": live_equity_curve,
     }

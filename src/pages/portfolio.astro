@@ -1,13 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="ZERO OS — Live Trading" description="Live autonomous trading on Hyperliquid. 5-agent system scanning 300+ signals across 10 coins.">
+<BaseLayout title="ZERO OS — Live Trading" description="10-agent autonomous trading system. 1,190+ signals across 40 coins. Live on Hyperliquid.">
   <div class="page">
     <div class="terminal-border">
 
+      <!-- NAV BAR -->
+      <div class="nav-bar">
+        <a href="/" class="nav-item">◇ ZERO OS</a>
+        <a href="/thesis" class="nav-item">THESIS</a>
+        <span class="nav-item nav-active">PORTFOLIO</span>
+      </div>
+
       <!-- HERO -->
       <div class="hero-pane">
-        <div class="ph">◇ ZERO OS — <span class="live-dot">●</span> LIVE</div>
+        <div class="ph">◇ ZERO OS — <span class="live-dot">●</span> LIVE <span class="early-badge" id="early-badge" style="display:none">EARLY DATA</span></div>
         <div class="hero-body">
           <div class="stats-row" id="stats-row">
             <div class="stat">
@@ -47,10 +54,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- AGENT STATUS BAR -->
+      <!-- AGENT PIPELINE -->
       <div class="section">
-        <div class="ph">AGENT STATUS</div>
-        <div class="sb agent-bar" id="agent-bar"></div>
+        <div class="ph">PIPELINE STATUS</div>
+        <div class="sb agent-pipeline" id="agent-pipeline"></div>
+      </div>
+
+      <!-- MARKET INTELLIGENCE -->
+      <div class="section" id="intelligence-section">
+        <div class="ph">MARKET INTELLIGENCE</div>
+        <div class="sb">
+          <div class="intel-panels" id="intel-panels">
+            <div class="intel-panel">
+              <div class="intel-panel-label">REGIMES</div>
+              <div class="regime-grid" id="regime-grid"></div>
+            </div>
+            <div class="intel-panel">
+              <div class="intel-panel-label">SPREAD</div>
+              <div class="intel-val" id="spread-val">—</div>
+            </div>
+            <div class="intel-panel">
+              <div class="intel-panel-label">FUNDING</div>
+              <div class="intel-val" id="funding-val">—</div>
+            </div>
+          </div>
+          <div class="archetype-row" id="archetype-row">
+            <div class="muted">Monitoring 6 signal archetypes...</div>
+          </div>
+        </div>
       </div>
 
       <!-- OPEN POSITIONS -->
@@ -100,6 +131,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     min-height: 100vh;
   }
 
+  /* ─── NAV BAR ─── */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-item:hover { color: var(--phosphor); }
+  .nav-active { color: var(--phosphor); }
+
   /* ─── SECTION HEADERS ─── */
   .ph {
     font-family: var(--font-head);
@@ -134,6 +185,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   @keyframes pulse-dot {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
+  }
+  .early-badge {
+    font-family: var(--font-head);
+    font-size: 0.5rem;
+    padding: 0.1rem 0.35rem;
+    color: #ffb000;
+    border: 1px solid rgba(255,176,0,0.4);
+    letter-spacing: 0.08em;
+    vertical-align: middle;
+    margin-left: 0.5rem;
   }
   .hero-body { padding: 1.25rem 1rem; }
   .stats-row {
@@ -189,15 +250,45 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: block;
   }
 
-  /* ─── AGENT STATUS BAR ─── */
-  .agent-bar {
+  /* ─── PIPELINE ─── */
+  .agent-pipeline {
     display: flex;
-    gap: 1.5rem;
+    align-items: flex-start;
+    gap: 0.5rem;
     flex-wrap: wrap;
-    align-items: center;
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+    overflow-x: auto;
   }
+  .pipeline-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 90px;
+  }
+  .pipeline-stage-label {
+    font-size: 0.45rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.2rem;
+  }
+  .pipeline-agents {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .pipeline-arrow {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding: 0 0.2rem;
+    align-self: center;
+    margin-top: 1.2rem;
+  }
+
+  /* ─── AGENT DOT (shared by pipeline + old bar) ─── */
   .agent-item {
     display: flex;
     align-items: center;
@@ -207,6 +298,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     width: 8px;
     height: 8px;
     display: inline-block;
+    flex-shrink: 0;
   }
   .agent-name {
     color: var(--text-dim);
@@ -218,6 +310,87 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.55rem;
     color: var(--text-dim);
     opacity: 0.6;
+  }
+
+  /* ─── MARKET INTELLIGENCE ─── */
+  .intel-panels {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .intel-panel {
+    flex: 1;
+    min-width: 160px;
+    font-family: var(--font-head);
+  }
+  .intel-panel-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .intel-val {
+    font-size: 0.7rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .regime-grid {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .regime-coin-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+  }
+  .regime-square {
+    width: 8px;
+    height: 8px;
+    display: block;
+  }
+  .regime-coin-name {
+    font-size: 0.45rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: var(--font-head);
+  }
+  .archetype-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    align-items: center;
+  }
+  .archetype-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .archetype-name {
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .archetype-bar {
+    font-size: 0.65rem;
+    color: var(--phosphor);
+    letter-spacing: -0.03em;
+  }
+  .archetype-detail {
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    opacity: 0.7;
   }
 
   /* ─── POSITION CARDS ─── */
@@ -303,10 +476,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .pos-exit {
     margin-top: 0.4rem;
     font-family: var(--font-body);
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     color: var(--text-dim);
-    opacity: 0.6;
+    opacity: 0.8;
     word-break: break-all;
+  }
+  .pos-exit-raw {
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    opacity: 0.4;
+    word-break: break-all;
+    margin-top: 0.1rem;
+    font-family: var(--font-body);
   }
 
   /* ─── STATS DASHBOARD ─── */
@@ -434,7 +615,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       grid-template-columns: 1fr 1fr;
       gap: 0.3rem;
     }
-    .agent-bar { gap: 1rem; }
+    .intel-panels { flex-direction: column; gap: 1rem; }
+    .agent-pipeline { gap: 0.3rem; }
+    .pipeline-arrow { display: none; }
   }
 </style>
 
@@ -495,15 +678,72 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   var riskColors = {green:'#c8ff00',yellow:'#ffb000',orange:'#ff8800',red:'#ff3333'};
 
+  // ─── EXIT EXPRESSION TRANSLATION ───
+  function translateExit(expr){
+    if(!expr) return '';
+    var rules = [
+      [/RSI_3H30M\s*>=\s*85/g, 'RSI overbought'],
+      [/RSI_3H30M\s*<=\s*15/g, 'RSI oversold'],
+      [/XONE_I_NET\s*<=\s*10/g, 'social sentiment drops'],
+      [/XONE_I_NET\s*>=\s*90/g, 'social sentiment peaks'],
+      [/HURST_24H\s*<\s*0\.50/g, 'trend breaks'],
+      [/LYAPUNOV_24H\s*>=\s*1\.90/g, 'chaos detected'],
+      [/ADX_3H30M\s*>=\s*40/g, 'trend established'],
+      [/DOJI_VELOCITY\s*<\s*1\.0/g, 'indecision resolves'],
+      [/EMA_N_24H\s*<\s*1\.0/g, 'below average'],
+    ];
+    var translated = expr;
+    for(var i=0; i<rules.length; i++){
+      translated = translated.replace(rules[i][0], rules[i][1]);
+    }
+    return translated;
+  }
+
   // ─── EQUITY CURVE (raw canvas) ───
   function drawEquityCurve(curve){
     var canvas = document.getElementById('equity-canvas');
     var emptyMsg = document.getElementById('eq-empty');
+
     if(!curve || curve.length < 2){
       if(canvas) canvas.style.display = 'none';
       if(emptyMsg) emptyMsg.style.display = 'block';
       return;
     }
+
+    // Early data: < 10 points — draw placeholder dashed line
+    if(curve.length < 10){
+      if(emptyMsg) emptyMsg.style.display = 'none';
+      if(canvas){
+        canvas.style.display = 'block';
+        var dpr0 = window.devicePixelRatio || 1;
+        var rect0 = canvas.getBoundingClientRect();
+        canvas.width = rect0.width * dpr0;
+        canvas.height = rect0.height * dpr0;
+        var ctx0 = canvas.getContext('2d');
+        ctx0.scale(dpr0, dpr0);
+        var W0 = rect0.width;
+        var H0 = rect0.height;
+        ctx0.clearRect(0, 0, W0, H0);
+        var midY0 = H0 / 2;
+        ctx0.setLineDash([8, 6]);
+        ctx0.strokeStyle = 'rgba(200,255,0,0.3)';
+        ctx0.lineWidth = 1;
+        ctx0.beginPath();
+        ctx0.moveTo(20, midY0);
+        ctx0.lineTo(W0 - 20, midY0);
+        ctx0.stroke();
+        ctx0.setLineDash([]);
+        ctx0.fillStyle = 'rgba(200,255,0,0.35)';
+        ctx0.font = '11px JetBrains Mono, monospace';
+        ctx0.textAlign = 'center';
+        ctx0.fillText('$115 — COLLECTING DATA', W0 / 2, midY0 - 12);
+        ctx0.font = '9px JetBrains Mono, monospace';
+        ctx0.fillStyle = 'rgba(200,255,0,0.2)';
+        ctx0.fillText(curve.length + ' of 10 points', W0 / 2, midY0 + 16);
+      }
+      return;
+    }
+
     if(canvas) canvas.style.display = 'block';
     if(emptyMsg) emptyMsg.style.display = 'none';
 
@@ -591,28 +831,125 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if(el) el.textContent = curve.length + ' points · $' + minV.toFixed(2) + ' – $' + maxV.toFixed(2);
   }
 
-  // ─── AGENT STATUS BAR ───
+  // ─── PIPELINE STATUS ───
   function renderAgents(agents){
-    var bar = document.getElementById('agent-bar');
-    if(!bar || !agents || !agents.heartbeat) return;
-    var names = ['regime','liquidity','spread_monitor','cross_timeframe','funding','harvester','correlation','risk','evolution','execution'];
+    var pipeline = document.getElementById('agent-pipeline');
+    if(!pipeline || !agents || !agents.heartbeat) return;
+    var stages = [
+      {label:'DATA', agents:['regime','liquidity','spread_monitor']},
+      {label:'ANALYSIS', agents:['cross_timeframe','funding']},
+      {label:'SIGNALS', agents:['harvester','correlation']},
+      {label:'ACTION', agents:['risk','evolution','execution']},
+    ];
     var html = '';
-    for(var i=0; i<names.length; i++){
-      var name = names[i];
-      var ts = agents.heartbeat[name];
-      var secs = agoFromISO(ts);
-      var color;
-      if(secs < 900) color = '#c8ff00';
-      else if(secs < 2400) color = '#ffb000';
-      else color = '#ff3333';
-      var label = ts ? ago(new Date(ts).getTime()) : 'unknown';
-      html += '<div class="agent-item">';
-      html += '<span class="agent-dot" style="background:'+color+'"></span>';
-      html += '<span class="agent-name">'+name+'</span>';
-      html += '<span class="agent-time">'+label+'</span>';
-      html += '</div>';
+    for(var s=0; s<stages.length; s++){
+      if(s > 0) html += '<span class="pipeline-arrow">→</span>';
+      var stage = stages[s];
+      html += '<div class="pipeline-stage">';
+      html += '<div class="pipeline-stage-label">'+stage.label+'</div>';
+      html += '<div class="pipeline-agents">';
+      for(var a=0; a<stage.agents.length; a++){
+        var name = stage.agents[a];
+        var ts = agents.heartbeat[name];
+        var secs = agoFromISO(ts);
+        var color = secs < 900 ? '#c8ff00' : (secs < 2400 ? '#ffb000' : '#ff3333');
+        var label = ts ? ago(new Date(ts).getTime()) : 'unknown';
+        html += '<div class="agent-item">';
+        html += '<span class="agent-dot" style="background:'+color+'"></span>';
+        html += '<span class="agent-name">'+name+'</span>';
+        html += '<span class="agent-time">'+label+'</span>';
+        html += '</div>';
+      }
+      html += '</div></div>';
     }
-    bar.innerHTML = html;
+    pipeline.innerHTML = html;
+  }
+
+  // ─── MARKET INTELLIGENCE ───
+  function renderIntelligence(){
+    if(!portfolioData || !portfolioData.agents) return;
+    var agents = portfolioData.agents;
+
+    // REGIMES
+    var regimeGrid = document.getElementById('regime-grid');
+    if(regimeGrid && agents.regimes && agents.regimes.coins){
+      var coins = agents.regimes.coins;
+      var regimeColors = {trending:'#c8ff00',stable:'#666',shift:'#ffb000',chaotic:'#ff3333'};
+      var html = '';
+      for(var coin in coins){
+        var regime = coins[coin].regime || 'stable';
+        var color = regimeColors[regime] || '#666';
+        var shortName = coin.replace('USDT','').replace('PERP','').slice(0,3);
+        html += '<div class="regime-coin-wrap">';
+        html += '<span class="regime-square" style="background:'+color+'"></span>';
+        html += '<span class="regime-coin-name">'+shortName+'</span>';
+        html += '</div>';
+      }
+      regimeGrid.innerHTML = html || '<span class="muted">No data</span>';
+    }
+
+    // SPREAD
+    var spreadVal = document.getElementById('spread-val');
+    if(spreadVal){
+      var spread = agents.spread;
+      if(!spread || !spread.coins){
+        spreadVal.textContent = 'All clear — no anomalies';
+      } else {
+        var anomalies = [];
+        for(var sc in spread.coins){
+          var st = spread.coins[sc];
+          if(st && st.status && st.status !== 'normal'){
+            anomalies.push(sc+': '+st.status);
+          }
+        }
+        spreadVal.textContent = anomalies.length ? anomalies.join(' · ') : 'All clear — no anomalies';
+      }
+    }
+
+    // FUNDING
+    var fundingVal = document.getElementById('funding-val');
+    if(fundingVal){
+      var funding = agents.funding;
+      if(!funding || !funding.coins){
+        fundingVal.textContent = 'Neutral — no pressure';
+      } else {
+        var unstable = [];
+        for(var fc in funding.coins){
+          var fd = funding.coins[fc];
+          if(fd && fd.velocity_direction && fd.velocity_direction !== 'stable'){
+            unstable.push(fc+'('+fd.velocity_direction+')');
+          }
+        }
+        fundingVal.textContent = unstable.length ? unstable.join(' · ') : 'Neutral — no pressure';
+      }
+    }
+
+    // ARCHETYPES
+    var archetypeRow = document.getElementById('archetype-row');
+    if(archetypeRow){
+      var archetypes = agents.archetypes;
+      if(!archetypes || archetypes.length === 0){
+        archetypeRow.innerHTML = '<div class="muted">Monitoring 6 signal archetypes...</div>';
+      } else {
+        var html = '';
+        for(var i=0; i<archetypes.length; i++){
+          var arch = archetypes[i];
+          var total = arch.conditions_total || 4;
+          var met = arch.conditions_met || 0;
+          var filled = Math.round((met / total) * 4);
+          var bar = '';
+          for(var b=0; b<4; b++) bar += (b < filled ? '▓' : '░');
+          html += '<div class="archetype-item">';
+          html += '<span class="archetype-name">'+arch.name+'</span>';
+          html += '<span class="archetype-bar">'+bar+'</span>';
+          if(arch.closest_coin){
+            html += '<span class="archetype-detail">'+arch.closest_coin+' '+met+'/'+total+'</span>';
+          }
+          html += '</div>';
+        }
+        archetypeRow.innerHTML = html;
+      }
+    }
   }
 
   // ─── STATS DASHBOARD ───
@@ -687,15 +1024,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var totalInPositions = 0;
     for(var i=0; i<livePos.length; i++) totalInPositions += (livePos[i].size_usd||0);
 
-    // Hero: equity from HL account value (reported by risk agent via equity curve)
-    // HL cross-margin: $115 USDC on spot backs all perp positions. HL reports account_value = margin used + unrealized.
-    // True equity = spot balance (~$115) + unrealized P&L from positions.
-    var startingEquity = 115; // USDC deposited to HL
+    // Hero: equity from HL account value
+    var startingEquity = 115;
     var equity = startingEquity + totalUnrealized;
     var totalPnl = totalUnrealized;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
-    // Uptime: show hours when < 1 day, days otherwise
+    // Uptime
     var uptimeStr = '—';
     if(lt.started){
       var uptimeMs = Date.now() - new Date(lt.started).getTime();
@@ -712,11 +1047,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     pnlEl.textContent = fmtPct(pnlPct) + ' (' + fmt$(totalPnl) + ')';
     pnlEl.className = 'sv ' + pnlClass(totalPnl);
 
-    // Win rate: show "—" until >= 5 trades
-    var winRate = lt.trades >= 5 ? (lt.wins / lt.trades * 100) : null;
-    document.getElementById('s-winrate').textContent = winRate !== null ? winRate.toFixed(0) + '%' : '—';
-    document.getElementById('s-trades').textContent = lt.trades || 0;
+    // Win rate: early data context vs normal
+    var winRateEl = document.getElementById('s-winrate');
+    var trades = lt.trades || 0;
+    var wins = lt.wins || 0;
+    if(trades < 20){
+      var losses = trades - wins;
+      var closedPnl = 0;
+      for(var j=0; j<liveClosed.length; j++){
+        closedPnl += (liveClosed[j].pnl_dollars || liveClosed[j].pnl_usd || 0);
+      }
+      winRateEl.textContent = wins+'W '+losses+'L · '+fmt$(closedPnl);
+    } else {
+      winRateEl.textContent = (wins / trades * 100).toFixed(0) + '%';
+    }
+
+    document.getElementById('s-trades').textContent = trades;
     document.getElementById('s-uptime').textContent = uptimeStr;
+
+    // EARLY DATA badge
+    var earlyBadge = document.getElementById('early-badge');
+    if(earlyBadge) earlyBadge.style.display = (trades < 20) ? 'inline' : 'none';
 
     document.getElementById('pos-count').textContent = '(' + livePos.length + ')';
     document.getElementById('closed-count').textContent = '(' + liveClosed.length + ')';
@@ -744,13 +1095,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('regime-summary').textContent = parts.join(' · ');
     }
 
-    // Equity curve (live only)
+    // Equity curve
     drawEquityCurve(d.liveEquityCurve);
 
-    // Agent status
+    // Pipeline
     renderAgents(d.agents);
 
-    // Stats (live only)
+    // Market intelligence
+    renderIntelligence();
+
+    // Stats
     renderStats(lt.stats);
 
     // ─── OPEN POSITIONS ───
@@ -784,7 +1138,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         html += '<div class="pos-field"><span class="pos-fl">Stop Loss</span><span class="pos-fv">'+fmt$(p.stop_loss)+'</span></div>';
         html += '</div>';
         if(p.exit_expression){
-          html += '<div class="pos-exit">EXIT: '+p.exit_expression+'</div>';
+          var translated = translateExit(p.exit_expression);
+          html += '<div class="pos-exit">EXIT: '+translated;
+          if(translated !== p.exit_expression){
+            html += '<div class="pos-exit-raw">'+p.exit_expression+'</div>';
+          }
+          html += '</div>';
         }
         html += '</div>';
       }
@@ -816,7 +1175,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       html += '</div>';
       closedBody.innerHTML = html;
     }
-
   }
 
   // ─── DATA FETCHING ───
@@ -842,6 +1200,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   // Initial load
   loadPortfolio().then(function(){
     render();
+    renderIntelligence();
     fetchPrices().then(function(){ render(); }).catch(function(){});
   }).catch(function(e){ console.error('Initial load failed:', e); });
 
@@ -861,7 +1220,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Portfolio every 5min
   setInterval(function(){
-    loadPortfolio().then(function(){ render(); }).catch(function(){});
+    loadPortfolio().then(function(){ render(); renderIntelligence(); }).catch(function(){});
   }, 300000);
 
   // Redraw equity on resize
