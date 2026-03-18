@@ -146,11 +146,55 @@ def update_heartbeat():
 
 
 # ─── EXIT EXPRESSION EVALUATION ───
+def _evaluate_weighted_expression(expression, indicator_values):
+    """Evaluate weighted sum expressions like:
+    ((RSI_12H <= 42) * 3) + ((EMA_N_24H <= 0.993) * 2) >= 4"""
+    missing = []
+    threshold_match = re.search(r'\)\s*(>=|>|<=|<)\s*(-?[\d.]+)\s*$', expression)
+    if not threshold_match:
+        return False, missing
+    threshold_op = threshold_match.group(1)
+    threshold_val = float(threshold_match.group(2))
+    terms = re.findall(
+        r'\(\(([A-Z][A-Z0-9_]+)\s*(>=|<=|>|<|==|!=)\s*(-?[\d.]+)\)\s*\*\s*([\d.]+)\)',
+        expression
+    )
+    if not terms:
+        return False, missing
+    weighted_sum = 0.0
+    for indicator, op, val_str, weight_str in terms:
+        val = float(val_str)
+        weight = float(weight_str)
+        current = indicator_values.get(indicator)
+        if current is None:
+            missing.append(indicator)
+            continue
+        condition = False
+        if op == ">=":   condition = current >= val
+        elif op == "<=": condition = current <= val
+        elif op == ">":  condition = current > val
+        elif op == "<":  condition = current < val
+        elif op == "==": condition = current == val
+        elif op == "!=": condition = current != val
+        if condition:
+            weighted_sum += weight
+    if threshold_op == ">=":   result = weighted_sum >= threshold_val
+    elif threshold_op == ">":  result = weighted_sum > threshold_val
+    elif threshold_op == "<=": result = weighted_sum <= threshold_val
+    elif threshold_op == "<":  result = weighted_sum < threshold_val
+    else: result = False
+    return result, missing
+
+
 def evaluate_expression(expression, indicator_values):
     """Evaluate a signal exit expression against current indicator values.
     Returns (True/False, list of missing indicators)."""
     if not expression or not expression.strip():
         return False, []
+
+    # Detect weighted expressions
+    if "((" in expression and "*" in expression:
+        return _evaluate_weighted_expression(expression, indicator_values)
 
     missing = []
     clauses = re.split(r'\s+(AND|OR)\s+', expression)
@@ -165,7 +209,7 @@ def evaluate_expression(expression, indicator_values):
 
         m = re.match(r'([A-Z][A-Z0-9_]+)\s*(>=|<=|>|<|==|!=)\s*(-?[\d.]+)', part)
         if not m:
-            results.append(True)
+            results.append(False)
             continue
 
         indicator, op, val_str = m.group(1), m.group(2), m.group(3)

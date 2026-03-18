@@ -321,6 +321,63 @@ def compute_regime_match(signal_name, regime):
 
 
 # ─── EXPRESSION EVALUATION ───
+def _evaluate_weighted_expression(expression, indicator_values):
+    """Evaluate weighted sum expressions like:
+    ((RSI_12H <= 42) * 3) + ((MACD_N_12H <= -0.0025) * 3) + ((EMA_N_24H <= 0.993) * 2) >= 4
+
+    Each term: ((INDICATOR OP VALUE) * WEIGHT) evaluates to WEIGHT if condition is true, 0 otherwise.
+    Sum of weights compared against final threshold.
+    """
+    missing = []
+
+    # Extract the final threshold: ... >= THRESHOLD or ... > THRESHOLD at the end
+    threshold_match = re.search(r'\)\s*(>=|>|<=|<)\s*(-?[\d.]+)\s*$', expression)
+    if not threshold_match:
+        return False, missing  # can't parse threshold, reject
+
+    threshold_op = threshold_match.group(1)
+    threshold_val = float(threshold_match.group(2))
+
+    # Extract all weighted terms: ((INDICATOR OP VALUE) * WEIGHT)
+    terms = re.findall(
+        r'\(\(([A-Z][A-Z0-9_]+)\s*(>=|<=|>|<|==|!=)\s*(-?[\d.]+)\)\s*\*\s*([\d.]+)\)',
+        expression
+    )
+
+    if not terms:
+        return False, missing  # no parseable terms, reject
+
+    weighted_sum = 0.0
+    for indicator, op, val_str, weight_str in terms:
+        val = float(val_str)
+        weight = float(weight_str)
+
+        current = indicator_values.get(indicator)
+        if current is None:
+            missing.append(indicator)
+            continue  # missing indicator contributes 0
+
+        condition = False
+        if op == ">=":   condition = current >= val
+        elif op == "<=": condition = current <= val
+        elif op == ">":  condition = current > val
+        elif op == "<":  condition = current < val
+        elif op == "==": condition = current == val
+        elif op == "!=": condition = current != val
+
+        if condition:
+            weighted_sum += weight
+
+    # Compare sum against threshold
+    if threshold_op == ">=":   result = weighted_sum >= threshold_val
+    elif threshold_op == ">":  result = weighted_sum > threshold_val
+    elif threshold_op == "<=": result = weighted_sum <= threshold_val
+    elif threshold_op == "<":  result = weighted_sum < threshold_val
+    else: result = False
+
+    return result, missing
+
+
 def evaluate_expression(expression, indicator_values):
     """
     Evaluate a signal entry/exit expression against current indicator values.
@@ -332,6 +389,10 @@ def evaluate_expression(expression, indicator_values):
         return False, []
 
     missing = []
+
+    # Detect weighted expressions: ((INDICATOR OP VALUE) * WEIGHT) + ... >= THRESHOLD
+    if "((" in expression and "*" in expression:
+        return _evaluate_weighted_expression(expression, indicator_values)
 
     # Split on AND/OR while preserving the operator
     # We handle AND/OR with simple left-to-right evaluation
@@ -351,8 +412,8 @@ def evaluate_expression(expression, indicator_values):
         # Parse comparison: INDICATOR_CODE OP VALUE
         m = re.match(r'([A-Z][A-Z0-9_]+)\s*(>=|<=|>|<|==|!=)\s*(-?[\d.]+)', part)
         if not m:
-            # Can't parse this clause, skip it (treat as True to be permissive)
-            results.append(True)
+            # Can't parse this clause — reject to avoid false positives
+            results.append(False)
             continue
 
         indicator, op, val_str = m.group(1), m.group(2), m.group(3)
