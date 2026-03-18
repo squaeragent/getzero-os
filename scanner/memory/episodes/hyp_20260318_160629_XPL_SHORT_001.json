@@ -1,0 +1,60 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+  "sharpe": 1.5877,
+  "win_rate": 60.38,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 8.93,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "MOMENTUM_N_6H > 0.13",
+  "entry_expression": "MOMENTUM_N_6H < 0.025 AND MOMENTUM_N_24H < 0.08 AND LYAPUNOV_48H <= 1.96",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_160629_XPL_SHORT_001",
+  "thesis": "Hurst 0.67 + CONFIRMATION_SHORT + funding positive (0.00012) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "spread elevated \u2014 potential MM activity; Hurst declining 0.76\u21920.67 \u2014 momentum may be exhausting; liquidity below tradeable threshold",
+  "confidence": 0.454,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.67 > 0.5 \u2192 trending market",
+    "fast+slow timeframes both bearish (CONFIRMATION_SHORT)"
+  ],
+  "evidence_against": [
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.76\u21920.67 \u2014 momentum may be exhausting",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold",
+    "timeframe pattern flips to CONFIRMATION_LONG"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.68,
+    "hurst_24h": 0.6716,
+    "hurst_48h": 0.7555,
+    "funding_rate": 0.000123,
+    "funding_direction": "normalizing",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 53.5,
+    "tradeable": false,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

@@ -41,6 +41,7 @@ PYTHON = "/opt/homebrew/bin/python3"
 AGENTS = [
     ("perception",  AGENTS_DIR / "perception.py",               120,   5),  # replaces 5 agents
     ("hypothesis",  AGENTS_DIR / "hypothesis_generator.py",   600,  20),  # Phase 2: replaces harvester
+    ("adversary",   AGENTS_DIR / "adversary.py",              300,  10),  # Phase 3: kills weak hypotheses
     ("correlation", AGENTS_DIR / "correlation_agent.py",      300,  10),
     ("risk",        AGENTS_DIR / "risk_agent.py",             120,   5),
     ("evolution",   AGENTS_DIR / "signal_evolution_agent.py", 600,  20),

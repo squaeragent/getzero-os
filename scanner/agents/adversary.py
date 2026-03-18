@@ -1,0 +1,898 @@
+#!/usr/bin/env python3
+"""
+ZERO OS — Agent 2B: Adversary (Cognitive Loop Phase 3)
+Sits between Hypothesis Generator and Correlation Agent.
+Tries to KILL every hypothesis. Only survivors proceed.
+
+For each hypothesis, runs 6 attacks:
+  1. Similar Failure Search   — find past losses in same setup
+  2. Kill Condition Proximity — how close are kill conditions to being met?
+  3. Portfolio Stress Test    — directional concentration + impact simulation
+  4. Confidence vs Anti-Thesis — weak conviction or strong counter-evidence
+  5. Regime Mismatch         — signal style vs current regime
+  6. Funding Headwind        — are you paying to be wrong?
+
+Survival score:
+  score = 1.0 * product(1 - severity * weight)
+  PROCEED (>=0.7), PROCEED_WITH_CAUTION (>=0.5), WEAK (>=0.3), KILLED (<0.3)
+
+Inputs:
+  scanner/bus/candidates.json         — hypotheses from Phase 2
+  scanner/bus/world_state.json        — live world model
+  scanner/data/live/closed.jsonl      — trade history
+  scanner/data/live/positions.json    — current open positions
+
+Outputs:
+  scanner/bus/candidates.json         — updated with adversary fields, KILLED removed
+  scanner/bus/adversary.json          — full adversary report
+  scanner/memory/episodes/<id>.json   — updated with "adversary" key
+  scanner/bus/heartbeat.json          — heartbeat "adversary" key
+
+Usage:
+  python3 scanner/agents/adversary.py           # single run
+  python3 scanner/agents/adversary.py --loop    # continuous 300s cycle
+"""
+
+import json
+import os
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+# ─── PATHS ───
+AGENT_DIR = Path(__file__).parent
+SCANNER_DIR = AGENT_DIR.parent
+BUS_DIR = SCANNER_DIR / "bus"
+DATA_DIR = SCANNER_DIR / "data"
+LIVE_DIR = DATA_DIR / "live"
+MEMORY_DIR = SCANNER_DIR / "memory"
+EPISODES_DIR = MEMORY_DIR / "episodes"
+
+CANDIDATES_FILE = BUS_DIR / "candidates.json"
+WORLD_STATE_FILE = BUS_DIR / "world_state.json"
+ADVERSARY_FILE = BUS_DIR / "adversary.json"
+HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
+POSITIONS_FILE = LIVE_DIR / "positions.json"
+CLOSED_FILE = LIVE_DIR / "closed.jsonl"
+
+CYCLE_SECONDS = 300  # 5 minutes
+TOTAL_EQUITY = 115.0  # approximate portfolio equity for stress tests
+
+# Survival thresholds
+THRESHOLD_PROCEED = 0.7
+THRESHOLD_CAUTION = 0.5
+THRESHOLD_WEAK = 0.3
+
+
+# ─── LOGGING ───
+def log(msg):
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    print(f"[{ts}] [ADVERSARY] {msg}")
+
+
+# ─── FILE HELPERS ───
+def load_json_safe(path, default=None):
+    if default is None:
+        default = {}
+    if not Path(path).exists():
+        return default
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return default
+
+
+def save_json(path, data):
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+# ─── DATA LOADERS ───
+def load_closed_trades(max_lines=1000):
+    """Load recent closed trades from closed.jsonl."""
+    trades = []
+    if not CLOSED_FILE.exists():
+        return trades
+    try:
+        with open(CLOSED_FILE) as f:
+            lines = f.readlines()
+        for line in lines[-max_lines:]:
+            line = line.strip()
+            if line:
+                try:
+                    trades.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+    except OSError:
+        pass
+    return trades
+
+
+def load_positions():
+    """Load current open positions."""
+    if not POSITIONS_FILE.exists():
+        return []
+    try:
+        with open(POSITIONS_FILE) as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def load_world_state():
+    """Load unified world model."""
+    data = load_json_safe(WORLD_STATE_FILE, {})
+    return data.get("coins", {})
+
+
+def load_candidates():
+    """Load current candidates from hypothesis generator."""
+    data = load_json_safe(CANDIDATES_FILE, {})
+    return data.get("timestamp", ""), data.get("candidates", [])
+
+
+# ─── ATTACK 1: SIMILAR FAILURE SEARCH ───
+def attack_similar_failure(hypothesis, closed_trades):
+    """
+    Find past trades with same coin+direction, signal, or regime that LOST.
+    Returns attack dict with severity and detail.
+    """
+    coin = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "LONG")
+    signal_name = hypothesis.get("signal", "")
+    regime = hypothesis.get("regime", "")
+
+    # Collect matching failures
+    failures = []
+
+    for trade in closed_trades:
+        pnl = trade.get("pnl_usd", trade.get("pnl_dollars", 0))
+        try:
+            pnl = float(pnl)
+        except (TypeError, ValueError):
+            pnl = 0.0
+
+        if pnl >= 0:
+            continue  # Only care about losers
+
+        pnl_pct = trade.get("pnl_pct", 0)
+        try:
+            pnl_pct = float(pnl_pct)
+        except (TypeError, ValueError):
+            pnl_pct = 0.0
+
+        match_score = 0
+        match_reasons = []
+
+        # Same coin + direction (strongest match)
+        if trade.get("coin") == coin and trade.get("direction") == direction:
+            match_score += 3
+            match_reasons.append(f"{coin} {direction}")
+
+        # Same signal
+        if trade.get("signal") == signal_name and signal_name:
+            match_score += 2
+            match_reasons.append(f"signal {signal_name}")
+
+        # Same regime
+        if trade.get("regime") == regime and regime:
+            match_score += 1
+            match_reasons.append(f"regime {regime}")
+
+        if match_score > 0:
+            failures.append({
+                "match_score": match_score,
+                "match_reasons": match_reasons,
+                "pnl_pct": pnl_pct,
+                "coin": trade.get("coin", "?"),
+                "direction": trade.get("direction", "?"),
+                "signal": trade.get("signal", "?"),
+            })
+
+    if not failures:
+        return {"attack": "similar_failure", "severity": 0.0, "weight": 1.5,
+                "detail": "No similar losing trades found", "failures_found": 0}
+
+    # Sort by relevance
+    failures.sort(key=lambda x: x["match_score"], reverse=True)
+    top_failures = failures[:10]
+
+    count = len(top_failures)
+    avg_loss = sum(f["pnl_pct"] for f in top_failures) / count
+
+    if count < 3:
+        severity = 0.0
+        detail = f"{count} similar trade(s) lost, not enough to penalize"
+    elif avg_loss < -3.0:
+        severity = 0.6
+        detail = f"{count} similar trades lost avg {avg_loss:.1f}%"
+    elif avg_loss < -1.5:
+        severity = 0.5
+        detail = f"{count} similar trades lost avg {avg_loss:.1f}%"
+    else:
+        severity = 0.4
+        detail = f"{count} similar trades lost avg {avg_loss:.1f}%"
+
+    return {
+        "attack": "similar_failure",
+        "severity": round(severity, 3),
+        "weight": 1.5,
+        "detail": detail,
+        "failures_found": count,
+        "avg_loss_pct": round(avg_loss, 3),
+    }
+
+
+# ─── ATTACK 2: KILL CONDITION PROXIMITY ───
+def attack_kill_condition_proximity(hypothesis, world_coins):
+    """
+    Check how close the current world state is to each kill condition.
+    Returns attack dict with severity.
+    """
+    coin = hypothesis.get("coin", "")
+    kill_conditions = hypothesis.get("kill_conditions", [])
+    world_snap = hypothesis.get("world_snapshot", {})
+    world_coin = world_coins.get(coin, {})
+
+    if not kill_conditions:
+        return {"attack": "kill_condition_proximity", "severity": 0.0, "weight": 1.0,
+                "detail": "No kill conditions defined"}
+
+    # Use world_snapshot from hypothesis (captured at generation time) + live world_coin
+    regime = world_coin.get("regime", world_snap.get("regime", "unknown"))
+    hurst_24h = world_snap.get("hurst_24h", 0.5)
+    funding_direction = world_snap.get("funding_direction", "stable")
+    spread_status = world_snap.get("spread_status", "NORMAL")
+    liquidity_tradeable = world_snap.get("tradeable", True)
+    tf_pattern = world_snap.get("timeframe_pattern", "NEUTRAL")
+    funding_reversal = world_snap.get("funding_reversal", False)
+
+    # Try to get live values from world_coin too (more current)
+    live_ind = world_coin.get("indicators", {})
+    live_hurst = live_ind.get("HURST_24H", hurst_24h)
+    live_spread = world_coin.get("spread", {}).get("status", spread_status)
+    live_regime = world_coin.get("regime", regime)
+    live_tf = world_coin.get("timeframe", {}).get("pattern", tf_pattern)
+
+    proximities = []
+
+    for kill_cond in kill_conditions:
+        kill_lower = kill_cond.lower()
+        sev = 0.0
+        detail_str = f"kill condition: '{kill_cond}'"
+
+        # Regime-based kill conditions
+        if "chaotic" in kill_lower and "regime" in kill_lower:
+            if live_regime == "chaotic":
+                sev = 1.0
+                detail_str = f"kill condition '{kill_cond}' FULLY MET (regime={live_regime})"
+            elif live_regime == "shift":
+                sev = 0.5
+                detail_str = f"kill condition '{kill_cond}' 50% met (currently shifting)"
+            elif live_regime == "trending":
+                sev = 0.1
+                detail_str = f"kill condition '{kill_cond}' ~10% met (regime trending, stable)"
+
+        elif "shift" in kill_lower and "regime" in kill_lower:
+            if live_regime == "shift":
+                sev = 0.6
+                detail_str = f"kill condition '{kill_cond}' met (regime currently in shift)"
+            elif live_regime == "chaotic":
+                sev = 0.8
+                detail_str = f"kill condition '{kill_cond}' surpassed (chaotic)"
+
+        # Hurst-based kill conditions
+        elif "hurst" in kill_lower and ("below" in kill_lower or "drop" in kill_lower or "<" in kill_lower):
+            # Parse threshold value
+            threshold = 0.5
+            import re
+            match = re.search(r'(\d+\.\d+)', kill_cond)
+            if match:
+                threshold = float(match.group(1))
+
+            if live_hurst <= threshold:
+                sev = 1.0
+                detail_str = f"Hurst {live_hurst:.3f} already below kill threshold {threshold}"
+            elif threshold > 0:
+                # Proximity: how close is current Hurst to threshold?
+                distance = live_hurst - threshold
+                margin = 0.1  # 0.1 Hurst units = "close"
+                if distance < 0.03:
+                    sev = 0.7
+                    detail_str = f"Hurst {live_hurst:.3f} very close to kill threshold {threshold} (gap={distance:.3f})"
+                elif distance < margin:
+                    sev = 0.5
+                    detail_str = f"Hurst {live_hurst:.3f} approaching kill threshold {threshold} (gap={distance:.3f})"
+                else:
+                    sev = 0.1
+                    detail_str = f"Hurst {live_hurst:.3f} — kill at {threshold} not near"
+
+        # Spread-based kill conditions
+        elif "mm_setup" in kill_lower or "spread" in kill_lower:
+            if live_spread == "MM_SETUP":
+                sev = 1.0
+                detail_str = f"spread in MM_SETUP — kill condition FULLY MET"
+            elif live_spread == "ELEVATED":
+                sev = 0.4
+                detail_str = f"spread ELEVATED — kill condition 40% met"
+            else:
+                sev = 0.0
+                detail_str = f"spread {live_spread} — kill condition not near"
+
+        # Liquidity-based kill conditions
+        elif "liquidity" in kill_lower or "tradeable" in kill_lower:
+            if not liquidity_tradeable:
+                sev = 1.0
+                detail_str = "liquidity below tradeable threshold — kill condition MET"
+            else:
+                liq_score = world_coin.get("liquidity", {}).get("score", 70)
+                if liq_score < 40:
+                    sev = 0.6
+                    detail_str = f"liquidity score {liq_score:.0f} — approaching untradeable"
+                elif liq_score < 55:
+                    sev = 0.3
+                    detail_str = f"liquidity score {liq_score:.0f} — moderately thin"
+                else:
+                    sev = 0.0
+                    detail_str = f"liquidity score {liq_score:.0f} — adequate"
+
+        # Funding reversal kill conditions
+        elif "funding" in kill_lower and ("reverse" in kill_lower or "intensif" in kill_lower):
+            if funding_reversal:
+                sev = 0.8
+                detail_str = f"funding reversal detected — kill condition nearly met"
+            elif funding_direction == "intensifying":
+                sev = 0.5
+                detail_str = f"funding {funding_direction} — kill condition 50% met"
+            else:
+                sev = 0.0
+                detail_str = f"funding {funding_direction} — kill condition not triggered"
+
+        # Timeframe pattern flip kill conditions
+        elif "confirmation_short" in kill_lower or "flip" in kill_lower or "timeframe" in kill_lower:
+            direction = hypothesis.get("direction", "LONG")
+            if direction == "LONG" and live_tf in ("CONFIRMATION_SHORT", "TRAP_LONG"):
+                sev = 0.8
+                detail_str = f"timeframe pattern {live_tf} conflicts with LONG — kill condition triggered"
+            elif direction == "SHORT" and live_tf in ("CONFIRMATION_LONG", "TRAP_SHORT"):
+                sev = 0.8
+                detail_str = f"timeframe pattern {live_tf} conflicts with SHORT — kill condition triggered"
+            else:
+                sev = 0.0
+                detail_str = f"timeframe pattern {live_tf} — kill condition not triggered"
+
+        if sev > 0:
+            proximities.append({"condition": kill_cond, "severity": sev, "detail": detail_str})
+
+    if not proximities:
+        return {"attack": "kill_condition_proximity", "severity": 0.0, "weight": 1.0,
+                "detail": "Kill conditions not near current world state"}
+
+    # Use max severity across all conditions
+    max_prox = max(proximities, key=lambda x: x["severity"])
+    all_details = "; ".join(p["detail"] for p in proximities if p["severity"] > 0.1)
+
+    return {
+        "attack": "kill_condition_proximity",
+        "severity": round(max_prox["severity"], 3),
+        "weight": 1.0,
+        "detail": all_details[:200] if all_details else max_prox["detail"],
+        "conditions_checked": len(kill_conditions),
+        "conditions_near": len(proximities),
+    }
+
+
+# ─── ATTACK 3: PORTFOLIO STRESS TEST ───
+def attack_portfolio_stress(hypothesis, positions):
+    """
+    Check directional concentration and simulate downside impact.
+    Returns attack dict.
+    """
+    direction = hypothesis.get("direction", "LONG")
+
+    if not positions:
+        return {"attack": "portfolio_stress", "severity": 0.0, "weight": 1.0,
+                "detail": "No open positions — no concentration risk"}
+
+    # Count directional exposure
+    long_exposure = sum(p.get("size_usd", 0) for p in positions if p.get("direction") == "LONG")
+    short_exposure = sum(p.get("size_usd", 0) for p in positions if p.get("direction") == "SHORT")
+    total_exposure = long_exposure + short_exposure
+
+    # Estimate size of new position (use config defaults)
+    new_position_size = 40.0  # conservative estimate
+
+    # Simulate after adding new hypothesis
+    if direction == "LONG":
+        new_long = long_exposure + new_position_size
+        new_total = new_long + short_exposure
+        directional_pct = new_long / TOTAL_EQUITY * 100
+        # Simulate: all LONGs drop 3%
+        impact_3pct = new_long * 0.03
+        detail = (
+            f"adding LONG increases long exposure to ${new_long:.0f} "
+            f"({directional_pct:.0f}% of equity), "
+            f"3% drop = -${impact_3pct:.2f}"
+        )
+    else:
+        new_short = short_exposure + new_position_size
+        new_total = long_exposure + new_short
+        directional_pct = new_short / TOTAL_EQUITY * 100
+        impact_3pct = new_short * 0.03
+        detail = (
+            f"adding SHORT increases short exposure to ${new_short:.0f} "
+            f"({directional_pct:.0f}% of equity), "
+            f"3% adverse move = -${impact_3pct:.2f}"
+        )
+
+    # Threshold: 5% of equity = $5.75
+    stress_threshold = TOTAL_EQUITY * 0.05
+    same_dir_count = sum(1 for p in positions if p.get("direction") == direction)
+
+    if impact_3pct > stress_threshold:
+        severity = min(0.8, 0.5 + (impact_3pct - stress_threshold) / stress_threshold * 0.3)
+    elif same_dir_count >= 3:
+        severity = 0.4
+        detail = f"{same_dir_count} existing {direction} positions + this one = high concentration. " + detail
+    elif same_dir_count >= 2:
+        severity = 0.25
+    else:
+        severity = 0.0
+
+    return {
+        "attack": "portfolio_stress",
+        "severity": round(severity, 3),
+        "weight": 1.0,
+        "detail": detail,
+        "same_direction_positions": same_dir_count,
+        "stress_impact_usd": round(impact_3pct, 2),
+        "directional_pct": round(directional_pct, 1),
+    }
+
+
+# ─── ATTACK 4: CONFIDENCE VS ANTI-THESIS ───
+def attack_confidence_vs_anti_thesis(hypothesis):
+    """
+    Low confidence + strong counter-evidence → severity.
+    Returns attack dict.
+    """
+    confidence = hypothesis.get("confidence", 0.5)
+    evidence_for = hypothesis.get("evidence_for", [])
+    evidence_against = hypothesis.get("evidence_against", [])
+    anti_thesis = hypothesis.get("anti_thesis", "")
+
+    severity = 0.0
+    reasons = []
+
+    # Weak confidence
+    if confidence < 0.35:
+        severity = max(severity, 0.5)
+        reasons.append(f"confidence {confidence:.2f} is very weak")
+    elif confidence < 0.4:
+        severity = max(severity, 0.4)
+        reasons.append(f"confidence {confidence:.2f} below threshold")
+
+    # Evidence imbalance
+    n_for = len(evidence_for)
+    n_against = len(evidence_against)
+    if n_against > n_for:
+        sev_imbalance = min(0.4, 0.2 + (n_against - n_for) * 0.1)
+        severity = max(severity, sev_imbalance)
+        reasons.append(f"{n_against} evidence_against vs {n_for} evidence_for")
+
+    # Anti-thesis keywords indicating exhaustion
+    anti_lower = anti_thesis.lower()
+    if "exhausting" in anti_lower or "exhaustion" in anti_lower:
+        severity = max(severity, 0.3)
+        reasons.append("anti_thesis mentions exhaustion")
+    if "declining" in anti_lower:
+        severity = max(severity, 0.3)
+        reasons.append("anti_thesis mentions declining")
+    if "collapse" in anti_lower or "collapsing" in anti_lower:
+        severity = max(severity, 0.4)
+        reasons.append("anti_thesis mentions collapse")
+
+    detail = f"confidence {confidence:.2f}"
+    if reasons:
+        detail = "; ".join(reasons)
+
+    return {
+        "attack": "confidence_vs_antithesis",
+        "severity": round(severity, 3),
+        "weight": 1.0,
+        "detail": detail,
+        "confidence": confidence,
+        "evidence_for_count": n_for,
+        "evidence_against_count": n_against,
+    }
+
+
+# ─── ATTACK 5: REGIME MISMATCH ───
+def attack_regime_mismatch(hypothesis, world_coins):
+    """
+    Signal style vs current regime — are they aligned?
+    Returns attack dict.
+    """
+    coin = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "LONG")
+    signal_name = hypothesis.get("signal", "").upper()
+    world_snap = hypothesis.get("world_snapshot", {})
+
+    # Get live regime (prefer world_coins, fallback to snapshot)
+    world_coin = world_coins.get(coin, {})
+    regime = world_coin.get("regime", world_snap.get("regime", "unknown"))
+
+    # Classify signal style
+    MOMENTUM_KEYWORDS = {"TREND", "MOMENTUM", "EMA", "BREAKOUT", "MACD", "CROSS", "CONVERGENCE", "TRIPLE"}
+    REVERSAL_KEYWORDS = {"REVERSAL", "REVERT", "RSI", "BB", "BOUNCE", "OVERSOLD", "OVERBOUGHT", "DOJI", "SOCIAL", "EXHAUSTION"}
+
+    momentum_score = sum(1 for kw in MOMENTUM_KEYWORDS if kw in signal_name)
+    reversal_score = sum(1 for kw in REVERSAL_KEYWORDS if kw in signal_name)
+
+    if momentum_score > reversal_score:
+        signal_style = "momentum"
+    elif reversal_score > momentum_score:
+        signal_style = "reversal"
+    else:
+        signal_style = "neutral"
+
+    severity = 0.0
+    detail = f"{direction} signal (style={signal_style}) in {regime} regime"
+
+    # Direct regime conflicts
+    if regime == "chaotic":
+        severity = 0.3
+        detail = f"{direction} signal in chaotic regime — unpredictable"
+
+    elif regime == "shift":
+        if signal_style == "momentum":
+            severity = 0.4
+            detail = f"momentum signal in shifting regime — trend unreliable"
+        else:
+            severity = 0.2
+            detail = f"signal in shifting regime — direction unclear"
+
+    elif regime == "trending":
+        if signal_style == "reversal":
+            severity = 0.2
+            detail = f"reversal signal in trending regime — fighting the trend"
+
+    elif regime == "stable":
+        if signal_style == "momentum":
+            severity = 0.2
+            detail = f"momentum signal in stable/low-vol regime — may not trigger"
+
+    elif regime == "reverting":
+        if signal_style == "momentum":
+            severity = 0.25
+            detail = f"momentum signal in reverting regime — mean-reversion environment"
+
+    return {
+        "attack": "regime_mismatch",
+        "severity": round(severity, 3),
+        "weight": 1.0,
+        "detail": detail,
+        "regime": regime,
+        "signal_style": signal_style,
+    }
+
+
+# ─── ATTACK 6: FUNDING HEADWIND ───
+def attack_funding_headwind(hypothesis, world_coins):
+    """
+    Is funding rate working against this position?
+    Returns attack dict.
+    """
+    coin = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "LONG")
+    world_snap = hypothesis.get("world_snapshot", {})
+    world_coin = world_coins.get(coin, {})
+
+    # Get funding data — prefer live world_coin
+    funding = world_coin.get("funding", {})
+    funding_rate = funding.get("rate", world_snap.get("funding_rate", 0))
+    funding_velocity = funding.get("velocity_direction", world_snap.get("funding_direction", "stable"))
+    funding_reversal = funding.get("reversal", world_snap.get("funding_reversal", False))
+
+    try:
+        funding_rate = float(funding_rate)
+    except (TypeError, ValueError):
+        funding_rate = 0.0
+
+    severity = 0.0
+    detail = f"{direction} with funding rate {funding_rate:.6f}"
+
+    # LONG paying positive funding (being LONG costs money each 8h)
+    if direction == "LONG" and funding_rate > 0.0001:  # > 0.01%
+        # Cost per day for ~$50 position
+        daily_cost = abs(funding_rate) * 3 * 50  # 3 funding periods per day
+        severity = 0.3
+        detail = (
+            f"LONG with funding rate +{funding_rate:.5f}% "
+            f"— paying ~${daily_cost:.2f}/day to hold $50 position"
+        )
+        if funding_velocity == "intensifying":
+            severity = 0.5
+            detail += " (funding intensifying against LONG)"
+
+    # SHORT paying negative funding (being SHORT costs money)
+    elif direction == "SHORT" and funding_rate < -0.0001:
+        daily_cost = abs(funding_rate) * 3 * 50
+        severity = 0.3
+        detail = (
+            f"SHORT with funding rate {funding_rate:.5f}% "
+            f"— paying ~${daily_cost:.2f}/day to hold $50 position"
+        )
+        if funding_velocity == "intensifying":
+            severity = 0.5
+            detail += " (funding intensifying against SHORT)"
+
+    # Funding reversal against direction
+    elif funding_reversal:
+        if direction == "LONG":
+            severity = 0.3
+            detail = f"funding reversal detected — could flip against LONG"
+        else:
+            severity = 0.3
+            detail = f"funding reversal detected — could flip against SHORT"
+
+    # Intensifying funding in wrong direction
+    elif funding_velocity == "intensifying":
+        if direction == "LONG" and funding_rate < -0.0001:
+            severity = 0.2
+            detail = f"funding intensifying negatively — LONG environment strengthening"
+        elif direction == "SHORT" and funding_rate > 0.0001:
+            severity = 0.2
+            detail = f"funding intensifying positively — LONG bias strengthening"
+
+    return {
+        "attack": "funding_headwind",
+        "severity": round(severity, 3),
+        "weight": 1.0,
+        "detail": detail,
+        "funding_rate": funding_rate,
+        "funding_velocity": funding_velocity,
+        "funding_reversal": funding_reversal,
+    }
+
+
+# ─── SURVIVAL SCORE ───
+def compute_survival_score(attacks):
+    """
+    Multiply down from 1.0 using each attack's severity * weight.
+    Clamp to [0.0, 1.0].
+    """
+    score = 1.0
+    for attack in attacks:
+        severity = attack.get("severity", 0.0)
+        weight = attack.get("weight", 1.0)
+        if severity > 0:
+            score *= (1.0 - severity * weight)
+    return round(max(0.0, min(1.0, score)), 4)
+
+
+def score_to_verdict(survival_score):
+    """Map survival score to verdict string."""
+    if survival_score >= THRESHOLD_PROCEED:
+        return "PROCEED", 1.0
+    elif survival_score >= THRESHOLD_CAUTION:
+        return "PROCEED_WITH_CAUTION", 0.7
+    elif survival_score >= THRESHOLD_WEAK:
+        return "WEAK", 0.4
+    else:
+        return "KILLED", 0.0
+
+
+# ─── HEARTBEAT ───
+def write_heartbeat():
+    BUS_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).isoformat()
+    heartbeat = load_json_safe(HEARTBEAT_FILE, {})
+    heartbeat["adversary"] = ts
+    save_json(HEARTBEAT_FILE, heartbeat)
+
+
+# ─── EPISODE UPDATE ───
+def update_episode(hypothesis_id, adversary_result):
+    """Append adversary result to existing episode file."""
+    EPISODES_DIR.mkdir(parents=True, exist_ok=True)
+    episode_file = EPISODES_DIR / f"{hypothesis_id}.json"
+
+    episode = {}
+    if episode_file.exists():
+        try:
+            with open(episode_file) as f:
+                episode = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            episode = {}
+
+    episode["adversary"] = adversary_result
+
+    try:
+        with open(episode_file, "w") as f:
+            json.dump(episode, f, indent=2)
+    except OSError as e:
+        log(f"  [warn] Failed to update episode {hypothesis_id}: {e}")
+
+
+# ─── MAIN ADVERSARY LOGIC ───
+def run_adversary(hypotheses, closed_trades, positions, world_coins):
+    """
+    Run all attacks on each hypothesis. Return (survivors, killed, results).
+    """
+    results = []
+    survivors = []
+    killed_count = 0
+    cautioned_count = 0
+    proceeded_count = 0
+
+    for hyp in hypotheses:
+        coin = hyp.get("coin", "?")
+        direction = hyp.get("direction", "?")
+        hyp_id = hyp.get("hypothesis_id", f"hyp_{coin}_{direction}")
+
+        log(f"  Attacking {hyp_id} ({coin} {direction})...")
+
+        # Run all 6 attacks
+        attacks = [
+            attack_similar_failure(hyp, closed_trades),
+            attack_kill_condition_proximity(hyp, world_coins),
+            attack_portfolio_stress(hyp, positions),
+            attack_confidence_vs_anti_thesis(hyp),
+            attack_regime_mismatch(hyp, world_coins),
+            attack_funding_headwind(hyp, world_coins),
+        ]
+
+        # Only include attacks with non-zero severity in summary
+        active_attacks = [a for a in attacks if a.get("severity", 0) > 0]
+
+        # Compute survival
+        survival_score = compute_survival_score(attacks)
+        verdict, size_modifier = score_to_verdict(survival_score)
+
+        result = {
+            "hypothesis_id": hyp_id,
+            "coin": coin,
+            "direction": direction,
+            "survival_score": survival_score,
+            "verdict": verdict,
+            "recommended_size_modifier": size_modifier,
+            "attacks": attacks,
+            "active_attacks": len(active_attacks),
+        }
+
+        results.append(result)
+
+        # Update episode
+        update_episode(hyp_id, result)
+
+        if verdict == "KILLED":
+            killed_count += 1
+            log(f"    KILLED  score={survival_score:.3f} — {', '.join(a['detail'][:40] for a in active_attacks[:2])}")
+        else:
+            # Add adversary fields to hypothesis
+            hyp["survival_score"] = survival_score
+            hyp["adversary_verdict"] = verdict
+            hyp["recommended_size_modifier"] = size_modifier
+            hyp["attacks"] = attacks
+            survivors.append(hyp)
+
+            if verdict == "PROCEED_WITH_CAUTION":
+                cautioned_count += 1
+                log(f"    CAUTION score={survival_score:.3f}")
+            elif verdict == "WEAK":
+                cautioned_count += 1
+                log(f"    WEAK    score={survival_score:.3f}")
+            else:
+                proceeded_count += 1
+                log(f"    PROCEED score={survival_score:.3f}")
+
+    return survivors, killed_count, cautioned_count, proceeded_count, results
+
+
+# ─── RUN CYCLE ───
+def run_cycle():
+    ts = datetime.now(timezone.utc)
+    ts_iso = ts.isoformat()
+
+    log("=" * 60)
+    log(f"Adversary Cycle — {ts.strftime('%Y-%m-%d %H:%M UTC')}")
+    log("=" * 60)
+
+    # Load all inputs
+    cand_ts, hypotheses = load_candidates()
+    if not hypotheses:
+        log("No hypotheses found in candidates.json — skipping")
+        write_heartbeat()
+        return
+
+    # Check if hypotheses are fresh (avoid re-processing old ones)
+    adv_data = load_json_safe(ADVERSARY_FILE, {})
+    last_processed_ts = adv_data.get("candidates_timestamp", "")
+    if last_processed_ts and last_processed_ts == cand_ts:
+        log(f"Already processed these hypotheses (ts={cand_ts}), skipping")
+        write_heartbeat()
+        return
+
+    log(f"Processing {len(hypotheses)} hypotheses (ts={cand_ts})")
+
+    closed_trades = load_closed_trades()
+    positions = load_positions()
+    world_coins = load_world_state()
+
+    log(f"  Closed trades: {len(closed_trades)}")
+    log(f"  Open positions: {len(positions)}")
+    log(f"  World state coins: {len(world_coins)}")
+
+    # Run adversary
+    survivors, killed, cautioned, proceeded, results = run_adversary(
+        hypotheses, closed_trades, positions, world_coins
+    )
+
+    # ── Write adversary.json ──
+    adversary_output = {
+        "timestamp": ts_iso,
+        "candidates_timestamp": cand_ts,
+        "hypotheses_received": len(hypotheses),
+        "killed": killed,
+        "cautioned": cautioned,
+        "proceeded": proceeded,
+        "survivors": len(survivors),
+        "results": results,
+    }
+    save_json(ADVERSARY_FILE, adversary_output)
+    log(f"Written to {ADVERSARY_FILE}")
+
+    # ── Update candidates.json ──
+    # Read fresh (don't rely on what we loaded since we mutated it)
+    cand_data = load_json_safe(CANDIDATES_FILE, {})
+    cand_data["candidates"] = survivors
+    cand_data["adversary_timestamp"] = ts_iso
+    cand_data["adversary_killed"] = killed
+    save_json(CANDIDATES_FILE, cand_data)
+    log(f"Updated {CANDIDATES_FILE}: {len(survivors)} survivors (killed {killed})")
+
+    write_heartbeat()
+
+    # ── Summary ──
+    log(f"{'='*60}")
+    log(f"Received:  {len(hypotheses)}")
+    log(f"Killed:    {killed}")
+    log(f"Cautioned: {cautioned}")
+    log(f"Proceeded: {proceeded}")
+    log(f"Survivors: {len(survivors)}")
+
+    if survivors:
+        log("Surviving hypotheses:")
+        for h in survivors[:5]:
+            log(
+                f"  {h['adversary_verdict']:22s} score={h['survival_score']:.3f}  "
+                f"{h['coin']:6s} {h['direction']:5s}  size_mod={h['recommended_size_modifier']}"
+            )
+    log("=" * 60)
+
+
+def main():
+    loop_mode = "--loop" in sys.argv
+
+    if loop_mode:
+        log(f"Adversary starting in loop mode (every {CYCLE_SECONDS}s)")
+        while True:
+            try:
+                run_cycle()
+            except Exception as e:
+                log(f"Cycle failed: {e}")
+                import traceback
+                traceback.print_exc()
+                write_heartbeat()
+            time.sleep(CYCLE_SECONDS)
+    else:
+        run_cycle()
+
+
+if __name__ == "__main__":
+    main()

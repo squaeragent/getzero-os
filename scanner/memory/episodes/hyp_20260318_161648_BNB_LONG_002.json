@@ -1,0 +1,66 @@
+{
+  "coin": "BNB",
+  "direction": "LONG",
+  "signal": "SOCIAL_DELTA_MOMENTUM_LONG_EX2_EX4",
+  "sharpe": 1.8412,
+  "win_rate": 63.64,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.42,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "RSI_3H30M >= 93.6 OR XONE_AVG_NET_DELTA <= -12.75",
+  "entry_expression": "XONE_AVG_NET_DELTA >= 10 AND RSI_3H30M <= 45",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_161648_BNB_LONG_002",
+  "thesis": "Hurst 0.80 + CONFIRMATION_SHORT + funding negative (-0.00027) + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+  "confidence": 0.486,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "deep liquidity (score 88)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18",
+      "outcome": "loss",
+      "pnl_pct": -0.17,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T13:25:27.507664+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.8011,
+    "hurst_48h": 0.6809,
+    "funding_rate": -0.000273,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 87.9,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

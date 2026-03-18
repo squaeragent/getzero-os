@@ -499,7 +499,7 @@ def read_risk():
 
 
 def compute_size(trade, cfg, throttle):
-    """Compute position size in USD, applying throttle from risk agent."""
+    """Compute position size in USD, applying throttle from risk agent and adversary modifier."""
     min_usd = cfg.get("min_position_usd", 30)
     max_usd = cfg.get("max_position_usd", 50)
     min_sharpe = cfg.get("min_sharpe", 1.5)
@@ -511,6 +511,16 @@ def compute_size(trade, cfg, throttle):
 
     # Apply risk throttle
     size_usd *= throttle
+
+    # Apply adversary size modifier (Phase 3: Cognitive Loop)
+    adversary_modifier = trade.get("recommended_size_modifier", 1.0)
+    if adversary_modifier != 1.0:
+        adversary_verdict = trade.get("adversary_verdict", "")
+        if adversary_verdict == "WEAK":
+            log(f"  [ADVERSARY] WEAK verdict for {trade.get('coin')} {trade.get('direction')} — reducing size by 60%")
+        elif adversary_verdict == "PROCEED_WITH_CAUTION":
+            log(f"  [ADVERSARY] CAUTION verdict for {trade.get('coin')} {trade.get('direction')} — reducing size by 30%")
+        size_usd *= adversary_modifier
 
     return round(size_usd, 2)
 
