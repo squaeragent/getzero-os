@@ -499,6 +499,32 @@ def read_risk():
     return load_json(RISK_FILE, {"throttle": 1.0, "kill_all": False})
 
 
+def get_streak_modifier():
+    """
+    Upgrade 4: Read risk.json for recent win/loss streak.
+    After 3 consecutive losses: size * 0.5
+    After 5 consecutive losses: size * 0.25
+    After 3 consecutive wins: size * 1.2 (capped)
+    """
+    risk_file = Path(__file__).parent.parent / "bus" / "risk.json"
+    if not risk_file.exists():
+        return 1.0
+    try:
+        with open(risk_file) as f:
+            risk = json.load(f)
+        streak = risk.get("current_streak", 0)  # positive = wins, negative = losses
+        if streak <= -5:
+            return 0.25
+        elif streak <= -3:
+            return 0.5
+        elif streak >= 3:
+            return 1.2
+        else:
+            return 1.0
+    except Exception:
+        return 1.0
+
+
 def compute_size(trade, cfg, throttle):
     """Compute position size in USD, applying throttle from risk agent and adversary modifier."""
     min_usd = cfg.get("min_position_usd", 30)
@@ -507,11 +533,11 @@ def compute_size(trade, cfg, throttle):
 
     sharpe = trade.get("sharpe", 1.5)
     # Scale: min_sharpe → min_usd, min_sharpe+1.0 → max_usd
-    size_usd = min_usd + (sharpe - min_sharpe) * (max_usd - min_usd)
-    size_usd = max(min_usd, min(max_usd, size_usd))
+    base_size = min_usd + (sharpe - min_sharpe) * (max_usd - min_usd)
+    base_size = max(min_usd, min(max_usd, base_size))
 
     # Apply risk throttle
-    size_usd *= throttle
+    base_size *= throttle
 
     # Apply adversary size modifier (Phase 3: Cognitive Loop)
     adversary_modifier = trade.get("recommended_size_modifier", 1.0)
@@ -521,7 +547,13 @@ def compute_size(trade, cfg, throttle):
             log(f"  [ADVERSARY] WEAK verdict for {trade.get('coin')} {trade.get('direction')} — reducing size by 60%")
         elif adversary_verdict == "PROCEED_WITH_CAUTION":
             log(f"  [ADVERSARY] CAUTION verdict for {trade.get('coin')} {trade.get('direction')} — reducing size by 30%")
-        size_usd *= adversary_modifier
+        base_size *= adversary_modifier
+
+    # Upgrade 4: Drawdown-responsive streak modifier
+    streak_mod = get_streak_modifier()
+    size_usd = base_size * streak_mod
+    if streak_mod != 1.0:
+        log(f"  [STREAK] size={size_usd:.0f} (base={base_size:.0f} × streak_mod={streak_mod})")
 
     return round(size_usd, 2)
 

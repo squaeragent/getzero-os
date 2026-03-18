@@ -218,7 +218,7 @@ def compute_streaks(closed_trades):
     lose_streak = 0
     # Walk backwards from most recent
     for t in reversed(closed_trades):
-        pnl = t.get("pnl_dollars", 0)
+        pnl = t.get("pnl_dollars", 0) or t.get("pnl_usd", 0)
         if pnl > 0:
             if lose_streak > 0:
                 break
@@ -229,6 +229,29 @@ def compute_streaks(closed_trades):
             lose_streak += 1
         # pnl == 0: skip, doesn't break streak
     return win_streak, lose_streak
+
+
+def compute_current_streak(closed_trades):
+    """
+    Upgrade 4: Compute signed streak integer.
+    Positive = consecutive wins, negative = consecutive losses.
+    Reads closed.jsonl tail and counts from the end.
+    """
+    if not closed_trades:
+        return 0
+    streak = 0
+    for t in reversed(closed_trades):
+        pnl = t.get("pnl_dollars", 0) or t.get("pnl_usd", 0)
+        if pnl > 0:
+            if streak < 0:
+                break
+            streak += 1
+        elif pnl < 0:
+            if streak > 0:
+                break
+            streak -= 1
+        # pnl == 0: neutral, skip
+    return streak
 
 
 def compute_rolling_stats(closed_trades, window=ROLLING_WINDOW):

@@ -1,38 +1,6 @@
 {
-  "timestamp": "2026-03-18T20:43:21.180589+00:00",
+  "timestamp": "2026-03-18T20:48:21.358894+00:00",
   "approved": [
-    {
-      "coin": "DOT",
-      "direction": "SHORT",
-      "signal": "DOJI_SIGNAL_SHORT_OVERBOUGHT_V2_EX4_Q1_EX2",
-      "sharpe": 1.5941,
-      "win_rate": 78.64,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M < 28 OR BB_POSITION_15M < 0.05",
-      "max_hold_hours": 48,
-      "regime": "stable",
-      "regime_match": true,
-      "regime_match_score": 0.5,
-      "signal_heat": 0.5,
-      "composite_score": 6.5,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "AVAX",
-      "direction": "SHORT",
-      "signal": "RSI_ROC_OVERBOUGHT_HURST_LOW_SHORT_V2_Q9_EX2",
-      "sharpe": 1.5661,
-      "win_rate": 74.29,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "ROC_3H <= -0.50",
-      "max_hold_hours": 30,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 5.58,
-      "recent_record": "0W/0L"
-    },
     {
       "coin": "XPL",
       "direction": "SHORT",
@@ -47,38 +15,6 @@
       "regime_match_score": 0.0,
       "signal_heat": 0.5,
       "composite_score": 5.27,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "ADA",
-      "direction": "SHORT",
-      "signal": "BEAR_WEIGHTED_OVERBOUGHT_V1_MH24_FR15_EX0",
-      "sharpe": 1.4297,
-      "win_rate": 63.45,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M < 19.5",
-      "max_hold_hours": 24,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 5.07,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "ADA",
-      "direction": "SHORT",
-      "signal": "BEAR_WEIGHTED_OVERBOUGHT_V1_MH24",
-      "sharpe": 1.1981,
-      "win_rate": 61.99,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M < 15",
-      "max_hold_hours": 24,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 4.68,
       "recent_record": "0W/0L"
     },
     {
@@ -114,11 +50,36 @@
       "recent_record": "0W/0L"
     }
   ],
-  "blocked": [],
+  "blocked": [
+    {
+      "coin": "DOT",
+      "direction": "SHORT",
+      "signal": "DOJI_SIGNAL_SHORT_OVERBOUGHT_V2_EX4_Q1_EX2",
+      "reason": "already have position in DOT"
+    },
+    {
+      "coin": "AVAX",
+      "direction": "SHORT",
+      "signal": "RSI_ROC_OVERBOUGHT_HURST_LOW_SHORT_V2_Q9_EX2",
+      "reason": "already have position in AVAX"
+    },
+    {
+      "coin": "ADA",
+      "direction": "SHORT",
+      "signal": "BEAR_WEIGHTED_OVERBOUGHT_V1_MH24_FR15_EX0",
+      "reason": "group 'l1_legacy' already has 2 positions (max 2)"
+    },
+    {
+      "coin": "ADA",
+      "direction": "SHORT",
+      "signal": "BEAR_WEIGHTED_OVERBOUGHT_V1_MH24",
+      "reason": "group 'l1_legacy' already has 2 positions (max 2)"
+    }
+  ],
   "portfolio_state": {
     "net_direction": "SHORT",
-    "net_exposure_pct": 11.4,
+    "net_exposure_pct": 30.1,
     "correlation_risk": "low",
-    "diversification_score": 0.5
+    "diversification_score": 0.67
   }
 }

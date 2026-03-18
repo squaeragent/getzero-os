@@ -338,6 +338,8 @@ def export():
         }
 
     live_stats = compute_stats(live_closed)
+    live_total_trades = len(live_closed)
+    live_total_wins = sum(1 for c in live_closed if c.get("pnl_dollars", c.get("pnl_usd", 0)) > 0)
 
     # ─── LIVE EQUITY CURVE (from risk agent) ───
     live_equity_curve = [
@@ -353,8 +355,8 @@ def export():
             "enabled": True,
             "capital": 115,
             "positions": live_positions,
-            "trades": total,
-            "wins": wins_count,
+            "trades": live_total_trades,
+            "wins": live_total_wins,
             "dailyLoss": live_portfolio.get("daily_loss", 0),
             "closed": live_closed[-20:],
             "started": live_portfolio.get("started", now_iso),
