@@ -18,6 +18,8 @@ Agent execution order:
   7. Execution (5-min)           — reads approved + risk + liquidity + spread, acts last
   8. Observer (2-min)            — kill condition monitoring + observation recording
   9. Reflection (6h)             — LLM-based self-assessment via Ollama; proposes rules
+ 10. Counterfactual (30-min)    — resolves killed hypotheses; determines adversary accuracy
+ 11. Adversary Evolution (2h)   — adjusts attack weights based on counterfactual precision
 """
 
 import json
@@ -47,6 +49,8 @@ AGENTS = [
     ("execution",           AGENTS_DIR / "execution_agent.py",       300,   10),
     ("observer",            AGENTS_DIR / "observer.py",              120,    5),   # Phase 4: closes cognitive loop
     ("reflection",          AGENTS_DIR / "reflection.py",          21600, 1440),  # Phase 5: Ollama reflection (6h)
+    ("counterfactual",      AGENTS_DIR / "counterfactual.py",       1800,   90),  # Meta-learning: resolves killed hypotheses (30-min)
+    ("adversary_evolution", AGENTS_DIR / "adversary_evolution.py",  7200,  240),  # Meta-learning: evolves attack weights (2h)
 ]
 
 processes = {}

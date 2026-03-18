@@ -40,6 +40,23 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+
+# ─── EVOLVED WEIGHTS LOADER ───
+def load_evolved_weights():
+    """Load evolved attack weights from counterfactual learning."""
+    weights_file = Path(__file__).parent.parent / "bus" / "evolved_weights.json"
+    if not weights_file.exists():
+        return {}
+    try:
+        with open(weights_file) as f:
+            data = json.load(f)
+        # Only use if we have enough data
+        if data.get("data_points", 0) < 20:
+            return {}
+        return {k: v["evolved"] for k, v in data.get("weights", {}).items()}
+    except Exception:
+        return {}
+
 # ── Upgrade 3 helper (session classification mirrors perception.py) ──
 def _get_trading_session(utc_hour):
     if 0 <= utc_hour < 7:
@@ -945,6 +962,11 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
     cautioned_count = 0
     proceeded_count = 0
 
+    # Load evolved weights from counterfactual learning
+    evolved_weights = load_evolved_weights()
+    if evolved_weights:
+        log(f"  Loaded evolved weights for {len(evolved_weights)} attacks from counterfactual learning")
+
     # Load active rules once for all hypotheses
     active_rules = load_active_rules_for_adversary()
     if active_rules:
@@ -970,6 +992,13 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_macro_regime(hyp, world_state_meta),       # Upgrade 1
             attack_session_risk(hyp, world_state_meta),       # Upgrade 3
         ]
+
+        # Apply evolved weights from counterfactual learning (overrides static weights)
+        if evolved_weights:
+            for attack in attacks:
+                attack_name = attack.get("attack", "")
+                if attack_name in evolved_weights:
+                    attack["weight"] = evolved_weights[attack_name]
 
         # Only include attacks with non-zero severity in summary
         active_attacks = [a for a in attacks if a.get("severity", 0) > 0]
