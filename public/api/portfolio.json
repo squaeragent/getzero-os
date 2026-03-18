@@ -1,15 +1,15 @@
 {
   "live": true,
-  "updated": "2026-03-18T02:32:27.230284+00:00",
+  "updated": "2026-03-18T02:47:29.229481+00:00",
   "summary": {
     "startingCapital": 10000,
     "currentValue": 10037.31,
-    "cash": 8768.25,
+    "cash": 8329.84,
     "pnl": 37.31,
     "pnlPct": 0.37,
     "totalTrades": 69,
     "winRate": 65.2,
-    "openPositions": 3,
+    "openPositions": 4,
     "daysRunning": 2,
     "started": "2026-03-16T18:22:43.099450+00:00"
   },
@@ -52,6 +52,19 @@
       "size": 418.73,
       "sharpe": 1.6456,
       "win_rate": 58.156
+    },
+    {
+      "coin": "INJ",
+      "signal_name": "WEIGHTED_EMA_MACD_TREND_SHORT_NEW_EX7_EX2",
+      "rarity": "Common",
+      "direction": "SHORT",
+      "entry_price": 3.25205,
+      "entry_time": "2026-03-18T02:47:29.223923+00:00",
+      "exit_expression": "EMA_N_24H >= 1.1055 OR RSI_12H >= 69",
+      "max_hold_hours": 360,
+      "size": 438.41,
+      "sharpe": 1.6159,
+      "win_rate": 64
     }
   ],
   "closed": [
@@ -859,21 +872,6 @@
   "recentFires": [
     {
       "coin": "SOL",
-      "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-      "rarity": "Rare",
-      "direction": "LONG",
-      "sharpe": 1.6557,
-      "win_rate": 66.2651,
-      "max_drawdown": 15.6929,
-      "total_return": 47.5328,
-      "expression": "XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND XONE_AVG_NET >= 30 AND RSI_3H30M <= 55 AND XONE_A_NET < 80.0000000000",
-      "exit_expression": "RSI_3H30M >= 85 OR XONE_I_NET <= 10",
-      "max_hold_hours": 24,
-      "price": 94.6055,
-      "time": "2026-03-18T00:02:07.805518+00:00"
-    },
-    {
-      "coin": "SOL",
       "signal": "INFLU_CROWD_MOMENTUM_LONG_V2_EX3_Q1",
       "rarity": "Common",
       "direction": "LONG",
@@ -1156,6 +1154,21 @@
       "max_hold_hours": 24,
       "price": 94.6455,
       "time": "2026-03-18T02:32:27.203315+00:00"
+    },
+    {
+      "coin": "INJ",
+      "signal": "WEIGHTED_EMA_MACD_TREND_SHORT_NEW_EX7_EX2",
+      "rarity": "Common",
+      "direction": "SHORT",
+      "sharpe": 1.6159,
+      "win_rate": 64,
+      "max_drawdown": 90.9279,
+      "total_return": 60.4589,
+      "expression": "((EMA_N_24H <= 0.993) * 4) + ((MACD_N_12H <= -0.0025) * 3) + ((RSI_12H <= 43) * 2) + ((MOMENTUM_N_24H <= -0.015) * 2) + ((HURST_48H >= 0.64) * 1) >= 7",
+      "exit_expression": "EMA_N_24H >= 1.1055 OR RSI_12H >= 69",
+      "max_hold_hours": 360,
+      "price": 3.25205,
+      "time": "2026-03-18T02:47:29.223923+00:00"
     }
   ]
 }
