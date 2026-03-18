@@ -49,9 +49,11 @@ MAX_OPEN_POSITIONS = 8          # up to 8 positions at $10-15 each = $80-120 not
 MAX_TOTAL_NOTIONAL = 100.0      # total notional cap (keep effective leverage ~1x)
 MAX_DAILY_LOSS_USD = 10.0       # $10 max daily loss, then stop
 STOP_LOSS_PCT = 0.05            # 5% hard stop
+TRAILING_STOP_TRIGGER = 0.02    # activate trailing stop after +2% gain
+TRAILING_STOP_LOCK = 0.50       # lock in 50% of peak gain
 LEVERAGE = 20                   # cross leverage (set by HL, we manage risk via position sizing)
-MIN_SHARPE = 2.0
-MIN_WIN_RATE = 50.0
+MIN_SHARPE = 1.5                # matches paper engine threshold
+MIN_WIN_RATE = 60.0             # require 60%+ win rate (filters ETH spam at 40%)
 MAX_PER_COIN = 2                # max 2 live positions per coin
 
 # Coin configs
@@ -305,8 +307,39 @@ def should_open(fire, positions, portfolio):
     return True, "ok"
 
 
+def close_and_record(client, pos, current, pnl_pct, reason, portfolio):
+    """Close a position on HL and record it."""
+    coin = pos["coin"]
+    is_long = pos["direction"] == "LONG"
+
+    if LIVE_MODE:
+        sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
+        size = float(f"{pos['size_coins']:.{sz_dec}f}")
+        result = client.close_position(coin, is_long, size)
+        log(f"  Close result: {json.dumps(result)}")
+
+    pnl_usd = pos["size_usd"] * pnl_pct
+    portfolio["trades"] = portfolio.get("trades", 0) + 1
+    if pnl_usd > 0:
+        portfolio["wins"] = portfolio.get("wins", 0) + 1
+    else:
+        portfolio["daily_loss"] = portfolio.get("daily_loss", 0) + abs(pnl_usd)
+
+    closed = {
+        **pos,
+        "exit_price": current,
+        "exit_time": datetime.now(timezone.utc).isoformat(),
+        "exit_reason": reason,
+        "pnl_pct": round(pnl_pct * 100, 2),
+        "pnl_usd": round(pnl_usd, 2)
+    }
+    # Remove peak_pnl from closed record (internal tracking field)
+    closed.pop("peak_pnl_pct", None)
+    append_jsonl(LIVE_CLOSED, closed)
+
+
 def check_exits(client, positions, portfolio):
-    """Check if any position should be closed (stop loss or signal exit)."""
+    """Check stop loss, trailing stop, and max hold for each position."""
     remaining = []
     for pos in positions:
         coin = pos["coin"]
@@ -322,65 +355,82 @@ def check_exits(client, positions, portfolio):
         else:
             pnl_pct = (entry - current) / entry
 
-        # Stop loss
+        # Track peak P&L for trailing stop
+        peak = pos.get("peak_pnl_pct", 0)
+        if pnl_pct > peak:
+            pos["peak_pnl_pct"] = pnl_pct
+            peak = pnl_pct
+
+        # 1. Hard stop loss
         if pnl_pct <= -STOP_LOSS_PCT:
-            log(f"🛑 STOP LOSS {coin} {pos['direction']} | entry ${entry:.4f} → ${current:.4f} | {pnl_pct*100:.2f}%")
-
-            if LIVE_MODE:
-                sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
-                size = float(f"{pos['size_coins']:.{sz_dec}f}")
-                result = client.close_position(coin, is_long, size)
-                log(f"  Close result: {json.dumps(result)}")
-
-            pnl_usd = pos["size_usd"] * pnl_pct
-            portfolio["daily_loss"] = portfolio.get("daily_loss", 0) + abs(pnl_usd)
-            portfolio["trades"] = portfolio.get("trades", 0) + 1
-
-            closed = {
-                **pos,
-                "exit_price": current,
-                "exit_time": datetime.now(timezone.utc).isoformat(),
-                "exit_reason": "stop_loss",
-                "pnl_pct": round(pnl_pct * 100, 2),
-                "pnl_usd": round(pnl_usd, 2)
-            }
-            append_jsonl(LIVE_CLOSED, closed)
+            log(f"🛑 STOP LOSS {coin} {pos['direction']} | ${entry:.4f} → ${current:.4f} | {pnl_pct*100:+.2f}%")
+            close_and_record(client, pos, current, pnl_pct, "stop_loss", portfolio)
             continue
 
-        # Max hold time (convert to hours)
+        # 2. Trailing stop: after +2% gain, close if price drops to 50% of peak
+        if peak >= TRAILING_STOP_TRIGGER:
+            trailing_floor = peak * TRAILING_STOP_LOCK  # e.g. peak 4% → floor 2%
+            if pnl_pct <= trailing_floor:
+                log(f"📉 TRAILING STOP {coin} {pos['direction']} | peak {peak*100:.2f}% → now {pnl_pct*100:+.2f}% (floor {trailing_floor*100:.2f}%)")
+                close_and_record(client, pos, current, pnl_pct, "trailing_stop", portfolio)
+                continue
+
+        # 3. Max hold time
         entry_dt = datetime.fromisoformat(pos["entry_time"].replace("Z", "+00:00"))
         hours_held = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 3600
         max_hold = pos.get("max_hold_hours", 48)
         if hours_held >= max_hold:
-            log(f"⏰ MAX HOLD {coin} {pos['direction']} | {hours_held:.1f}h >= {max_hold}h | {pnl_pct*100:.2f}%")
-
-            if LIVE_MODE:
-                sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
-                size = float(f"{pos['size_coins']:.{sz_dec}f}")
-                result = client.close_position(coin, is_long, size)
-                log(f"  Close result: {json.dumps(result)}")
-
-            pnl_usd = pos["size_usd"] * pnl_pct
-            if pnl_usd > 0:
-                portfolio["wins"] = portfolio.get("wins", 0) + 1
-            else:
-                portfolio["daily_loss"] = portfolio.get("daily_loss", 0) + abs(pnl_usd)
-            portfolio["trades"] = portfolio.get("trades", 0) + 1
-
-            closed = {
-                **pos,
-                "exit_price": current,
-                "exit_time": datetime.now(timezone.utc).isoformat(),
-                "exit_reason": "max_hold",
-                "pnl_pct": round(pnl_pct * 100, 2),
-                "pnl_usd": round(pnl_usd, 2)
-            }
-            append_jsonl(LIVE_CLOSED, closed)
+            log(f"⏰ MAX HOLD {coin} {pos['direction']} | {hours_held:.1f}h | {pnl_pct*100:+.2f}%")
+            close_and_record(client, pos, current, pnl_pct, "max_hold", portfolio)
             continue
 
         remaining.append(pos)
 
     return remaining
+
+
+def sync_positions_with_hl(client, positions):
+    """Reconcile local position state with actual Hyperliquid positions."""
+    hl_positions = client.get_positions()
+    hl_map = {}
+    for p in hl_positions:
+        pos = p["position"]
+        coin = pos["coin"]
+        size = float(pos["szi"])
+        if size != 0:
+            hl_map[coin] = {
+                "size": abs(size),
+                "direction": "LONG" if size > 0 else "SHORT",
+                "entry": float(pos["entryPx"]),
+                "pnl": float(pos["unrealizedPnl"])
+            }
+
+    synced = []
+    for pos in positions:
+        coin = pos["coin"]
+        if coin in hl_map:
+            hl = hl_map[coin]
+            # Verify direction matches
+            if hl["direction"] == pos["direction"]:
+                # Update size if HL disagrees (partial fill/liquidation)
+                if abs(hl["size"] - pos["size_coins"]) > 0.0001:
+                    log(f"🔄 SYNC {coin}: local size {pos['size_coins']} → HL size {hl['size']}")
+                    pos["size_coins"] = hl["size"]
+                    pos["size_usd"] = hl["size"] * hl["entry"]
+                synced.append(pos)
+                del hl_map[coin]
+            else:
+                log(f"⚠️ SYNC {coin}: direction mismatch local={pos['direction']} HL={hl['direction']}, dropping local")
+                del hl_map[coin]
+        else:
+            # Position closed on HL but still in local state (liquidation?)
+            log(f"⚠️ SYNC {coin}: position gone from HL, removing local tracker")
+
+    # HL positions we don't have locally (manual trades?)
+    for coin, hl in hl_map.items():
+        log(f"⚠️ SYNC {coin}: found on HL but not tracked locally ({hl['direction']} {hl['size']})")
+
+    return synced
 
 
 def run():
@@ -419,7 +469,11 @@ def run():
 
     log(f"Open positions: {len(positions)}, Trades: {portfolio.get('trades', 0)}, Daily loss: ${portfolio.get('daily_loss', 0):.2f}")
 
-    # Check exits first
+    # Sync local state with Hyperliquid
+    if LIVE_MODE and positions:
+        positions = sync_positions_with_hl(client, positions)
+
+    # Check exits (stop loss, trailing stop, max hold)
     positions = check_exits(client, positions, portfolio)
 
     # Get new fires from scanner
