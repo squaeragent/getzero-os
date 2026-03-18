@@ -1,0 +1,57 @@
+{
+  "coin": "DOT",
+  "direction": "LONG",
+  "signal": "DOJI_REVERSAL_LONG_NARROW_BB_V2_EX0",
+  "sharpe": 1.5982,
+  "win_rate": 70.97,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.28,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M > 68.2 OR DOJI_DISTANCE < -3",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1 AND RSI_3H30M < 45 AND BB_UPPER_5H_N < 1.012",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_165705_DOT_LONG_001",
+  "thesis": "Hurst 0.63 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "spread elevated \u2014 potential MM activity; Hurst declining 0.71\u21920.63 \u2014 momentum may be exhausting",
+  "confidence": 0.61,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "fast bullish divergence building (DIVERGENCE_BULL)",
+    "funding stable (rate -0.000825)"
+  ],
+  "evidence_against": [
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.71\u21920.63 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.6287,
+    "hurst_48h": 0.7141,
+    "funding_rate": -0.000825,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 56.9,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

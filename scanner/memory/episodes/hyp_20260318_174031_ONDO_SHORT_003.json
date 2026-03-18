@@ -1,0 +1,125 @@
+{
+  "coin": "ONDO",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_BEARISH_SCORE_SHORT_V1_FR19_EX2_FR16",
+  "sharpe": 1.0244,
+  "win_rate": 59.03,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.06,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 14,
+  "exit_expression": "RSI_3H30M <= 24.5",
+  "entry_expression": "((RSI_3H30M >= 70) * 2) + ((BB_POSITION_15M >= 0.88) * 2) + ((CMO_3H30M >= 30) * 2) + ((CLOUD_POSITION_15M <= 0) * 1) + ((MOMENTUM_2H30M_N >= 0.080) * 2) + ((HURST_24H <= 0.70) * 1) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_174031_ONDO_SHORT_003",
+  "thesis": "Hurst 0.75 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity",
+  "confidence": 0.49,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 84)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7503,
+    "hurst_48h": 0.726,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 83.8,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_174031_ONDO_SHORT_003",
+    "coin": "ONDO",
+    "direction": "SHORT",
+    "survival_score": 0.9,
+    "verdict": "PROCEED",
+    "recommended_size_modifier": 1.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "Hurst 0.771 \u2014 kill at 0.5 not near",
+        "conditions_checked": 4,
+        "conditions_near": 1
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $69 (60% of equity), 3% adverse move = -$2.07",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 2.07,
+        "directional_pct": 60.0
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.49",
+        "confidence": 0.49,
+        "evidence_for_count": 3,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in stable regime",
+        "regime": "stable",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 1
+  }
+}

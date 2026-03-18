@@ -1,0 +1,58 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_MOMENTUM_BEAR_CMO_V1_MH84_EX0",
+  "sharpe": 1.5838,
+  "win_rate": 60,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.43,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 84,
+  "exit_expression": "CMO_3H30M < -21 AND ROC_6H > 1.0",
+  "entry_expression": "((CMO_3H30M > 10) * 2) + ((ROC_6H < -1.0) * 3) + ((HURST_24H > 0.7) * 2) + ((EMA_3H_N < 1.001) * 2) + ((ADX_3H30M > 25) * 1) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_172926_XPL_SHORT_002",
+  "thesis": "Hurst 0.71 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.55,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.71 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.745,
+    "hurst_24h": 0.707,
+    "hurst_48h": 0.7413,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 57.3,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

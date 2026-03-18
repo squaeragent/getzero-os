@@ -1,0 +1,125 @@
+{
+  "coin": "DOT",
+  "direction": "LONG",
+  "signal": "DOJI_REVERSAL_LONG_NARROW_BB_V2_EX0",
+  "sharpe": 1.5982,
+  "win_rate": 70.97,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.28,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M > 68.2 OR DOJI_DISTANCE < -3",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 1 AND RSI_3H30M < 45 AND BB_UPPER_5H_N < 1.012",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_164723_DOT_LONG_001",
+  "thesis": "Hurst 0.65 + CONFIRMATION_SHORT + funding negative (-0.00044) + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG; spread elevated \u2014 potential MM activity; Hurst declining 0.73\u21920.65 \u2014 momentum may be exhausting",
+  "confidence": 0.56,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "adequate liquidity (score 79)"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.73\u21920.65 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.649,
+    "hurst_48h": 0.7261,
+    "funding_rate": -0.000438,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 78.7,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_164723_DOT_LONG_001",
+    "coin": "DOT",
+    "direction": "LONG",
+    "survival_score": 0.35,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "funding intensifying \u2014 kill condition 50% met; spread ELEVATED \u2014 kill condition 40% met",
+        "conditions_checked": 4,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $60 (52% of equity), 3% drop = -$1.80",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.8,
+        "directional_pct": 52.2
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "3 evidence_against vs 2 evidence_for; anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.56,
+        "evidence_for_count": 2,
+        "evidence_against_count": 3
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=reversal) in stable regime",
+        "regime": "stable",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG with funding rate -0.000613",
+        "funding_rate": -0.000613,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  }
+}

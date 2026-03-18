@@ -1,0 +1,76 @@
+{
+  "coin": "INJ",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_TREND_DOWN_SHORT_V3_EX0",
+  "sharpe": 1.6316,
+  "win_rate": 55.77,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.07,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.2,
+  "max_hold_hours": 216,
+  "exit_expression": "EMA_N_48H >= 0.707 OR ROC_48H >= 2.0",
+  "entry_expression": "((EMA_N_48H <= 0.985) * 4) + ((MACD_N_48H <= -0.006) * 3) + ((ROC_48H <= -2.0) * 2) + ((DFA_48H >= 0.50) * 2) + ((RSI_48H <= 50) * 1) >= 6",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173950_INJ_SHORT_001",
+  "thesis": "Hurst 0.75 + DIVERGENCE_BULL + funding negative (-0.00202) + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity",
+  "confidence": 0.358,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding negative supports SHORT (rate -0.002016)",
+    "adequate liquidity (score 61)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "INJ",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
+      "outcome": "win",
+      "pnl_pct": 0.15,
+      "exit_reason": "risk_kill",
+      "entry_time": "2026-03-18T06:45:53.896982+00:00"
+    },
+    {
+      "coin": "INJ",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.31,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T13:25:20.740870+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7491,
+    "hurst_48h": 0.7592,
+    "funding_rate": -0.002016,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 61.2,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

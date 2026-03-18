@@ -1,0 +1,58 @@
+{
+  "coin": "SUI",
+  "direction": "LONG",
+  "signal": "DOJI_QUALITY_LONG_EX2_Q11",
+  "sharpe": 1.0928,
+  "win_rate": 77.92,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.86,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 60,
+  "exit_expression": "BB_POSITION_15M >= 0.90",
+  "entry_expression": "DOJI_SIGNAL_L >= 100 AND DOJI_DISTANCE_L >= 0.6 AND BB_POSITION_15M <= 0.25 AND SENKOU_A_6H30M_N < 1.0053136750",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_170729_SUI_LONG_002",
+  "thesis": "Hurst 0.71 + CONFIRMATION_SHORT + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG; Hurst declining 0.76\u21920.71 \u2014 momentum may be exhausting",
+  "confidence": 0.679,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 83)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+    "Hurst declining 0.76\u21920.71 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.706,
+    "hurst_48h": 0.7619,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 83.4,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

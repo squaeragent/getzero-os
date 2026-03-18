@@ -1,0 +1,69 @@
+{
+  "coin": "HYPE",
+  "direction": "LONG",
+  "signal": "WEIGHTED_CHAOS_TREND_LONG_FR7_EX2_EX3_MH144",
+  "sharpe": 1.1266,
+  "win_rate": 61.54,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 8.27,
+  "timeframe_pattern": "CONFIRMATION_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 144,
+  "exit_expression": "MACD_6H30M_N < -0.033 OR EMA_3H_N < 0.896",
+  "entry_expression": "((HURST_24H >= 0.77) * 3) + ((DFA_24H >= 0.76) * 2) + ((MACD_6H30M_N > 0.001) * 3) + ((EMA_3H_N > 1.001) * 2) >= 7",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173950_HYPE_LONG_001",
+  "thesis": "Hurst 0.78 + CONFIRMATION_LONG + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.565,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.78 > 0.55 \u2192 persistent upward momentum",
+    "fast+slow timeframes both bullish (CONFIRMATION_LONG)",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 69)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold",
+    "timeframe pattern flips to CONFIRMATION_SHORT"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "WEIGHTED_REVERSAL_LONG_R2_FR1_EX7",
+      "outcome": "loss",
+      "pnl_pct": -0.28,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:39:11.281719+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.783,
+    "hurst_24h": 0.7777,
+    "hurst_48h": 0.7303,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 68.9,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bullish"
+  }
+}

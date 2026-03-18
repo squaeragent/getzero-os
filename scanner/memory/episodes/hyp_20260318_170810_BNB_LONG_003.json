@@ -1,0 +1,135 @@
+{
+  "coin": "BNB",
+  "direction": "LONG",
+  "signal": "SOCIAL_MOMENTUM_TIGHT_LONG_V3_MH40",
+  "sharpe": 1.4114,
+  "win_rate": 58.33,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.62,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 40,
+  "exit_expression": "RSI_3H30M >= 92 OR XONE_AVG_NET_DELTA <= -10",
+  "entry_expression": "XONE_AVG_NET_DELTA >= 8 AND XONE_U_NET >= 40 AND RSI_3H30M <= 42 AND CMO_3H30M <= -5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_170810_BNB_LONG_003",
+  "thesis": "Hurst 0.77 + CONFIRMATION_SHORT + funding negative (-0.00029) + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+  "confidence": 0.433,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "deep liquidity (score 90)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18",
+      "outcome": "loss",
+      "pnl_pct": -0.17,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T13:25:27.507664+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7713,
+    "hurst_48h": 0.6641,
+    "funding_rate": -0.000286,
+    "funding_direction": "normalizing",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 89.6,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_170810_BNB_LONG_003",
+    "coin": "BNB",
+    "direction": "LONG",
+    "survival_score": 0.72,
+    "verdict": "PROCEED",
+    "recommended_size_modifier": 1.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.17
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "Hurst 0.759 \u2014 kill at 0.5 not near",
+        "conditions_checked": 4,
+        "conditions_near": 1
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $60 (52% of equity), 3% drop = -$1.80",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.8,
+        "directional_pct": 52.2
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.43",
+        "confidence": 0.433,
+        "evidence_for_count": 3,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=neutral) in stable regime",
+        "regime": "stable",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "funding intensifying negatively \u2014 LONG environment strengthening",
+        "funding_rate": -0.000452,
+        "funding_velocity": "intensifying",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  }
+}

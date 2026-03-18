@@ -1,0 +1,155 @@
+{
+  "coin": "TRX",
+  "direction": "LONG",
+  "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+  "sharpe": 2.53,
+  "win_rate": 77.8,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.0,
+  "signal_heat": 0.5,
+  "recent_record": "archetype",
+  "composite_score": 7.6,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0.0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
+  "source": "archetype",
+  "hypothesis_id": "hyp_20260318_164723_TRX_LONG_001",
+  "thesis": "Hurst 0.66 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "Hurst declining 0.78\u21920.66 \u2014 momentum may be exhausting",
+  "confidence": 0.578,
+  "evidence_for": [
+    "Hurst 0.66 > 0.55 \u2192 persistent upward momentum",
+    "fast bullish divergence building (DIVERGENCE_BULL)",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 77)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "Hurst declining 0.78\u21920.66 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "ETH",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.02,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T09:52:26.986682+00:00"
+    },
+    {
+      "coin": "BTC",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.05,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T10:36:55.527420+00:00"
+    },
+    {
+      "coin": "TON",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.24,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:54:53.418482+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.667,
+    "hurst_24h": 0.6631,
+    "hurst_48h": 0.7838,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 77.0,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_164723_TRX_LONG_001",
+    "coin": "TRX",
+    "direction": "LONG",
+    "survival_score": 0.1764,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.4,
+        "weight": 1.5,
+        "detail": "5 similar trades lost avg -0.2%",
+        "failures_found": 5,
+        "avg_loss_pct": -0.22
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding LONG increases long exposure to $60 (52% of equity), 3% drop = -$1.80",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 1.8,
+        "directional_pct": 52.2
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.578,
+        "evidence_for_count": 5,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=momentum) in trending regime",
+        "regime": "trending",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 4
+  }
+}

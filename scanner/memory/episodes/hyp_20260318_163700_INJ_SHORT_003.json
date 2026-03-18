@@ -73,5 +73,73 @@
     "timeframe_pattern": "CONFIRMATION_SHORT",
     "fast_bias": "bearish",
     "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_163700_INJ_SHORT_003",
+    "coin": "INJ",
+    "direction": "SHORT",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met; liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $69 (60% of equity), 3% adverse move = -$2.07",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 2.07,
+        "directional_pct": 60.0
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.4,
+        "weight": 1.0,
+        "detail": "confidence 0.40 below threshold",
+        "confidence": 0.395,
+        "evidence_for_count": 3,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in stable regime",
+        "regime": "stable",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate -0.00070% \u2014 paying ~$0.10/day to hold $50 position (funding intensifying against SHORT)",
+        "funding_rate": -0.000699,
+        "funding_velocity": "intensifying",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
   }
 }

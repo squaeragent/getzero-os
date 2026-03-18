@@ -1,0 +1,125 @@
+{
+  "coin": "APT",
+  "direction": "SHORT",
+  "signal": "DOJI_REVERSAL_SHORT_Q5",
+  "sharpe": 1.1907,
+  "win_rate": 73.2,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.13,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.15,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M <= 45 OR DOJI_DISTANCE <= -10",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M >= 65 AND DOJI_DISTANCE >= 4.0 AND DFA_24H < 0.6092574975",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173006_APT_SHORT_002",
+  "thesis": "Hurst 0.70 + DIVERGENCE_BULL + funding negative (-0.00150) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity",
+  "confidence": 0.632,
+  "evidence_for": [
+    "Hurst 0.70 > 0.5 \u2192 trending market",
+    "funding negative supports SHORT (rate -0.001502)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.675,
+    "hurst_24h": 0.7041,
+    "hurst_48h": 0.7338,
+    "funding_rate": -0.001502,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 54.5,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_173006_APT_SHORT_002",
+    "coin": "APT",
+    "direction": "SHORT",
+    "survival_score": 0.25,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "funding intensifying \u2014 kill condition 50% met; spread ELEVATED \u2014 kill condition 40% met",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $69 (60% of equity), 3% adverse move = -$2.07",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 2.07,
+        "directional_pct": 60.0
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.63",
+        "confidence": 0.632,
+        "evidence_for_count": 2,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=reversal) in stable regime",
+        "regime": "stable",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate -0.00154% \u2014 paying ~$0.23/day to hold $50 position (funding intensifying against SHORT)",
+        "funding_rate": -0.001536,
+        "funding_velocity": "intensifying",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 2
+  }
+}

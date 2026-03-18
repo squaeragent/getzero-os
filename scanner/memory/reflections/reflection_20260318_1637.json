@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-03-18T16:37:01.643410+00:00",
+  "cycle": 1,
+  "observations_since_last": 14,
+  "total_trades_analyzed": 14,
+  "win_rate": 28.6,
+  "net_pnl": -1.21,
+  "llm_analysis": "**Analysis**\n\n1. **Patterns in recent losses:**\n\t* Coin-specific: SOL (2 losses), BTC (2 losses), ETH, HYPE, TON, INJ, TIA, BNB\n\t* Regime: Unclear, as regime information is not provided for each trade.\n\t* Signals:\n\t\t+ ARCH_CHAOS_REGIME_CONVERGENCE (3 losses)\n\t\t+ SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7 (1 loss)\n\t\t+ CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18 (1 loss)\n\t* Common theme: Long positions with a focus on bullish signals, which may indicate an overly optimistic bias.\n2. **Patterns in recent wins:**\n\t* Coin-specific: WLD, INJ, ARB, ZEC\n\t* Regime: Unclear, as regime information is not provided for each trade.\n\t* Signals:\n\t\t+ WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4 (1 win)\n\t\t+ BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1_EX3_EX2 (1 win)\n\t\t+ WEIGHTED_OVERSOLD_SCORE_V2_FR19_FR4_EX0 (1 win)\n\t* Common theme: Short positions and long positions with a focus on mean-reversion signals, which may indicate an edge in identifying oversold/overbought conditions.\n3. **Overweight direction/regime/signal type:**\n\t* Long bias: 10 out of 14 trades were long positions, indicating an overweight towards bullish bets.\n\t* ARCH_CHAOS_REGIME_CONVERGENCE signal: 3 losses with this signal suggest potential issues with its performance.\n4. **Edges to exploit more:**\n\t* Mean-reversion signals (e.g., WEIGHTED_OVERSOLD_SCORE_V2_FR19_FR4_EX0) have shown promise in recent wins.\n\t* Short positions, which have been less frequent but successful when taken.\n5. **Traps to avoid:**\n\t* Overly optimistic long bias, as seen in the losses with ARCH_CHAOS_REGIME_CONVERGENCE and SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7 signals.\n\n**Proposed rules:**\n\n1. RULE: IF (signal == WEIGHTED_OVERSOLD_SCORE_V2_FR19_FR4_EX0) AND (coin != SOL) THEN LONG $20 BECAUSE recent wins with this signal suggest an edge in mean-reversion trades.\n2. RULE: IF (position == SHORT) AND (pnl > 0.05) THEN CLOSE POSITION BECAUSE recent short positions have been successful, and locking in profits can help improve overall performance.\n3. RULE: IF (signal == ARCH_CHAOS_REGIME_CONVERGENCE) THEN AVOID LONG POSITION BECAUSE this signal has resulted in multiple losses recently, suggesting potential issues with its performance.\n\nThese rules are designed to exploit the identified edges, avoid traps, and provide a more balanced approach to trading.",
+  "patterns_noticed": [
+    "1. **Patterns in recent losses:**",
+    "2. **Patterns in recent wins:**"
+  ],
+  "rule_proposals": [],
+  "self_assessment": {
+    "biggest_mistake": "1. **Patterns in recent losses:**",
+    "biggest_edge": "2. **Patterns in recent wins:**",
+    "confidence_calibration": "Analyzed"
+  }
+}

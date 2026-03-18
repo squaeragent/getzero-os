@@ -1,0 +1,64 @@
+{
+  "coin": "HYPE",
+  "direction": "LONG",
+  "signal": "ARCH_DOJI_BREAKOUT",
+  "sharpe": 2.31,
+  "win_rate": 75.8,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 1.0,
+  "signal_heat": 0.5,
+  "recent_record": "archetype",
+  "composite_score": 6.94,
+  "timeframe_pattern": "TRAP_SHORT",
+  "timeframe_confirmation": 0.0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 8,
+  "exit_expression": "ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0",
+  "source": "archetype",
+  "hypothesis_id": "hyp_20260318_171902_HYPE_LONG_001",
+  "thesis": "Hurst 0.80 + TRAP_SHORT + funding positive (0.00044) + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.708,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding positive supports LONG (rate 0.000444)",
+    "deep liquidity (score 93)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "WEIGHTED_REVERSAL_LONG_R2_FR1_EX7",
+      "outcome": "loss",
+      "pnl_pct": -0.28,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:39:11.281719+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.8045,
+    "hurst_48h": 0.7245,
+    "funding_rate": 0.000444,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 92.6,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bullish"
+  }
+}

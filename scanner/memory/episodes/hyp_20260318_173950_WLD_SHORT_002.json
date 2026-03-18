@@ -1,0 +1,67 @@
+{
+  "coin": "WLD",
+  "direction": "SHORT",
+  "signal": "LYAPUNOV_STABLE_SHORT_EX2_Q2_Q6",
+  "sharpe": 1.2671,
+  "win_rate": 72.88,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.84,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 60,
+  "exit_expression": "BB_POSITION_15M <= 0.00",
+  "entry_expression": "LYAPUNOV_24H <= 1.69 AND BB_POSITION_15M >= 0.85 AND CMO_3H30M >= 30 AND CLOUD_POSITION_15M < 2.0000000000 AND DOJI_VELOCITY_L >= -3.2599126050",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173950_WLD_SHORT_002",
+  "thesis": "Hurst 0.78 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
+  "confidence": 0.629,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "WLD",
+      "direction": "SHORT",
+      "signal": "unknown_expanded_coin",
+      "outcome": "win",
+      "pnl_pct": 0.19,
+      "exit_reason": "manual_close_oversize",
+      "entry_time": "2026-03-18T08:04:00+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7828,
+    "hurst_48h": 0.6819,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 52.8,
+    "tradeable": false,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

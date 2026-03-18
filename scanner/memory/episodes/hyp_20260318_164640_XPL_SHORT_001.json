@@ -1,0 +1,57 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+  "sharpe": 1.5877,
+  "win_rate": 60.38,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.94,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 72,
+  "exit_expression": "MOMENTUM_N_6H > 0.13",
+  "entry_expression": "MOMENTUM_N_6H < 0.025 AND MOMENTUM_N_24H < 0.08 AND LYAPUNOV_48H <= 1.96",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_164640_XPL_SHORT_001",
+  "thesis": "Hurst 0.69 + TRAP_LONG + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "Hurst declining 0.74\u21920.69 \u2014 momentum may be exhausting; thin liquidity (score 48)",
+  "confidence": 0.504,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001075)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "Hurst declining 0.74\u21920.69 \u2014 momentum may be exhausting",
+    "thin liquidity (score 48)"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.6931,
+    "hurst_48h": 0.7433,
+    "funding_rate": 0.001075,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 48.3,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

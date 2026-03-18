@@ -1,0 +1,134 @@
+{
+  "coin": "HYPE",
+  "direction": "SHORT",
+  "signal": "DOJI_RSI_EXTREME_SHORT_V2_FR11_MH32_MH21",
+  "sharpe": 2.3245,
+  "win_rate": 69.23,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.31,
+  "timeframe_pattern": "CONFIRMATION_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 21,
+  "exit_expression": "RSI_3H30M < 25 OR BB_POSITION_15M < -0.15",
+  "entry_expression": "((DOJI_SIGNAL >= 100) * 3) + ((DOJI_DISTANCE >= 14) * 2) + ((RSI_3H30M > 72) * 3) + ((BB_POSITION_15M > 0.78) * 2) + ((HURST_24H >= 0.80) * 1) >= 6",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173006_HYPE_SHORT_001",
+  "thesis": "Hurst 0.80 + CONFIRMATION_LONG + funding positive (0.00125) + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "timeframe pattern CONFIRMATION_LONG conflicts with SHORT",
+  "confidence": 0.542,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "deep liquidity (score 87)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_LONG conflicts with SHORT"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "WEIGHTED_REVERSAL_LONG_R2_FR1_EX7",
+      "outcome": "loss",
+      "pnl_pct": -0.28,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:39:11.281719+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7996,
+    "hurst_48h": 0.7262,
+    "funding_rate": 0.00125,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 87.3,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bullish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_173006_HYPE_SHORT_001",
+    "coin": "HYPE",
+    "direction": "SHORT",
+    "survival_score": 0.32,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "funding intensifying \u2014 kill condition 50% met",
+        "conditions_checked": 4,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $69 (60% of equity), 3% adverse move = -$2.07",
+        "same_direction_positions": 1,
+        "stress_impact_usd": 2.07,
+        "directional_pct": 60.0
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.54",
+        "confidence": 0.542,
+        "evidence_for_count": 3,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "funding intensifying positively \u2014 LONG bias strengthening",
+        "funding_rate": 0.00125,
+        "funding_velocity": "intensifying",
+        "funding_reversal": false
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No active rules",
+        "matched_rules": []
+      }
+    ],
+    "active_attacks": 3
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "coin": "ETH",
+  "direction": "LONG",
+  "signal": "RSI_DOJI_SOCIAL_MEAN_REVERT_LONG_V3_FR2_FR8_EX4_FR",
+  "sharpe": 2.151,
+  "win_rate": 88,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.0,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 36,
+  "exit_expression": "BB_POSITION_15M >= 1.35 OR RSI_3H30M >= 75.6",
+  "entry_expression": "RSI_3H30M <= 38.5 AND DOJI_SIGNAL >= 100 AND XONE_A_U_DIV >= 20 AND DFA_24H < 0.70 AND EMA_3H_N < 1.001",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_170729_ETH_LONG_001",
+  "thesis": "Hurst 0.68 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+  "confidence": 0.73,
+  "evidence_for": [
+    "Hurst 0.68 > 0.55 \u2192 persistent upward momentum",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 100)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "ETH",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.02,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T09:52:26.986682+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.65,
+    "hurst_24h": 0.6785,
+    "hurst_48h": 0.7177,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 100,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

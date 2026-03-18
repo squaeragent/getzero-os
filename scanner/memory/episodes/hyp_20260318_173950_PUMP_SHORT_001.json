@@ -1,0 +1,58 @@
+{
+  "coin": "PUMP",
+  "direction": "SHORT",
+  "signal": "RSI_HIGH_MACD_DFA_SHORT_V2_EX0_MH16",
+  "sharpe": 1.6308,
+  "win_rate": 66.1,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.18,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 16,
+  "exit_expression": "RSI_3H30M <= 25.2",
+  "entry_expression": "RSI_3H30M >= 65 AND MACD_6H30M_N >= 0.002 AND DFA_48H <= 0.55",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173950_PUMP_SHORT_001",
+  "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity; liquidity below tradeable threshold",
+  "confidence": 0.511,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 70)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.729,
+    "hurst_48h": 0.702,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 69.9,
+    "tradeable": false,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

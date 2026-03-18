@@ -1,0 +1,57 @@
+{
+  "coin": "ADA",
+  "direction": "SHORT",
+  "signal": "BEAR_WEIGHTED_OVERBOUGHT_V1_MH24_FR15",
+  "sharpe": 1.2851,
+  "win_rate": 61.85,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.85,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.32,
+  "max_hold_hours": 24,
+  "exit_expression": "RSI_3H30M < 15",
+  "entry_expression": "((RSI_3H30M > 70) * 2) + ((BB_POSITION_15M > 0.88) * 2) + ((CMO_3H30M > 30) * 2) + ((MACD_CROSS_15M_N < -0.02025) * 2) + ((MOMENTUM_2H30M_N < -0.005) * 1) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_173950_ADA_SHORT_002",
+  "thesis": "Hurst 0.65 + DIVERGENCE_BULL + funding negative (-0.00320) + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.569,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding negative supports SHORT (rate -0.003197)",
+    "deep liquidity (score 86)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.6452,
+    "hurst_48h": 0.6851,
+    "funding_rate": -0.003197,
+    "funding_direction": "normalizing",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 86.3,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}
