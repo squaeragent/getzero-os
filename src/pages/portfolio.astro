@@ -40,7 +40,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <!-- EQUITY CURVE -->
       <div class="section">
-        <div class="ph">EQUITY CURVE <span class="dim" id="eq-range"></span></div>
+        <div class="ph">ACCOUNT VALUE <span class="dim" id="eq-range"></span></div>
         <div class="sb eq-wrap">
           <canvas id="equity-canvas" width="860" height="200"></canvas>
           <div class="muted" id="eq-empty" style="display:none">Collecting data...</div>
@@ -79,7 +79,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <!-- FOOTER -->
       <div class="footer">
-        <span>◇ ZERO OS</span>
+        <a href="/" class="footer-link">◇ ZERO OS</a>
         <span class="dim" id="updated">—</span>
       </div>
 
@@ -413,6 +413,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: 0.1em;
     color: var(--text-dim);
   }
+  .footer-link {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-link:hover {
+    color: var(--phosphor);
+  }
 
   /* ─── MOBILE ─── */
   @media (max-width: 600px) {
@@ -611,10 +619,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function renderStats(stats){
     var el = document.getElementById('stats-dashboard');
     if(!el) return;
-    if(!stats || !stats.total || stats.total < 2){
-      el.innerHTML = '<div class="muted" style="grid-column:1/-1">Insufficient data — need more closed trades.</div>';
+    var section = el.closest('.section');
+    if(!stats || !stats.total || stats.total < 5){
+      if(section) section.style.display = 'none';
       return;
     }
+    if(section) section.style.display = 'block';
 
     // Left: P&L by coin
     var left = '<div class="stats-panel">';
@@ -677,17 +687,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var totalInPositions = 0;
     for(var i=0; i<livePos.length; i++) totalInPositions += (livePos[i].size_usd||0);
 
-    // Hero: equity = capital + unrealized
-    var equity = lt.capital + totalUnrealized;
-    var realizedPnl = lt.stats ? lt.stats.totalPnl : 0;
-    var totalPnl = realizedPnl + totalUnrealized;
-    var startCapital = lt.capital - realizedPnl; // approximate starting capital
-    var pnlPct = startCapital > 0 ? (totalPnl / startCapital) * 100 : 0;
+    // Hero: equity = total capital (115 USDC) + unrealized P&L
+    // lt.capital tracks available cash (115 - position sizes). True equity = cash + positions at current value.
+    var equity = lt.capital + totalInPositions + totalUnrealized;
+    var startingEquity = 115; // USDC deposited to HL
+    var realizedPnl = lt.stats ? (lt.stats.totalPnl || 0) : 0;
+    var totalPnl = (equity - startingEquity);
+    var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
-    // Uptime days
-    var uptimeDays = 0;
+    // Uptime: show hours when < 1 day, days otherwise
+    var uptimeStr = '—';
     if(lt.started){
-      uptimeDays = Math.floor((Date.now() - new Date(lt.started).getTime()) / 86400000);
+      var uptimeMs = Date.now() - new Date(lt.started).getTime();
+      var uptimeH = Math.floor(uptimeMs / 3600000);
+      if(uptimeH < 24){
+        uptimeStr = uptimeH + 'h';
+      } else {
+        uptimeStr = Math.floor(uptimeH / 24) + 'd ' + (uptimeH % 24) + 'h';
+      }
     }
 
     document.getElementById('s-equity').textContent = fmt$(equity);
@@ -695,10 +712,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     pnlEl.textContent = fmtPct(pnlPct) + ' (' + fmt$(totalPnl) + ')';
     pnlEl.className = 'sv ' + pnlClass(totalPnl);
 
-    var winRate = lt.trades > 0 ? (lt.wins / lt.trades * 100) : null;
+    // Win rate: show "—" until >= 5 trades
+    var winRate = lt.trades >= 5 ? (lt.wins / lt.trades * 100) : null;
     document.getElementById('s-winrate').textContent = winRate !== null ? winRate.toFixed(0) + '%' : '—';
     document.getElementById('s-trades').textContent = lt.trades || 0;
-    document.getElementById('s-uptime').textContent = uptimeDays + 'd';
+    document.getElementById('s-uptime').textContent = uptimeStr;
 
     document.getElementById('pos-count').textContent = '(' + livePos.length + ')';
     document.getElementById('closed-count').textContent = '(' + liveClosed.length + ')';
