@@ -34,7 +34,13 @@ HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 HL_API_URL = "https://api.hyperliquid.xyz/info"
 CYCLE_SECONDS = 120  # 2 minutes
 
-TRADEABLE_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+TRADEABLE_COINS = [
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
+]
 
 # Tradeability thresholds
 MAX_SPREAD_PCT = 0.05    # 0.05% max bid-ask spread

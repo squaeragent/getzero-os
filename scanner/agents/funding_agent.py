@@ -41,7 +41,13 @@ FUNDING_VELOCITY_WINDOW = 6   # Last 6 readings (30 min at 5-min cycle) for velo
 FUNDING_REVERSAL_THRESHOLD = 0.003  # Rate changed by 0.003% = reversal underway
 
 # Our tradeable coins
-TRADED_COINS = {"BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"}
+TRADED_COINS = {
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
+}
 
 HL_INFO_URL = "https://api.hyperliquid.xyz/info"
 

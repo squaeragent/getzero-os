@@ -26,7 +26,13 @@ FUNDING_FILE = BUS_DIR / "funding.json"
 CYCLE_SECONDS = 120
 
 # All coins we monitor (not just whitelist — spread anomalies on any coin are useful)
-COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+COINS = [
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",
+    "DOGE", "DOT", "ENA", "ETH", "FARTCOIN", "HYPE", "INJ", "JUP",
+    "LDO", "LINK", "LTC", "NEAR", "ONDO", "OP", "PAXG", "PUMP",
+    "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
+    "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
+]
 
 # Thresholds
 SPREAD_WARNING_PCT = 0.10   # 0.1% spread = yellow

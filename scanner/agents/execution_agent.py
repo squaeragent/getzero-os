@@ -522,10 +522,8 @@ def should_open(trade, positions, cfg):
     max_per_coin = cfg.get("max_per_coin", 1)
     max_notional = cfg.get("max_notional", 100)
 
-    # Only trade coins with paper validation data (original 10 + proven new ones)
-    LIVE_APPROVED_COINS = {"BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"}
-    if coin not in LIVE_APPROVED_COINS:
-        return False, f"coin {coin} not approved for live trading (paper-only)"
+    # All coins with signal caches + HL markets are approved for live trading
+    # Liquidity agent filters out illiquid coins downstream
 
     # Check liquidity
     liquidity = load_liquidity()
