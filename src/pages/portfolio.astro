@@ -1195,8 +1195,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
-    var equity = startingEquity + totalUnrealized;
-    var totalPnl = totalUnrealized;
+    // Compute realized P&L from closed trades
+    var totalRealized = 0;
+    for(var i=0; i<liveClosed.length; i++){
+      totalRealized += liveClosed[i].pnl_usd || liveClosed[i].pnl_dollars || 0;
+    }
+
+    var equity = startingEquity + totalRealized + totalUnrealized;
+    var totalPnl = totalRealized + totalUnrealized;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
     // Uptime
@@ -1455,7 +1461,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           var price = getCurrentPrice(livePos[i].coin);
           if(price){ totalUnrealized += calcPnl(livePos[i], price).dollars; }
         }
-        eq = startingEquity + totalUnrealized;
+        var liveClosed = lt.closed || [];
+        var totalRealized = 0;
+        for(var i=0; i<liveClosed.length; i++){
+          totalRealized += liveClosed[i].pnl_usd || liveClosed[i].pnl_dollars || 0;
+        }
+        eq = startingEquity + totalRealized + totalUnrealized;
       }
       drawEquityCurve(portfolioData.liveEquityCurve, eq);
     }
