@@ -36,7 +36,6 @@ REGIMES_FILE = BUS_DIR / "regimes.json"
 SIGNAL_WEIGHTS_FILE = BUS_DIR / "signal_weights.json"
 HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
-CLOSED_FILE_PAPER = DATA_DIR / "closed.jsonl"
 CLOSED_FILE_LIVE = LIVE_DIR / "closed.jsonl"
 
 # ─── CONFIG ───
@@ -73,13 +72,10 @@ def load_jsonl(path, max_lines=2000):
 
 
 def load_all_closed_trades():
-    """Load closed trades from both paper and live sources."""
-    paper = load_jsonl(CLOSED_FILE_PAPER)
+    """Load closed trades from live trading."""
     live = load_jsonl(CLOSED_FILE_LIVE)
-    # Combine and sort by exit_time
-    all_trades = paper + live
-    all_trades.sort(key=lambda t: t.get("exit_time", ""))
-    return all_trades
+    live.sort(key=lambda t: t.get("exit_time", ""))
+    return live
 
 
 def load_regimes():
