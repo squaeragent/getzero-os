@@ -1,13 +1,10 @@
 #!/bin/bash
-# ZERO OS — Scanner + Executor cycle
-# Runs scanner first, then executor in LIVE mode
+# ZERO OS — Agent Supervisor launcher
+# Replaces old scanner+executor cycle with 5-agent system
 set -euo pipefail
 
 PYTHON=/opt/homebrew/bin/python3
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Run scanner (generates signals)
-$PYTHON "$DIR/signal_scanner.py" 2>&1
-
-# Run executor in LIVE mode (trades on signals)
-$PYTHON "$DIR/hyperliquid_executor.py" --live 2>&1
+# Run the supervisor (it manages all 5 agents internally)
+exec $PYTHON "$DIR/run_agents.py" --once 2>&1

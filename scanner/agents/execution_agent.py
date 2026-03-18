@@ -31,7 +31,7 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 from eth_account import Account as EthAccount
-from hyperliquid.utils.signing import sign_l1_action, get_timestamp_ms
+from hyperliquid.utils.signing import sign_l1_action, get_timestamp_ms, float_to_wire
 
 # ─── PATHS ───
 AGENT_DIR = Path(__file__).parent
@@ -55,9 +55,9 @@ CYCLE_SECONDS = 300  # 5 minutes
 
 # ─── COIN TABLES ───
 COIN_TO_ASSET = {
-    "BTC": 0, "ETH": 1, "SOL": 5, "DOGE": 17,
-    "AVAX": 10, "LINK": 14, "ARB": 35, "NEAR": 33,
-    "SUI": 54, "INJ": 37
+    "BTC": 0, "ETH": 1, "SOL": 5, "DOGE": 12,
+    "AVAX": 6, "LINK": 18, "ARB": 11, "NEAR": 74,
+    "SUI": 14, "INJ": 13
 }
 COIN_SIZE_DECIMALS = {
     "BTC": 5, "ETH": 4, "SOL": 2, "DOGE": 0,
@@ -198,6 +198,7 @@ class HLClient:
             return f"{px:.6f}"
 
     def _sign_and_send(self, action):
+        time.sleep(0.05)  # prevent nonce collision on consecutive orders
         timestamp = get_timestamp_ms()
         sig = sign_l1_action(self.wallet, action, None, timestamp, None, True)
         payload = {
@@ -221,8 +222,9 @@ class HLClient:
             return {"status": "err", "response": f"Unknown coin: {coin}"}
 
         sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
-        size_str = f"{size:.{sz_dec}f}"
-        price_str = self._format_price(limit_price)
+        size_rounded = round(size, sz_dec)
+        size_str = float_to_wire(size_rounded)
+        price_str = float_to_wire(self.round_price(limit_price))
 
         action = {
             "type": "order",
@@ -245,8 +247,8 @@ class HLClient:
             return {"status": "err", "response": f"Unknown coin: {coin}"}
 
         sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
-        size_str = f"{size:.{sz_dec}f}"
-        trigger_str = self._format_price(trigger_price)
+        size_str = float_to_wire(round(size, sz_dec))
+        trigger_str = float_to_wire(self.round_price(trigger_price))
 
         action = {
             "type": "order",

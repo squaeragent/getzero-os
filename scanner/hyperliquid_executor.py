@@ -24,7 +24,8 @@ from eth_account import Account as EthAccount
 from hyperliquid.utils.signing import (
     sign_l1_action, get_timestamp_ms,
     order_request_to_order_wire, action_hash,
-    construct_phantom_agent, sign_inner
+    construct_phantom_agent, sign_inner,
+    float_to_wire
 )
 
 # ─── CONFIG ───
@@ -57,9 +58,9 @@ MAX_PER_COIN = 1                # 1 position per coin (concentrate, don't double
 
 # Coin configs
 COIN_TO_ASSET = {
-    "BTC": 0, "ETH": 1, "SOL": 5, "DOGE": 17,
-    "AVAX": 10, "LINK": 14, "ARB": 35, "NEAR": 33,
-    "SUI": 54, "INJ": 37
+    "BTC": 0, "ETH": 1, "SOL": 5, "DOGE": 12,
+    "AVAX": 6, "LINK": 18, "ARB": 11, "NEAR": 74,
+    "SUI": 14, "INJ": 13
 }
 COIN_SIZE_DECIMALS = {
     "BTC": 5, "ETH": 4, "SOL": 2, "DOGE": 0,
@@ -170,24 +171,8 @@ class HLClient:
             return {"status": "err", "response": f"Unknown coin: {coin}"}
 
         sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
-        size_str = f"{size:.{sz_dec}f}"
-
-        # Price must use 5 sig figs
-        rounded_px = self.round_price(limit_price)
-        if rounded_px >= 10000:
-            price_str = f"{rounded_px:.0f}"
-        elif rounded_px >= 1000:
-            price_str = f"{rounded_px:.1f}"
-        elif rounded_px >= 100:
-            price_str = f"{rounded_px:.2f}"
-        elif rounded_px >= 10:
-            price_str = f"{rounded_px:.3f}"
-        elif rounded_px >= 1:
-            price_str = f"{rounded_px:.4f}"
-        elif rounded_px >= 0.1:
-            price_str = f"{rounded_px:.5f}"
-        else:
-            price_str = f"{rounded_px:.6f}"
+        size_str = float_to_wire(round(size, sz_dec))
+        price_str = float_to_wire(self.round_price(limit_price))
 
         # Use "tif" format (not "tpc" — SDK bug in v0.22.0)
         action = {
