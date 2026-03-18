@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-18T06:49:33.372902+00:00",
+  "timestamp": "2026-03-18T06:56:45.176087+00:00",
   "approved": [
     {
       "coin": "AVAX",
@@ -7,7 +7,15 @@
       "signal": "SCORING_TREND_SHORT_MH32_FR15_MH21_EX2",
       "sharpe": 1.3626,
       "win_rate": 80,
-      "reason": "uncorrelated to portfolio, regime transition active"
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "EMA_N_6H >= 1.1044 OR ROC_6H >= 1.0",
+      "max_hold_hours": 21,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
+      "signal_heat": 0.5,
+      "composite_score": 6.19,
+      "recent_record": "1W/0L"
     },
     {
       "coin": "ETH",
@@ -15,7 +23,15 @@
       "signal": "DOJI_CMO_QUALITY_LONG_V3_MH18_EX2_Q5",
       "sharpe": 1.1692,
       "win_rate": 62.96,
-      "reason": "uncorrelated to portfolio, regime transition active"
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "CMO_3H30M >= 65 OR BB_POSITION_15M >= 1.40",
+      "max_hold_hours": 18,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
+      "signal_heat": 0.5,
+      "composite_score": 5.39,
+      "recent_record": "0W/0L"
     }
   ],
   "blocked": [

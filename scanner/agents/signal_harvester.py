@@ -26,6 +26,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
+import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -134,6 +135,64 @@ def fetch_indicators(coins, indicators, api_key):
                     time.sleep(0.1)
             time.sleep(0.3)
     return all_data
+
+
+# ─── SIGNAL PACK REFRESH ───
+SIGNAL_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
+PACK_TYPES = ["common", "rare", "trump"]
+CACHE_MAX_AGE_SECONDS = 3600  # refresh every hour
+
+
+def refresh_signal_cache(api_key):
+    """Fetch fresh signal packs from Envy API (YAML format) and save as JSON."""
+    SIGNALS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Check if refresh is needed
+    needs_refresh = False
+    for coin in SIGNAL_COINS:
+        cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
+        if not cache_file.exists():
+            needs_refresh = True
+            break
+        age = time.time() - cache_file.stat().st_mtime
+        if age > CACHE_MAX_AGE_SECONDS:
+            needs_refresh = True
+            break
+
+    if not needs_refresh:
+        return
+
+    print("  Refreshing signal packs from Envy API...")
+    refreshed = 0
+    for coin in SIGNAL_COINS:
+        all_signals = []
+        for pack_type in PACK_TYPES:
+            url = f"{BASE_URL}/paid/signals/pack?coin={coin}&type={pack_type}"
+            try:
+                req = urllib.request.Request(url, headers={"X-API-Key": api_key})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    content_type = resp.headers.get("Content-Type", "")
+                    raw = resp.read().decode()
+                    if "yaml" in content_type or raw.startswith("#"):
+                        data = yaml.safe_load(raw)
+                    else:
+                        data = json.loads(raw)
+                signals = data.get("signals", [])
+                for sig in signals:
+                    sig["_pack"] = pack_type
+                    sig["_coin"] = coin
+                all_signals.extend(signals)
+            except Exception as e:
+                print(f"    WARN: {coin}/{pack_type}: {e}")
+            time.sleep(0.3)  # rate limit
+
+        if all_signals:
+            cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
+            with open(cache_file, "w") as f:
+                json.dump(all_signals, f, indent=2)
+            refreshed += 1
+
+    print(f"  Refreshed {refreshed}/{len(SIGNAL_COINS)} coins")
 
 
 # ─── SIGNAL PACK LOADING ───
@@ -368,6 +427,9 @@ def run_cycle(api_key):
     print(f"\n{'='*60}")
     print(f"Signal Harvester — {ts.strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"{'='*60}")
+
+    # Refresh signal packs if stale (hourly)
+    refresh_signal_cache(api_key)
 
     # Load signal packs
     packs = load_signal_packs()
