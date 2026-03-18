@@ -573,10 +573,11 @@ def should_open(trade, positions, cfg):
 # Max leverage → volatility-adjusted stop loss
 # Higher leverage = lower vol = tighter stop. Lower leverage = higher vol = wider stop.
 STOP_LOSS_BY_MAX_LEV = {
-    40: 0.03,   # BTC: low vol, tight stop
-    25: 0.04,   # ETH: medium vol
-    20: 0.05,   # SOL: medium-high vol
-    10: 0.07,   # ALTs: high vol, wide stop
+    40: 0.04,   # BTC: low vol
+    25: 0.05,   # ETH: medium vol
+    20: 0.06,   # SOL: medium-high vol
+    10: 0.08,   # ALTs: high vol, wide stop
+    5:  0.10,   # Low-lev alts: widest
 }
 
 
@@ -639,8 +640,8 @@ def get_adjusted_stop_pct(coin, default_stop):
     atr = get_atr_for_coin(coin, api_key)
     
     if atr and atr > 0:
-        # 2x ATR as stop, floored at 1.5% and capped at 10%
-        base_stop = max(0.015, min(0.10, atr * 2))
+        # 3x ATR as stop, floored at 3% and capped at 10%
+        base_stop = max(0.03, min(0.10, atr * 3))
         log(f"  {coin} ATR-stop: ATR={atr*100:.3f}% → stop={base_stop*100:.2f}%")
     else:
         # Fallback to leverage-bucket
@@ -896,13 +897,13 @@ def get_atr_stop(coin, direction, entry_price):
 
         stop_pct = abs(stop - entry_price) / entry_price * 100
 
-        # Clamp between 1% and 10% — don't let ATR go crazy
-        if stop_pct < 1.0:
+        # Clamp between 3% and 10%
+        if stop_pct < 3.0:
             if direction == "LONG":
-                stop = entry_price * 0.99
+                stop = entry_price * 0.97
             else:
-                stop = entry_price * 1.01
-            stop_pct = 1.0
+                stop = entry_price * 1.03
+            stop_pct = 3.0
         elif stop_pct > 10.0:
             if direction == "LONG":
                 stop = entry_price * 0.90
