@@ -31,17 +31,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span class="sv" id="s-days">1</span>
             </div>
           </div>
-          <p class="hero-sub">Paper trading $10,000 with autonomous signal detection. Every position backed by backtested entry/exit rules. Updated every 15 minutes.</p>
+          <div class="hero-meta">
+            <span class="risk-badge" id="risk-badge">—</span>
+            <span class="regime-summary dim" id="regime-summary"></span>
+          </div>
         </div>
       </div>
 
+      <!-- EQUITY CURVE -->
+      <div class="section">
+        <div class="ph">EQUITY CURVE <span class="dim" id="eq-range"></span></div>
+        <div class="sb eq-wrap">
+          <canvas id="equity-canvas" width="860" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- AGENT STATUS BAR -->
+      <div class="section">
+        <div class="ph">AGENT STATUS</div>
+        <div class="sb agent-bar" id="agent-bar"></div>
+      </div>
+
       <!-- LIVE TRADING (REAL MONEY) -->
-      <div class="section" id="live-section" style="display:none">
+      <div class="section live-section" id="live-section" style="display:none">
         <div class="ph"><span class="live-badge">LIVE</span> HYPERLIQUID TRADING <span class="dim" id="live-count">(0)</span></div>
         <div class="sb">
           <div class="live-stats" id="live-stats"></div>
           <div id="live-positions-body"></div>
           <div id="live-closed-body"></div>
+        </div>
+      </div>
+
+      <!-- STATS DASHBOARD -->
+      <div class="section">
+        <div class="ph">STATS DASHBOARD</div>
+        <div class="sb stats-grid" id="stats-dashboard">
+          <div class="muted">Loading stats...</div>
         </div>
       </div>
 
@@ -53,7 +78,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- RECENT SIGNALS -->
+      <!-- SIGNAL FEED -->
       <div class="section">
         <div class="ph">SIGNAL FEED <span class="dim">last 20 fires</span></div>
         <div class="sb" id="fires-body">
@@ -82,7 +107,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <style is:global>
   /* ─── PAGE ─── */
   .page {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 1rem;
     min-height: 100vh;
@@ -149,13 +174,67 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 700;
   }
   .sv.big { font-size: 1.5rem; }
-  .hero-sub {
-    font-family: var(--font-body);
-    font-size: 0.8rem;
-    line-height: 1.6;
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .risk-badge {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.15rem 0.5rem;
+    text-transform: uppercase;
+  }
+  .regime-summary {
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
     color: var(--text-dim);
-    margin: 0;
-    max-width: 600px;
+  }
+
+  /* ─── EQUITY CURVE ─── */
+  .eq-wrap {
+    padding: 0.5rem 1rem;
+    overflow: hidden;
+  }
+  #equity-canvas {
+    width: 100%;
+    height: 200px;
+    display: block;
+  }
+
+  /* ─── AGENT STATUS BAR ─── */
+  .agent-bar {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+  .agent-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .agent-dot {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+  }
+  .agent-name {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+  .agent-time {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    opacity: 0.6;
   }
 
   /* ─── POSITION CARDS ─── */
@@ -174,6 +253,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap;
   }
   .pos-coin {
     font-family: var(--font-head);
@@ -187,7 +267,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 700;
     letter-spacing: 0.1em;
     padding: 0.15rem 0.4rem;
-    border-radius: 2px;
   }
   .pos-dir.long {
     color: #0a0a0a;
@@ -195,19 +274,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .pos-dir.short {
     color: #fff;
-    background: #cc4422;
+    background: #ff3333;
   }
-  .pos-rarity {
+  .regime-badge {
     font-family: var(--font-head);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     letter-spacing: 0.08em;
     padding: 0.1rem 0.35rem;
-    border-radius: 2px;
     border: 1px solid;
+    text-transform: uppercase;
   }
-  .pos-rarity.trump { color: #ffb000; border-color: rgba(255,176,0,0.4); }
-  .pos-rarity.rare { color: #00d4ff; border-color: rgba(0,212,255,0.4); }
-  .pos-rarity.common { color: var(--text-dim); border-color: var(--border); }
+  .regime-badge.trending { color: #c8ff00; border-color: rgba(200,255,0,0.4); }
+  .regime-badge.stable { color: var(--text-dim); border-color: var(--border); }
+  .regime-badge.shift { color: #ffb000; border-color: rgba(255,176,0,0.4); }
+  .regime-badge.chaotic { color: #ff3333; border-color: rgba(255,51,51,0.4); }
+  .pos-signal {
+    font-family: var(--font-head);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    opacity: 0.7;
+  }
   .pos-pnl {
     margin-left: auto;
     font-family: var(--font-head);
@@ -236,6 +322,68 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.8rem;
     color: var(--text);
   }
+  .pos-exit {
+    margin-top: 0.4rem;
+    font-family: var(--font-body);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+    word-break: break-all;
+  }
+
+  /* ─── STATS DASHBOARD ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .stats-panel {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+  }
+  .stats-panel-title {
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .coin-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+  .coin-stats-table th {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0.2rem 0.4rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .coin-stats-table td {
+    padding: 0.25rem 0.4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text);
+  }
+  .coin-stats-table th:not(:first-child),
+  .coin-stats-table td:not(:first-child) {
+    text-align: right;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.7rem;
+  }
+  .stat-row-label { color: var(--text-dim); }
+  .stat-row-value { color: var(--text); font-weight: 700; }
 
   /* ─── SIGNAL FEED ─── */
   .fire-list {
@@ -245,7 +393,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .fire-row {
     display: grid;
-    grid-template-columns: 140px 50px 55px 1fr auto auto;
+    grid-template-columns: 130px 50px 55px 1fr auto auto;
     gap: 0.5rem;
     padding: 0.35rem 0;
     border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -302,9 +450,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .c-pos { color: #c8ff00; }
   .c-neg { color: #ff3333; }
   .c-long { color: #c8ff00; }
-  .c-short { color: #cc4422; }
+  .c-short { color: #ff3333; }
 
   /* ─── LIVE TRADING ─── */
+  .live-section {
+    border-color: rgba(255,51,51,0.3);
+  }
+  .live-section > .ph {
+    border-bottom-color: rgba(255,51,51,0.3);
+  }
   .live-badge {
     display: inline-block;
     font-size: 0.55rem;
@@ -313,7 +467,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 0.1rem 0.35rem;
     background: #ff3333;
     color: #fff;
-    border-radius: 2px;
     margin-right: 0.3rem;
     animation: pulse-dot 2s ease-in-out infinite;
   }
@@ -344,6 +497,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .sv { font-size: 1rem; }
     .sv.big { font-size: 1.3rem; }
     .pos-card-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: 1fr; }
     .fire-row {
       grid-template-columns: 1fr;
       gap: 0.15rem;
@@ -354,22 +508,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       grid-template-columns: 1fr 1fr;
       gap: 0.3rem;
     }
+    .agent-bar { gap: 1rem; }
   }
 </style>
 
 <script is:inline>
-(async function(){
-  const PORTFOLIO_API = '/api/portfolio.json';
-  const PRICE_API = '/api/envy?coins=BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ&indicators=CLOSE_PRICE_15M';
+(function(){
+  var PORTFOLIO_API = '/api/portfolio.json';
+  var PRICE_API = '/api/envy?coins=BTC,ETH,SOL,DOGE,AVAX,LINK,ARB,NEAR,SUI,INJ&indicators=CLOSE_PRICE_15M';
 
-  let portfolioData = null;
-  let livePrices = {};
-  let lastPriceUpdate = 0;
+  var portfolioData = null;
+  var livePrices = {};
+  var lastPriceUpdate = 0;
 
   function fmt$(v){
     if(v==null) return '—';
-    const abs = Math.abs(v);
-    const s = abs.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+    var abs = Math.abs(v);
+    var s = abs.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
     return v<0 ? '-$'+s : '$'+s;
   }
   function fmtPct(v){
@@ -380,185 +535,310 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if(!iso) return '—';
     return new Date(iso).toISOString().replace('T',' ').slice(5,16)+' UTC';
   }
-  function fmtTimeFull(iso){
-    if(!iso) return '—';
-    return new Date(iso).toISOString().replace('T',' ').slice(0,16)+' UTC';
-  }
-  function rarityClass(r){
-    if(!r) return 'common';
-    return r.toLowerCase();
-  }
   function pnlClass(v){ return v>=0?'c-pos':'c-neg'; }
   function ago(ts){
-    const s = Math.floor((Date.now() - ts) / 1000);
+    var s = Math.floor((Date.now() - ts) / 1000);
     if(s < 5) return 'just now';
     if(s < 60) return s+'s ago';
     if(s < 3600) return Math.floor(s/60)+'m ago';
     return Math.floor(s/3600)+'h ago';
   }
-
-  function getCurrentPrice(coin){
-    return livePrices[coin] || null;
+  function agoFromISO(iso){
+    if(!iso) return Infinity;
+    return (Date.now() - new Date(iso).getTime()) / 1000;
   }
+  function getCurrentPrice(coin){ return livePrices[coin] || null; }
 
-  function calcUnrealizedPnl(pos, price){
+  function calcPnl(pos, price){
     if(!price || !pos.entry_price) return {pct:0, dollars:0};
-    let pct;
+    var pct;
     if(pos.direction === 'LONG'){
       pct = ((price - pos.entry_price) / pos.entry_price) * 100;
     } else {
       pct = ((pos.entry_price - price) / pos.entry_price) * 100;
     }
-    const dollars = pos.size * (pct / 100);
-    return {pct, dollars};
+    var size = pos.size || pos.size_usd || 0;
+    return {pct: pct, dollars: size * (pct / 100)};
   }
 
-  async function fetchPrices(){
-    try {
-      const res = await fetch(PRICE_API);
-      const d = await res.json();
-      if(d.matrix){
-        for(const [coin, vals] of Object.entries(d.matrix)){
-          if(vals.CLOSE_PRICE_15M != null){
-            livePrices[coin] = vals.CLOSE_PRICE_15M;
-          }
-        }
-      }
-      lastPriceUpdate = Date.now();
-    } catch(e){
-      console.error('Price fetch failed:', e);
+  var riskColors = {green:'#c8ff00',yellow:'#ffb000',orange:'#ff8800',red:'#ff3333'};
+
+  // ─── EQUITY CURVE (raw canvas) ───
+  function drawEquityCurve(curve){
+    var canvas = document.getElementById('equity-canvas');
+    if(!canvas || !curve || curve.length < 2) return;
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    var W = rect.width;
+    var H = rect.height;
+    var pad = {t:20, r:50, b:25, l:10};
+
+    var vals = curve.map(function(p){ return p.v; });
+    var minV = Math.min.apply(null, vals);
+    var maxV = Math.max.apply(null, vals);
+    var range = maxV - minV || 1;
+    minV -= range * 0.1;
+    maxV += range * 0.1;
+    range = maxV - minV;
+
+    var cw = W - pad.l - pad.r;
+    var ch = H - pad.t - pad.b;
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(200,255,0,0.08)';
+    ctx.lineWidth = 1;
+    var gridLines = 5;
+    for(var i=0; i<=gridLines; i++){
+      var y = pad.t + (ch * i / gridLines);
+      ctx.beginPath();
+      ctx.moveTo(pad.l, y);
+      ctx.lineTo(W - pad.r, y);
+      ctx.stroke();
+      // Y labels
+      var val = maxV - (range * i / gridLines);
+      ctx.fillStyle = 'rgba(200,255,0,0.3)';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('$' + val.toFixed(2), W - pad.r + 4, y + 3);
     }
-  }
 
-  async function loadPortfolio(){
-    try {
-      const res = await fetch(PORTFOLIO_API);
-      portfolioData = await res.json();
-    } catch(e){
-      console.error('Portfolio fetch failed:', e);
+    // Time labels
+    ctx.fillStyle = 'rgba(200,255,0,0.2)';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    var tSteps = Math.min(6, curve.length);
+    for(var i=0; i<tSteps; i++){
+      var idx = Math.floor(i * (curve.length-1) / (tSteps-1));
+      var x = pad.l + (idx / (curve.length-1)) * cw;
+      var d = new Date(curve[idx].t);
+      ctx.fillText(d.toISOString().slice(11,16), x, H - 5);
     }
+
+    // Points
+    function px(i){ return pad.l + (i / (curve.length-1)) * cw; }
+    function py(v){ return pad.t + ch - ((v - minV) / range) * ch; }
+
+    // Area fill
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(vals[0]));
+    for(var i=1; i<vals.length; i++) ctx.lineTo(px(i), py(vals[i]));
+    ctx.lineTo(px(vals.length-1), pad.t + ch);
+    ctx.lineTo(px(0), pad.t + ch);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(200,255,0,0.1)';
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(vals[0]));
+    for(var i=1; i<vals.length; i++) ctx.lineTo(px(i), py(vals[i]));
+    ctx.strokeStyle = '#c8ff00';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Current value dot
+    var lastX = px(vals.length-1);
+    var lastY = py(vals[vals.length-1]);
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#c8ff00';
+    ctx.fill();
+
+    // Range label
+    var el = document.getElementById('eq-range');
+    if(el) el.textContent = curve.length + ' points · $' + minV.toFixed(2) + ' – $' + maxV.toFixed(2);
   }
 
+  // ─── AGENT STATUS BAR ───
+  function renderAgents(agents){
+    var bar = document.getElementById('agent-bar');
+    if(!bar || !agents || !agents.heartbeat) return;
+    var names = ['regime','harvester','correlation','risk','execution'];
+    var html = '';
+    for(var i=0; i<names.length; i++){
+      var name = names[i];
+      var ts = agents.heartbeat[name];
+      var secs = agoFromISO(ts);
+      var color;
+      if(secs < 600) color = '#c8ff00';
+      else if(secs < 1800) color = '#ffb000';
+      else color = '#ff3333';
+      var label = ts ? ago(new Date(ts).getTime()) : 'unknown';
+      html += '<div class="agent-item">';
+      html += '<span class="agent-dot" style="background:'+color+'"></span>';
+      html += '<span class="agent-name">'+name+'</span>';
+      html += '<span class="agent-time">'+label+'</span>';
+      html += '</div>';
+    }
+    bar.innerHTML = html;
+  }
+
+  // ─── STATS DASHBOARD ───
+  function renderStats(stats, liveStats){
+    var el = document.getElementById('stats-dashboard');
+    if(!el || !stats) return;
+
+    // Left panel: P&L by coin table
+    var left = '<div class="stats-panel">';
+    left += '<div class="stats-panel-title">P&L by coin</div>';
+    left += '<table class="coin-stats-table"><thead><tr><th>Coin</th><th>Trades</th><th>WR%</th><th>P&L</th></tr></thead><tbody>';
+    var coins = stats.byCoin || {};
+    // Sort by P&L descending
+    var coinKeys = Object.keys(coins).sort(function(a,b){ return (coins[b].pnl||0) - (coins[a].pnl||0); });
+    for(var i=0; i<coinKeys.length; i++){
+      var c = coinKeys[i];
+      var s = coins[c];
+      left += '<tr>';
+      left += '<td style="color:var(--phosphor);font-weight:700">'+c+'</td>';
+      left += '<td>'+s.trades+'</td>';
+      left += '<td>'+(s.winRate != null ? s.winRate.toFixed(0)+'%' : '—')+'</td>';
+      left += '<td class="'+pnlClass(s.pnl)+'">'+fmt$(s.pnl)+'</td>';
+      left += '</tr>';
+    }
+    left += '</tbody></table></div>';
+
+    // Right panel: key stats
+    var right = '<div class="stats-panel">';
+    right += '<div class="stats-panel-title">Performance</div>';
+
+    var best = stats.bestTrade || {};
+    var worst = stats.worstTrade || {};
+    right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+best.coin+' '+best.direction+' '+fmtPct(best.pnlPct)+' ('+fmt$(best.pnl)+')</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Worst Trade</span><span class="stat-row-value c-neg">'+worst.coin+' '+worst.direction+' '+fmtPct(worst.pnlPct)+' ('+fmt$(worst.pnl)+')</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Avg Hold Time</span><span class="stat-row-value">'+(stats.avgHoldHours||0)+'h</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Avg P&L</span><span class="stat-row-value '+pnlClass(stats.avgPnl)+'">'+fmt$(stats.avgPnl)+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Total P&L</span><span class="stat-row-value '+pnlClass(stats.totalPnl)+'">'+fmt$(stats.totalPnl)+'</span></div>';
+
+    right += '<div class="stats-panel-title" style="margin-top:0.75rem">Long vs Short</div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Long WR ('+stats.longCount+' trades)</span><span class="stat-row-value">'+(stats.longWinRate != null ? stats.longWinRate.toFixed(1)+'%' : '—')+'</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Short WR ('+stats.shortCount+' trades)</span><span class="stat-row-value">'+(stats.shortWinRate != null ? stats.shortWinRate.toFixed(1)+'%' : '—')+'</span></div>';
+    right += '</div>';
+
+    el.innerHTML = left + right;
+  }
+
+  // ─── RENDER ───
   function render(){
-    const d = portfolioData;
+    var d = portfolioData;
     if(!d || !d.live) return;
 
-    const s = d.summary;
-    const positions = d.positions || [];
+    var s = d.summary;
+    var positions = d.positions || [];
 
-    // Compute live portfolio value using current prices
-    let totalUnrealized = 0;
-    for(const p of positions){
-      const price = getCurrentPrice(p.coin);
+    // Compute live portfolio value
+    var totalUnrealized = 0;
+    for(var i=0; i<positions.length; i++){
+      var price = getCurrentPrice(positions[i].coin);
       if(price){
-        const {dollars} = calcUnrealizedPnl(p, price);
-        totalUnrealized += dollars;
+        var r = calcPnl(positions[i], price);
+        totalUnrealized += r.dollars;
       }
     }
-    const totalInPositions = positions.reduce((sum,p) => sum + (p.size||0), 0);
-    const liveValue = s.cash + totalInPositions + totalUnrealized;
-    const livePnl = liveValue - s.startingCapital;
-    const livePnlPct = (livePnl / s.startingCapital) * 100;
+    var totalInPositions = 0;
+    for(var i=0; i<positions.length; i++) totalInPositions += (positions[i].size||0);
+    var liveValue = s.cash + totalInPositions + totalUnrealized;
+    var livePnl = liveValue - s.startingCapital;
+    var livePnlPct = (livePnl / s.startingCapital) * 100;
 
-    // Stats
+    // Hero stats
     document.getElementById('s-value').textContent = fmt$(liveValue);
-    const pnlEl = document.getElementById('s-pnl');
+    var pnlEl = document.getElementById('s-pnl');
     pnlEl.textContent = fmtPct(livePnlPct) + ' (' + fmt$(livePnl) + ')';
     pnlEl.className = 'sv ' + pnlClass(livePnl);
     document.getElementById('s-winrate').textContent = s.winRate!==null ? s.winRate+'%' : '—';
     document.getElementById('s-trades').textContent = s.totalTrades;
     document.getElementById('s-days').textContent = s.daysRunning;
     document.getElementById('pos-count').textContent = '('+s.openPositions+')';
-    document.getElementById('closed-count').textContent = '('+s.totalTrades+')';
+    document.getElementById('closed-count').textContent = '('+(d.closed ? d.closed.length : s.totalTrades)+')';
     document.getElementById('updated').textContent = lastPriceUpdate ? 'Prices: ' + ago(lastPriceUpdate) : 'Loading prices...';
 
-    // ─── OPEN POSITIONS (cards with live P&L) ───
-    const posBody = document.getElementById('positions-body');
-    if(positions.length===0){
-      posBody.innerHTML = '<div class="muted">No open positions. Scanning every 15 minutes.</div>';
-    } else {
-      let html = '<div class="pos-cards">';
-      for(const p of positions){
-        const dirCls = p.direction==='LONG' ? 'long' : 'short';
-        const rarCls = rarityClass(p.rarity);
-        const curPrice = getCurrentPrice(p.coin);
-        const {pct, dollars} = curPrice ? calcUnrealizedPnl(p, curPrice) : {pct:null, dollars:null};
-
-        html += '<div class="pos-card">';
-        html += '<div class="pos-card-top">';
-        html += '<span class="pos-coin">'+p.coin+'</span>';
-        html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
-        html += '<span class="pos-rarity '+rarCls+'">'+(p.rarity||'—')+'</span>';
-        if(pct !== null){
-          html += '<span class="pos-pnl '+pnlClass(pct)+'">'+fmtPct(pct)+'</span>';
-        }
-        html += '</div>';
-        html += '<div class="pos-card-grid">';
-        html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(dollars!==null?pnlClass(dollars):'')+'">'+(dollars!==null?fmt$(dollars):'—')+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Win Rate</span><span class="pos-fv">'+(p.win_rate||0).toFixed(0)+'%</span></div>';
-        html += '</div>';
-        html += '</div>';
-      }
-      html += '</div>';
-      posBody.innerHTML = html;
+    // Risk badge
+    var risk = d.agents && d.agents.risk;
+    if(risk){
+      var badge = document.getElementById('risk-badge');
+      var st = (risk.status||'green').toLowerCase();
+      var col = riskColors[st] || '#c8ff00';
+      badge.textContent = 'RISK: ' + st.toUpperCase();
+      badge.style.color = st === 'green' ? '#0a0a0a' : '#fff';
+      badge.style.background = col;
     }
 
+    // Regime summary
+    var regimes = d.agents && d.agents.regimes;
+    if(regimes && regimes.summary){
+      var rs = regimes.summary;
+      var parts = [];
+      if(rs.trending) parts.push(rs.trending + ' trending');
+      if(rs.stable) parts.push(rs.stable + ' stable');
+      if(rs.shift) parts.push(rs.shift + ' shift');
+      if(rs.chaotic) parts.push(rs.chaotic + ' chaotic');
+      document.getElementById('regime-summary').textContent = parts.join(' · ');
+    }
+
+    // Equity curve
+    drawEquityCurve(d.equityCurve);
+
+    // Agent status
+    renderAgents(d.agents);
+
+    // Stats dashboard
+    renderStats(d.stats, d.liveTrading && d.liveTrading.stats);
+
     // ─── LIVE TRADING (REAL MONEY) ───
-    const lt = d.liveTrading;
-    const liveSection = document.getElementById('live-section');
+    var lt = d.liveTrading;
+    var liveSection = document.getElementById('live-section');
     if(lt && lt.enabled){
       liveSection.style.display = 'block';
-      const livePos = lt.positions || [];
-      const liveClosed = lt.closed || [];
+      var livePos = lt.positions || [];
+      var liveClosed = lt.closed || [];
       document.getElementById('live-count').textContent = '('+livePos.length+' open, '+liveClosed.length+' closed)';
 
       // Live stats
-      const liveStatsEl = document.getElementById('live-stats');
-      const liveWR = lt.trades > 0 ? (lt.wins / lt.trades * 100).toFixed(0) + '%' : '—';
+      var liveStatsEl = document.getElementById('live-stats');
+      var liveWR = lt.trades > 0 ? (lt.wins / lt.trades * 100).toFixed(0) + '%' : '—';
       liveStatsEl.innerHTML = '<div class="stat"><span class="sl">CAPITAL</span><span class="sv">$'+lt.capital+'</span></div>'
         + '<div class="stat"><span class="sl">TRADES</span><span class="sv">'+lt.trades+'</span></div>'
         + '<div class="stat"><span class="sl">WIN RATE</span><span class="sv">'+liveWR+'</span></div>'
         + '<div class="stat"><span class="sl">DAILY LOSS</span><span class="sv '+(lt.dailyLoss>0?'c-neg':'')+'">$'+lt.dailyLoss.toFixed(2)+'</span></div>';
 
       // Live positions
-      const livePosBody = document.getElementById('live-positions-body');
+      var livePosBody = document.getElementById('live-positions-body');
       if(livePos.length === 0){
-        livePosBody.innerHTML = '<div class="muted">No open live positions. Waiting for high-conviction signals.</div>';
+        livePosBody.innerHTML = '<div class="muted">No open live positions.</div>';
       } else {
-        let html = '<div class="pos-cards">';
-        for(const p of livePos){
-          const dirCls = p.direction==='LONG' ? 'long' : 'short';
-          const curPrice = getCurrentPrice(p.coin);
-          let pct = null, dollars = null;
-          if(curPrice && p.entry_price){
-            if(p.direction === 'LONG'){
-              pct = ((curPrice - p.entry_price) / p.entry_price) * 100;
-            } else {
-              pct = ((p.entry_price - curPrice) / p.entry_price) * 100;
-            }
-            dollars = p.size_usd * (pct / 100);
-          }
+        var html = '<div class="pos-cards">';
+        for(var i=0; i<livePos.length; i++){
+          var p = livePos[i];
+          var dirCls = p.direction==='LONG' ? 'long' : 'short';
+          var curPrice = getCurrentPrice(p.coin);
+          var pnlResult = curPrice ? calcPnl(p, curPrice) : {pct:null, dollars:null};
+          var coinRegime = regimes && regimes.coins && regimes.coins[p.coin];
+          var regimeStr = coinRegime ? coinRegime.regime : '';
+
           html += '<div class="pos-card" style="border-color:rgba(255,51,51,0.3)">';
           html += '<div class="pos-card-top">';
           html += '<span class="pos-coin">'+p.coin+'</span>';
           html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
-          html += '<span class="pos-rarity" style="color:#ff3333;border-color:rgba(255,51,51,0.4)">LIVE</span>';
-          if(pct !== null){
-            html += '<span class="pos-pnl '+pnlClass(pct)+'">'+fmtPct(pct)+'</span>';
+          if(regimeStr) html += '<span class="regime-badge '+regimeStr+'">'+regimeStr+'</span>';
+          if(pnlResult.pct !== null){
+            html += '<span class="pos-pnl '+pnlClass(pnlResult.pct)+'">'+fmtPct(pnlResult.pct)+'</span>';
           }
           html += '</div>';
           html += '<div class="pos-card-grid">';
           html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pnlResult.pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
           html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(dollars!==null?pnlClass(dollars):'')+'">'+(dollars!==null?fmt$(dollars):'—')+'</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(pnlResult.dollars!==null?pnlClass(pnlResult.dollars):'')+'">'+(pnlResult.dollars!==null?fmt$(pnlResult.dollars):'—')+'</span></div>';
           html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
-          html += '<div class="pos-field"><span class="pos-fl">Win Rate</span><span class="pos-fv">'+(p.win_rate||0).toFixed(0)+'%</span></div>';
+          html += '<div class="pos-field"><span class="pos-fl">Stop</span><span class="pos-fv">'+fmt$(p.stop_loss)+'</span></div>';
           html += '</div>';
+          if(p.exit_expression){
+            html += '<div class="pos-exit">EXIT: '+p.exit_expression+'</div>';
+          }
           html += '</div>';
         }
         html += '</div>';
@@ -566,11 +846,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       // Live closed trades
-      const liveClosedBody = document.getElementById('live-closed-body');
+      var liveClosedBody = document.getElementById('live-closed-body');
       if(liveClosed.length > 0){
-        let html = '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--border)"><div class="closed-cards">';
-        for(const c of liveClosed.slice().reverse()){
-          const dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
+        var html = '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--border)"><div class="closed-cards">';
+        for(var j=liveClosed.length-1; j>=0; j--){
+          var c = liveClosed[j];
+          var dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
           html += '<div class="closed-card" style="border-color:rgba(255,51,51,0.2)">';
           html += '<span class="closed-coin">'+c.coin+'</span>';
           html += '<span class="'+dirCls+'">'+c.direction+'</span>';
@@ -583,16 +864,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
+    // ─── PAPER POSITIONS ───
+    var posBody = document.getElementById('positions-body');
+    if(positions.length===0){
+      posBody.innerHTML = '<div class="muted">No open positions. Scanning every 15 minutes.</div>';
+    } else {
+      var html = '<div class="pos-cards">';
+      for(var i=0; i<positions.length; i++){
+        var p = positions[i];
+        var dirCls = p.direction==='LONG' ? 'long' : 'short';
+        var curPrice = getCurrentPrice(p.coin);
+        var pnlResult = curPrice ? calcPnl(p, curPrice) : {pct:null, dollars:null};
+        var coinRegime = regimes && regimes.coins && regimes.coins[p.coin];
+        var regimeStr = coinRegime ? coinRegime.regime : '';
+
+        html += '<div class="pos-card">';
+        html += '<div class="pos-card-top">';
+        html += '<span class="pos-coin">'+p.coin+'</span>';
+        html += '<span class="pos-dir '+dirCls+'">'+p.direction+'</span>';
+        if(regimeStr) html += '<span class="regime-badge '+regimeStr+'">'+regimeStr+'</span>';
+        html += '<span class="pos-signal">'+(p.signal_name||'').replace(/_/g,' ').toLowerCase()+'</span>';
+        if(pnlResult.pct !== null){
+          html += '<span class="pos-pnl '+pnlClass(pnlResult.pct)+'">'+fmtPct(pnlResult.pct)+'</span>';
+        }
+        html += '</div>';
+        html += '<div class="pos-card-grid">';
+        html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice?pnlClass(pnlResult.pct||0):'')+'">'+(curPrice?fmt$(curPrice):'—')+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size)+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">P&L</span><span class="pos-fv '+(pnlResult.dollars!==null?pnlClass(pnlResult.dollars):'')+'">'+(pnlResult.dollars!==null?fmt$(pnlResult.dollars):'—')+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe||0).toFixed(2)+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Win Rate</span><span class="pos-fv">'+(p.win_rate||0).toFixed(0)+'%</span></div>';
+        html += '</div>';
+        if(p.exit_expression){
+          html += '<div class="pos-exit">EXIT: '+p.exit_expression+'</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+      posBody.innerHTML = html;
+    }
+
     // ─── SIGNAL FEED ───
-    const firesBody = document.getElementById('fires-body');
-    const fires = (d.recentFires||[]).slice().reverse();
+    var firesBody = document.getElementById('fires-body');
+    var fires = (d.recentFires||[]).slice().reverse().slice(0, 20);
     if(fires.length===0){
       firesBody.innerHTML = '<div class="muted">No signals fired yet.</div>';
     } else {
-      let html = '<div class="fire-list">';
-      for(const f of fires){
-        const name = (f.signal||'').replace(/_/g,' ').toLowerCase().slice(0,45);
-        const dirCls = f.direction==='LONG' ? 'c-long' : 'c-short';
+      var html = '<div class="fire-list">';
+      for(var i=0; i<fires.length; i++){
+        var f = fires[i];
+        var name = (f.signal||'').replace(/_/g,' ').toLowerCase().slice(0,45);
+        var dirCls = f.direction==='LONG' ? 'c-long' : 'c-short';
         html += '<div class="fire-row">';
         html += '<span class="fire-time">'+fmtTime(f.time)+'</span>';
         html += '<span class="fire-coin">'+f.coin+'</span>';
@@ -607,14 +930,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     // ─── CLOSED TRADES ───
-    const closedBody = document.getElementById('closed-body');
-    const closed = (d.closed||[]).slice().reverse();
+    var closedBody = document.getElementById('closed-body');
+    var closed = (d.closed||[]).slice().reverse().slice(0, 50);
     if(closed.length===0){
       closedBody.innerHTML = '<div class="muted">No trades closed yet.</div>';
     } else {
-      let html = '<div class="closed-cards">';
-      for(const c of closed){
-        const dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
+      var html = '<div class="closed-cards">';
+      for(var i=0; i<closed.length; i++){
+        var c = closed[i];
+        var dirCls = c.direction==='LONG' ? 'c-long' : 'c-short';
         html += '<div class="closed-card">';
         html += '<span class="closed-coin">'+c.coin+'</span>';
         html += '<span class="'+dirCls+'">'+c.direction+'</span>';
@@ -627,29 +951,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 
-  // Initial load — portfolio first, then try prices
-  loadPortfolio().then(() => {
-    render();
-    // Try live prices after initial render
-    fetchPrices().then(() => render()).catch(() => {});
-  }).catch(e => console.error('Initial load failed:', e));
+  // ─── DATA FETCHING ───
+  function fetchPrices(){
+    return fetch(PRICE_API).then(function(res){ return res.json(); }).then(function(d){
+      if(d.matrix){
+        for(var coin in d.matrix){
+          if(d.matrix[coin].CLOSE_PRICE_15M != null){
+            livePrices[coin] = d.matrix[coin].CLOSE_PRICE_15M;
+          }
+        }
+      }
+      lastPriceUpdate = Date.now();
+    }).catch(function(e){ console.error('Price fetch failed:', e); });
+  }
 
-  // Tick the "ago" timer every 5s
+  function loadPortfolio(){
+    return fetch(PORTFOLIO_API).then(function(res){ return res.json(); }).then(function(d){
+      portfolioData = d;
+    }).catch(function(e){ console.error('Portfolio fetch failed:', e); });
+  }
+
+  // Initial load
+  loadPortfolio().then(function(){
+    render();
+    fetchPrices().then(function(){ render(); }).catch(function(){});
+  }).catch(function(e){ console.error('Initial load failed:', e); });
+
+  // Tick agent status every 5s
   setInterval(function(){
     if(lastPriceUpdate){
       var el = document.getElementById('updated');
       if(el) el.textContent = 'Prices: ' + ago(lastPriceUpdate);
     }
+    if(portfolioData && portfolioData.agents) renderAgents(portfolioData.agents);
   }, 5000);
 
-  // Fetch live prices every 30s and re-render
+  // Prices every 30s
   setInterval(function(){
     fetchPrices().then(function(){ render(); }).catch(function(){});
   }, 30000);
 
-  // Reload portfolio data every 5 min
+  // Portfolio every 5min
   setInterval(function(){
     loadPortfolio().then(function(){ render(); }).catch(function(){});
   }, 300000);
+
+  // Redraw equity on resize
+  window.addEventListener('resize', function(){
+    if(portfolioData && portfolioData.equityCurve) drawEquityCurve(portfolioData.equityCurve);
+  });
 })();
 </script>

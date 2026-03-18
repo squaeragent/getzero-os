@@ -903,6 +903,16 @@ def run_cycle(client, cfg, dry):
     total_notional = sum(p.get("size_usd", 0) for p in positions)
     log(f"Summary: {len(positions)} positions, ${total_notional:.2f} notional, trades={portfolio.get('trades', 0)}")
 
+    # Export portfolio snapshot for website
+    try:
+        import subprocess
+        subprocess.run(
+            [sys.executable, str(SCANNER_DIR / "export_portfolio.py")],
+            capture_output=True, timeout=30
+        )
+    except Exception as e:
+        log(f"  Export failed: {e}")
+
 
 def main():
     dry = "--dry" in sys.argv
