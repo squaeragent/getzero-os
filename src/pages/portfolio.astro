@@ -57,6 +57,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="ph"><span class="live-badge">LIVE</span> HYPERLIQUID TRADING <span class="dim" id="live-count">(0)</span></div>
         <div class="sb">
           <div class="live-stats" id="live-stats"></div>
+          <div class="live-eq-wrap">
+            <canvas id="live-equity-canvas" width="860" height="120"></canvas>
+          </div>
           <div id="live-positions-body"></div>
           <div id="live-closed-body"></div>
         </div>
@@ -203,6 +206,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   #equity-canvas {
     width: 100%;
     height: 200px;
+    display: block;
+  }
+
+  .live-eq-wrap {
+    padding: 0 0 0.75rem 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  #live-equity-canvas {
+    width: 100%;
+    height: 120px;
     display: block;
   }
 
@@ -564,8 +579,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var riskColors = {green:'#c8ff00',yellow:'#ffb000',orange:'#ff8800',red:'#ff3333'};
 
   // ─── EQUITY CURVE (raw canvas) ───
-  function drawEquityCurve(curve){
-    var canvas = document.getElementById('equity-canvas');
+  function drawEquityCurve(curve, canvasId, lineColor){
+    canvasId = canvasId || 'equity-canvas';
+    lineColor = lineColor || '#c8ff00';
+    var canvas = document.getElementById(canvasId);
     if(!canvas || !curve || curve.length < 2) return;
     var dpr = window.devicePixelRatio || 1;
     var rect = canvas.getBoundingClientRect();
@@ -629,14 +646,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     ctx.lineTo(px(vals.length-1), pad.t + ch);
     ctx.lineTo(px(0), pad.t + ch);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(200,255,0,0.1)';
+    // Parse fill color from line color
+    var fillAlpha = lineColor === '#ff3333' ? 'rgba(255,51,51,0.08)' : 'rgba(200,255,0,0.1)';
+    ctx.fillStyle = fillAlpha;
     ctx.fill();
 
     // Line
     ctx.beginPath();
     ctx.moveTo(px(0), py(vals[0]));
     for(var i=1; i<vals.length; i++) ctx.lineTo(px(i), py(vals[i]));
-    ctx.strokeStyle = '#c8ff00';
+    ctx.strokeStyle = lineColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -645,11 +664,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var lastY = py(vals[vals.length-1]);
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI*2);
-    ctx.fillStyle = '#c8ff00';
+    ctx.fillStyle = lineColor;
     ctx.fill();
 
     // Range label
-    var el = document.getElementById('eq-range');
+    var el = document.getElementById(canvasId === 'equity-canvas' ? 'eq-range' : 'live-eq-range');
     if(el) el.textContent = curve.length + ' points · $' + minV.toFixed(2) + ' – $' + maxV.toFixed(2);
   }
 
@@ -664,8 +683,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var ts = agents.heartbeat[name];
       var secs = agoFromISO(ts);
       var color;
-      if(secs < 600) color = '#c8ff00';
-      else if(secs < 1800) color = '#ffb000';
+      if(secs < 900) color = '#c8ff00';
+      else if(secs < 2400) color = '#ffb000';
       else color = '#ff3333';
       var label = ts ? ago(new Date(ts).getTime()) : 'unknown';
       html += '<div class="agent-item">';
@@ -779,8 +798,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('regime-summary').textContent = parts.join(' · ');
     }
 
-    // Equity curve
-    drawEquityCurve(d.equityCurve);
+    // Paper equity curve
+    drawEquityCurve(d.equityCurve, 'equity-canvas', '#c8ff00');
+
+    // Live equity curve (in live section)
+    if(d.liveEquityCurve && d.liveEquityCurve.length > 1){
+      drawEquityCurve(d.liveEquityCurve, 'live-equity-canvas', '#ff3333');
+    }
 
     // Agent status
     renderAgents(d.agents);
@@ -800,10 +824,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       // Live stats
       var liveStatsEl = document.getElementById('live-stats');
       var liveWR = lt.trades > 0 ? (lt.wins / lt.trades * 100).toFixed(0) + '%' : '—';
+      var wrClass = lt.trades > 0 ? (lt.wins / lt.trades >= 0.5 ? 'c-pos' : 'c-neg') : '';
       liveStatsEl.innerHTML = '<div class="stat"><span class="sl">CAPITAL</span><span class="sv">$'+lt.capital+'</span></div>'
-        + '<div class="stat"><span class="sl">TRADES</span><span class="sv">'+lt.trades+'</span></div>'
-        + '<div class="stat"><span class="sl">WIN RATE</span><span class="sv">'+liveWR+'</span></div>'
-        + '<div class="stat"><span class="sl">DAILY LOSS</span><span class="sv '+(lt.dailyLoss>0?'c-neg':'')+'">$'+lt.dailyLoss.toFixed(2)+'</span></div>';
+        + '<div class="stat"><span class="sl">CLOSED</span><span class="sv">'+lt.trades+'</span></div>'
+        + '<div class="stat"><span class="sl">WIN RATE</span><span class="sv '+wrClass+'">'+liveWR+'</span></div>'
+        + '<div class="stat"><span class="sl">DAILY LOSS</span><span class="sv '+(lt.dailyLoss>0?'c-neg':'')+'">$'+(lt.dailyLoss||0).toFixed(2)+'</span></div>';
 
       // Live positions
       var livePosBody = document.getElementById('live-positions-body');
@@ -998,7 +1023,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Redraw equity on resize
   window.addEventListener('resize', function(){
-    if(portfolioData && portfolioData.equityCurve) drawEquityCurve(portfolioData.equityCurve);
+    if(portfolioData && portfolioData.equityCurve) drawEquityCurve(portfolioData.equityCurve, 'equity-canvas', '#c8ff00');
+    if(portfolioData && portfolioData.liveEquityCurve) drawEquityCurve(portfolioData.liveEquityCurve, 'live-equity-canvas', '#ff3333');
   });
 })();
 </script>

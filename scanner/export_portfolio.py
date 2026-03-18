@@ -165,6 +165,21 @@ def export():
     paper_stats = compute_stats(paper_closed)
     live_stats = compute_stats(live_closed)
 
+    # ─── PAPER EQUITY CURVE (from closed trades) ───
+    paper_equity_curve = []
+    running_value = 10000.0
+    for trade in paper_closed:
+        pnl = trade.get("pnl_dollars", trade.get("pnl_usd", 0))
+        running_value += pnl
+        t = trade.get("exit_time", trade.get("closed_at", ""))
+        paper_equity_curve.append({"t": t, "v": round(running_value, 2)})
+
+    # ─── LIVE EQUITY CURVE (from risk agent) ───
+    live_equity_curve = [
+        {"t": e.get("timestamp", ""), "v": e.get("account_value", 0)}
+        for e in equity_history
+    ]
+
     # ─── BUILD SNAPSHOT ───
     snapshot = {
         "live": True,
@@ -214,10 +229,8 @@ def export():
             "approved": len(approved.get("approved", [])),
             "blocked": len(approved.get("blocked", [])),
         },
-        "equityCurve": [
-            {"t": e.get("timestamp", ""), "v": e.get("account_value", 0)}
-            for e in equity_history
-        ],
+        "equityCurve": paper_equity_curve,
+        "liveEquityCurve": live_equity_curve,
         "positions": paper_positions,
         "closed": paper_closed[-50:],
         "recentFires": paper_fires[-20:],
