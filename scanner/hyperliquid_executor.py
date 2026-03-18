@@ -39,22 +39,21 @@ FIRES_LOG = DATA_DIR / "fires.jsonl"
 
 HL_URL = "https://api.hyperliquid.xyz"
 
-# Risk params — spot collateral mode (20x cross leverage)
-# $115 spot USDC backs cross margin. Each $10 order uses ~$0.50 margin.
-# We limit total notional exposure to $100 (effective ~1x on spot balance).
+# Risk params — concentrated mode
+# $115 spot USDC as cross collateral. 2-3 big positions on best signals.
 INITIAL_CAPITAL = 115.0
-MAX_POSITION_USD = 15.0         # max $15 per position notional
-MIN_POSITION_USD = 10.0         # Hyperliquid minimum
-MAX_OPEN_POSITIONS = 8          # up to 8 positions at $10-15 each = $80-120 notional
-MAX_TOTAL_NOTIONAL = 100.0      # total notional cap (keep effective leverage ~1x)
-MAX_DAILY_LOSS_USD = 10.0       # $10 max daily loss, then stop
+MAX_POSITION_USD = 50.0         # up to $50 per position
+MIN_POSITION_USD = 30.0         # minimum $30 (meaningful size)
+MAX_OPEN_POSITIONS = 3          # max 3 positions
+MAX_TOTAL_NOTIONAL = 100.0      # total notional cap
+MAX_DAILY_LOSS_USD = 15.0       # $15 max daily loss
 STOP_LOSS_PCT = 0.05            # 5% hard stop
 TRAILING_STOP_TRIGGER = 0.02    # activate trailing stop after +2% gain
 TRAILING_STOP_LOCK = 0.50       # lock in 50% of peak gain
 LEVERAGE = 20                   # cross leverage (set by HL, we manage risk via position sizing)
 MIN_SHARPE = 1.5                # matches paper engine threshold
-MIN_WIN_RATE = 60.0             # require 60%+ win rate (filters ETH spam at 40%)
-MAX_PER_COIN = 2                # max 2 live positions per coin
+MIN_WIN_RATE = 60.0             # require 60%+ win rate
+MAX_PER_COIN = 1                # 1 position per coin (concentrate, don't double up)
 
 # Coin configs
 COIN_TO_ASSET = {
@@ -500,11 +499,22 @@ def run():
                 log(f"  Skip {coin}: no price")
                 continue
 
-            # Size: Sharpe-weighted, $10-15 range
-            sharpe = fire.get("sharpe", 2.0)
-            size_mult = min(sharpe / 2.0, 1.5)  # 1.0x at 2.0, 1.5x at 3.0+
-            size_usd = min(MIN_POSITION_USD * size_mult, MAX_POSITION_USD)
-            size_usd = max(size_usd, MIN_POSITION_USD)  # floor at $10
+            # Size: Sharpe-weighted, $30-50 range
+            # Sharpe 1.5 → $30, Sharpe 2.0 → $40, Sharpe 2.5+ → $50
+            sharpe = fire.get("sharpe", 1.5)
+            size_usd = MIN_POSITION_USD + (sharpe - 1.5) * 20.0  # $30 base + $20 per Sharpe unit
+            size_usd = min(size_usd, MAX_POSITION_USD)
+            size_usd = max(size_usd, MIN_POSITION_USD)
+
+            # Don't exceed remaining notional cap
+            current_notional = sum(p.get("size_usd", 0) for p in positions)
+            remaining_cap = MAX_TOTAL_NOTIONAL - current_notional
+            if size_usd > remaining_cap:
+                if remaining_cap >= 10:  # HL minimum
+                    size_usd = remaining_cap
+                else:
+                    log(f"  Skip {coin}: notional cap (${current_notional:.0f}/${MAX_TOTAL_NOTIONAL:.0f})")
+                    continue
 
             size_coins = size_usd / price
             sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
