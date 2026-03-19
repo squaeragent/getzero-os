@@ -1,0 +1,62 @@
+{
+  "coin": "APT",
+  "direction": "SHORT",
+  "signal": "EMA_TREND_STACK_SHORT_MH120_MH240_Q2",
+  "sharpe": 1.0495,
+  "win_rate": 64.29,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.75,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 240,
+  "exit_expression": "EMA_N_12H >= 1.001 OR EMA_N_24H >= 1.001",
+  "entry_expression": "EMA_N_12H <= 0.995 AND EMA_N_24H <= 0.994 AND HURST_24H < 0.7797481375",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260319_000733_APT_SHORT_001",
+  "thesis": "Hurst 0.68 + DIVERGENCE_BULL + funding positive (0.00038) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; Hurst declining 0.77\u21920.68 \u2014 momentum may be exhausting",
+  "confidence": 0.643,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.68 > 0.5 \u2192 trending market",
+    "adequate liquidity (score 73)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "Hurst declining 0.77\u21920.68 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.722,
+    "hurst_24h": 0.681,
+    "hurst_48h": 0.7672,
+    "funding_rate": 0.000383,
+    "funding_direction": "normalizing",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 73.0,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

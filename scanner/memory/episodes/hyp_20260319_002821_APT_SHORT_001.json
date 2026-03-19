@@ -1,0 +1,153 @@
+{
+  "coin": "APT",
+  "direction": "SHORT",
+  "signal": "EMA_TREND_STACK_SHORT_MH120_MH240_Q2",
+  "sharpe": 1.0495,
+  "win_rate": 64.29,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.75,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 240,
+  "exit_expression": "EMA_N_12H >= 1.001 OR EMA_N_24H >= 1.001",
+  "entry_expression": "EMA_N_12H <= 0.995 AND EMA_N_24H <= 0.994 AND HURST_24H < 0.7797481375",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260319_002821_APT_SHORT_001",
+  "thesis": "Hurst 0.72 + TRAP_LONG + funding positive (0.00040) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "Hurst drifting 0.75\u21920.72, regime may rotate",
+  "confidence": 0.793,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.72 > 0.5 \u2192 trending market",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.853,
+    "hurst_24h": 0.7217,
+    "hurst_48h": 0.7512,
+    "funding_rate": 0.000398,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 58.6,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260319_002821_APT_SHORT_001",
+    "coin": "APT",
+    "direction": "SHORT",
+    "survival_score": 0.32,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.5,
+        "weight": 1.2,
+        "detail": "funding intensifying \u2014 kill condition 50% met",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.79",
+        "confidence": 0.793,
+        "evidence_for_count": 3,
+        "evidence_against_count": 0
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=momentum) in trending regime",
+        "regime": "trending",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "SHORT with funding rate 0.000553",
+        "funding_rate": 0.000553,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 3.6x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 0 trades in ASIA+SHORT, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 15%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "family immature (10 instances)"
+      }
+    ],
+    "active_attacks": 2
+  }
+}

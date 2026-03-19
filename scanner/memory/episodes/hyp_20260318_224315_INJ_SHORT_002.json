@@ -1,0 +1,185 @@
+{
+  "coin": "INJ",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
+  "sharpe": 1.6317,
+  "win_rate": 61.9,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "1W/0L",
+  "composite_score": 7.55,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 216,
+  "exit_expression": "EMA_N_48H >= 1.1523 OR ROC_24H >= 1.2",
+  "entry_expression": "((EMA_N_48H <= 0.985) * 4) + ((MACD_N_24H <= -0.003) * 3) + ((ROC_24H <= -2.0) * 2) + ((DFA_48H >= 0.50) * 2) + ((RSI_24H <= 44) * 1) >= 6",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_224315_INJ_SHORT_002",
+  "thesis": "Hurst 0.77 + TRAP_LONG + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "spread elevated \u2014 potential MM activity; liquidity below tradeable threshold",
+  "confidence": 0.293,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.77 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)"
+  ],
+  "evidence_against": [
+    "spread elevated \u2014 potential MM activity",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "INJ",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_TREND_CONFIRMATION_SHORT_MH216_EX3_EX4",
+      "outcome": "win",
+      "pnl_pct": 0.15,
+      "exit_reason": "risk_kill",
+      "entry_time": "2026-03-18T06:45:53.896982+00:00"
+    },
+    {
+      "coin": "INJ",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_TREND_DOWN_SHORT_V3_EX0",
+      "outcome": "loss",
+      "pnl_pct": -0.05,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:05:19.392631+00:00"
+    },
+    {
+      "coin": "INJ",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.31,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T13:25:20.740870+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.799,
+    "hurst_24h": 0.7732,
+    "hurst_48h": 0.7402,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 57.2,
+    "tradeable": false,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_224315_INJ_SHORT_002",
+    "coin": "INJ",
+    "direction": "SHORT",
+    "survival_score": 0.0,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.05
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 1.0,
+        "weight": 1.0,
+        "detail": "liquidity below tradeable threshold \u2014 kill condition MET",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "confidence 0.29 is very weak",
+        "confidence": 0.293,
+        "evidence_for_count": 3,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=momentum) in trending regime",
+        "regime": "trending",
+        "signal_style": "momentum"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 2.5x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 4 trades in LATE_US+SHORT, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 15%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0.6,
+        "weight": 1.3,
+        "detail": "family WR 4% over 27 trades"
+      }
+    ],
+    "active_attacks": 4
+  }
+}

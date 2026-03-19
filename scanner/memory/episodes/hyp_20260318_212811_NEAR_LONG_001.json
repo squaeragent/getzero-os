@@ -1,0 +1,58 @@
+{
+  "coin": "NEAR",
+  "direction": "LONG",
+  "signal": "DOJI_REVERSAL_LONG_BB_V2_EX6_Q2_EX7_Q5",
+  "sharpe": 1.3795,
+  "win_rate": 78.95,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.32,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 36,
+  "exit_expression": "BB_POSITION_15M >= 0.70 OR MOMENTUM_2H30M_N <= -0.165",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND BB_POSITION_15M <= 0.20 AND DOJI_DISTANCE >= 3.0 AND EMA_3H_N < 1.0040360075 AND SENKOU_B_13H_N < 1.0120098000",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_212811_NEAR_LONG_001",
+  "thesis": "Hurst 0.63 + CONFIRMATION_SHORT + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG; Hurst declining 0.76\u21920.63 \u2014 momentum may be exhausting",
+  "confidence": 0.69,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 64)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+    "Hurst declining 0.76\u21920.63 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.6297,
+    "hurst_48h": 0.7554,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 64.0,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

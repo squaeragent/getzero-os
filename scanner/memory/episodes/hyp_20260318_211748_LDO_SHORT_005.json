@@ -1,0 +1,58 @@
+{
+  "coin": "LDO",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_SHORT_OVERBOUGHT_LYAP_V1_FR7_EX0_FR15",
+  "sharpe": 1.0821,
+  "win_rate": 64.88,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.32,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 9,
+  "exit_expression": "BB_POSITION_15M < 0.10 OR RSI_3H30M < 40",
+  "entry_expression": "((BB_POSITION_15M > 0.85) * 3) + ((RSI_3H30M > 86.4) * 3) + ((LYAPUNOV_24H < 1.69) * 2) + ((CMO_3H30M > 50.4) * 2) + ((ADX_3H30M > 45) * 2) >= 7",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_211748_LDO_SHORT_005",
+  "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding positive (0.00051) + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.699,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7269,
+    "hurst_48h": 0.6198,
+    "funding_rate": 0.000505,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 53.4,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

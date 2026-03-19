@@ -1,0 +1,181 @@
+{
+  "coin": "BNB",
+  "direction": "LONG",
+  "signal": "SOCIAL_MOMENTUM_TIGHT_LONG_V2_EX3_EX1",
+  "sharpe": 1.9156,
+  "win_rate": 65.98,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 4.62,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "RSI_3H30M >= 93.15 OR XONE_AVG_NET_DELTA <= -8",
+  "entry_expression": "XONE_AVG_NET_DELTA >= 10 AND XONE_U_NET >= 30 AND RSI_3H30M <= 50",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_223143_BNB_LONG_001",
+  "thesis": "Hurst 0.80 + TRAP_LONG + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG",
+  "confidence": 0.46,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate -0.001288)",
+    "deep liquidity (score 89)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern TRAP_LONG conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18",
+      "outcome": "loss",
+      "pnl_pct": -0.17,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T13:25:27.507664+00:00"
+    },
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "SOCIAL_MOMENTUM_LONG_V2_EX5_MH24",
+      "outcome": "loss",
+      "pnl_pct": -0.19,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T19:27:46.729854+00:00"
+    },
+    {
+      "coin": "BNB",
+      "direction": "LONG",
+      "signal": "CHAOS_STABLE_TREND_LONG_EX2_Q1_MH18_EX6",
+      "outcome": "loss",
+      "pnl_pct": -0.12,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T20:01:34.790882+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7954,
+    "hurst_48h": 0.6671,
+    "funding_rate": -0.001288,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 89.2,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_223143_BNB_LONG_001",
+    "coin": "BNB",
+    "direction": "LONG",
+    "survival_score": 0.288,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.4,
+        "weight": 1.5,
+        "detail": "3 similar trades lost avg -0.2%",
+        "failures_found": 3,
+        "avg_loss_pct": -0.16
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "Hurst 0.795 \u2014 kill at 0.5 not near",
+        "conditions_checked": 4,
+        "conditions_near": 1
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.46",
+        "confidence": 0.46,
+        "evidence_for_count": 4,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG signal (style=neutral) in stable regime",
+        "regime": "stable",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "LONG with funding rate -0.001251",
+        "funding_rate": -0.001251,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 2.4x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 4 trades in LATE_US+LONG, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 15%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "family immature (17 instances)"
+      }
+    ],
+    "active_attacks": 3
+  }
+}

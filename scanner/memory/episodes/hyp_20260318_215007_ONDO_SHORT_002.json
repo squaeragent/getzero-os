@@ -1,0 +1,70 @@
+{
+  "coin": "ONDO",
+  "direction": "SHORT",
+  "signal": "DOJI_VEL_RSI_SHORT_V1_EX0_Q3_EX6_EX7",
+  "sharpe": 1.773,
+  "win_rate": 64.15,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.33,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M <= 22.5 OR DOJI_VELOCITY >= 2.53",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_VELOCITY <= -2.5 AND RSI_3H30M >= 58 AND DOJI_DISTANCE_L >= -9.4360711600",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_215007_ONDO_SHORT_002",
+  "thesis": "Hurst 0.81 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.692,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 82)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "ONDO",
+      "direction": "SHORT",
+      "signal": "BB_UPPER_REVERSION_SHORT_EX5_FR1_EX0_Q2_MH16",
+      "outcome": "win",
+      "pnl_pct": 0.67,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:05:15.950571+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.8092,
+    "hurst_48h": 0.7326,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 82.4,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

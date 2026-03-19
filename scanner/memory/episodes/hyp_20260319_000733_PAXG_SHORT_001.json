@@ -1,0 +1,61 @@
+{
+  "coin": "PAXG",
+  "direction": "SHORT",
+  "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_FR10",
+  "sharpe": 2.6178,
+  "win_rate": 92.31,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.7,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 60,
+  "exit_expression": "RSI_3H30M <= 30 OR XONE_AVG_NET >= 30",
+  "entry_expression": "RSI_3H30M >= 55 AND XONE_AVG_NET <= -15 AND DFA_24H >= 0.30",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260319_000733_PAXG_SHORT_001",
+  "thesis": "Hurst 0.80 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.449,
+  "evidence_for": [
+    "Hurst 0.80 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 98)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.927,
+    "hurst_24h": 0.7955,
+    "hurst_48h": 0.6847,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 97.6,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

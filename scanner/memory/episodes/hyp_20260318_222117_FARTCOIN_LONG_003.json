@@ -1,0 +1,58 @@
+{
+  "coin": "FARTCOIN",
+  "direction": "LONG",
+  "signal": "DOJI_RSI_OVERSOLD_LONG_V2_EX2_Q1_MH12_EX2",
+  "sharpe": 1.9469,
+  "win_rate": 57,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.75,
+  "timeframe_pattern": "DIVERGENCE_BEAR",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 12,
+  "exit_expression": "RSI_3H30M > 78.65 OR DOJI_DISTANCE < -10",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M < 40 AND DOJI_DISTANCE >= 1 AND ICHIMOKU_BULL >= 0.000000000",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_222117_FARTCOIN_LONG_003",
+  "thesis": "Hurst 0.79 + DIVERGENCE_BEAR + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "bearish divergence building on higher timeframe",
+  "confidence": 0.52,
+  "evidence_for": [
+    "Hurst 0.79 > 0.55 \u2192 persistent upward momentum",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 77)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bearish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.985,
+    "hurst_24h": 0.7914,
+    "hurst_48h": 0.7831,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 77.4,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BEAR",
+    "fast_bias": "bearish",
+    "slow_bias": "bullish"
+  }
+}

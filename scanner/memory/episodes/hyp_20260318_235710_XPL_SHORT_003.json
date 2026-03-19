@@ -1,0 +1,186 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "CHAOS_BEAR_WEIGHTED_V3_EX2_EX3",
+  "sharpe": 1.6115,
+  "win_rate": 68.85,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.48,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 168,
+  "exit_expression": "RSI_3H30M < 12.24",
+  "entry_expression": "((RSI_3H30M > 65) * 2) + ((BB_POSITION_15M > 0.76) * 2) + ((HURST_48H < 0.65) * 3) + ((DOJI_DISTANCE >= 12) * 2) + ((CMO_3H30M > 25) * 1) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_235710_XPL_SHORT_003",
+  "thesis": "Hurst 0.69 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity; Hurst declining 0.77\u21920.69 \u2014 momentum may be exhausting",
+  "confidence": 0.738,
+  "evidence_for": [
+    "Hurst 0.69 > 0.5 \u2192 trending market",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 68)"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "spread elevated \u2014 potential MM activity",
+    "Hurst declining 0.77\u21920.69 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "manual_take_profit",
+      "outcome": "win",
+      "pnl_pct": 1.8487,
+      "exit_reason": "manual_take_profit",
+      "entry_time": "2026-03-18T12:45:00+00:00"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+      "outcome": "loss",
+      "pnl_pct": -0.5,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:00:06.065825+00:00"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
+      "outcome": "win",
+      "pnl_pct": 1.39,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:36:58.503194+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.735,
+    "hurst_24h": 0.6876,
+    "hurst_48h": 0.7695,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "ELEVATED",
+    "liquidity_score": 67.5,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_235710_XPL_SHORT_003",
+    "coin": "XPL",
+    "direction": "SHORT",
+    "survival_score": 0.2912,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "1 similar trade(s) lost, not enough to penalize",
+        "failures_found": 1,
+        "avg_loss_pct": -0.5
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.4,
+        "weight": 1.2,
+        "detail": "spread ELEVATED \u2014 kill condition 40% met",
+        "conditions_checked": 5,
+        "conditions_near": 3
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.738,
+        "evidence_for_count": 3,
+        "evidence_against_count": 3
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=neutral) in trending regime",
+        "regime": "trending",
+        "signal_style": "neutral"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "SHORT with funding rate 0.001250",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 3.5x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 4 trades in LATE_US+SHORT, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 15%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "family immature (16 instances)"
+      }
+    ],
+    "active_attacks": 3
+  }
+}

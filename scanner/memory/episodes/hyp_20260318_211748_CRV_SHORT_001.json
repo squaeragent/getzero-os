@@ -1,0 +1,60 @@
+{
+  "coin": "CRV",
+  "direction": "SHORT",
+  "signal": "WEIGHTED_BEAR_DOJI_V1_FR14_EX4",
+  "sharpe": 1.5737,
+  "win_rate": 69.03,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.18,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M <= 35 AND BB_POSITION_15M <= 0.05",
+  "entry_expression": "((RSI_3H30M >= 72) * 3) + ((DOJI_SIGNAL >= 100) * 3) + ((BB_POSITION_15M >= 0.88) * 2) + ((MACD_CROSS_15M_N <= -0.0153) * 2) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_211748_CRV_SHORT_001",
+  "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
+  "confidence": 0.69,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "liquidity below tradeable threshold"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7288,
+    "hurst_48h": 0.6484,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 56.4,
+    "tradeable": false,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "coin": "LDO",
+  "direction": "SHORT",
+  "signal": "RSI_OVERBOUGHT_SHORT_FR3_EX2_Q2",
+  "sharpe": 1.8043,
+  "win_rate": 72.6,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.63,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 48,
+  "exit_expression": "RSI_3H30M < 31.5",
+  "entry_expression": "RSI_3H30M > 84 AND MACD_SIGNAL_2H15M_N < 0.0027128900",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_211750_LDO_SHORT_001",
+  "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding positive (0.00051) + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe",
+  "confidence": 0.776,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.7269,
+    "hurst_48h": 0.6198,
+    "funding_rate": 0.000505,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 53.4,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_211750_LDO_SHORT_001",
+    "coin": "LDO",
+    "direction": "SHORT",
+    "survival_score": 0.44,
+    "verdict": "WEAK",
+    "recommended_size_modifier": 0.4,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.5,
+        "weight": 1.0,
+        "detail": "funding intensifying \u2014 kill condition 50% met",
+        "conditions_checked": 4,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "adding SHORT increases short exposure to $40 (35% of equity), 3% adverse move = -$1.20",
+        "same_direction_positions": 0,
+        "stress_impact_usd": 1.2,
+        "directional_pct": 34.8
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.78",
+        "confidence": 0.776,
+        "evidence_for_count": 2,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT signal (style=reversal) in stable regime",
+        "regime": "stable",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate 0.000763",
+        "funding_rate": 0.000763,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "OI healthy"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.1,
+        "weight": 1.2,
+        "detail": "CHOPPY market \u2014 reduced conviction (fear=34)"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 4 trades in LATE_US+SHORT, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 15%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "family immature (2 instances)"
+      }
+    ],
+    "active_attacks": 2
+  }
+}

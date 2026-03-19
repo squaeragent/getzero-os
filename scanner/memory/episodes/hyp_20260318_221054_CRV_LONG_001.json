@@ -1,0 +1,56 @@
+{
+  "coin": "CRV",
+  "direction": "LONG",
+  "signal": "DOJI_CMO_REVERSAL_LONG_V3_Q2_Q1",
+  "sharpe": 1.5229,
+  "win_rate": 73.2,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.36,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 48,
+  "exit_expression": "CMO_3H30M >= 25 OR RSI_3H30M >= 70",
+  "entry_expression": "DOJI_SIGNAL >= 100 AND DOJI_VELOCITY >= 2.0 AND CMO_3H30M < -15 AND ICHIMOKU_BULL < 1.0000000000 AND ADX_3H30M >= 31.764705880",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_221054_CRV_LONG_001",
+  "thesis": "Hurst 0.77 + CONFIRMATION_SHORT + funding stable + stable regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "timeframe pattern CONFIRMATION_SHORT conflicts with LONG",
+  "confidence": 0.682,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate 0.001250)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "timeframe pattern CONFIRMATION_SHORT conflicts with LONG"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.766,
+    "hurst_48h": 0.6535,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 56.9,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  }
+}

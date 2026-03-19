@@ -1,0 +1,157 @@
+{
+  "coin": "APT",
+  "direction": "SHORT",
+  "signal": "BB_POS_OVERBOUGHT_HURST_SHORT_EX2_Q2_EX4",
+  "sharpe": 1.8321,
+  "win_rate": 76.76,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 6.16,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.11,
+  "max_hold_hours": 36,
+  "exit_expression": "BB_POSITION_15M <= 0.15 OR CMO_3H30M <= -12",
+  "entry_expression": "BB_POSITION_15M >= 0.88 AND HURST_48H >= 0.72 AND CMO_3H30M >= 30 AND DFA_48H >= 0.5707627075",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_222119_APT_SHORT_001",
+  "thesis": "Hurst 0.63 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; Hurst declining 0.75\u21920.63 \u2014 momentum may be exhausting",
+  "confidence": 0.768,
+  "evidence_for": [
+    "Hurst 0.63 > 0.5 \u2192 trending market",
+    "funding stable (rate -0.001071)",
+    "adequate liquidity (score 65)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "Hurst declining 0.75\u21920.63 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.604,
+    "hurst_24h": 0.6281,
+    "hurst_48h": 0.7454,
+    "funding_rate": -0.001071,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 64.6,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ],
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_222119_APT_SHORT_001",
+    "coin": "APT",
+    "direction": "SHORT",
+    "survival_score": 0.2822,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.0,
+        "weight": 1.5,
+        "detail": "No similar losing trades found",
+        "failures_found": 0
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
+        "confidence": 0.768,
+        "evidence_for_count": 4,
+        "evidence_against_count": 2
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "SHORT with funding rate -0.00107% \u2014 paying ~$0.16/day to hold $50 position",
+        "funding_rate": -0.001071,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "OI/volume ratio 3.8x \u2014 crowded trade risk"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.0,
+        "weight": 1.2,
+        "detail": "macro neutral"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 4 trades in LATE_US+SHORT, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 0%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "family immature (0 instances)"
+      }
+    ],
+    "active_attacks": 5
+  }
+}

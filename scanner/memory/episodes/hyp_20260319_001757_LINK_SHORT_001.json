@@ -1,0 +1,79 @@
+{
+  "coin": "LINK",
+  "direction": "SHORT",
+  "signal": "ARCH_DOJI_BREAKOUT",
+  "sharpe": 2.3,
+  "win_rate": 75.7,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.0,
+  "signal_heat": 0.5,
+  "recent_record": "archetype",
+  "composite_score": 6.89,
+  "timeframe_pattern": "CONFIRMATION_SHORT",
+  "timeframe_confirmation": 1.0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 8,
+  "exit_expression": "ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0",
+  "source": "archetype",
+  "hypothesis_id": "hyp_20260319_001757_LINK_SHORT_001",
+  "thesis": "Hurst 0.76 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "No significant contradicting evidence at this time",
+  "confidence": 0.907,
+  "evidence_for": [
+    "Hurst 0.76 > 0.5 \u2192 trending market",
+    "fast+slow timeframes both bearish (CONFIRMATION_SHORT)",
+    "funding stable (rate 0.001250)",
+    "deep liquidity (score 90)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold",
+    "timeframe pattern flips to CONFIRMATION_LONG"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "LINK",
+      "direction": "LONG",
+      "signal": "ARCH_DOJI_BREAKOUT",
+      "outcome": "loss",
+      "pnl_pct": -0.2,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T18:01:30.974919+00:00"
+    },
+    {
+      "coin": "TON",
+      "direction": "SHORT",
+      "signal": "ARCH_DOJI_BREAKOUT",
+      "outcome": "win",
+      "pnl_pct": 0.24,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T18:47:06.981382+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 1.0,
+    "hurst_24h": 0.7616,
+    "hurst_48h": 0.6912,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 90.0,
+    "tradeable": true,
+    "timeframe_pattern": "CONFIRMATION_SHORT",
+    "fast_bias": "bearish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

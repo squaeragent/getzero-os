@@ -55,5 +55,43 @@
     "probation_net": -0.12,
     "killed_at": "2026-03-18T20:07:02.278450+00:00",
     "kill_reason": "Probation failed: WR=21.1% net=$-0.12"
+  },
+  {
+    "id": "RULE_001",
+    "condition": "exit_reason == 'alignment_exit'",
+    "action": "reduce_size",
+    "value": 0.1,
+    "evidence": "Exit reason 'alignment_exit' shows only 0.0% WR over 5 trades (net $-1.37)",
+    "generation": 1,
+    "created": "2026-03-18T18:16:18.346886+00:00",
+    "trades_tested": 10,
+    "status": "killed",
+    "source": "parameter_evolution",
+    "probation_start": "2026-03-18T18:16:18.348116+00:00",
+    "probation_wins": 0,
+    "probation_losses": 0,
+    "probation_wr": 0.0,
+    "probation_net": -1.64,
+    "killed_at": "2026-03-18T21:17:48.252116+00:00",
+    "kill_reason": "Probation failed: WR=0.0% net=$-1.64"
+  },
+  {
+    "id": "RULE_004",
+    "condition": "direction == 'LONG'",
+    "action": "reduce_confidence",
+    "value": 0.15,
+    "evidence": "LONG WR only 25.0% over 20 trades",
+    "generation": 4,
+    "created": "2026-03-18T21:17:48.251691+00:00",
+    "trades_tested": 20,
+    "status": "killed",
+    "source": "parameter_evolution",
+    "probation_start": "2026-03-18T21:17:48.251846+00:00",
+    "probation_wins": 0,
+    "probation_losses": 0,
+    "probation_wr": 25.0,
+    "probation_net": -0.03,
+    "killed_at": "2026-03-18T21:17:48.252116+00:00",
+    "kill_reason": "Probation failed: WR=25.0% net=$-0.03"
   }
 ]

@@ -1,0 +1,86 @@
+{
+  "coin": "TON",
+  "direction": "LONG",
+  "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+  "sharpe": 2.65,
+  "win_rate": 78.9,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.0,
+  "signal_heat": 0.5,
+  "recent_record": "archetype",
+  "composite_score": 7.95,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0.0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 24,
+  "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
+  "source": "archetype",
+  "hypothesis_id": "hyp_20260318_211748_TON_LONG_001",
+  "thesis": "Hurst 0.81 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "RSI 79 overbought \u2014 limited upside room",
+  "confidence": 0.236,
+  "evidence_for": [
+    "Hurst 0.81 > 0.55 \u2192 persistent upward momentum",
+    "fast bullish divergence building (DIVERGENCE_BULL)",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 65)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "RSI 79 overbought \u2014 limited upside room"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "TON",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.24,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:54:53.418482+00:00"
+    },
+    {
+      "coin": "ETH",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.02,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T09:52:26.986682+00:00"
+    },
+    {
+      "coin": "BTC",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "outcome": "loss",
+      "pnl_pct": -0.05,
+      "exit_reason": "exit_expression",
+      "entry_time": "2026-03-18T10:36:55.527420+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.798,
+    "hurst_24h": 0.8054,
+    "hurst_48h": 0.6147,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 64.7,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  }
+}

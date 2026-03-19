@@ -712,15 +712,27 @@ def attack_macro_regime(hypothesis, world_state_meta):
         severity = 0.1
         details.append(f"CHOPPY market — reduced conviction (fear={fear})")
 
-    btc_roc = macro.get("btc_roc_4h", 0)
-    if direction == "LONG" and btc_roc < -2:
-        severity = max(severity, 0.4)
-        details.append(f"BTC dumping {btc_roc:.1f}% in 4h — alt longs are traps")
+    btc_roc_4h = macro.get("btc_roc_4h", 0)
+    btc_roc_24h = macro.get("btc_roc_24h", 0)
+
+    # Block LONGs when BTC is declining on any timeframe
+    if direction == "LONG":
+        if btc_roc_24h < -2:
+            severity = max(severity, 0.5)
+            details.append(f"BTC down {btc_roc_24h:.1f}% in 24h — LONGs fighting gravity")
+        if btc_roc_4h < -2:
+            severity = max(severity, 0.6)
+            details.append(f"BTC dumping {btc_roc_4h:.1f}% in 4h — alt longs are traps")
+
+    # CHOPPY + LONG gets extra penalty
+    if state == "CHOPPY" and direction == "LONG":
+        severity = max(severity, 0.2)
+        details.append(f"CHOPPY + LONG = coin flip territory (fear={fear})")
 
     return {
         "attack":   "macro_regime",
         "severity": round(severity, 3),
-        "weight":   1.2,
+        "weight":   1.4,
         "detail":   "; ".join(details) if details else "macro neutral",
     }
 
@@ -882,6 +894,36 @@ def attack_oi_divergence(hypothesis, world_coins):
     detail = "; ".join(details) if details else "OI healthy"
     return {"attack": "oi_divergence", "severity": round(severity, 3), "weight": 1.0,
             "detail": detail}
+
+
+def attack_timeframe_alignment(hypothesis, world_coins):
+    """
+    Block entries that conflict with cross-timeframe patterns.
+    This replaces post-trade alignment exits — prevent bad trades, don't exit early.
+    LONG + CONFIRMATION_SHORT/TRAP_LONG = severe penalty
+    SHORT + CONFIRMATION_LONG/TRAP_SHORT = severe penalty
+    """
+    coin = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "")
+    coin_data = world_coins.get(coin, {})
+    tf = coin_data.get("timeframe", {})
+    pattern = tf.get("pattern", "NEUTRAL")
+
+    severity = 0.0
+    details = []
+
+    conflicts_long = {"CONFIRMATION_SHORT", "DIVERGENCE_BEAR", "TRAP_LONG"}
+    conflicts_short = {"CONFIRMATION_LONG", "DIVERGENCE_BULL", "TRAP_SHORT"}
+
+    if direction == "LONG" and pattern in conflicts_long:
+        severity = 0.7 if pattern == "TRAP_LONG" else 0.5
+        details.append(f"LONG vs {pattern} — timeframe says don't go long")
+    elif direction == "SHORT" and pattern in conflicts_short:
+        severity = 0.7 if pattern == "TRAP_SHORT" else 0.5
+        details.append(f"SHORT vs {pattern} — timeframe says don't go short")
+
+    return {"attack": "timeframe_alignment", "severity": round(severity, 3), "weight": 1.5,
+            "detail": "; ".join(details) if details else "timeframe aligned"}
 
 
 def attack_active_rules(hypothesis, active_rules):
@@ -1120,6 +1162,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_regime_mismatch(hyp, world_coins),
             attack_funding_headwind(hyp, world_coins),
             attack_oi_divergence(hyp, world_coins),
+            attack_timeframe_alignment(hyp, world_coins),
             attack_active_rules(hyp, active_rules),
             attack_macro_regime(hyp, world_state_meta),       # Upgrade 1
             attack_session_risk(hyp, world_state_meta),       # Upgrade 3

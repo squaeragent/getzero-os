@@ -1,0 +1,182 @@
+{
+  "coin": "HYPE",
+  "direction": "LONG",
+  "signal": "WEIGHTED_REVERSAL_LONG_R2_FR1_EX7_FR8",
+  "sharpe": 1.7176,
+  "win_rate": 64.39,
+  "regime": "trending",
+  "regime_match": false,
+  "regime_match_score": 0.0,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.63,
+  "timeframe_pattern": "DIVERGENCE_BEAR",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.12,
+  "max_hold_hours": 36,
+  "exit_expression": "RSI_3H30M >= 70 OR BB_POSITION_15M > 1.00",
+  "entry_expression": "((RSI_3H30M < 27) * 3) + ((BB_POSITION_15M < 0.0) * 3) + ((CMO_3H30M < -36.75) * 2) + ((DOJI_SIGNAL >= 100) * 2) >= 5",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_221056_HYPE_LONG_001",
+  "thesis": "Hurst 0.85 + DIVERGENCE_BEAR + funding stable + trending regime + \u2192 momentum continuation LONG",
+  "anti_thesis": "bearish divergence building on higher timeframe",
+  "confidence": 0.694,
+  "evidence_for": [
+    "Hurst 0.85 > 0.55 \u2192 persistent upward momentum",
+    "funding stable (rate 0.001250)",
+    "adequate liquidity (score 76)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bearish divergence building on higher timeframe"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying short",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "WEIGHTED_REVERSAL_LONG_R2_FR1_EX7",
+      "outcome": "loss",
+      "pnl_pct": -0.28,
+      "exit_reason": "alignment_exit",
+      "entry_time": "2026-03-18T12:39:11.281719+00:00"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "manual_take_profit",
+      "outcome": "win",
+      "pnl_pct": 6.5193,
+      "exit_reason": "manual_take_profit",
+      "entry_time": "2026-03-18T12:00:00+00:00"
+    },
+    {
+      "coin": "HYPE",
+      "direction": "LONG",
+      "signal": "HURST_PERSISTENT_TREND_LONG_EX2_EX3",
+      "outcome": "loss",
+      "pnl_pct": -0.1,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:01:34.607841+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.903,
+    "hurst_24h": 0.8516,
+    "hurst_48h": 0.6786,
+    "funding_rate": 0.00125,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 75.8,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BEAR",
+    "fast_bias": "bearish",
+    "slow_bias": "bullish"
+  },
+  "adversary": {
+    "hypothesis_id": "hyp_20260318_221056_HYPE_LONG_001",
+    "coin": "HYPE",
+    "direction": "LONG",
+    "survival_score": 0.1774,
+    "verdict": "KILLED",
+    "recommended_size_modifier": 0.0,
+    "attacks": [
+      {
+        "attack": "similar_failure",
+        "severity": 0.4,
+        "weight": 1.5,
+        "detail": "4 similar trades lost avg -0.3%",
+        "failures_found": 4,
+        "avg_loss_pct": -0.307
+      },
+      {
+        "attack": "kill_condition_proximity",
+        "severity": 0.1,
+        "weight": 1.0,
+        "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+        "conditions_checked": 5,
+        "conditions_near": 2
+      },
+      {
+        "attack": "portfolio_stress",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No open positions \u2014 no concentration risk"
+      },
+      {
+        "attack": "confidence_vs_antithesis",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "confidence 0.69",
+        "confidence": 0.694,
+        "evidence_for_count": 4,
+        "evidence_against_count": 1
+      },
+      {
+        "attack": "regime_mismatch",
+        "severity": 0.2,
+        "weight": 1.0,
+        "detail": "reversal signal in trending regime \u2014 fighting the trend",
+        "regime": "trending",
+        "signal_style": "reversal"
+      },
+      {
+        "attack": "funding_headwind",
+        "severity": 0.3,
+        "weight": 1.0,
+        "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
+        "funding_rate": 0.00125,
+        "funding_velocity": "stable",
+        "funding_reversal": false
+      },
+      {
+        "attack": "oi_divergence",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "OI healthy"
+      },
+      {
+        "attack": "rule_based",
+        "severity": 0.0,
+        "weight": 1.0,
+        "detail": "No matching active rules",
+        "matched_rules": []
+      },
+      {
+        "attack": "macro_regime",
+        "severity": 0.1,
+        "weight": 1.2,
+        "detail": "CHOPPY market \u2014 reduced conviction (fear=30)"
+      },
+      {
+        "attack": "session_risk",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "only 4 trades in LATE_US+LONG, need 10+"
+      },
+      {
+        "attack": "regime_transition",
+        "severity": 0.0,
+        "weight": 1.3,
+        "detail": "transition prob 0%, direction: unknown"
+      },
+      {
+        "attack": "family_track_record",
+        "severity": 0,
+        "weight": 1.0,
+        "detail": "family immature (5 instances)"
+      }
+    ],
+    "active_attacks": 5
+  }
+}

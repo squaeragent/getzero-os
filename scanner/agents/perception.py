@@ -1068,9 +1068,9 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     btc_roc_24h  = btc_data.get("indicators", {}).get("ROC_24H", 0) or 0
     btc_roc_4h   = btc_data.get("indicators_own", {}).get("ROC_4H", 0) or 0
 
-    if btc_roc_4h < -3 or (n_chaotic / total_coins > 0.3):
+    if btc_roc_4h < -2 or btc_roc_24h < -3 or (n_chaotic / total_coins > 0.3):
         macro_state = "RISK_OFF"
-    elif btc_roc_4h > 3 or (n_trending / total_coins > 0.5 and n_chaotic / total_coins < 0.1):
+    elif btc_roc_4h > 2 and btc_roc_24h > 0 and (n_trending / total_coins > 0.4 and n_chaotic / total_coins < 0.15):
         macro_state = "RISK_ON"
     else:
         macro_state = "CHOPPY"

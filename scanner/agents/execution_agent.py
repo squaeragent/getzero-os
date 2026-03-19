@@ -55,7 +55,7 @@ KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
 
 HL_URL = "https://api.hyperliquid.xyz"
 CYCLE_SECONDS = 300  # 5 minutes
-MIN_HOLD_BEFORE_EXIT_MINS = 30  # don't evaluate exit expressions before 30 minutes
+MIN_HOLD_BEFORE_EXIT_MINS = 120  # don't evaluate exit expressions before 2 hours
 
 # ─── COIN TABLES (fetched from HL meta on startup) ───
 COIN_TO_ASSET = {}
@@ -1126,17 +1126,22 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
                 log(f"  WARN: exit expression missing indicators for {coin}: {missing}")
 
         # ── CROSS-TIMEFRAME ALIGNMENT CHECK ──
+        # NOTE: Alignment is now primarily checked in adversary (pre-trade).
+        # Post-trade alignment exits DISABLED — they were closing positions
+        # at 30-40min hold, before the thesis could play out (-$1.90 in losses).
+        # Only TRAP patterns still force close, but only after min hold period.
         if tf_data:
             misaligned, pattern = check_alignment(pos, tf_data)
             if misaligned:
                 is_trap = pattern in ("TRAP_LONG", "TRAP_SHORT")
-                if pnl_pct < 0 or is_trap:
-                    reason = "alignment_exit_trap" if is_trap else "alignment_exit"
-                    log(f"{reason.upper()} {coin} {pos['direction']} | pattern={pattern} | {pnl_pct*100:+.2f}%")
+                held_mins = (time.time() - pos.get("entry_time_ms", 0) / 1000) / 60 if pos.get("entry_time_ms") else 999
+                if is_trap and held_mins >= MIN_HOLD_BEFORE_EXIT_MINS and pnl_pct < -0.01:
+                    reason = "alignment_exit_trap"
+                    log(f"{reason.upper()} {coin} {pos['direction']} | pattern={pattern} | {pnl_pct*100:+.2f}% | held {held_mins:.0f}min")
                     close_and_record(client, pos, current, pnl_pct, reason, portfolio, dry, main_address=main_address)
                     continue
-                else:
-                    log(f"  WARN [{coin}] alignment conflict (pattern={pattern}) but in profit {pnl_pct*100:+.2f}% — trailing stop will handle")
+                elif misaligned:
+                    log(f"  INFO [{coin}] alignment conflict (pattern={pattern}) — monitoring, no exit (held {held_mins:.0f}min)")
 
         # ── Update peak ──
         peak = pos.get("peak_pnl_pct", 0)

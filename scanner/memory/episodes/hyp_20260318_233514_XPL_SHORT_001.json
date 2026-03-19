@@ -1,0 +1,89 @@
+{
+  "coin": "XPL",
+  "direction": "SHORT",
+  "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72_MH36_EX2",
+  "sharpe": 1.6002,
+  "win_rate": 62.63,
+  "regime": "trending",
+  "regime_match": true,
+  "regime_match_score": 1.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 7.53,
+  "timeframe_pattern": "TRAP_LONG",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.0,
+  "max_hold_hours": 36,
+  "exit_expression": "MOMENTUM_N_6H > 0.03",
+  "entry_expression": "MOMENTUM_N_6H < 0.025 AND MOMENTUM_N_24H < 0.08 AND LYAPUNOV_48H <= 1.96",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_233514_XPL_SHORT_001",
+  "thesis": "Hurst 0.73 + TRAP_LONG + funding positive (0.00107) + trending regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "Hurst declining 0.78\u21920.73 \u2014 momentum may be exhausting",
+  "confidence": 0.37,
+  "evidence_for": [
+    "regime trending \u2014 momentum signal aligned",
+    "Hurst 0.73 > 0.5 \u2192 trending market",
+    "deep liquidity (score 86)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "Hurst declining 0.78\u21920.73 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "regime shifts to chaotic or shift",
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "manual_take_profit",
+      "outcome": "win",
+      "pnl_pct": 1.8487,
+      "exit_reason": "manual_take_profit",
+      "entry_time": "2026-03-18T12:45:00+00:00"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+      "outcome": "loss",
+      "pnl_pct": -0.5,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:00:06.065825+00:00"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
+      "outcome": "win",
+      "pnl_pct": 1.39,
+      "exit_reason": "kill_condition",
+      "entry_time": "2026-03-18T18:36:58.503194+00:00"
+    }
+  ],
+  "world_snapshot": {
+    "regime": "trending",
+    "regime_confidence": 0.851,
+    "hurst_24h": 0.7254,
+    "hurst_48h": 0.7844,
+    "funding_rate": 0.001073,
+    "funding_direction": "intensifying",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 85.7,
+    "tradeable": true,
+    "timeframe_pattern": "TRAP_LONG",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

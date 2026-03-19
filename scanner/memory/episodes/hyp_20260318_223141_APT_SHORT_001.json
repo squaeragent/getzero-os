@@ -1,0 +1,61 @@
+{
+  "coin": "APT",
+  "direction": "SHORT",
+  "signal": "EMA_TREND_STACK_SHORT_MH120_MH240_Q7",
+  "sharpe": 1.0206,
+  "win_rate": 66.67,
+  "regime": "stable",
+  "regime_match": true,
+  "regime_match_score": 0.5,
+  "signal_heat": 0.5,
+  "recent_record": "0W/0L",
+  "composite_score": 5.35,
+  "timeframe_pattern": "DIVERGENCE_BULL",
+  "timeframe_confirmation": 0,
+  "signal_weight": 1.0,
+  "vwap_bonus": 0.0,
+  "funding_bonus": 0.07,
+  "max_hold_hours": 240,
+  "exit_expression": "EMA_N_12H >= 1.001 OR EMA_N_24H >= 1.001",
+  "entry_expression": "EMA_N_12H <= 0.995 AND EMA_N_24H <= 0.994 AND DOJI_DISTANCE_L >= -1.532720680",
+  "source": "signal_pack",
+  "hypothesis_id": "hyp_20260318_223141_APT_SHORT_001",
+  "thesis": "Hurst 0.62 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+  "anti_thesis": "bullish divergence building on higher timeframe; Hurst declining 0.75\u21920.62 \u2014 momentum may be exhausting",
+  "confidence": 0.667,
+  "evidence_for": [
+    "regime stable \u2014 low volatility environment",
+    "funding stable (rate -0.000737)",
+    "adequate liquidity (score 74)",
+    "spread normal \u2014 no MM manipulation detected"
+  ],
+  "evidence_against": [
+    "bullish divergence building on higher timeframe",
+    "Hurst declining 0.75\u21920.62 \u2014 momentum may be exhausting"
+  ],
+  "kill_conditions": [
+    "Hurst drops below 0.5 (momentum collapses)",
+    "funding reverses to intensifying long",
+    "spread enters MM_SETUP",
+    "liquidity drops below tradeable threshold"
+  ],
+  "similar_past_trades": [],
+  "world_snapshot": {
+    "regime": "stable",
+    "regime_confidence": 0.5,
+    "hurst_24h": 0.615,
+    "hurst_48h": 0.7462,
+    "funding_rate": -0.000737,
+    "funding_direction": "stable",
+    "funding_reversal": false,
+    "spread_status": "NORMAL",
+    "liquidity_score": 73.8,
+    "tradeable": true,
+    "timeframe_pattern": "DIVERGENCE_BULL",
+    "fast_bias": "bullish",
+    "slow_bias": "bearish"
+  },
+  "applied_rules": [
+    "RULE_001"
+  ]
+}

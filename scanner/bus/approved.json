@@ -1,41 +1,28 @@
 {
-  "timestamp": "2026-03-18T21:17:21.015142+00:00",
+  "timestamp": "2026-03-19T01:23:02.394732+00:00",
   "approved": [
     {
-      "coin": "FARTCOIN",
+      "coin": "INJ",
       "direction": "SHORT",
-      "signal": "LYAPUNOV_STABLE_SHORT_FR6",
-      "sharpe": 1.4077,
-      "win_rate": 68.61,
+      "signal": "WEIGHTED_MULTITF_BEAR_24H_SHORT_V1_EX3_EX6",
+      "sharpe": 1.6139,
+      "win_rate": 59.46,
       "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M < 45",
-      "max_hold_hours": 48,
+      "exit_expression": "RSI_24H >= 66.7 OR EMA_N_48H >= 1.111",
+      "max_hold_hours": 240,
       "regime": "trending",
       "regime_match": false,
       "regime_match_score": 0.0,
       "signal_heat": 0.5,
-      "composite_score": 5.17,
+      "composite_score": 5.2,
       "recent_record": "0W/0L"
     }
   ],
-  "blocked": [
-    {
-      "coin": "AVAX",
-      "direction": "SHORT",
-      "signal": "DOJI_RSI_SHORT_V3_EX5_EX2_EX2",
-      "reason": "already have position in AVAX"
-    },
-    {
-      "coin": "AVAX",
-      "direction": "SHORT",
-      "signal": "DOJI_RSI_SHORT_V3_EX5",
-      "reason": "already have position in AVAX"
-    }
-  ],
+  "blocked": [],
   "portfolio_state": {
-    "net_direction": "LONG",
-    "net_exposure_pct": 29.4,
+    "net_direction": "NEUTRAL",
+    "net_exposure_pct": 0.0,
     "correlation_risk": "low",
-    "diversification_score": 1.0
+    "diversification_score": 0.0
   }
 }
