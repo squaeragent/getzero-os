@@ -124,5 +124,47 @@
     "status": "proposed",
     "source": "reflection",
     "raw_rule": "IF (time_since_last_trade > 24 hours) THEN rebalance_portfolio BECAUSE our current portfolio has a single position, and this rule ensures that the system periodically reassesses its positions and maintains a balanced risk profile."
+  },
+  {
+    "id": "RULE_010",
+    "condition": "(direction == 'SHORT' && price_change < -2%)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "scale_in",
+    "evidence": "our win rate is higher when shorting, and scaling in during periods of high downward momentum may increase profits.",
+    "generation": 1,
+    "created": "2026-03-19T19:56:13.690120+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_002: IF (direction == 'SHORT' && price_change < -2%) THEN scale_in BECAUSE our win rate is higher when shorting, and scaling in during periods of high downward momentum may increase profits."
+  },
+  {
+    "id": "RULE_011",
+    "condition": "(time_of_day == 'close' && position_size > $50)",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_position",
+    "evidence": "reducing positions near market close can help minimize overnight risks and avoid potential gaps.",
+    "generation": 1,
+    "created": "2026-03-19T19:56:13.690443+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_003: IF (time_of_day == 'close' && position_size > $50) THEN reduce_position BECAUSE reducing positions near market close can help minimize overnight risks and avoid potential gaps."
+  },
+  {
+    "id": "RULE_012",
+    "condition": "(PAXG_price < 20-day_MA)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "consider_long",
+    "evidence": "a price below the 20-day moving average may indicate a potential reversal, and considering long positions could help diversify our portfolio.",
+    "generation": 1,
+    "created": "2026-03-19T19:56:13.690707+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_004: IF (PAXG_price < 20-day_MA) THEN consider_long BECAUSE a price below the 20-day moving average may indicate a potential reversal, and considering long positions could help diversify our portfolio."
   }
 ]
