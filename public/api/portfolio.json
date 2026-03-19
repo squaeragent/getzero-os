@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-19T04:31:36.186888+00:00",
+  "updated": "2026-03-19T04:36:38.493310+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 115,
@@ -904,40 +904,41 @@
   },
   "agents": {
     "heartbeat": {
-      "parameter_evolution": "2026-03-19T04:24:56.126285+00:00",
-      "regime_transition": "2026-03-19T04:29:58.553872+00:00",
+      "parameter_evolution": "2026-03-19T04:34:56.294360+00:00",
+      "regime_transition": "2026-03-19T04:34:58.726948+00:00",
       "genealogy": "2026-03-19T04:24:57.206861+00:00",
       "counterfactual": "2026-03-19T04:30:11.579330+00:00",
-      "observer": "2026-03-19T04:31:14.170641+00:00",
-      "correlation": "2026-03-19T04:30:00.723842+00:00",
-      "risk": "2026-03-19T04:29:41.648588+00:00",
-      "execution": "2026-03-19T04:31:36.130398+00:00",
-      "adversary": "2026-03-19T04:29:58.366818+00:00",
+      "observer": "2026-03-19T04:35:14.702095+00:00",
+      "correlation": "2026-03-19T04:35:01.013031+00:00",
+      "risk": "2026-03-19T04:35:43.315622+00:00",
+      "execution": "2026-03-19T04:36:38.432800+00:00",
+      "adversary": "2026-03-19T04:34:58.417734+00:00",
       "reflection": "2026-03-19T04:25:47.052064+00:00",
       "adversary_evolution": "2026-03-19T03:54:54.589559+00:00",
-      "perception": "2026-03-19T04:30:48.765962+00:00",
-      "hypothesis": "2026-03-19T04:23:26.418592+00:00",
+      "perception": "2026-03-19T04:35:50.880073+00:00",
+      "hypothesis": "2026-03-19T04:33:52.084674+00:00",
       "signal_evolution": "2026-03-19T01:44:28.775360+00:00"
     },
     "risk": {
       "status": "green",
       "throttle": 1.0,
       "killAll": false,
-      "drawdownPct": 1.5,
+      "drawdownPct": 1.53,
       "peakEquity": 116.83,
       "winStreak": 0,
-      "loseStreak": 2,
+      "loseStreak": 3,
       "rollingStats": {
         "win_rate": 0.0,
         "win_loss_ratio": 0.0,
         "sharpe": 0,
-        "n_trades": 4
+        "n_trades": 5
       },
       "alerts": [
-        "Balance drift: $+7.94 (+6.86%)",
-        "STALE: counterfactual last seen 93m ago",
-        "STALE: adversary_evolution last seen 35m ago",
-        "STALE: signal_evolution last seen 165m ago"
+        "CAUTION: 3 consecutive losses",
+        "Balance drift: $+5.02 (+4.34%)",
+        "STALE: genealogy last seen 11m ago",
+        "STALE: adversary_evolution last seen 41m ago",
+        "STALE: signal_evolution last seen 171m ago"
       ]
     },
     "regimes": {
@@ -1148,16 +1149,16 @@
           "transition": true
         }
       },
-      "updated": "2026-03-19T04:30:17.426486+00:00"
+      "updated": "2026-03-19T04:35:21.889770+00:00"
     },
-    "candidates": 5,
-    "approved": 0,
-    "blocked": 5,
+    "candidates": 3,
+    "approved": 1,
+    "blocked": 2,
     "spread": {
       "summary": {
         "total_monitored": 40,
-        "normal": 33,
-        "elevated": 7,
+        "normal": 35,
+        "elevated": 5,
         "diverged": 0,
         "mm_setup": 0,
         "unwind": 0
@@ -1169,12 +1170,12 @@
           "anomaly": false
         },
         "ADA": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
         "APT": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
@@ -1244,12 +1245,12 @@
           "anomaly": false
         },
         "JUP": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
         "LDO": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -1314,7 +1315,7 @@
           "anomaly": false
         },
         "TRUMP": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -1354,7 +1355,7 @@
           "anomaly": false
         },
         "kPEPE": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -1373,15 +1374,15 @@
         },
         "ADA": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001925
+          "funding_pct": -0.001887
         },
         "APT": {
-          "velocity_direction": "stable",
-          "funding_pct": -0.003589
+          "velocity_direction": "intensifying",
+          "funding_pct": -0.003674
         },
         "ARB": {
-          "velocity_direction": "normalizing",
-          "funding_pct": -0.001347
+          "velocity_direction": "stable",
+          "funding_pct": -0.001277
         },
         "AVAX": {
           "velocity_direction": "stable",
@@ -1393,11 +1394,11 @@
         },
         "BNB": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": 0.001082
         },
         "BTC": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001159
+          "funding_pct": -0.001101
         },
         "CRV": {
           "velocity_direction": "stable",
@@ -1405,19 +1406,19 @@
         },
         "DOGE": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000242
+          "funding_pct": -0.00019
         },
         "DOT": {
-          "velocity_direction": "intensifying",
-          "funding_pct": -0.000305
+          "velocity_direction": "stable",
+          "funding_pct": -0.000509
         },
         "ENA": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001399
+          "funding_pct": -0.001643
         },
         "ETH": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000302
+          "funding_pct": -0.000385
         },
         "FARTCOIN": {
           "velocity_direction": "stable",
@@ -1445,7 +1446,7 @@
         },
         "LTC": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000252
+          "funding_pct": 0.000108
         },
         "NEAR": {
           "velocity_direction": "stable",
@@ -1457,7 +1458,7 @@
         },
         "OP": {
           "velocity_direction": "intensifying",
-          "funding_pct": -0.00223
+          "funding_pct": -0.002958
         },
         "PAXG": {
           "velocity_direction": "stable",
@@ -1469,27 +1470,27 @@
         },
         "SEI": {
           "velocity_direction": "stable",
-          "funding_pct": -0.003854
+          "funding_pct": -0.003927
         },
         "SOL": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000469
+          "funding_pct": -0.000642
         },
         "SUI": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000794
+          "funding_pct": 0.000799
         },
         "TIA": {
           "velocity_direction": "stable",
-          "funding_pct": 0.0001
+          "funding_pct": 6.4e-05
         },
         "TON": {
           "velocity_direction": "stable",
           "funding_pct": 0.00125
         },
         "TRUMP": {
-          "velocity_direction": "stable",
-          "funding_pct": -0.002827
+          "velocity_direction": "normalizing",
+          "funding_pct": -0.002372
         },
         "TRX": {
           "velocity_direction": "stable",
@@ -1497,7 +1498,7 @@
         },
         "UNI": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": 0.001185
         },
         "WLD": {
           "velocity_direction": "stable",
@@ -1509,11 +1510,11 @@
         },
         "XRP": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000822
+          "funding_pct": 0.000782
         },
         "ZEC": {
-          "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "velocity_direction": "normalizing",
+          "funding_pct": 0.000837
         },
         "kBONK": {
           "velocity_direction": "stable",
@@ -1521,7 +1522,7 @@
         },
         "kPEPE": {
           "velocity_direction": "stable",
-          "funding_pct": -0.003391
+          "funding_pct": -0.003337
         },
         "kSHIB": {
           "velocity_direction": "stable",
@@ -1569,18 +1570,6 @@
     ]
   },
   "liveEquityCurve": [
-    {
-      "t": "2026-03-18T19:13:04.420517+00:00",
-      "v": 115.16
-    },
-    {
-      "t": "2026-03-18T19:13:50.255977+00:00",
-      "v": 115.18
-    },
-    {
-      "t": "2026-03-18T19:15:05.158255+00:00",
-      "v": 115.18
-    },
     {
       "t": "2026-03-18T19:15:50.831900+00:00",
       "v": 115.2
@@ -3568,6 +3557,18 @@
     {
       "t": "2026-03-19T04:29:41.221847+00:00",
       "v": 115.08
+    },
+    {
+      "t": "2026-03-19T04:31:41.702212+00:00",
+      "v": 115.13
+    },
+    {
+      "t": "2026-03-19T04:33:42.309748+00:00",
+      "v": 115.08
+    },
+    {
+      "t": "2026-03-19T04:35:42.872661+00:00",
+      "v": 115.04
     }
   ]
 }
