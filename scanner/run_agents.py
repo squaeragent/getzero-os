@@ -37,7 +37,7 @@ AGENTS_DIR = SCANNER_DIR / "agents"
 SENSES_DIR = SCANNER_DIR / "senses"
 BUS_DIR = SCANNER_DIR / "bus"
 
-PYTHON = "/opt/homebrew/bin/python3"
+PYTHON = sys.executable
 
 # Agent definitions: (name, script, cycle_sec, stale_after_min)
 # Phase 1 Cognitive Loop: regime + liquidity + spread + cross_timeframe + funding

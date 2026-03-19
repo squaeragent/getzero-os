@@ -451,7 +451,7 @@ def reconcile_balance(user_addr, expected_capital, positions, closed_trades):
 
         return {
             "usdc_spot": round(usdc_balance, 4),
-            "perp_value": round(perp_value, 4),
+            "perp_value": round(perp_raw, 4),
             "actual_total": round(actual_total, 4),
             "expected_total": round(expected_total, 4),
             "drift_usd": round(drift, 4),
@@ -494,8 +494,7 @@ def write_heartbeat():
 # ─── OUTPUT ───
 def write_risk(state):
     BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(RISK_FILE, "w") as f:
-        json.dump(state, f, indent=2)
+    save_json_atomic(str(RISK_FILE), state)
 
 
 # ─── MAIN CYCLE ───
@@ -562,10 +561,16 @@ def run_cycle(main_address):
     print(f"  Streaks: W{win_streak} / L{lose_streak} (signed={current_streak:+d}) | Daily PnL: ${daily_pnl:+.2f}")
     print(f"  Rolling({rolling['n_trades']}): WR={rolling['win_rate']}% WL={rolling['win_loss_ratio']} Sharpe={rolling['sharpe']}")
 
-    # 6. Risk classification
-    level, throttle, kill_all, alerts = classify_risk(
-        drawdown_pct, daily_pnl, lose_streak, rolling
-    )
+    # 6. Hard capital floor — absolute safety net
+    CAPITAL_FLOOR = 500.0  # Stop trading if equity drops below this
+    if account_value > 0 and account_value < CAPITAL_FLOOR:
+        print(f"  ⛔ CAPITAL FLOOR BREACH: ${account_value:.2f} < ${CAPITAL_FLOOR:.0f} — KILL ALL")
+        level, throttle, kill_all, alerts = "red", 0.0, True, [f"CAPITAL FLOOR: equity ${account_value:.2f} < ${CAPITAL_FLOOR:.0f}"]
+    else:
+        # 6. Risk classification
+        level, throttle, kill_all, alerts = classify_risk(
+            drawdown_pct, daily_pnl, lose_streak, rolling
+        )
 
     # Grace period: insufficient closed trades under current strategy to judge health
     total_closed = len(strategy_trades)
@@ -687,3 +692,19 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def save_json_atomic(path, data):
+    """Write JSON atomically — crash-safe."""
+    import tempfile
+    tmp_fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(path), suffix='.tmp')
+    try:
+        with os.fdopen(tmp_fd, 'w') as f:
+            json.dump(data, f, indent=2)
+        os.replace(tmp_path, str(path))
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
