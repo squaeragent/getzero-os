@@ -1617,10 +1617,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     // Use latest equity snapshot if available (accurate — reads real HL balance)
-    var latestSnapshot = equitySnapshots && equitySnapshots.length > 0
-      ? equitySnapshots[equitySnapshots.length - 1]
-      : null;
-    var equity = latestSnapshot ? (latestSnapshot.equity_usd || latestSnapshot.eq) : (startingEquity + totalRealized + totalUnrealized);
+    var eqCurve = d.liveEquityCurve || [];
+    var latestSnapshot = eqCurve.length > 0 ? eqCurve[eqCurve.length - 1] : null;
+    var equity = latestSnapshot ? (latestSnapshot.v || (startingEquity + totalRealized + totalUnrealized)) : (startingEquity + totalRealized + totalUnrealized);
     var totalPnl = equity - startingEquity;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
