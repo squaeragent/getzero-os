@@ -822,6 +822,9 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     prev_funding  = prev_state.get("funding",  {})
     prev_spread   = prev_state.get("spread",   {})
 
+    # ── Load HL enrichment data (written by hl_enrichment agent) ──
+    hl_enrich = load_json(BUS_DIR / "hl_enrichment.json", {})
+
     # ── 4. Build per-coin world state ──
     world_coins        = {}
     regime_dist        = {}
@@ -1143,9 +1146,20 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     if _market_stability is not None:
         _macro_dict["market_stability"] = _market_stability
 
+    # ── Macro intel enrichment (fear & greed, DVOL, FOMC gate) ──
+    macro_intel = load_json(BUS_DIR / "macro_intel.json", {})
+
     world_state = {
         "timestamp": ts_iso,
         "coins":     world_coins,
+        "macro": {
+            "fear_greed":             macro_intel.get("fear_greed"),
+            "fear_greed_class":       macro_intel.get("fear_greed_class"),
+            "btc_dvol":               macro_intel.get("btc_dvol"),
+            "macro_event_imminent":   macro_intel.get("macro_event_imminent", False),
+            "days_to_fomc":           macro_intel.get("days_to_fomc"),
+            "days_to_options_expiry": macro_intel.get("days_to_options_expiry"),
+        },
         "meta": {
             "coins_total":        len(ALL_COINS),
             "coins_tradeable":    tradeable_count,

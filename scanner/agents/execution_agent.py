@@ -624,6 +624,11 @@ def should_open(trade, positions, cfg):
     # All coins with signal caches + HL markets are approved for live trading
     # Liquidity agent filters out illiquid coins downstream
 
+    # Macro event hard gate — no new positions within 24h of FOMC
+    macro = load_json(BUS_DIR / "macro_intel.json", {})
+    if macro.get("days_to_fomc", 999) == 0:
+        return False, "FOMC day — no new positions"
+
     # Check liquidity
     liquidity = load_liquidity()
     coin_liq = liquidity.get(coin, {})
