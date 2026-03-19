@@ -1,99 +1,18 @@
 {
-  "timestamp": "2026-03-19T08:40:14.320321+00:00",
-  "approved": [
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "WEIGHTED_MOMENTUM_BEAR_CMO_V1_MH84",
-      "sharpe": 1.5824,
-      "win_rate": 60.78,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "CMO_3H30M < -30 AND ROC_6H > 1.0",
-      "max_hold_hours": 84,
-      "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 1.5,
-      "signal_heat": 0.5,
-      "composite_score": 9.02,
-      "recent_record": "0W/0L"
-    },
+  "timestamp": "2026-03-19T08:45:14.501554+00:00",
+  "approved": [],
+  "blocked": [
     {
       "coin": "SUI",
       "direction": "SHORT",
       "signal": "HURST_PERSIST_SHORT_BREAKDOWN_EX2_Q2",
-      "sharpe": 2.1628,
-      "win_rate": 100,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "CMO_3H30M >= 13 OR EMA_3H_N >= 1.001",
-      "max_hold_hours": 60,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 8.81,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2_MH192",
-      "sharpe": 1.5869,
-      "win_rate": 68.18,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "ICHIMOKU_BULL == 1 AND CLOUD_POSITION_15M >= 2.2",
-      "max_hold_hours": 192,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 6.59,
-      "recent_record": "1W/0L"
-    },
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "CHAOS_BEAR_WEIGHTED_V1_EX3_EX3",
-      "sharpe": 1.5953,
-      "win_rate": 62.67,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M < 13.005",
-      "max_hold_hours": 168,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 6.4,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "WEIGHTED_DOJI_BEAR_SCORING_V1_EX2_EX3_EX3",
-      "sharpe": 1.5449,
-      "win_rate": 59.06,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "RSI_3H30M < 16.25625",
-      "max_hold_hours": 72,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "composite_score": 6.18,
-      "recent_record": "0W/0L"
-    }
-  ],
-  "blocked": [
-    {
-      "coin": "TRUMP",
-      "direction": "LONG",
-      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-      "reason": "would exceed 80% net directional exposure"
+      "reason": "already have position in SUI"
     }
   ],
   "portfolio_state": {
     "net_direction": "LONG",
-    "net_exposure_pct": 70.9,
+    "net_exposure_pct": 56.4,
     "correlation_risk": "low",
-    "diversification_score": 1.0
+    "diversification_score": 0.8
   }
 }

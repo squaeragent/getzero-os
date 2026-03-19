@@ -62,42 +62,42 @@ PATTERNS = [
     "harami",
     "shootingstar",
     "hangingman",
-    "threeblackcrows",
-    "threewhitesoldiers",
+    "3blackcrows",
+    "3whitesoldiers",
     "marubozu",
 ]
 
 # Pattern base strength (0-1 before multipliers)
 PATTERN_STRENGTH = {
-    "doji":             0.5,
-    "hammer":           0.7,
-    "invertedhammer":   0.7,
-    "engulfing":        0.8,
-    "morningstar":      0.8,
-    "eveningstar":      0.8,
-    "harami":           0.5,
-    "shootingstar":     0.7,
-    "hangingman":       0.7,
-    "threeblackcrows":  0.75,
-    "threewhitesoldiers": 0.75,
-    "marubozu":         0.9,
+    "doji":           0.5,
+    "hammer":         0.7,
+    "invertedhammer": 0.7,
+    "engulfing":      0.8,
+    "morningstar":    0.8,
+    "eveningstar":    0.8,
+    "harami":         0.5,
+    "shootingstar":   0.7,
+    "hangingman":     0.7,
+    "3blackcrows":    0.75,
+    "3whitesoldiers": 0.75,
+    "marubozu":       0.9,
 }
 
 # Pattern → inherent direction bias
 # "bullish" = always LONG, "bearish" = always SHORT, "dynamic" = depends on value sign
 PATTERN_DIRECTION = {
-    "doji":             "dynamic",   # value 100/‑100, or treat as indecision
-    "hammer":           "bullish",
-    "invertedhammer":   "bullish",
-    "engulfing":        "dynamic",   # 100=bullish, -100=bearish
-    "morningstar":      "bullish",
-    "eveningstar":      "bearish",
-    "harami":           "dynamic",   # 100=bullish, -100=bearish
-    "shootingstar":     "bearish",
-    "hangingman":       "bearish",
-    "threeblackcrows":  "bearish",
-    "threewhitesoldiers": "bullish",
-    "marubozu":         "dynamic",   # 100=bullish, -100=bearish
+    "doji":           "dynamic",   # value 100/-100, or treat as indecision
+    "hammer":         "bullish",
+    "invertedhammer": "bullish",
+    "engulfing":      "dynamic",   # 100=bullish, -100=bearish
+    "morningstar":    "bullish",
+    "eveningstar":    "bearish",
+    "harami":         "dynamic",   # 100=bullish, -100=bearish
+    "shootingstar":   "bearish",
+    "hangingman":     "bearish",
+    "3blackcrows":    "bearish",
+    "3whitesoldiers": "bullish",
+    "marubozu":       "dynamic",   # 100=bullish, -100=bearish
 }
 
 # Timeframe multiplier
@@ -334,7 +334,8 @@ def compute_confidence(
     elif regime == "reverting":
         # Reversals shine in reverting regimes
         reversal_patterns = {"hammer", "invertedhammer", "engulfing", "morningstar",
-                             "eveningstar", "harami", "shootingstar", "hangingman"}
+                             "eveningstar", "harami", "shootingstar", "hangingman",
+                             "3blackcrows", "3whitesoldiers"}
         if pattern in reversal_patterns:
             regime_mult = 1.2
         else:
