@@ -20,6 +20,7 @@ Agent execution order:
   9. Reflection (6h)             — LLM-based self-assessment via Ollama; proposes rules
  10. Counterfactual (30-min)    — resolves killed hypotheses; determines adversary accuracy
  11. Adversary Evolution (2h)   — adjusts attack weights based on counterfactual precision
+ 12. TAAPI Fetcher (15-min)     — fetches TAAPI snapshot for cross-source disagreement attack
 """
 
 import json
@@ -55,6 +56,8 @@ AGENTS = [
     ("genealogy",           AGENTS_DIR / "genealogy.py",             900,   30),  # Hypothesis genealogy + family learning (15-min)
     ("envy_cache",          AGENTS_DIR / "envy_cache.py",            900,   30),  # ENVY snapshot cache — resilience layer (15-min)
     ("indicator_delta",     AGENTS_DIR / "indicator_delta.py",       900,   30),  # Indicator delta monitor — parallel own computation (15-min)
+    ("taapi_fetcher",       AGENTS_DIR / "taapi_fetcher.py",         900,   30),  # TAAPI snapshot — cross-source disagreement feed (15-min)
+    ("pattern_scanner",     AGENTS_DIR / "pattern_scanner.py",       900,   30),  # TAAPI candlestick pattern signals (15-min)
 ]
 
 processes = {}

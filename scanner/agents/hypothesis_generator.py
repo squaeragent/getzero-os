@@ -126,6 +126,7 @@ WORLD_STATE_FILE = BUS_DIR / "world_state.json"
 CANDIDATES_FILE = BUS_DIR / "candidates.json"
 HYPOTHESES_FILE = BUS_DIR / "hypotheses.json"
 HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
+PATTERN_CANDIDATES_FILE = BUS_DIR / "pattern_candidates.json"
 MEMORY_DIR = SCANNER_DIR / "memory"
 EPISODES_DIR = MEMORY_DIR / "episodes"
 RULES_DIR = MEMORY_DIR / "rules"
@@ -526,6 +527,85 @@ def compute_composite_score(sharpe, win_rate, signal_heat, regime_match):
     """Composite score (0-10)."""
     score = (sharpe * 1.5) + (win_rate / 100 * 3) + (signal_heat * 2) + (regime_match * 1.5)
     return round(max(0.0, min(10.0, score)), 2)
+
+
+# ─── PATTERN CANDIDATES (TAAPI) ───
+def load_pattern_candidates(ts_iso: str) -> list[dict]:
+    """
+    Load pattern candidates from pattern_scanner output and convert to
+    hypothesis-compatible candidate format for the enrichment pipeline.
+
+    Only loads if the file is fresh (< 30 min old) to avoid stale signals.
+    """
+    if not PATTERN_CANDIDATES_FILE.exists():
+        return []
+
+    # Staleness check: skip if > 30 minutes old
+    age_min = (time.time() - PATTERN_CANDIDATES_FILE.stat().st_mtime) / 60
+    if age_min > 30:
+        print(f"  [pattern] Skipping stale pattern_candidates.json (age={age_min:.1f} min)")
+        return []
+
+    try:
+        with open(PATTERN_CANDIDATES_FILE) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"  [pattern] Failed to load pattern_candidates.json: {e}")
+        return []
+
+    raw_patterns = data.get("patterns", [])
+    if not raw_patterns:
+        return []
+
+    candidates = []
+    for p in raw_patterns:
+        # Convert confidence (0-1) to composite_score (0-10) scale
+        # Pattern signals are independent, so we map: conf * 7.0 as a reasonable proxy
+        # (max 7.0 for pattern-only signals, leaving headroom for rule/archetype signals)
+        confidence = p.get("confidence", 0.0)
+        composite_score = round(min(7.0, confidence * 7.0), 2)
+
+        # Map confidence to implied sharpe/win_rate (estimations only)
+        # High confidence (0.9+) ≈ sharpe ~2.0, win_rate ~70%
+        implied_sharpe = round(0.5 + confidence * 2.0, 2)
+        implied_win_rate = round(50 + confidence * 25, 1)
+
+        coin = p.get("coin", "")
+        direction = p.get("direction", "LONG")
+        pattern = p.get("pattern", "")
+        interval = p.get("interval", "1h")
+        regime = p.get("regime", "unknown")
+        signal_name = p.get("signal_name", f"TAAPI_{pattern.upper()}_{interval.upper()}_{direction}")
+
+        candidate = {
+            "coin": coin,
+            "direction": direction,
+            "signal": signal_name,
+            "sharpe": implied_sharpe,
+            "win_rate": implied_win_rate,
+            "regime": regime,
+            "regime_match": True,  # by construction — pattern_scanner already applied regime logic
+            "regime_match_score": confidence,
+            "signal_heat": 0.5,    # neutral — no historical record yet
+            "recent_record": "pattern",
+            "composite_score": composite_score,
+            "timeframe_pattern": "",
+            "timeframe_confirmation": 0.0,
+            "signal_weight": 1.0,
+            "vwap_bonus": 0.0,
+            "funding_bonus": 0.0,
+            "max_hold_hours": 4 if interval == "1h" else 16,
+            "exit_expression": "",
+            "entry_expression": f"TAAPI_{pattern.upper()}_{interval.upper()} fired",
+            "source": "taapi_pattern",
+            # Extra metadata for reflection/logging
+            "pattern": pattern,
+            "pattern_interval": interval,
+            "pattern_confidence": confidence,
+        }
+        candidates.append(candidate)
+
+    return candidates
 
 
 # ─── HEARTBEAT ───
@@ -1486,6 +1566,14 @@ def run_cycle(api_key):
         for ac in archetype_candidates:
             print(f"    {ac['composite_score']:5.2f}  {ac['coin']:6s} {ac['direction']:5s}  {ac['signal']}")
         candidates.extend(archetype_candidates)
+
+    # ── TAAPI PATTERN CANDIDATES ──
+    pattern_candidates = load_pattern_candidates(ts_iso)
+    if pattern_candidates:
+        print(f"\n  TAAPI pattern candidates loaded: {len(pattern_candidates)}")
+        for pc in pattern_candidates[:5]:
+            print(f"    {pc['composite_score']:.2f}  {pc['coin']:6s} {pc['direction']:5s}  {pc['signal']}")
+        candidates.extend(pattern_candidates)
 
     # Sort + dedup
     candidates.sort(key=lambda c: c["composite_score"], reverse=True)

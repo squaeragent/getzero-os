@@ -81,6 +81,7 @@ ACTIVE_RULES_FILE = RULES_DIR / "active.json"
 
 CANDIDATES_FILE = BUS_DIR / "candidates.json"
 WORLD_STATE_FILE = BUS_DIR / "world_state.json"
+TAAPI_SNAPSHOT_FILE = BUS_DIR / "taapi_snapshot.json"
 ADVERSARY_FILE = BUS_DIR / "adversary.json"
 HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 POSITIONS_FILE = LIVE_DIR / "positions.json"
@@ -993,6 +994,157 @@ def attack_active_rules(hypothesis, active_rules):
         }
 
 
+# ─── ATTACK 11: CROSS-SOURCE DATA DISAGREEMENT ───
+def load_taapi_snapshot() -> dict:
+    """Load the latest TAAPI snapshot from bus file."""
+    return load_json_safe(TAAPI_SNAPSHOT_FILE, {})
+
+
+def _pct_delta(envy_val: float, taapi_val: float) -> float:
+    """
+    Compute percentage delta between two indicator values.
+    Uses mean as denominator to avoid division-by-zero on near-zero values.
+    Returns absolute percentage difference.
+    """
+    mean = (abs(envy_val) + abs(taapi_val)) / 2.0
+    if mean < 1e-9:
+        return 0.0
+    return abs(envy_val - taapi_val) / mean * 100.0
+
+
+# Indicators to compare between ENVY and TAAPI (must exist in both sources)
+_DISAGREEMENT_INDICATORS = [
+    "RSI_24H",
+    "RSI_6H",
+    "EMA_N_24H",
+    "MACD_N_24H",
+    "ADX_3H30M",
+    "CMO_3H30M",
+    "BB_POS_24H",
+    "ROC_24H",
+]
+
+
+def attack_data_disagreement(hypothesis, world_coins, taapi_snapshot: dict) -> dict:
+    """
+    Attack 11: Cross-source data disagreement.
+
+    Compares indicator values from ENVY (world_state.json) against TAAPI
+    (taapi_snapshot.json) for the hypothesis coin. If multiple indicators
+    show large divergence, the data sources disagree on market state — a
+    signal that we cannot trust any single-source read.
+
+    Severity rules:
+      - Any indicator delta > 25% → severity 0.6 (regardless of count)
+      - 5+ indicators delta > 10% → severity 0.8
+      - 3+ indicators delta > 10% → severity 0.5
+      - <3 indicators disagree    → severity 0.0
+    """
+    coin = hypothesis.get("coin", "")
+    taapi_coins = taapi_snapshot.get("coins", {})
+
+    # If no TAAPI snapshot exists or coin not in it, don't block
+    if not taapi_coins:
+        return {
+            "attack": "data_disagreement",
+            "severity": 0.0,
+            "weight": 1.3,
+            "detail": "TAAPI snapshot unavailable — skipping cross-source check",
+            "disagreements": [],
+        }
+
+    taapi_coin = taapi_coins.get(coin, {})
+    if not taapi_coin:
+        return {
+            "attack": "data_disagreement",
+            "severity": 0.0,
+            "weight": 1.3,
+            "detail": f"No TAAPI data for {coin} — skipping cross-source check",
+            "disagreements": [],
+        }
+
+    envy_coin = world_coins.get(coin, {})
+    envy_indicators = envy_coin.get("indicators", {})
+
+    disagreements = []
+    checked = 0
+    max_delta = 0.0
+
+    for indicator in _DISAGREEMENT_INDICATORS:
+        envy_val = envy_indicators.get(indicator)
+        taapi_val = taapi_coin.get(indicator)
+
+        # Skip if either source doesn't have this indicator
+        if envy_val is None or taapi_val is None:
+            continue
+
+        try:
+            envy_f = float(envy_val)
+            taapi_f = float(taapi_val)
+        except (TypeError, ValueError):
+            continue
+
+        checked += 1
+        delta = _pct_delta(envy_f, taapi_f)
+        max_delta = max(max_delta, delta)
+
+        if delta > 10.0:
+            disagreements.append({
+                "indicator": indicator,
+                "envy": round(envy_f, 6),
+                "taapi": round(taapi_f, 6),
+                "delta_pct": round(delta, 2),
+            })
+
+    # Can't do a meaningful check with too few indicators
+    if checked < 2:
+        return {
+            "attack": "data_disagreement",
+            "severity": 0.0,
+            "weight": 1.3,
+            "detail": f"Only {checked} comparable indicators available — cross-source check skipped",
+            "disagreements": [],
+        }
+
+    n_disagree = len(disagreements)
+    severity = 0.0
+    reason_parts = []
+
+    # Rule: any indicator delta > 25% → severity 0.6
+    if max_delta > 25.0:
+        severity = max(severity, 0.6)
+        reason_parts.append(f"max delta {max_delta:.1f}% >25% threshold")
+
+    # Rule: 5+ indicators disagree >10% → severity 0.8
+    if n_disagree >= 5:
+        severity = max(severity, 0.8)
+        reason_parts.append(f"{n_disagree} indicators disagree >10%")
+    # Rule: 3+ indicators disagree >10% → severity 0.5
+    elif n_disagree >= 3:
+        severity = max(severity, 0.5)
+        reason_parts.append(f"{n_disagree} indicators disagree >10%")
+
+    if not reason_parts:
+        detail = (
+            f"{n_disagree}/{checked} indicators disagree — below threshold"
+            if n_disagree > 0
+            else f"All {checked} indicators agree across ENVY and TAAPI"
+        )
+    else:
+        detail = f"ENVY/TAAPI divergence: {'; '.join(reason_parts)}"
+
+    return {
+        "attack": "data_disagreement",
+        "severity": round(severity, 3),
+        "weight": 1.3,
+        "detail": detail,
+        "indicators_checked": checked,
+        "indicators_disagreeing": n_disagree,
+        "max_delta_pct": round(max_delta, 2),
+        "disagreements": disagreements,
+    }
+
+
 # ─── SIGNAL FAMILY EXTRACTOR (mirrors genealogy.py) ───
 def extract_signal_family(signal_name: str) -> str:
     """Extract the conceptual family from a full signal name."""
@@ -1146,6 +1298,14 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
     if family_stats:
         log(f"  Loaded genealogy family stats ({len(family_stats)} families)")
 
+    # Load TAAPI snapshot for cross-source data disagreement attack
+    taapi_snapshot = load_taapi_snapshot()
+    taapi_ts = taapi_snapshot.get("timestamp", "")
+    if taapi_snapshot.get("coins"):
+        log(f"  Loaded TAAPI snapshot ({len(taapi_snapshot['coins'])} coins, ts={taapi_ts[:19]})")
+    else:
+        log("  No TAAPI snapshot available — data_disagreement attack will be passive")
+
     for hyp in hypotheses:
         coin = hyp.get("coin", "?")
         direction = hyp.get("direction", "?")
@@ -1164,10 +1324,11 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_oi_divergence(hyp, world_coins),
             attack_timeframe_alignment(hyp, world_coins),
             attack_active_rules(hyp, active_rules),
-            attack_macro_regime(hyp, world_state_meta),       # Upgrade 1
-            attack_session_risk(hyp, world_state_meta),       # Upgrade 3
-            attack_regime_transition(hyp, regime_predictions),# New: predictive regime risk
-            attack_family_track_record(hyp, family_stats),    # New: genealogy track record
+            attack_macro_regime(hyp, world_state_meta),              # Upgrade 1
+            attack_session_risk(hyp, world_state_meta),              # Upgrade 3
+            attack_regime_transition(hyp, regime_predictions),       # New: predictive regime risk
+            attack_family_track_record(hyp, family_stats),           # New: genealogy track record
+            attack_data_disagreement(hyp, world_coins, taapi_snapshot),  # New: cross-source disagreement
         ]
 
         # Apply evolved weights from counterfactual learning (overrides static weights)
