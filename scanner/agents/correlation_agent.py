@@ -327,7 +327,7 @@ def load_fires_as_candidates():
 
 
 # ─── PORTFOLIO ANALYSIS ───
-def compute_portfolio_state(positions, capital=115):
+def compute_portfolio_state(positions, capital=750):
     """Compute current portfolio directional exposure."""
     long_usd = 0
     short_usd = 0
@@ -466,7 +466,7 @@ def filter_candidates(candidates, positions, roc_data, regimes):
                 reasons.append(f"group '{group}' already has {group_count} positions (max {MAX_PER_GROUP})")
 
         # ── Rule: net exposure cap ──
-        if would_exceed_exposure(positions, cand):
+        if would_exceed_exposure(positions, cand, capital=capital):
             reasons.append(f"would exceed {MAX_NET_EXPOSURE_PCT}% net directional exposure")
 
         # ── Rule: correlation with existing positions ──
@@ -579,6 +579,18 @@ def run_cycle(api_key):
     print(f"Correlation Agent — {ts.strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"{'='*60}")
 
+    # Load capital from config.yaml
+    capital = 750
+    try:
+        import yaml
+        config_file = Path(__file__).parent.parent / "config.yaml"
+        if config_file.exists():
+            with open(config_file) as _cf:
+                _cfg = yaml.safe_load(_cf)
+            capital = _cfg.get("capital", 750)
+    except Exception:
+        pass
+
     # Load state
     positions = load_positions()
     regimes = load_regimes()
@@ -590,7 +602,7 @@ def run_cycle(api_key):
 
     if not candidates:
         print("  No candidates to evaluate")
-        portfolio_state = compute_portfolio_state(positions)
+        portfolio_state = compute_portfolio_state(positions, capital=capital)
         write_approved([], [], portfolio_state)
         write_heartbeat()
         print(f"  Written empty approved to {APPROVED_FILE}")
@@ -614,7 +626,7 @@ def run_cycle(api_key):
     print(f"  Got ROC data for {len(roc_data)} coins")
 
     # Compute portfolio state
-    portfolio_state = compute_portfolio_state(positions)
+    portfolio_state = compute_portfolio_state(positions, capital=capital)
     print(f"  Portfolio: {portfolio_state['net_direction']} "
           f"exposure={portfolio_state['net_exposure_pct']}% "
           f"diversification={portfolio_state['diversification_score']}")
