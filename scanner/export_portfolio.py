@@ -245,7 +245,7 @@ def export():
     # ─── LIVE TRADING ───
     live_positions = load_json(LIVE_DIR / "positions.json", [])
     live_portfolio = load_json(LIVE_DIR / "portfolio.json", {})
-    live_closed = load_jsonl(LIVE_DIR / "closed.jsonl", limit=50)
+    live_closed = load_jsonl(LIVE_DIR / "closed.jsonl")
 
     # ─── AGENT BUS STATE ───
     regimes = load_json(BUS_DIR / "regimes.json", {})
