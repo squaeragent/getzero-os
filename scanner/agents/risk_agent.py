@@ -53,8 +53,8 @@ HEARTBEAT_STALE_MINUTES = 10
 
 # Strategy version — increment when major strategy changes are deployed.
 # Trades before this version are excluded from streak/rolling calculations.
-STRATEGY_VERSION = 2  # v2: alignment exits disabled, macro thresholds fixed, min hold 2h
-STRATEGY_VERSION_EPOCH = "2026-03-19T01:36:00"  # UTC timestamp when v2 went live
+STRATEGY_VERSION = 3
+STRATEGY_VERSION_EPOCH = "2026-03-19T10:15:00"  # v3: removed hard blocks, 17 attacks, 8 data sources
 
 # ─── RISK THRESHOLDS ───
 DRAWDOWN_YELLOW = 3.0

@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "id": "RULE_001",
+    "condition": "(coin == 'HYPE' && direction == 'SHORT')",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "scale_position(1.2)",
+    "evidence": "our SHORT position in HYPE has a higher win rate than our overall win rate, suggesting potential for increased returns.",
+    "generation": 1,
+    "created": "2026-03-19T10:11:47.066235+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_002: IF (coin == 'HYPE' && direction == 'SHORT') THEN scale_position(1.2) BECAUSE our SHORT position in HYPE has a higher win rate than our overall win rate, suggesting potential for increased returns."
+  },
+  {
+    "id": "RULE_002",
+    "condition": "(upnl < -$0.50)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "close_position()",
+    "evidence": "we want to limit losses and avoid large drawdowns.",
+    "generation": 1,
+    "created": "2026-03-19T10:11:47.066470+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_003: IF (upnl < -$0.50) THEN close_position() BECAUSE we want to limit losses and avoid large drawdowns."
+  },
+  {
+    "id": "RULE_003",
+    "condition": "(coin == 'AVAX' && direction == 'LONG')",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "set_stop_loss(5%)",
+    "evidence": "our LONG position in AVAX has a lower win rate than our overall win rate, suggesting potential for increased risk management.",
+    "generation": 1,
+    "created": "2026-03-19T10:11:47.066669+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_004: IF (coin == 'AVAX' && direction == 'LONG') THEN set_stop_loss(5%) BECAUSE our LONG position in AVAX has a lower win rate than our overall win rate, suggesting potential for increased risk management."
+  }
+]

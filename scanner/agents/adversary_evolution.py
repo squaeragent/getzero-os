@@ -33,7 +33,7 @@ COUNTERFACTUAL_LOG = MEMORY_DIR / "counterfactual_log.jsonl"
 EVOLVED_WEIGHTS_FILE = BUS_DIR / "evolved_weights.json"
 
 CYCLE_SECONDS = 7200       # 2 hours
-MIN_SAMPLES = 20           # minimum data points per attack before evolving
+MIN_SAMPLES = 10           # minimum data points per attack before evolving
 SEVERITY_THRESHOLD = 0.2   # attack severity must exceed this to count
 
 
@@ -109,8 +109,16 @@ def compute_attack_stats(records):
     stats = {}
 
     for rec in records:
-        adversary_correct = rec.get("adversary_correct", False)
-        would_have_won = rec.get("would_have_won", False)
+        # Use `adversary_correct` field (set by counterfactual agent).
+        # Skip inconclusive records — they don't count toward accuracy stats.
+        resolution = rec.get("resolution")  # "correct_kill", "false_kill", "inconclusive"
+        adversary_correct = rec.get("adversary_correct")  # True, False, or None
+        would_have_won = rec.get("would_have_won")        # True, False, or None
+
+        # Skip inconclusive entries (neither condition was clearly met)
+        if resolution == "inconclusive" or adversary_correct is None:
+            continue
+
         killing_attacks = rec.get("killing_attacks", [])
 
         for atk in killing_attacks:

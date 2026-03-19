@@ -201,15 +201,51 @@ def load_regimes():
 
 
 def load_candidates():
-    """Load candidates from Agent 2 bus file. Falls back to fires.jsonl."""
+    """Load candidates from Agent 2 bus file. Falls back to fires.jsonl.
+
+    Adversary wiring: only pass through candidates that have been evaluated by
+    the adversary. Candidates with no adversary_verdict are skipped (the
+    adversary hasn't run yet). Candidates with verdict KILLED are dropped.
+    WEAK candidates are passed through with a 0.4x size modifier applied.
+    """
     if CANDIDATES_FILE.exists() and CANDIDATES_FILE.stat().st_size > 0:
         try:
             with open(CANDIDATES_FILE) as f:
                 data = json.load(f)
-            candidates = data.get("candidates", [])
-            if candidates:
-                print(f"  Loaded {len(candidates)} candidates from bus")
-                return candidates
+            raw_candidates = data.get("candidates", [])
+            adversary_ts = data.get("adversary_timestamp")
+
+            if raw_candidates:
+                if not adversary_ts:
+                    # Adversary has never run — skip all candidates to avoid race
+                    print("  [warn] candidates.json has no adversary_timestamp — awaiting adversary, skipping all")
+                    return []
+
+                approved_candidates = []
+                for cand in raw_candidates:
+                    verdict = cand.get("adversary_verdict")
+
+                    if verdict is None:
+                        # Adversary hasn't evaluated this candidate yet
+                        print(f"  [skip] {cand.get('coin')} — awaiting adversary verdict")
+                        continue
+
+                    if verdict == "KILLED":
+                        print(f"  [skip] {cand.get('coin')} — adversary verdict KILLED")
+                        continue
+
+                    if verdict in ("PROCEED", "PROCEED_WITH_CAUTION", "WEAK"):
+                        if verdict == "WEAK":
+                            # Apply adversary size modifier (0.4x) for weak signals
+                            size_mod = cand.get("adversary_size_modifier", 0.4)
+                            cand = dict(cand)
+                            cand["size_modifier"] = size_mod
+                            print(f"  [weak] {cand.get('coin')} — adversary verdict WEAK, size_modifier={size_mod}")
+                        approved_candidates.append(cand)
+                    # Any unknown verdict: skip conservatively
+
+                print(f"  Loaded {len(approved_candidates)}/{len(raw_candidates)} candidates after adversary filter")
+                return approved_candidates
         except (json.JSONDecodeError, OSError):
             pass
 

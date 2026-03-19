@@ -641,6 +641,7 @@ def write_heartbeat():
     ts = datetime.now(timezone.utc).isoformat()
     heartbeat = load_json_safe(HEARTBEAT_FILE, {})
     heartbeat["parameter_evolution"] = ts
+    heartbeat["signal_evolution"] = ts  # Alias — merged into parameter_evolution
     save_json(HEARTBEAT_FILE, heartbeat)
 
 

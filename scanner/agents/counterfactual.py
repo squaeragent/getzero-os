@@ -222,11 +222,24 @@ def resolve_episode(ep_path, episode):
         log(f"  [skip] {ep_path.name}: only {age_hours:.1f}h old, need {MIN_AGE_HOURS}h")
         return None
 
-    kill_ms = int(kill_dt.timestamp() * 1000)
-    target_6h_ms = kill_ms + 6 * 3_600_000
-    target_24h_ms = kill_ms + 24 * 3_600_000
+    # Use the signal's intended hold time as the resolution window (default 24h).
+    # This prevents noise from checking at arbitrary 6h/24h regardless of the
+    # trade's actual horizon.
+    max_hold_hours = episode.get("max_hold_hours") or episode.get("hypothesis", {}).get("max_hold_hours") or 24
+    try:
+        max_hold_hours = float(max_hold_hours)
+    except (TypeError, ValueError):
+        max_hold_hours = 24.0
 
-    log(f"  Resolving {ep_path.name} ({coin} {direction}, killed {age_hours:.1f}h ago)...")
+    kill_ms = int(kill_dt.timestamp() * 1000)
+    target_hold_ms = kill_ms + int(max_hold_hours * 3_600_000)
+
+    log(f"  Resolving {ep_path.name} ({coin} {direction}, killed {age_hours:.1f}h ago, hold_window={max_hold_hours:.0f}h)...")
+
+    # Check age against the hold window before resolving
+    if age_hours < max_hold_hours:
+        log(f"  [skip] {ep_path.name}: only {age_hours:.1f}h old, need {max_hold_hours:.0f}h")
+        return None
 
     # Fetch prices
     price_at_kill = fetch_price_at_time(coin, kill_ms)
@@ -236,30 +249,51 @@ def resolve_episode(ep_path, episode):
         log(f"  [warn] Could not fetch price at kill time for {coin}")
         return None
 
-    price_6h = None
-    if age_hours >= 6:
-        price_6h = fetch_price_at_time(coin, target_6h_ms)
-        time.sleep(FETCH_RATE_LIMIT_S)
+    price_at_hold = fetch_price_at_time(coin, target_hold_ms)
+    time.sleep(FETCH_RATE_LIMIT_S)
 
-    price_24h = None
-    if age_hours >= 24:
-        price_24h = fetch_price_at_time(coin, target_24h_ms)
-        time.sleep(FETCH_RATE_LIMIT_S)
-
-    # Compute P&L
+    # Compute P&L at hold window
     def pnl_pct(price_entry, price_exit, dir_):
         if price_entry is None or price_exit is None or price_entry == 0:
             return None
         raw = (price_exit - price_entry) / price_entry * 100
         return round(raw if dir_ == "LONG" else -raw, 4)
 
-    pnl_6h_pct = pnl_pct(price_at_kill, price_6h, direction)
-    pnl_24h_pct = pnl_pct(price_at_kill, price_24h, direction)
+    pnl_at_hold_pct = pnl_pct(price_at_kill, price_at_hold, direction)
 
-    # Primary evaluation uses 6h; fall back to 24h if 6h unavailable
-    primary_pnl = pnl_6h_pct if pnl_6h_pct is not None else pnl_24h_pct
-    would_have_won = (primary_pnl > 0) if primary_pnl is not None else False
-    adversary_correct = not would_have_won  # adversary was right if trade would have lost
+    # Retrieve stop_loss_pct from episode (default 3%)
+    stop_loss_pct = episode.get("stop_loss_pct") or episode.get("hypothesis", {}).get("stop_loss_pct") or 3.0
+    try:
+        stop_loss_pct = float(stop_loss_pct)
+    except (TypeError, ValueError):
+        stop_loss_pct = 3.0
+
+    # Determine outcome using signal-aligned resolution logic:
+    #   CORRECT: price moved AGAINST the trade by >= stop_loss_pct within hold window
+    #   WRONG (false kill): price moved IN trade direction by >1% without hitting stop first
+    #   INCONCLUSIVE: neither condition clearly met
+    if pnl_at_hold_pct is None:
+        adversary_correct = None
+        would_have_won = None
+        resolution = "inconclusive"
+    else:
+        # Approximate: check end-of-window P&L vs thresholds
+        # (intrabar stop check not available without tick data — we use hold-end as proxy)
+        if pnl_at_hold_pct <= -stop_loss_pct:
+            # Price went against trade by at least the stop — adversary was right
+            adversary_correct = True
+            would_have_won = False
+            resolution = "correct_kill"
+        elif pnl_at_hold_pct > 1.0:
+            # Price moved in trade direction by >1% — adversary was wrong
+            adversary_correct = False
+            would_have_won = True
+            resolution = "false_kill"
+        else:
+            # Inconclusive — don't count toward accuracy
+            adversary_correct = None
+            would_have_won = None
+            resolution = "inconclusive"
 
     # Extract killing attacks from adversary data
     adversary_data = episode.get("adversary", {})
@@ -276,10 +310,11 @@ def resolve_episode(ep_path, episode):
     counterfactual = {
         "resolved_at": now_utc.isoformat(),
         "price_at_kill": price_at_kill,
-        "price_6h": price_6h,
-        "price_24h": price_24h,
-        "pnl_6h_pct": pnl_6h_pct,
-        "pnl_24h_pct": pnl_24h_pct,
+        "price_at_hold": price_at_hold,
+        "pnl_at_hold_pct": pnl_at_hold_pct,
+        "max_hold_hours": max_hold_hours,
+        "stop_loss_pct": stop_loss_pct,
+        "resolution": resolution,
         "would_have_won": would_have_won,
         "adversary_correct": adversary_correct,
         "killing_attacks": killing_attacks,
@@ -343,17 +378,19 @@ def run_cycle():
             "direction": episode.get("direction", ""),
             "adversary_correct": cf["adversary_correct"],
             "would_have_won": cf["would_have_won"],
-            "pnl_6h_pct": cf["pnl_6h_pct"],
-            "pnl_24h_pct": cf["pnl_24h_pct"],
+            "pnl_at_hold_pct": cf["pnl_at_hold_pct"],
+            "max_hold_hours": cf["max_hold_hours"],
+            "resolution": cf["resolution"],
             "killing_attacks": cf["killing_attacks"],
             "dominant_attack": cf["dominant_attack"],
         }
         append_jsonl(COUNTERFACTUAL_LOG, log_record)
 
         resolved += 1
-        if cf["adversary_correct"]:
+        resolution = cf.get("resolution", "inconclusive")
+        if resolution == "correct_kill":
             correct += 1
-        else:
+        elif resolution == "false_kill":
             false_kills += 1
             # Track which attacks caused false kills
             for atk in cf.get("killing_attacks", []):
@@ -361,14 +398,18 @@ def run_cycle():
                 false_kill_attacks[name] = false_kill_attacks.get(name, 0) + 1
 
         # Brief per-episode log
-        pnl_str = f"{cf['pnl_6h_pct']:+.2f}%" if cf["pnl_6h_pct"] is not None else "N/A"
-        verdict_str = "✓ correct" if cf["adversary_correct"] else "✗ false kill"
-        log(f"  {ep_path.name}: pnl_6h={pnl_str} {verdict_str}")
+        pnl_str = f"{cf['pnl_at_hold_pct']:+.2f}%" if cf["pnl_at_hold_pct"] is not None else "N/A"
+        verdict_str = {"correct_kill": "✓ correct", "false_kill": "✗ false kill", "inconclusive": "~ inconclusive"}.get(resolution, "?")
+        log(f"  {ep_path.name}: pnl_hold={pnl_str} ({cf['max_hold_hours']:.0f}h window) {verdict_str}")
 
     if resolved > 0:
-        pct = correct / resolved * 100
-        log(f"Resolved {resolved} kills: adversary correct {correct}/{resolved} ({pct:.0f}%), "
-            f"false kills {false_kills}/{resolved} ({100-pct:.0f}%)")
+        decisive = correct + false_kills
+        if decisive > 0:
+            pct = correct / decisive * 100
+            log(f"Resolved {resolved} kills: adversary correct {correct}/{decisive} decisive ({pct:.0f}%), "
+                f"false kills {false_kills}, inconclusive {resolved - decisive}")
+        else:
+            log(f"Resolved {resolved} kills: all inconclusive ({resolved - decisive} total)")
         if false_kill_attacks:
             sorted_atks = sorted(false_kill_attacks.items(), key=lambda x: -x[1])
             atk_str = ", ".join(f"{a} ({n})" for a, n in sorted_atks)
