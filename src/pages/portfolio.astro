@@ -719,18 +719,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
   }
   .dir-card-big {
     font-family: var(--font-head);
     font-size: clamp(1.4rem, 5vw, 2rem);
     font-weight: 700;
     line-height: 1;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.15rem;
+  }
+  .dir-card-pnl {
+    font-family: var(--font-head);
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
   }
   .dir-card-meta {
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: var(--text-dim);
   }
 
@@ -761,6 +767,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .pipeline-arrow { display: none; }
     .cr-reason { display: none; }
     .cr-prices { max-width: 120px; }
+  }
+
+  /* Mobile safe area — prevent browser bar from overlapping content */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .page-content { padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
   }
 </style>
 
@@ -1339,7 +1350,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         online++;
         yellow++;
       } else {
-        failed.push(name);
+        var ageStr = secs < 3600 ? Math.round(secs/60)+'m' : (secs/3600).toFixed(1)+'h';
+        failed.push(name+' ('+ageStr+' ago)');
       }
     }
     var total = allAgents.length;
@@ -1407,7 +1419,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     section.style.display = 'block';
 
-    // ── LONG / SHORT prominent cards (issue 7) ──
+    // ── LONG / SHORT prominent cards ──
     if(dirCards){
       var longPnl = stats.longPnl != null ? stats.longPnl : null;
       var shortPnl = stats.shortPnl != null ? stats.shortPnl : null;
@@ -1415,20 +1427,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var shortWR = stats.shortWinRate != null ? stats.shortWinRate.toFixed(0)+'%' : '—';
       var longCount = stats.longCount || 0;
       var shortCount = stats.shortCount || 0;
+      // Color follows P&L, not direction
+      var longWRcls = longPnl >= 0 ? 'c-pos' : 'c-neg';
+      var shortWRcls = shortPnl >= 0 ? 'c-pos' : 'c-neg';
       var lh = '<div class="dir-card">';
       lh += '<div class="dir-card-label">Long</div>';
-      lh += '<div class="dir-card-big c-long">'+longWR+'</div>';
-      lh += '<div class="dir-card-meta">'+longCount+' trades · '+(longPnl != null ? '<span class="'+pnlClass(longPnl)+'">'+fmt$(longPnl)+'</span>' : '—')+'</div>';
+      lh += '<div class="dir-card-big '+longWRcls+'">'+longWR+'</div>';
+      lh += '<div class="dir-card-pnl '+pnlClass(longPnl)+'">'+(longPnl != null ? fmt$(longPnl) : '—')+'</div>';
+      lh += '<div class="dir-card-meta">'+longCount+' trades</div>';
       lh += '</div>';
       var sh = '<div class="dir-card">';
       sh += '<div class="dir-card-label">Short</div>';
-      sh += '<div class="dir-card-big c-short">'+shortWR+'</div>';
-      sh += '<div class="dir-card-meta">'+shortCount+' trades · '+(shortPnl != null ? '<span class="'+pnlClass(shortPnl)+'">'+fmt$(shortPnl)+'</span>' : '—')+'</div>';
+      sh += '<div class="dir-card-big '+shortWRcls+'">'+shortWR+'</div>';
+      sh += '<div class="dir-card-pnl '+pnlClass(shortPnl)+'">'+(shortPnl != null ? fmt$(shortPnl) : '—')+'</div>';
+      sh += '<div class="dir-card-meta">'+shortCount+' trades</div>';
       sh += '</div>';
       dirCards.innerHTML = lh + sh;
     }
 
-    // ── P&L by coin table — sorted by absolute P&L desc (issue 4 & 6) ──
+    // ── P&L by coin table — sorted by absolute P&L desc ──
     var left = '<div class="stats-panel">';
     left += '<div class="stats-panel-title">P&L by coin</div>';
     left += '<table class="coin-stats-table"><thead><tr><th>Coin</th><th>Trades</th><th>WR%</th><th>P&L</th></tr></thead><tbody>';
@@ -1436,18 +1453,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var coinKeys = Object.keys(coins).sort(function(a,b){
       return Math.abs(coins[b].pnl||0) - Math.abs(coins[a].pnl||0);
     });
-    for(var i=0; i<coinKeys.length; i++){
+    var COIN_LIMIT = 8;
+    var showAllCoins = window._showAllCoins || false;
+    var visibleCoins = showAllCoins ? coinKeys.length : Math.min(COIN_LIMIT, coinKeys.length);
+    for(var i=0; i<visibleCoins; i++){
       var c = coinKeys[i];
       var s = coins[c];
       var pnlCls = pnlClass(s.pnl);
       left += '<tr>';
-      left += '<td style="color:var(--phosphor);font-weight:700">'+c+'</td>';
+      left += '<td style="font-weight:700">'+c+'</td>';
       left += '<td>'+s.trades+'</td>';
       left += '<td>'+(s.winRate != null ? s.winRate.toFixed(0)+'%' : '—')+'</td>';
       left += '<td class="'+pnlCls+'" style="font-weight:700">'+fmt$(s.pnl)+'</td>';
       left += '</tr>';
     }
-    left += '</tbody></table></div>';
+    left += '</tbody></table>';
+    if(coinKeys.length > COIN_LIMIT){
+      left += '<div class="show-all-toggle" id="coin-toggle" style="margin-top:0.5rem">'+(showAllCoins ? 'show less' : (coinKeys.length - COIN_LIMIT)+' more coins')+'</div>';
+    }
+    left += '</div>';
 
     var right = '<div class="stats-panel">';
     right += '<div class="stats-panel-title">Performance</div>';
@@ -1461,6 +1485,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     right += '</div>';
 
     el.innerHTML = left + right;
+    var coinToggle = document.getElementById('coin-toggle');
+    if(coinToggle){
+      coinToggle.onclick = function(){
+        window._showAllCoins = !window._showAllCoins;
+        renderStats(stats);
+      };
+    }
   }
 
   // ─── CLOSED TRADES RENDERER ─── (issues 3, 10)
