@@ -1232,24 +1232,35 @@ function fetchPerformanceData(){
 }
 
 function renderPerformance(data){
-  if(data.equity != null) document.getElementById('perf-equity').textContent = '$'+Number(data.equity).toFixed(2);
-  if(data.trades != null) {
-    document.getElementById('perf-trades').textContent = data.trades;
-    document.getElementById('status-trades').textContent = data.trades;
-  }
-  if(data.winRate != null) {
+  // API returns: total_trades, win_rate, total_pnl_usd, win_loss_ratio, wins, losses
+  var equity = 115 + (data.total_pnl_usd || 0);
+  document.getElementById('perf-equity').textContent = '$'+equity.toFixed(2);
+
+  var trades = data.total_trades || 0;
+  document.getElementById('perf-trades').textContent = trades;
+  var statusTrades = document.getElementById('status-trades');
+  if(statusTrades) statusTrades.textContent = trades;
+
+  if(data.win_rate != null) {
     var wr = document.getElementById('perf-winrate');
-    wr.textContent = (data.winRate*100).toFixed(1)+'%';
-    wr.className = 'perf-stat-val '+(data.winRate>=0.5?'p':'a');
+    wr.textContent = data.win_rate.toFixed(1)+'%';
+    wr.className = 'perf-stat-val '+(data.win_rate>=50?'p':'a');
   }
-  if(data.winLossRatio != null) document.getElementById('perf-ratio').textContent = data.winLossRatio.toFixed(2);
-  if(data.pnl != null) {
+  if(data.win_loss_ratio != null) document.getElementById('perf-ratio').textContent = data.win_loss_ratio.toFixed(2)+'x';
+
+  if(data.total_pnl_usd != null) {
     var pnlEl = document.getElementById('perf-pnl');
-    pnlEl.textContent = (data.pnl>=0?'+':'')+data.pnl.toFixed(2)+'%';
-    pnlEl.className = 'perf-stat-val '+(data.pnl>=0?'p':'red');
+    pnlEl.textContent = (data.total_pnl_usd>=0?'+$':'-$')+Math.abs(data.total_pnl_usd).toFixed(2);
+    pnlEl.className = 'perf-stat-val '+(data.total_pnl_usd>=0?'p':'red');
   }
-  if(data.equityCurve) drawEquityCurve(data.equityCurve);
-  if(data.recentTrades) renderTrades(data.recentTrades);
+
+  // Fallback to portfolio.json for equity curve and trades table
+  fetch('/api/portfolio.json').then(function(r){return r.json();}).then(function(pdata){
+    var curve = pdata.liveEquityCurve || [];
+    if(curve.length > 1) drawEquityCurve(curve);
+    var closed = ((pdata.liveTrading||{}).closed||[]).slice(-5).reverse();
+    if(closed.length) renderTrades(closed);
+  }).catch(function(){});
 }
 
 function renderPerformanceFromPortfolio(data){
@@ -1381,14 +1392,23 @@ function renderTrades(trades){
   tbody.innerHTML = '';
   trades.forEach(function(t){
     var tr = document.createElement('tr');
-    var pnl = typeof t.pnl === 'number' ? t.pnl : parseFloat(t.pnl);
+    var pnl = typeof t.pnl_pct === 'number' ? t.pnl_pct : (typeof t.pnl === 'number' ? t.pnl : parseFloat(t.pnl_pct||t.pnl||0));
     var pnlStr = (pnl>=0?'+':'')+pnl.toFixed(2)+'%';
     var pnlCls = pnl >= 0 ? 'p' : 'red';
     var dirCls = t.direction === 'LONG' ? 'p' : 'a';
+    // Compute hold time from timestamps
+    var holdTime = '—';
+    if(t.entry_time && t.exit_time){
+      var ms = new Date(t.exit_time) - new Date(t.entry_time);
+      var mins = Math.floor(ms/60000);
+      holdTime = mins < 60 ? mins+'m' : Math.floor(mins/60)+'h '+mins%60+'m';
+    } else if(t.holdTime) {
+      holdTime = t.holdTime;
+    }
     tr.innerHTML = '<td>'+t.coin+'</td>'+
       '<td class="'+dirCls+'">'+t.direction+'</td>'+
       '<td class="'+pnlCls+'">'+pnlStr+'</td>'+
-      '<td class="tt-hide-mobile dim">'+(t.holdTime||'—')+'</td>';
+      '<td class="tt-hide-mobile dim">'+holdTime+'</td>';
     tbody.appendChild(tr);
   });
 }
@@ -1399,15 +1419,16 @@ function fetchRegimeData(){
     if(!r.ok) throw new Error('regime API');
     return r.json();
   }).then(function(data){
-    if(data && data.BTC){
-      var btc = data.BTC;
-      var h = btc.hurst != null ? btc.hurst : btc.HURST_24H;
-      var d = btc.dfa != null ? btc.dfa : btc.DFA_24H;
-      var ly = btc.lyapunov != null ? btc.lyapunov : btc.LYAPUNOV_24H;
-      if(h!=null) rvState.ht = h;
-      if(d!=null) rvState.dt = d;
-      if(ly!=null) rvState.lt = Math.min(ly,2)/2;
+    // Update regime badge and verdict with real data
+    var coins = data.coins || data;
+    var btc = coins.BTC || coins.btc;
+    if(btc && btc.regime){
+      var badge = document.getElementById('rv-badge');
+      var verdict = document.getElementById('rv-verdict');
+      if(badge) badge.textContent = btc.regime.toUpperCase();
+      if(verdict) verdict.innerHTML = 'BTC regime: <span class="p">' + btc.regime.toUpperCase() + '</span>' + (btc.timeframe_pattern ? ' — ' + btc.timeframe_pattern.replace(/_/g,' ').toLowerCase() : '');
     }
+    // Also try to get Hurst/DFA/Lyapunov from Envy fetch (already handled)
   }).catch(function(){
     // Regime data handled by envy fallback
   });
