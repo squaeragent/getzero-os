@@ -486,7 +486,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .pos-card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.3rem 1rem;
+    gap: 0.5rem 1.2rem;
     margin-bottom: 0.4rem;
   }
   .pos-field {
@@ -529,6 +529,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .pos-hold-fill {
     height: 100%;
+    min-width: 6px;
+    border-radius: 1px;
     background: rgba(200,255,0,0.5);
   }
   .pos-hold-label {
@@ -979,6 +981,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return (v>=0?'+':'')+v.toFixed(2)+'%';
   }
   function pnlClass(v){ return v>=0?'c-pos':'c-neg'; }
+
+  function humanizeSignal(raw){
+    if(!raw) return '';
+    // Strip version/variant suffixes: _V4_MH72_MH36_EX2 etc
+    var clean = raw.replace(/_V\d+.*$/i, '').replace(/_MH\d+/gi, '').replace(/_EX\d+/gi, '').replace(/_Q\d+/gi, '');
+    // Strip source prefix if redundant
+    clean = clean.replace(/^TAAPI_/i, '').replace(/^ARCH_/i, '').replace(/^ENVY_/i, '');
+    // Replace underscores with spaces, title case
+    return clean.replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); }).replace(/\b(Short|Long|Bull|Bear)\b/gi, '').trim();
+  }
   function ago(ts){
     var s = Math.floor((Date.now() - ts) / 1000);
     if(s < 5) return 'just now';
@@ -1686,8 +1698,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           holdLabel = fmtHold(holdH2) + ' / ' + maxHoldH + 'h max';
         }
 
-        // Signal name
-        var signalName = p.signal_type || p.archetype || p.strategy || '';
+        // Signal name — humanize from internal identifiers
+        var signalRaw = p.signal_type || p.archetype || p.strategy || '';
+        var signalName = humanizeSignal(signalRaw);
 
         html += '<div class="pos-card'+cardCls+'">';
         html += '<div class="pos-card-top">';
@@ -1701,7 +1714,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         html += '<div class="pos-card-grid">';
         html += '<div class="pos-field"><span class="pos-fl">Entry</span><span class="pos-fv">'+fmt$(p.entry_price)+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv '+(curPrice && pnlResult.pct!=null ? pnlClass(pnlResult.pct) : '')+'">'+(curPrice ? fmt$(curPrice) : '—')+'</span></div>';
+        html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv">'+(curPrice ? fmt$(curPrice) : '—')+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Stop</span><span class="pos-fv c-neg">'+stopDisplay+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe != null ? p.sharpe.toFixed(2) : '—')+'</span></div>';
@@ -1710,7 +1723,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if(p.exit_expression){
           var translated = translateExit(p.exit_expression);
-          html += '<div class="pos-exit">Exit when: '+translated+'</div>';
+          html += '<div class="pos-exit">Exit: '+translated+'</div>';
+        } else {
+          html += '<div class="pos-exit">Exit: stop loss or max hold</div>';
         }
 
         if(holdLabel !== '—'){
