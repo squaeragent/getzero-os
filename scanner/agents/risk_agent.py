@@ -51,6 +51,11 @@ CYCLE_SECONDS = 120  # 2 minutes
 ROLLING_WINDOW = 20  # trades for strategy health
 HEARTBEAT_STALE_MINUTES = 10
 
+# Strategy version — increment when major strategy changes are deployed.
+# Trades before this version are excluded from streak/rolling calculations.
+STRATEGY_VERSION = 2  # v2: alignment exits disabled, macro thresholds fixed, min hold 2h
+STRATEGY_VERSION_EPOCH = "2026-03-19T01:36:00"  # UTC timestamp when v2 went live
+
 # ─── RISK THRESHOLDS ───
 DRAWDOWN_YELLOW = 3.0
 DRAWDOWN_ORANGE = 7.0
@@ -180,6 +185,16 @@ def load_closed_trades():
     if not trades:
         trades = load_jsonl(CLOSED_FILE_DATA)
     return trades
+
+
+def load_closed_trades_current_strategy():
+    """Load only trades from current strategy version (post-epoch).
+    Pre-epoch trades are excluded from streak/rolling calculations
+    so that old strategy bugs don't poison new strategy metrics."""
+    all_trades = load_closed_trades()
+    return [t for t in all_trades
+            if t.get("exit_time", "") >= STRATEGY_VERSION_EPOCH
+            or t.get("close_time", "") >= STRATEGY_VERSION_EPOCH]
 
 
 # ─── EQUITY TRACKING ───
@@ -509,10 +524,13 @@ def run_cycle(main_address):
         append_equity(equity_entry)
 
     # 5. Trade statistics
-    win_streak, lose_streak = compute_streaks(closed_trades)
-    current_streak = compute_current_streak(closed_trades)  # Upgrade 4
-    rolling = compute_rolling_stats(closed_trades)
-    daily_pnl = compute_daily_pnl(closed_trades)
+    # Use current strategy trades for streak/rolling (excludes pre-epoch trades
+    # whose losses were caused by bugs that are now fixed)
+    strategy_trades = load_closed_trades_current_strategy()
+    win_streak, lose_streak = compute_streaks(strategy_trades)
+    current_streak = compute_current_streak(strategy_trades)  # Upgrade 4
+    rolling = compute_rolling_stats(strategy_trades)
+    daily_pnl = compute_daily_pnl(closed_trades)  # daily PnL uses ALL trades (actual P&L)
 
     print(f"  Peak equity: ${peak_equity:.2f} | Drawdown: {drawdown_pct:.1f}%")
     print(f"  Streaks: W{win_streak} / L{lose_streak} (signed={current_streak:+d}) | Daily PnL: ${daily_pnl:+.2f}")
@@ -523,8 +541,8 @@ def run_cycle(main_address):
         drawdown_pct, daily_pnl, lose_streak, rolling
     )
 
-    # Grace period: insufficient closed trades to judge strategy health
-    total_closed = len(closed_trades)
+    # Grace period: insufficient closed trades under current strategy to judge health
+    total_closed = len(strategy_trades)
     if total_closed < 10 and not kill_all:
         print(f"  Grace period: {total_closed}/10 trades — forcing GREEN")
         level = "green"

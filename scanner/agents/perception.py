@@ -701,6 +701,30 @@ def classify_spread_status(spread_abs, funding_raw, velocity, collapsed):
     return "NORMAL"
 
 
+def _compute_btc_roc_4h():
+    """Compute BTC ROC over last 4 hours from HL candle API."""
+    try:
+        now_ms = int(time.time() * 1000)
+        four_h_ago = now_ms - (4 * 3600 * 1000)
+        req = urllib.request.Request(
+            "https://api.hyperliquid.xyz/info",
+            data=json.dumps({
+                "type": "candleSnapshot",
+                "req": {"coin": "BTC", "interval": "1h", "startTime": four_h_ago, "endTime": now_ms}
+            }).encode(),
+            headers={"Content-Type": "application/json"}
+        )
+        resp = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        if resp and len(resp) >= 2:
+            open_4h = float(resp[0]["o"])
+            close_now = float(resp[-1]["c"])
+            if open_4h > 0:
+                return ((close_now - open_4h) / open_4h) * 100
+    except Exception as e:
+        log(f"  WARN: BTC ROC_4H computation failed: {e}")
+    return 0.0
+
+
 def compute_spread_velocity_and_collapse(coin, current_spread, prev_spread_state):
     coin_hist = prev_spread_state.get("coins", {}).get(coin, {}).get("history", [])
     if not coin_hist:
@@ -998,8 +1022,10 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
         # Stores results under indicators_own; logs drift to drift_log.jsonl.
         _own_indicators = {}
         try:
-            from scanner.indicators.engine import IndicatorEngine, fetch_hl_candles
-            from scanner.indicators.signal_logger import log_indicator_drift
+            import sys, os
+            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from indicators.engine import IndicatorEngine, fetch_hl_candles
+            from indicators.signal_logger import log_indicator_drift
             _own_candles = fetch_hl_candles(coin, "1h", 300)
             if len(_own_candles) >= 50:
                 _eng = IndicatorEngine(_own_candles)
@@ -1066,7 +1092,8 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
 
     btc_data     = world_coins.get("BTC", {})
     btc_roc_24h  = btc_data.get("indicators", {}).get("ROC_24H", 0) or 0
-    btc_roc_4h   = btc_data.get("indicators_own", {}).get("ROC_4H", 0) or 0
+    # Compute ROC_4H from HL candles (indicators_own doesn't have it)
+    btc_roc_4h   = _compute_btc_roc_4h()
 
     if btc_roc_4h < -2 or btc_roc_24h < -3 or (n_chaotic / total_coins > 0.3):
         macro_state = "RISK_OFF"
