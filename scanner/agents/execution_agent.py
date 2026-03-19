@@ -68,6 +68,12 @@ except Exception as _import_err:
     _supabase = None
 MIN_HOLD_BEFORE_EXIT_MINS = 120  # don't evaluate exit expressions before 2 hours
 
+# ── SIGNAL FAMILY BLACKLIST ─────────────────────────────────────────────────
+# Proven losers from 60-trade dataset. SOCIAL: -$1.17 on 2 trades (0% WR),
+# INFLUENCER: -$0.09 (0% WR), ICHIMOKU: -$0.09 (0% WR).
+# These get re-evaluated when counterfactual learning matures.
+SIGNAL_FAMILY_BLACKLIST = {"SOCIAL", "INFLUENCER", "ICHIMOKU"}
+
 # ─── TELEGRAM ALERTS ───
 TELEGRAM_CHAT_ID = "133058580"  # Igor
 
@@ -595,6 +601,24 @@ def compute_size(trade, cfg, throttle):
     if streak_mod != 1.0:
         log(f"  [STREAK] size={size_usd:.0f} (base={base_size:.0f} × streak_mod={streak_mod})")
 
+    # Upgrade 5: Fear & Greed LONG penalty
+    # When F&G < 30 (extreme fear), cut LONG size by 75%. Data shows 31% WR
+    # on LONGs vs 44% on SHORTs in bearish conditions. Don't block (adversary
+    # handles that), but size down so losses are minimal.
+    direction = trade.get("direction", "")
+    if direction == "LONG":
+        try:
+            macro = load_json(BUS_DIR / "macro_intel.json", {})
+            fg = macro.get("fear_greed", 50)
+            if isinstance(fg, (int, float)) and fg < 30:
+                size_usd *= 0.25
+                log(f"  [F&G] Fear={fg} + LONG → size cut 75% to ${size_usd:.0f}")
+            elif isinstance(fg, (int, float)) and fg < 45:
+                size_usd *= 0.50
+                log(f"  [F&G] Fear={fg} + LONG → size cut 50% to ${size_usd:.0f}")
+        except Exception:
+            pass
+
     return round(size_usd, 2)
 
 
@@ -657,6 +681,12 @@ def should_open(trade, positions, cfg):
         safe_dir = "SHORT" if spread_pct > 0 else "LONG"
         if direction != safe_dir:
             return False, f"spread: UNWIND in progress, only {safe_dir} allowed (spread={spread_pct:+.4f}%)"
+
+    # ── SIGNAL FAMILY BLACKLIST ──
+    _sig = trade.get("signal", "")
+    _family = _sig.split("_")[0].upper() if _sig else ""
+    if _family in SIGNAL_FAMILY_BLACKLIST:
+        return False, f"signal family {_family} blacklisted (proven loser)"
 
     if trade.get("sharpe", 0) < min_sharpe:
         return False, f"sharpe {trade.get('sharpe', 0):.2f} < {min_sharpe}"
@@ -1214,6 +1244,10 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
         hold_mins = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 60
 
         # ── OBSERVER KILL SIGNALS ──
+        # FIX: All kill signals respect MIN_HOLD_BEFORE_EXIT_MINS.
+        # Previously "immediate" urgency bypassed hold time, causing 17/32 kills
+        # within 5 minutes of entry (lost -$0.29). Kill conditions that are true
+        # at entry are noise — they must worsen after holding to be meaningful.
         kill_signals_data = load_json(KILL_SIGNALS_FILE, {})
         kill_signals_list = kill_signals_data.get("signals", [])
         kill_match = next(
@@ -1225,10 +1259,9 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             kc = kill_match.get("kill_condition", "observer_kill")
             urgency = kill_match.get("urgency", "warning")
 
-            # Only "immediate" urgency bypasses min hold (regime chaotic, MM_SETUP, liquidity death)
-            # "warning" urgency (Hurst flicker, funding drift) respects the 2h hold
-            if urgency != "immediate" and hold_mins < MIN_HOLD_BEFORE_EXIT_MINS:
-                log(f"[{coin}] Kill signal '{kc}' deferred — urgency={urgency}, hold {hold_mins:.0f}m < {MIN_HOLD_BEFORE_EXIT_MINS}m")
+            # ALL kill signals respect min hold — conditions true at entry aren't news
+            if hold_mins < MIN_HOLD_BEFORE_EXIT_MINS:
+                log(f"[{coin}] Kill signal '{kc}' deferred — hold {hold_mins:.0f}m < {MIN_HOLD_BEFORE_EXIT_MINS}m (urgency={urgency})")
                 remaining.append(pos)
                 continue
 
