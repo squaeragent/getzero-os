@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-03-19T11:26:56.748930+00:00",
-  "candidates_timestamp": "2026-03-19T11:23:31.520668+00:00",
-  "hypotheses_received": 19,
-  "killed": 19,
+  "timestamp": "2026-03-19T11:35:10.039890+00:00",
+  "candidates_timestamp": "2026-03-19T11:31:51.443384+00:00",
+  "hypotheses_received": 20,
+  "killed": 20,
   "cautioned": 0,
   "proceeded": 0,
   "survivors": 0,
   "results": [
     {
-      "hypothesis_id": "hyp_20260319_112331_ETH_LONG_001",
+      "hypothesis_id": "hyp_20260319_113151_ETH_LONG_001",
       "coin": "ETH",
       "direction": "LONG",
       "survival_score": 0.0,
@@ -61,8 +61,8 @@
           "attack": "funding_headwind",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "LONG with funding rate -0.000134",
-          "funding_rate": -0.000134,
+          "detail": "LONG with funding rate -0.000094",
+          "funding_rate": -9.4e-05,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
@@ -89,7 +89,7 @@
           "attack": "macro_regime",
           "severity": 0.6,
           "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
+          "detail": "RISK_OFF market + LONG = fighting the tide (fear=43.2); BTC down -4.1% in 24h \u2014 LONGs fighting gravity"
         },
         {
           "attack": "session_risk",
@@ -113,46 +113,46 @@
           "attack": "data_disagreement",
           "severity": 0.8,
           "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.8% >25% threshold; 6 indicators disagree >10%",
+          "detail": "ENVY/TAAPI divergence: max delta 198.1% >25% threshold; 6 indicators disagree >10%",
           "indicators_checked": 7,
           "indicators_disagreeing": 6,
-          "max_delta_pct": 196.78,
+          "max_delta_pct": 198.12,
           "disagreements": [
             {
               "indicator": "RSI_24H",
-              "envy": 38.566749,
-              "taapi": 0.388656,
-              "delta_pct": 196.01
+              "envy": 40.005811,
+              "taapi": 0.402491,
+              "delta_pct": 196.02
             },
             {
               "indicator": "MACD_N_24H",
-              "envy": -0.009792,
-              "taapi": -0.012632,
-              "delta_pct": 25.33
+              "envy": -0.00974,
+              "taapi": -0.01248,
+              "delta_pct": 24.66
             },
             {
               "indicator": "ADX_3H30M",
-              "envy": 34.177215,
-              "taapi": 0.277521,
-              "delta_pct": 196.78
+              "envy": 58.878505,
+              "taapi": 0.277797,
+              "delta_pct": 198.12
             },
             {
               "indicator": "CMO_3H30M",
-              "envy": 19.642857,
-              "taapi": 0.386479,
-              "delta_pct": 192.28
+              "envy": 26.470588,
+              "taapi": 0.413091,
+              "delta_pct": 193.85
             },
             {
               "indicator": "BB_POS_24H",
-              "envy": 0.27833,
+              "envy": 0.284636,
               "taapi": 0.5,
-              "delta_pct": 56.96
+              "delta_pct": 54.9
             },
             {
               "indicator": "ROC_24H",
-              "envy": -6.032713,
-              "taapi": -4.418025,
-              "delta_pct": 30.9
+              "envy": -4.529594,
+              "taapi": -4.075634,
+              "delta_pct": 10.55
             }
           ]
         },
@@ -177,17 +177,17 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000506 \u2014 within normal range",
-          "premium": -0.00050617
+          "detail": "premium -0.000736 \u2014 within normal range",
+          "premium": -0.00073563
         }
       ],
       "active_attacks": 8
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_XPL_SHORT_001",
+      "hypothesis_id": "hyp_20260319_113151_XPL_SHORT_001",
       "coin": "XPL",
       "direction": "SHORT",
-      "survival_score": 0.0152,
+      "survival_score": 0.0049,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -201,11 +201,11 @@
         },
         {
           "attack": "kill_condition_proximity",
-          "severity": 0.3,
+          "severity": 0.1,
           "weight": 1.0,
-          "detail": "liquidity score 50 \u2014 moderately thin",
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
           "conditions_checked": 5,
-          "conditions_near": 3
+          "conditions_near": 2
         },
         {
           "attack": "portfolio_stress",
@@ -237,8 +237,8 @@
           "attack": "funding_headwind",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "SHORT with funding rate -0.000035",
-          "funding_rate": -3.5e-05,
+          "detail": "SHORT with funding rate 0.000157",
+          "funding_rate": 0.000157,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
@@ -250,9 +250,9 @@
         },
         {
           "attack": "timeframe_alignment",
-          "severity": 0.0,
+          "severity": 0.5,
           "weight": 1.5,
-          "detail": "timeframe aligned"
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
         },
         {
           "attack": "rule_based",
@@ -313,17 +313,17 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000685 \u2014 within normal range",
-          "premium": -0.000685
+          "detail": "premium -0.001434 \u2014 within normal range",
+          "premium": -0.00143366
         }
       ],
-      "active_attacks": 5
+      "active_attacks": 6
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_XPL_SHORT_002",
+      "hypothesis_id": "hyp_20260319_113151_XPL_SHORT_002",
       "coin": "XPL",
       "direction": "SHORT",
-      "survival_score": 0.0152,
+      "survival_score": 0.0049,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -337,11 +337,11 @@
         },
         {
           "attack": "kill_condition_proximity",
-          "severity": 0.3,
+          "severity": 0.1,
           "weight": 1.0,
-          "detail": "liquidity score 50 \u2014 moderately thin",
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
           "conditions_checked": 5,
-          "conditions_near": 3
+          "conditions_near": 2
         },
         {
           "attack": "portfolio_stress",
@@ -373,8 +373,8 @@
           "attack": "funding_headwind",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "SHORT with funding rate -0.000035",
-          "funding_rate": -3.5e-05,
+          "detail": "SHORT with funding rate 0.000157",
+          "funding_rate": 0.000157,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
@@ -386,9 +386,9 @@
         },
         {
           "attack": "timeframe_alignment",
-          "severity": 0.0,
+          "severity": 0.5,
           "weight": 1.5,
-          "detail": "timeframe aligned"
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
         },
         {
           "attack": "rule_based",
@@ -449,14 +449,14 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000685 \u2014 within normal range",
-          "premium": -0.000685
+          "detail": "premium -0.001434 \u2014 within normal range",
+          "premium": -0.00143366
         }
       ],
-      "active_attacks": 5
+      "active_attacks": 6
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_INJ_SHORT_001",
+      "hypothesis_id": "hyp_20260319_113151_INJ_SHORT_001",
       "coin": "INJ",
       "direction": "SHORT",
       "survival_score": 0.0,
@@ -507,11 +507,11 @@
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.0,
+          "severity": 0.5,
           "weight": 1.0,
-          "detail": "SHORT with funding rate 0.000326",
-          "funding_rate": 0.000326,
-          "funding_velocity": "normalizing",
+          "detail": "SHORT with funding rate -0.00022% \u2014 paying ~$0.03/day to hold $50 position (funding intensifying against SHORT)",
+          "funding_rate": -0.000218,
+          "funding_velocity": "intensifying",
           "funding_reversal": false
         },
         {
@@ -561,46 +561,46 @@
           "attack": "data_disagreement",
           "severity": 0.8,
           "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.2% >25% threshold; 6 indicators disagree >10%",
+          "detail": "ENVY/TAAPI divergence: max delta 198.2% >25% threshold; 6 indicators disagree >10%",
           "indicators_checked": 7,
           "indicators_disagreeing": 6,
-          "max_delta_pct": 196.21,
+          "max_delta_pct": 198.16,
           "disagreements": [
             {
               "indicator": "RSI_24H",
-              "envy": 36.391247,
-              "taapi": 0.348019,
-              "delta_pct": 196.21
+              "envy": 37.659769,
+              "taapi": 0.357006,
+              "delta_pct": 196.24
             },
             {
               "indicator": "MACD_N_24H",
-              "envy": -0.010757,
-              "taapi": -0.015589,
-              "delta_pct": 36.68
+              "envy": -0.010704,
+              "taapi": -0.015504,
+              "delta_pct": 36.63
             },
             {
               "indicator": "ADX_3H30M",
-              "envy": 32.0,
-              "taapi": 0.363349,
-              "delta_pct": 195.51
+              "envy": 78.846154,
+              "taapi": 0.363869,
+              "delta_pct": 198.16
             },
             {
               "indicator": "CMO_3H30M",
-              "envy": 14.492754,
-              "taapi": 0.27933,
-              "delta_pct": 192.44
+              "envy": 44.126984,
+              "taapi": 0.296089,
+              "delta_pct": 197.33
             },
             {
               "indicator": "BB_POS_24H",
-              "envy": 0.162486,
+              "envy": 0.182704,
               "taapi": 0.5,
-              "delta_pct": 101.89
+              "delta_pct": 92.95
             },
             {
               "indicator": "ROC_24H",
-              "envy": -6.146723,
-              "taapi": -4.68651,
-              "delta_pct": 26.96
+              "envy": -5.108098,
+              "taapi": -4.496517,
+              "delta_pct": 12.74
             }
           ]
         },
@@ -625,26 +625,27 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000525 \u2014 within normal range",
-          "premium": -0.00052466
+          "detail": "premium -0.000564 \u2014 within normal range",
+          "premium": -0.00056413
         }
       ],
-      "active_attacks": 7
+      "active_attacks": 8
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_OP_SHORT_001",
-      "coin": "OP",
+      "hypothesis_id": "hyp_20260319_113151_XPL_SHORT_003",
+      "coin": "XPL",
       "direction": "SHORT",
-      "survival_score": 0.0444,
+      "survival_score": 0.0222,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
         {
           "attack": "similar_failure",
-          "severity": 0.0,
+          "severity": 0.4,
           "weight": 1.8,
-          "detail": "No similar losing trades found",
-          "failures_found": 0
+          "detail": "4 similar trades lost avg -0.5%",
+          "failures_found": 4,
+          "avg_loss_pct": -0.455
         },
         {
           "attack": "kill_condition_proximity",
@@ -667,33 +668,33 @@
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.93",
-          "confidence": 0.93,
-          "evidence_for_count": 4,
-          "evidence_against_count": 1
+          "detail": "confidence 0.85",
+          "confidence": 0.85,
+          "evidence_for_count": 5,
+          "evidence_against_count": 0
         },
         {
           "attack": "regime_mismatch",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
+          "detail": "SHORT signal (style=momentum) in trending regime",
           "regime": "trending",
-          "signal_style": "reversal"
+          "signal_style": "momentum"
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.3,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "SHORT with funding rate -0.00130% \u2014 paying ~$0.20/day to hold $50 position",
-          "funding_rate": -0.001304,
-          "funding_velocity": "normalizing",
+          "detail": "SHORT with funding rate 0.000157",
+          "funding_rate": 0.000157,
+          "funding_velocity": "stable",
           "funding_reversal": false
         },
         {
           "attack": "oi_divergence",
           "severity": 0.2,
           "weight": 1.0,
-          "detail": "OI/volume ratio 2.4x \u2014 crowded trade risk"
+          "detail": "OI/volume ratio 4.0x \u2014 crowded trade risk"
         },
         {
           "attack": "timeframe_alignment",
@@ -730,13 +731,13 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (16 instances)"
+          "detail": "family immature (17 instances)"
         },
         {
           "attack": "data_disagreement",
           "severity": 0.0,
           "weight": 1.3,
-          "detail": "No TAAPI data for OP \u2014 skipping cross-source check",
+          "detail": "No TAAPI data for XPL \u2014 skipping cross-source check",
           "disagreements": []
         },
         {
@@ -760,17 +761,17 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000409 \u2014 within normal range",
-          "premium": -0.000409
+          "detail": "premium -0.001434 \u2014 within normal range",
+          "premium": -0.00143366
         }
       ],
-      "active_attacks": 6
+      "active_attacks": 5
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_AVAX_SHORT_001",
-      "coin": "AVAX",
+      "hypothesis_id": "hyp_20260319_113151_HYPE_SHORT_001",
+      "coin": "HYPE",
       "direction": "SHORT",
-      "survival_score": 0.0,
+      "survival_score": 0.0792,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -778,9 +779,8 @@
           "attack": "similar_failure",
           "severity": 0.0,
           "weight": 1.8,
-          "detail": "2 similar trade(s) lost, not enough to penalize",
-          "failures_found": 2,
-          "avg_loss_pct": -0.125
+          "detail": "No similar losing trades found",
+          "failures_found": 0
         },
         {
           "attack": "kill_condition_proximity",
@@ -803,8 +803,8 @@
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.75",
-          "confidence": 0.747,
+          "detail": "confidence 0.84",
+          "confidence": 0.842,
           "evidence_for_count": 4,
           "evidence_against_count": 1
         },
@@ -827,9 +827,9 @@
         },
         {
           "attack": "oi_divergence",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "OI/volume ratio 5.3x \u2014 crowded trade risk"
+          "detail": "OI healthy"
         },
         {
           "attack": "timeframe_alignment",
@@ -866,188 +866,13 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (16 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.8,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.2% >25% threshold; 6 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 6,
-          "max_delta_pct": 196.24,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 36.964618,
-              "taapi": 0.351182,
-              "delta_pct": 196.24
-            },
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.010181,
-              "taapi": -0.016645,
-              "delta_pct": 48.19
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 31.355932,
-              "taapi": 0.335424,
-              "delta_pct": 195.77
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 25.864909,
-              "taapi": 0.288889,
-              "delta_pct": 195.58
-            },
-            {
-              "indicator": "BB_POS_24H",
-              "envy": 0.279034,
-              "taapi": 0.5,
-              "delta_pct": 56.73
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -6.573091,
-              "taapi": -4.308617,
-              "delta_pct": 41.62
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
-          "fear_greed": 23,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.4,
-          "weight": 1.4,
-          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
-          "macro_event_imminent": true,
-          "days_to_options_expiry": 8,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium 0.000000 \u2014 within normal range",
-          "premium": 0.0
-        }
-      ],
-      "active_attacks": 6
-    },
-    {
-      "hypothesis_id": "hyp_20260319_112331_ENA_SHORT_001",
-      "coin": "ENA",
-      "direction": "SHORT",
-      "survival_score": 0.0,
-      "verdict": "KILLED",
-      "recommended_size_modifier": 0.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "No similar losing trades found",
-          "failures_found": 0
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 1.0,
-          "weight": 1.0,
-          "detail": "funding intensifying \u2014 kill condition 50% met; liquidity below tradeable threshold \u2014 kill condition MET",
-          "conditions_checked": 5,
-          "conditions_near": 4
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
-          "same_direction_positions": 1,
-          "stress_impact_usd": 1.63,
-          "directional_pct": 47.4
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "confidence 0.71",
-          "confidence": 0.708,
-          "evidence_for_count": 3,
-          "evidence_against_count": 3
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
-          "regime": "trending",
-          "signal_style": "reversal"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "SHORT with funding rate -0.00470% \u2014 paying ~$0.70/day to hold $50 position",
-          "funding_rate": -0.004696,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "OI/volume ratio 2.2x \u2014 crowded trade risk"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.5,
-          "weight": 1.5,
-          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.0,
-          "weight": 1.44,
-          "detail": "RISK_OFF favors SHORT"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (14 instances)"
+          "detail": "family immature (13 instances)"
         },
         {
           "attack": "data_disagreement",
           "severity": 0.0,
           "weight": 1.3,
-          "detail": "No TAAPI data for ENA \u2014 skipping cross-source check",
+          "detail": "No TAAPI data for HYPE \u2014 skipping cross-source check",
           "disagreements": []
         },
         {
@@ -1071,17 +896,193 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000812 \u2014 within normal range",
-          "premium": -0.00081199
+          "detail": "premium 0.000025 \u2014 within normal range",
+          "premium": 2.505e-05
         }
       ],
-      "active_attacks": 6
+      "active_attacks": 4
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_TIA_SHORT_001",
+      "hypothesis_id": "hyp_20260319_113151_ETH_LONG_002",
+      "coin": "ETH",
+      "direction": "LONG",
+      "survival_score": 0.0,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.0,
+          "weight": 1.8,
+          "detail": "1 similar trade(s) lost, not enough to penalize",
+          "failures_found": 1,
+          "avg_loss_pct": -0.02
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.1,
+          "weight": 1.0,
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+          "conditions_checked": 5,
+          "conditions_near": 2
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.92,
+          "directional_pct": 55.7
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.68",
+          "confidence": 0.678,
+          "evidence_for_count": 5,
+          "evidence_against_count": 0
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "LONG signal (style=neutral) in trending regime",
+          "regime": "trending",
+          "signal_style": "neutral"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "LONG with funding rate -0.000094",
+          "funding_rate": -9.4e-05,
+          "funding_velocity": "stable",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "OI healthy"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.0,
+          "weight": 1.5,
+          "detail": "timeframe aligned"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.6,
+          "weight": 1.44,
+          "detail": "RISK_OFF market + LONG = fighting the tide (fear=43.2); BTC down -4.1% in 24h \u2014 LONGs fighting gravity"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 4 trades in EUROPE+LONG, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 15%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "family immature (0 instances)"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.8,
+          "weight": 1.3,
+          "detail": "ENVY/TAAPI divergence: max delta 198.1% >25% threshold; 6 indicators disagree >10%",
+          "indicators_checked": 7,
+          "indicators_disagreeing": 6,
+          "max_delta_pct": 198.12,
+          "disagreements": [
+            {
+              "indicator": "RSI_24H",
+              "envy": 40.005811,
+              "taapi": 0.402491,
+              "delta_pct": 196.02
+            },
+            {
+              "indicator": "MACD_N_24H",
+              "envy": -0.00974,
+              "taapi": -0.01248,
+              "delta_pct": 24.66
+            },
+            {
+              "indicator": "ADX_3H30M",
+              "envy": 58.878505,
+              "taapi": 0.277797,
+              "delta_pct": 198.12
+            },
+            {
+              "indicator": "CMO_3H30M",
+              "envy": 26.470588,
+              "taapi": 0.413091,
+              "delta_pct": 193.85
+            },
+            {
+              "indicator": "BB_POS_24H",
+              "envy": 0.284636,
+              "taapi": 0.5,
+              "delta_pct": 54.9
+            },
+            {
+              "indicator": "ROC_24H",
+              "envy": -4.529594,
+              "taapi": -4.075634,
+              "delta_pct": 10.55
+            }
+          ]
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.3,
+          "weight": 1.3,
+          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.000736 \u2014 within normal range",
+          "premium": -0.00073563
+        }
+      ],
+      "active_attacks": 5
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_TIA_SHORT_001",
       "coin": "TIA",
       "direction": "SHORT",
-      "survival_score": 0.033,
+      "survival_score": 0.0275,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -1094,9 +1095,9 @@
         },
         {
           "attack": "kill_condition_proximity",
-          "severity": 0.4,
+          "severity": 0.5,
           "weight": 1.0,
-          "detail": "spread ELEVATED \u2014 kill condition 40% met; liquidity score 50 \u2014 moderately thin",
+          "detail": "funding intensifying \u2014 kill condition 50% met; spread ELEVATED \u2014 kill condition 40% met",
           "conditions_checked": 4,
           "conditions_near": 3
         },
@@ -1130,8 +1131,8 @@
           "attack": "funding_headwind",
           "severity": 0.5,
           "weight": 1.0,
-          "detail": "SHORT with funding rate -0.00188% \u2014 paying ~$0.28/day to hold $50 position (funding intensifying against SHORT)",
-          "funding_rate": -0.001883,
+          "detail": "SHORT with funding rate -0.00250% \u2014 paying ~$0.37/day to hold $50 position (funding intensifying against SHORT)",
+          "funding_rate": -0.002497,
           "funding_velocity": "intensifying",
           "funding_reversal": false
         },
@@ -1176,7 +1177,7 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (0 instances)"
+          "detail": "family immature (1 instances)"
         },
         {
           "attack": "data_disagreement",
@@ -1206,369 +1207,17 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.001034 \u2014 within normal range",
-          "premium": -0.00103397
+          "detail": "premium -0.000855 \u2014 within normal range",
+          "premium": -0.0008547
         }
       ],
       "active_attacks": 4
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_AVAX_SHORT_002",
-      "coin": "AVAX",
+      "hypothesis_id": "hyp_20260319_113151_HYPE_SHORT_002",
+      "coin": "HYPE",
       "direction": "SHORT",
-      "survival_score": 0.0,
-      "verdict": "KILLED",
-      "recommended_size_modifier": 0.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "2 similar trade(s) lost, not enough to penalize",
-          "failures_found": 2,
-          "avg_loss_pct": -0.125
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
-          "conditions_checked": 5,
-          "conditions_near": 2
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
-          "same_direction_positions": 1,
-          "stress_impact_usd": 1.63,
-          "directional_pct": 47.4
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "confidence 0.72",
-          "confidence": 0.716,
-          "evidence_for_count": 4,
-          "evidence_against_count": 1
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
-          "regime": "trending",
-          "signal_style": "reversal"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT with funding rate 0.001250",
-          "funding_rate": 0.00125,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "OI/volume ratio 5.3x \u2014 crowded trade risk"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.5,
-          "weight": 1.5,
-          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.0,
-          "weight": 1.44,
-          "detail": "RISK_OFF favors SHORT"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (16 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.8,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.2% >25% threshold; 6 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 6,
-          "max_delta_pct": 196.24,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 36.964618,
-              "taapi": 0.351182,
-              "delta_pct": 196.24
-            },
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.010181,
-              "taapi": -0.016645,
-              "delta_pct": 48.19
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 31.355932,
-              "taapi": 0.335424,
-              "delta_pct": 195.77
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 25.864909,
-              "taapi": 0.288889,
-              "delta_pct": 195.58
-            },
-            {
-              "indicator": "BB_POS_24H",
-              "envy": 0.279034,
-              "taapi": 0.5,
-              "delta_pct": 56.73
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -6.573091,
-              "taapi": -4.308617,
-              "delta_pct": 41.62
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
-          "fear_greed": 23,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.4,
-          "weight": 1.4,
-          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
-          "macro_event_imminent": true,
-          "days_to_options_expiry": 8,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium 0.000000 \u2014 within normal range",
-          "premium": 0.0
-        }
-      ],
-      "active_attacks": 6
-    },
-    {
-      "hypothesis_id": "hyp_20260319_112331_AVAX_SHORT_003",
-      "coin": "AVAX",
-      "direction": "SHORT",
-      "survival_score": 0.0,
-      "verdict": "KILLED",
-      "recommended_size_modifier": 0.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "2 similar trade(s) lost, not enough to penalize",
-          "failures_found": 2,
-          "avg_loss_pct": -0.125
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
-          "conditions_checked": 5,
-          "conditions_near": 2
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
-          "same_direction_positions": 1,
-          "stress_impact_usd": 1.63,
-          "directional_pct": 47.4
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "confidence 0.72",
-          "confidence": 0.725,
-          "evidence_for_count": 4,
-          "evidence_against_count": 1
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
-          "regime": "trending",
-          "signal_style": "reversal"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT with funding rate 0.001250",
-          "funding_rate": 0.00125,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "OI/volume ratio 5.3x \u2014 crowded trade risk"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.5,
-          "weight": 1.5,
-          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.0,
-          "weight": 1.44,
-          "detail": "RISK_OFF favors SHORT"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (0 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.8,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.2% >25% threshold; 6 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 6,
-          "max_delta_pct": 196.24,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 36.964618,
-              "taapi": 0.351182,
-              "delta_pct": 196.24
-            },
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.010181,
-              "taapi": -0.016645,
-              "delta_pct": 48.19
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 31.355932,
-              "taapi": 0.335424,
-              "delta_pct": 195.77
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 25.864909,
-              "taapi": 0.288889,
-              "delta_pct": 195.58
-            },
-            {
-              "indicator": "BB_POS_24H",
-              "envy": 0.279034,
-              "taapi": 0.5,
-              "delta_pct": 56.73
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -6.573091,
-              "taapi": -4.308617,
-              "delta_pct": 41.62
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
-          "fear_greed": 23,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.4,
-          "weight": 1.4,
-          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
-          "macro_event_imminent": true,
-          "days_to_options_expiry": 8,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium 0.000000 \u2014 within normal range",
-          "premium": 0.0
-        }
-      ],
-      "active_attacks": 6
-    },
-    {
-      "hypothesis_id": "hyp_20260319_112331_UNI_SHORT_001",
-      "coin": "UNI",
-      "direction": "SHORT",
-      "survival_score": 0.0634,
+      "survival_score": 0.0792,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -1600,9 +1249,9 @@
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.77",
-          "confidence": 0.769,
-          "evidence_for_count": 3,
+          "detail": "confidence 0.88",
+          "confidence": 0.883,
+          "evidence_for_count": 4,
           "evidence_against_count": 1
         },
         {
@@ -1617,16 +1266,16 @@
           "attack": "funding_headwind",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "SHORT with funding rate 0.000334",
-          "funding_rate": 0.000334,
+          "detail": "SHORT with funding rate 0.001250",
+          "funding_rate": 0.00125,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
         {
           "attack": "oi_divergence",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "OI/volume ratio 2.8x \u2014 crowded trade risk"
+          "detail": "OI healthy"
         },
         {
           "attack": "timeframe_alignment",
@@ -1663,13 +1312,13 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (0 instances)"
+          "detail": "family immature (18 instances)"
         },
         {
           "attack": "data_disagreement",
           "severity": 0.0,
           "weight": 1.3,
-          "detail": "No TAAPI data for UNI \u2014 skipping cross-source check",
+          "detail": "No TAAPI data for HYPE \u2014 skipping cross-source check",
           "disagreements": []
         },
         {
@@ -1693,17 +1342,17 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000570 \u2014 within normal range",
-          "premium": -0.00057034
+          "detail": "premium 0.000025 \u2014 within normal range",
+          "premium": 2.505e-05
         }
       ],
-      "active_attacks": 5
+      "active_attacks": 4
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_XPL_SHORT_003",
+      "hypothesis_id": "hyp_20260319_113151_XPL_SHORT_004",
       "coin": "XPL",
       "direction": "SHORT",
-      "survival_score": 0.0152,
+      "survival_score": 0.0049,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -1717,11 +1366,11 @@
         },
         {
           "attack": "kill_condition_proximity",
-          "severity": 0.3,
+          "severity": 0.1,
           "weight": 1.0,
-          "detail": "liquidity score 50 \u2014 moderately thin",
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
           "conditions_checked": 5,
-          "conditions_near": 3
+          "conditions_near": 2
         },
         {
           "attack": "portfolio_stress",
@@ -1736,8 +1385,8 @@
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.52",
-          "confidence": 0.524,
+          "detail": "confidence 0.56",
+          "confidence": 0.555,
           "evidence_for_count": 4,
           "evidence_against_count": 0
         },
@@ -1753,8 +1402,8 @@
           "attack": "funding_headwind",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "SHORT with funding rate -0.000035",
-          "funding_rate": -3.5e-05,
+          "detail": "SHORT with funding rate 0.000157",
+          "funding_rate": 0.000157,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
@@ -1766,9 +1415,9 @@
         },
         {
           "attack": "timeframe_alignment",
-          "severity": 0.0,
+          "severity": 0.5,
           "weight": 1.5,
-          "detail": "timeframe aligned"
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
         },
         {
           "attack": "rule_based",
@@ -1829,17 +1478,771 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000685 \u2014 within normal range",
-          "premium": -0.000685
+          "detail": "premium -0.001434 \u2014 within normal range",
+          "premium": -0.00143366
+        }
+      ],
+      "active_attacks": 6
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_BTC_LONG_001",
+      "coin": "BTC",
+      "direction": "LONG",
+      "survival_score": 0.0,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.0,
+          "weight": 1.8,
+          "detail": "2 similar trade(s) lost, not enough to penalize",
+          "failures_found": 2,
+          "avg_loss_pct": -0.055
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.1,
+          "weight": 1.0,
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+          "conditions_checked": 5,
+          "conditions_near": 2
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.92,
+          "directional_pct": 55.7
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.65",
+          "confidence": 0.645,
+          "evidence_for_count": 5,
+          "evidence_against_count": 0
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.2,
+          "weight": 1.0,
+          "detail": "reversal signal in trending regime \u2014 fighting the trend",
+          "regime": "trending",
+          "signal_style": "reversal"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "LONG with funding rate -0.001368",
+          "funding_rate": -0.001368,
+          "funding_velocity": "stable",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "OI healthy"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.0,
+          "weight": 1.5,
+          "detail": "timeframe aligned"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.6,
+          "weight": 1.44,
+          "detail": "RISK_OFF market + LONG = fighting the tide (fear=43.2); BTC down -4.1% in 24h \u2014 LONGs fighting gravity"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 4 trades in EUROPE+LONG, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 15%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "family immature (8 instances)"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.8,
+          "weight": 1.3,
+          "detail": "ENVY/TAAPI divergence: max delta 196.3% >25% threshold; 5 indicators disagree >10%",
+          "indicators_checked": 7,
+          "indicators_disagreeing": 5,
+          "max_delta_pct": 196.3,
+          "disagreements": [
+            {
+              "indicator": "RSI_24H",
+              "envy": 37.4624,
+              "taapi": 0.350195,
+              "delta_pct": 196.3
+            },
+            {
+              "indicator": "MACD_N_24H",
+              "envy": -0.008751,
+              "taapi": -0.012052,
+              "delta_pct": 31.74
+            },
+            {
+              "indicator": "ADX_3H30M",
+              "envy": 32.323232,
+              "taapi": 0.444557,
+              "delta_pct": 194.57
+            },
+            {
+              "indicator": "CMO_3H30M",
+              "envy": 12.418301,
+              "taapi": 0.327279,
+              "delta_pct": 189.73
+            },
+            {
+              "indicator": "BB_POS_24H",
+              "envy": 0.156121,
+              "taapi": 0.5,
+              "delta_pct": 104.82
+            }
+          ]
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.3,
+          "weight": 1.3,
+          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.000783 \u2014 within normal range",
+          "premium": -0.00078342
+        }
+      ],
+      "active_attacks": 6
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_ETH_LONG_003",
+      "coin": "ETH",
+      "direction": "LONG",
+      "survival_score": 0.0,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.0,
+          "weight": 1.8,
+          "detail": "1 similar trade(s) lost, not enough to penalize",
+          "failures_found": 1,
+          "avg_loss_pct": -0.02
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.1,
+          "weight": 1.0,
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+          "conditions_checked": 5,
+          "conditions_near": 2
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.92,
+          "directional_pct": 55.7
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.65",
+          "confidence": 0.645,
+          "evidence_for_count": 5,
+          "evidence_against_count": 0
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "LONG signal (style=neutral) in trending regime",
+          "regime": "trending",
+          "signal_style": "neutral"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "LONG with funding rate -0.000094",
+          "funding_rate": -9.4e-05,
+          "funding_velocity": "stable",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "OI healthy"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.0,
+          "weight": 1.5,
+          "detail": "timeframe aligned"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.6,
+          "weight": 1.44,
+          "detail": "RISK_OFF market + LONG = fighting the tide (fear=43.2); BTC down -4.1% in 24h \u2014 LONGs fighting gravity"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 4 trades in EUROPE+LONG, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 15%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "family immature (12 instances)"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.8,
+          "weight": 1.3,
+          "detail": "ENVY/TAAPI divergence: max delta 198.1% >25% threshold; 6 indicators disagree >10%",
+          "indicators_checked": 7,
+          "indicators_disagreeing": 6,
+          "max_delta_pct": 198.12,
+          "disagreements": [
+            {
+              "indicator": "RSI_24H",
+              "envy": 40.005811,
+              "taapi": 0.402491,
+              "delta_pct": 196.02
+            },
+            {
+              "indicator": "MACD_N_24H",
+              "envy": -0.00974,
+              "taapi": -0.01248,
+              "delta_pct": 24.66
+            },
+            {
+              "indicator": "ADX_3H30M",
+              "envy": 58.878505,
+              "taapi": 0.277797,
+              "delta_pct": 198.12
+            },
+            {
+              "indicator": "CMO_3H30M",
+              "envy": 26.470588,
+              "taapi": 0.413091,
+              "delta_pct": 193.85
+            },
+            {
+              "indicator": "BB_POS_24H",
+              "envy": 0.284636,
+              "taapi": 0.5,
+              "delta_pct": 54.9
+            },
+            {
+              "indicator": "ROC_24H",
+              "envy": -4.529594,
+              "taapi": -4.075634,
+              "delta_pct": 10.55
+            }
+          ]
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.3,
+          "weight": 1.3,
+          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.000736 \u2014 within normal range",
+          "premium": -0.00073563
         }
       ],
       "active_attacks": 5
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_ENA_SHORT_002",
-      "coin": "ENA",
+      "hypothesis_id": "hyp_20260319_113151_CRV_SHORT_001",
+      "coin": "CRV",
       "direction": "SHORT",
-      "survival_score": 0.0,
+      "survival_score": 0.0634,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.0,
+          "weight": 1.8,
+          "detail": "1 similar trade(s) lost, not enough to penalize",
+          "failures_found": 1,
+          "avg_loss_pct": -0.08
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.1,
+          "weight": 1.0,
+          "detail": "Hurst 0.771 \u2014 kill at 0.5 not near",
+          "conditions_checked": 4,
+          "conditions_near": 1
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.63,
+          "directional_pct": 47.4
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.60",
+          "confidence": 0.605,
+          "evidence_for_count": 3,
+          "evidence_against_count": 1
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.2,
+          "weight": 1.0,
+          "detail": "momentum signal in stable/low-vol regime \u2014 may not trigger",
+          "regime": "stable",
+          "signal_style": "momentum"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "SHORT with funding rate 0.001250",
+          "funding_rate": 0.00125,
+          "funding_velocity": "stable",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.2,
+          "weight": 1.0,
+          "detail": "OI/volume ratio 2.0x \u2014 crowded trade risk"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.5,
+          "weight": 1.5,
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.0,
+          "weight": 1.44,
+          "detail": "RISK_OFF favors SHORT"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 35%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "family immature (0 instances)"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "No TAAPI data for CRV \u2014 skipping cross-source check",
+          "disagreements": []
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.000504 \u2014 within normal range",
+          "premium": -0.00050367
+        }
+      ],
+      "active_attacks": 5
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_CRV_SHORT_002",
+      "coin": "CRV",
+      "direction": "SHORT",
+      "survival_score": 0.0792,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.0,
+          "weight": 1.8,
+          "detail": "1 similar trade(s) lost, not enough to penalize",
+          "failures_found": 1,
+          "avg_loss_pct": -0.08
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.1,
+          "weight": 1.0,
+          "detail": "Hurst 0.771 \u2014 kill at 0.5 not near",
+          "conditions_checked": 4,
+          "conditions_near": 1
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.63,
+          "directional_pct": 47.4
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.60",
+          "confidence": 0.598,
+          "evidence_for_count": 3,
+          "evidence_against_count": 1
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "SHORT signal (style=neutral) in stable regime",
+          "regime": "stable",
+          "signal_style": "neutral"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "SHORT with funding rate 0.001250",
+          "funding_rate": 0.00125,
+          "funding_velocity": "stable",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.2,
+          "weight": 1.0,
+          "detail": "OI/volume ratio 2.0x \u2014 crowded trade risk"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.5,
+          "weight": 1.5,
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.0,
+          "weight": 1.44,
+          "detail": "RISK_OFF favors SHORT"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 35%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "family immature (7 instances)"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "No TAAPI data for CRV \u2014 skipping cross-source check",
+          "disagreements": []
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.000504 \u2014 within normal range",
+          "premium": -0.00050367
+        }
+      ],
+      "active_attacks": 4
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_XPL_SHORT_005",
+      "coin": "XPL",
+      "direction": "SHORT",
+      "survival_score": 0.0049,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.4,
+          "weight": 1.8,
+          "detail": "4 similar trades lost avg -0.5%",
+          "failures_found": 4,
+          "avg_loss_pct": -0.455
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.1,
+          "weight": 1.0,
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+          "conditions_checked": 5,
+          "conditions_near": 2
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.63,
+          "directional_pct": 47.4
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.52",
+          "confidence": 0.524,
+          "evidence_for_count": 4,
+          "evidence_against_count": 0
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "SHORT signal (style=neutral) in trending regime",
+          "regime": "trending",
+          "signal_style": "neutral"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "SHORT with funding rate 0.000157",
+          "funding_rate": 0.000157,
+          "funding_velocity": "stable",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.2,
+          "weight": 1.0,
+          "detail": "OI/volume ratio 4.0x \u2014 crowded trade risk"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.5,
+          "weight": 1.5,
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.0,
+          "weight": 1.44,
+          "detail": "RISK_OFF favors SHORT"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 15%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0.6,
+          "weight": 1.3,
+          "detail": "family WR 20% over 15 trades"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "No TAAPI data for XPL \u2014 skipping cross-source check",
+          "disagreements": []
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.001434 \u2014 within normal range",
+          "premium": -0.00143366
+        }
+      ],
+      "active_attacks": 6
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_ONDO_SHORT_001",
+      "coin": "ONDO",
+      "direction": "SHORT",
+      "survival_score": 0.0792,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -1852,11 +2255,11 @@
         },
         {
           "attack": "kill_condition_proximity",
-          "severity": 1.0,
+          "severity": 0.1,
           "weight": 1.0,
-          "detail": "funding intensifying \u2014 kill condition 50% met; liquidity below tradeable threshold \u2014 kill condition MET",
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
           "conditions_checked": 5,
-          "conditions_near": 4
+          "conditions_near": 2
         },
         {
           "attack": "portfolio_stress",
@@ -1872,32 +2275,32 @@
           "severity": 0.0,
           "weight": 1.0,
           "detail": "confidence 0.66",
-          "confidence": 0.66,
+          "confidence": 0.664,
           "evidence_for_count": 3,
-          "evidence_against_count": 3
+          "evidence_against_count": 2
         },
         {
           "attack": "regime_mismatch",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
+          "detail": "SHORT signal (style=neutral) in trending regime",
           "regime": "trending",
-          "signal_style": "reversal"
+          "signal_style": "neutral"
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.3,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "SHORT with funding rate -0.00470% \u2014 paying ~$0.70/day to hold $50 position",
-          "funding_rate": -0.004696,
-          "funding_velocity": "stable",
+          "detail": "SHORT with funding rate 0.000890",
+          "funding_rate": 0.00089,
+          "funding_velocity": "normalizing",
           "funding_reversal": false
         },
         {
           "attack": "oi_divergence",
           "severity": 0.2,
           "weight": 1.0,
-          "detail": "OI/volume ratio 2.2x \u2014 crowded trade risk"
+          "detail": "OI/volume ratio 2.4x \u2014 crowded trade risk"
         },
         {
           "attack": "timeframe_alignment",
@@ -1934,13 +2337,13 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (0 instances)"
+          "detail": "family immature (5 instances)"
         },
         {
           "attack": "data_disagreement",
           "severity": 0.0,
           "weight": 1.3,
-          "detail": "No TAAPI data for ENA \u2014 skipping cross-source check",
+          "detail": "No TAAPI data for ONDO \u2014 skipping cross-source check",
           "disagreements": []
         },
         {
@@ -1964,17 +2367,17 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000812 \u2014 within normal range",
-          "premium": -0.00081199
+          "detail": "premium -0.001045 \u2014 within normal range",
+          "premium": -0.0010449
         }
       ],
-      "active_attacks": 6
+      "active_attacks": 4
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_SOL_LONG_001",
-      "coin": "SOL",
-      "direction": "LONG",
-      "survival_score": 0.0,
+      "hypothesis_id": "hyp_20260319_113151_ONDO_SHORT_002",
+      "coin": "ONDO",
+      "direction": "SHORT",
+      "survival_score": 0.0792,
       "verdict": "KILLED",
       "recommended_size_modifier": 0.0,
       "attacks": [
@@ -1982,9 +2385,8 @@
           "attack": "similar_failure",
           "severity": 0.0,
           "weight": 1.8,
-          "detail": "2 similar trade(s) lost, not enough to penalize",
-          "failures_found": 2,
-          "avg_loss_pct": -1.27
+          "detail": "No similar losing trades found",
+          "failures_found": 0
         },
         {
           "attack": "kill_condition_proximity",
@@ -1998,48 +2400,48 @@
           "attack": "portfolio_stress",
           "severity": 0.0,
           "weight": 0.6,
-          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
+          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
           "same_direction_positions": 1,
-          "stress_impact_usd": 1.92,
-          "directional_pct": 55.7
+          "stress_impact_usd": 1.63,
+          "directional_pct": 47.4
         },
         {
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.56",
-          "confidence": 0.562,
-          "evidence_for_count": 5,
-          "evidence_against_count": 0
+          "detail": "confidence 0.66",
+          "confidence": 0.658,
+          "evidence_for_count": 3,
+          "evidence_against_count": 2
         },
         {
           "attack": "regime_mismatch",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
+          "detail": "SHORT signal (style=neutral) in trending regime",
           "regime": "trending",
-          "signal_style": "reversal"
+          "signal_style": "neutral"
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.3,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "LONG with funding rate +0.00011% \u2014 paying ~$0.02/day to hold $50 position",
-          "funding_rate": 0.000112,
-          "funding_velocity": "stable",
+          "detail": "SHORT with funding rate 0.000890",
+          "funding_rate": 0.00089,
+          "funding_velocity": "normalizing",
           "funding_reversal": false
         },
         {
           "attack": "oi_divergence",
-          "severity": 0.0,
+          "severity": 0.2,
           "weight": 1.0,
-          "detail": "OI healthy"
+          "detail": "OI/volume ratio 2.4x \u2014 crowded trade risk"
         },
         {
           "attack": "timeframe_alignment",
-          "severity": 0.0,
+          "severity": 0.5,
           "weight": 1.5,
-          "detail": "timeframe aligned"
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
         },
         {
           "attack": "rule_based",
@@ -2050,15 +2452,15 @@
         },
         {
           "attack": "macro_regime",
-          "severity": 0.6,
+          "severity": 0.0,
           "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
+          "detail": "RISK_OFF favors SHORT"
         },
         {
           "attack": "session_risk",
           "severity": 0,
           "weight": 1.0,
-          "detail": "only 4 trades in EUROPE+LONG, need 10+"
+          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
         },
         {
           "attack": "regime_transition",
@@ -2070,54 +2472,20 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (6 instances)"
+          "detail": "family immature (5 instances)"
         },
         {
           "attack": "data_disagreement",
-          "severity": 0.8,
+          "severity": 0.0,
           "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 197.7% >25% threshold; 5 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 5,
-          "max_delta_pct": 197.67,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 40.849448,
-              "taapi": 0.425214,
-              "delta_pct": 195.88
-            },
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.006287,
-              "taapi": -0.010236,
-              "delta_pct": 47.8
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 31.838565,
-              "taapi": 0.18643,
-              "delta_pct": 197.67
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 2.325581,
-              "taapi": 0.434685,
-              "delta_pct": 137.01
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -4.234332,
-              "taapi": -2.347826,
-              "delta_pct": 57.32
-            }
-          ]
+          "detail": "No TAAPI data for ONDO \u2014 skipping cross-source check",
+          "disagreements": []
         },
         {
           "attack": "fear_greed",
-          "severity": 0.3,
+          "severity": 0.0,
           "weight": 1.3,
-          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
+          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
           "fear_greed": 23,
           "fear_greed_class": "Extreme Fear"
         },
@@ -2134,15 +2502,150 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000504 \u2014 within normal range",
-          "premium": -0.00050395
+          "detail": "premium -0.001045 \u2014 within normal range",
+          "premium": -0.0010449
         }
       ],
-      "active_attacks": 7
+      "active_attacks": 4
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_SOL_LONG_002",
-      "coin": "SOL",
+      "hypothesis_id": "hyp_20260319_113151_LDO_SHORT_001",
+      "coin": "LDO",
+      "direction": "SHORT",
+      "survival_score": 0.0616,
+      "verdict": "KILLED",
+      "recommended_size_modifier": 0.0,
+      "attacks": [
+        {
+          "attack": "similar_failure",
+          "severity": 0.0,
+          "weight": 1.8,
+          "detail": "No similar losing trades found",
+          "failures_found": 0
+        },
+        {
+          "attack": "kill_condition_proximity",
+          "severity": 0.3,
+          "weight": 1.0,
+          "detail": "liquidity score 49 \u2014 moderately thin",
+          "conditions_checked": 5,
+          "conditions_near": 3
+        },
+        {
+          "attack": "portfolio_stress",
+          "severity": 0.0,
+          "weight": 0.6,
+          "detail": "adding SHORT increases short exposure to $54 (47% of equity), 3% adverse move = -$1.63",
+          "same_direction_positions": 1,
+          "stress_impact_usd": 1.63,
+          "directional_pct": 47.4
+        },
+        {
+          "attack": "confidence_vs_antithesis",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "confidence 0.72",
+          "confidence": 0.719,
+          "evidence_for_count": 4,
+          "evidence_against_count": 1
+        },
+        {
+          "attack": "regime_mismatch",
+          "severity": 0.2,
+          "weight": 1.0,
+          "detail": "reversal signal in trending regime \u2014 fighting the trend",
+          "regime": "trending",
+          "signal_style": "reversal"
+        },
+        {
+          "attack": "funding_headwind",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "SHORT with funding rate 0.001104",
+          "funding_rate": 0.001104,
+          "funding_velocity": "normalizing",
+          "funding_reversal": false
+        },
+        {
+          "attack": "oi_divergence",
+          "severity": 0.0,
+          "weight": 1.0,
+          "detail": "OI healthy"
+        },
+        {
+          "attack": "timeframe_alignment",
+          "severity": 0.5,
+          "weight": 1.5,
+          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
+        },
+        {
+          "attack": "rule_based",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "No matching active rules",
+          "matched_rules": []
+        },
+        {
+          "attack": "macro_regime",
+          "severity": 0.0,
+          "weight": 1.44,
+          "detail": "RISK_OFF favors SHORT"
+        },
+        {
+          "attack": "session_risk",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "only 8 trades in EUROPE+SHORT, need 10+"
+        },
+        {
+          "attack": "regime_transition",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "transition prob 15%, direction: unknown"
+        },
+        {
+          "attack": "family_track_record",
+          "severity": 0,
+          "weight": 1.0,
+          "detail": "family immature (5 instances)"
+        },
+        {
+          "attack": "data_disagreement",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "No TAAPI data for LDO \u2014 skipping cross-source check",
+          "disagreements": []
+        },
+        {
+          "attack": "fear_greed",
+          "severity": 0.0,
+          "weight": 1.3,
+          "detail": "F&G=23 (Extreme Fear) direction=SHORT",
+          "fear_greed": 23,
+          "fear_greed_class": "Extreme Fear"
+        },
+        {
+          "attack": "macro_event",
+          "severity": 0.4,
+          "weight": 1.4,
+          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
+          "macro_event_imminent": true,
+          "days_to_options_expiry": 8,
+          "high_vol": false
+        },
+        {
+          "attack": "premium_divergence",
+          "severity": 0.0,
+          "weight": 1.2,
+          "detail": "premium -0.000500 \u2014 within normal range",
+          "premium": -0.00049983
+        }
+      ],
+      "active_attacks": 4
+    },
+    {
+      "hypothesis_id": "hyp_20260319_113151_BTC_LONG_002",
+      "coin": "BTC",
       "direction": "LONG",
       "survival_score": 0.0,
       "verdict": "KILLED",
@@ -2154,7 +2657,7 @@
           "weight": 1.8,
           "detail": "2 similar trade(s) lost, not enough to penalize",
           "failures_found": 2,
-          "avg_loss_pct": -1.27
+          "avg_loss_pct": -0.055
         },
         {
           "attack": "kill_condition_proximity",
@@ -2177,8 +2680,8 @@
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.56",
-          "confidence": 0.562,
+          "detail": "confidence 0.61",
+          "confidence": 0.612,
           "evidence_for_count": 5,
           "evidence_against_count": 0
         },
@@ -2192,10 +2695,10 @@
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.3,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "LONG with funding rate +0.00011% \u2014 paying ~$0.02/day to hold $50 position",
-          "funding_rate": 0.000112,
+          "detail": "LONG with funding rate -0.001368",
+          "funding_rate": -0.001368,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
@@ -2222,7 +2725,7 @@
           "attack": "macro_regime",
           "severity": 0.6,
           "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
+          "detail": "RISK_OFF market + LONG = fighting the tide (fear=43.2); BTC down -4.1% in 24h \u2014 LONGs fighting gravity"
         },
         {
           "attack": "session_risk",
@@ -2240,215 +2743,46 @@
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (6 instances)"
+          "detail": "family immature (8 instances)"
         },
         {
           "attack": "data_disagreement",
           "severity": 0.8,
           "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 197.7% >25% threshold; 5 indicators disagree >10%",
+          "detail": "ENVY/TAAPI divergence: max delta 196.3% >25% threshold; 5 indicators disagree >10%",
           "indicators_checked": 7,
           "indicators_disagreeing": 5,
-          "max_delta_pct": 197.67,
+          "max_delta_pct": 196.3,
           "disagreements": [
             {
               "indicator": "RSI_24H",
-              "envy": 40.849448,
-              "taapi": 0.425214,
-              "delta_pct": 195.88
+              "envy": 37.4624,
+              "taapi": 0.350195,
+              "delta_pct": 196.3
             },
             {
               "indicator": "MACD_N_24H",
-              "envy": -0.006287,
-              "taapi": -0.010236,
-              "delta_pct": 47.8
+              "envy": -0.008751,
+              "taapi": -0.012052,
+              "delta_pct": 31.74
             },
             {
               "indicator": "ADX_3H30M",
-              "envy": 31.838565,
-              "taapi": 0.18643,
-              "delta_pct": 197.67
+              "envy": 32.323232,
+              "taapi": 0.444557,
+              "delta_pct": 194.57
             },
             {
               "indicator": "CMO_3H30M",
-              "envy": 2.325581,
-              "taapi": 0.434685,
-              "delta_pct": 137.01
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -4.234332,
-              "taapi": -2.347826,
-              "delta_pct": 57.32
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.3,
-          "weight": 1.3,
-          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
-          "fear_greed": 23,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.4,
-          "weight": 1.4,
-          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
-          "macro_event_imminent": true,
-          "days_to_options_expiry": 8,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium -0.000504 \u2014 within normal range",
-          "premium": -0.00050395
-        }
-      ],
-      "active_attacks": 6
-    },
-    {
-      "hypothesis_id": "hyp_20260319_112331_NEAR_LONG_001",
-      "coin": "NEAR",
-      "direction": "LONG",
-      "survival_score": 0.0,
-      "verdict": "KILLED",
-      "recommended_size_modifier": 0.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "No similar losing trades found",
-          "failures_found": 0
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "Hurst 0.844 \u2014 kill at 0.5 not near",
-          "conditions_checked": 4,
-          "conditions_near": 1
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
-          "same_direction_positions": 1,
-          "stress_impact_usd": 1.92,
-          "directional_pct": 55.7
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "confidence 0.71",
-          "confidence": 0.708,
-          "evidence_for_count": 5,
-          "evidence_against_count": 0
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "LONG signal (style=neutral) in stable regime",
-          "regime": "stable",
-          "signal_style": "neutral"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
-          "funding_rate": 0.00125,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "OI/volume ratio 2.9x \u2014 crowded trade risk"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.0,
-          "weight": 1.5,
-          "detail": "timeframe aligned"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.6,
-          "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "only 4 trades in EUROPE+LONG, need 10+"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (1 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.8,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.0% >25% threshold; 5 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 5,
-          "max_delta_pct": 195.96,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 36.403751,
-              "taapi": 0.371632,
-              "delta_pct": 195.96
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 25.423729,
-              "taapi": 0.267109,
-              "delta_pct": 195.84
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 23.880597,
-              "taapi": 0.26506,
-              "delta_pct": 195.61
+              "envy": 12.418301,
+              "taapi": 0.327279,
+              "delta_pct": 189.73
             },
             {
               "indicator": "BB_POS_24H",
-              "envy": 0.168891,
+              "envy": 0.156121,
               "taapi": 0.5,
-              "delta_pct": 99.0
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -6.775468,
-              "taapi": -5.439331,
-              "delta_pct": 21.88
+              "delta_pct": 104.82
             }
           ]
         },
@@ -2473,15 +2807,15 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium 0.000000 \u2014 within normal range",
-          "premium": 0.0
+          "detail": "premium -0.000783 \u2014 within normal range",
+          "premium": -0.00078342
         }
       ],
-      "active_attacks": 7
+      "active_attacks": 5
     },
     {
-      "hypothesis_id": "hyp_20260319_112331_NEAR_LONG_002",
-      "coin": "NEAR",
+      "hypothesis_id": "hyp_20260319_113151_ETH_LONG_004",
+      "coin": "ETH",
       "direction": "LONG",
       "survival_score": 0.0,
       "verdict": "KILLED",
@@ -2491,16 +2825,17 @@
           "attack": "similar_failure",
           "severity": 0.0,
           "weight": 1.8,
-          "detail": "No similar losing trades found",
-          "failures_found": 0
+          "detail": "1 similar trade(s) lost, not enough to penalize",
+          "failures_found": 1,
+          "avg_loss_pct": -0.02
         },
         {
           "attack": "kill_condition_proximity",
           "severity": 0.1,
           "weight": 1.0,
-          "detail": "Hurst 0.844 \u2014 kill at 0.5 not near",
-          "conditions_checked": 4,
-          "conditions_near": 1
+          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
+          "conditions_checked": 5,
+          "conditions_near": 2
         },
         {
           "attack": "portfolio_stress",
@@ -2515,363 +2850,25 @@
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.69",
-          "confidence": 0.685,
+          "detail": "confidence 0.61",
+          "confidence": 0.612,
           "evidence_for_count": 5,
           "evidence_against_count": 0
         },
         {
           "attack": "regime_mismatch",
-          "severity": 0.0,
+          "severity": 0.2,
           "weight": 1.0,
-          "detail": "LONG signal (style=reversal) in stable regime",
-          "regime": "stable",
+          "detail": "reversal signal in trending regime \u2014 fighting the trend",
+          "regime": "trending",
           "signal_style": "reversal"
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
-          "funding_rate": 0.00125,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "OI/volume ratio 2.9x \u2014 crowded trade risk"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.0,
-          "weight": 1.5,
-          "detail": "timeframe aligned"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.6,
-          "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "only 4 trades in EUROPE+LONG, need 10+"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (6 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.8,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.0% >25% threshold; 5 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 5,
-          "max_delta_pct": 195.96,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 36.403751,
-              "taapi": 0.371632,
-              "delta_pct": 195.96
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 25.423729,
-              "taapi": 0.267109,
-              "delta_pct": 195.84
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 23.880597,
-              "taapi": 0.26506,
-              "delta_pct": 195.61
-            },
-            {
-              "indicator": "BB_POS_24H",
-              "envy": 0.168891,
-              "taapi": 0.5,
-              "delta_pct": 99.0
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -6.775468,
-              "taapi": -5.439331,
-              "delta_pct": 21.88
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.3,
-          "weight": 1.3,
-          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
-          "fear_greed": 23,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.4,
-          "weight": 1.4,
-          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
-          "macro_event_imminent": true,
-          "days_to_options_expiry": 8,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium 0.000000 \u2014 within normal range",
-          "premium": 0.0
-        }
-      ],
-      "active_attacks": 7
-    },
-    {
-      "hypothesis_id": "hyp_20260319_112331_NEAR_LONG_003",
-      "coin": "NEAR",
-      "direction": "LONG",
-      "survival_score": 0.0,
-      "verdict": "KILLED",
-      "recommended_size_modifier": 0.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "No similar losing trades found",
-          "failures_found": 0
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "Hurst 0.844 \u2014 kill at 0.5 not near",
-          "conditions_checked": 4,
-          "conditions_near": 1
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
-          "same_direction_positions": 1,
-          "stress_impact_usd": 1.92,
-          "directional_pct": 55.7
-        },
-        {
-          "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.69",
-          "confidence": 0.685,
-          "evidence_for_count": 5,
-          "evidence_against_count": 0
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "LONG signal (style=neutral) in stable regime",
-          "regime": "stable",
-          "signal_style": "neutral"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
-          "funding_rate": 0.00125,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "OI/volume ratio 2.9x \u2014 crowded trade risk"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.0,
-          "weight": 1.5,
-          "detail": "timeframe aligned"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.6,
-          "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "only 4 trades in EUROPE+LONG, need 10+"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (6 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.8,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 196.0% >25% threshold; 5 indicators disagree >10%",
-          "indicators_checked": 7,
-          "indicators_disagreeing": 5,
-          "max_delta_pct": 195.96,
-          "disagreements": [
-            {
-              "indicator": "RSI_24H",
-              "envy": 36.403751,
-              "taapi": 0.371632,
-              "delta_pct": 195.96
-            },
-            {
-              "indicator": "ADX_3H30M",
-              "envy": 25.423729,
-              "taapi": 0.267109,
-              "delta_pct": 195.84
-            },
-            {
-              "indicator": "CMO_3H30M",
-              "envy": 23.880597,
-              "taapi": 0.26506,
-              "delta_pct": 195.61
-            },
-            {
-              "indicator": "BB_POS_24H",
-              "envy": 0.168891,
-              "taapi": 0.5,
-              "delta_pct": 99.0
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -6.775468,
-              "taapi": -5.439331,
-              "delta_pct": 21.88
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.3,
-          "weight": 1.3,
-          "detail": "Fear (F&G=23) + LONG \u2014 cautious territory for new longs",
-          "fear_greed": 23,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.4,
-          "weight": 1.4,
-          "detail": "macro event imminent (FOMC/CPI) \u2014 elevated uncertainty",
-          "macro_event_imminent": true,
-          "days_to_options_expiry": 8,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium 0.000000 \u2014 within normal range",
-          "premium": 0.0
-        }
-      ],
-      "active_attacks": 7
-    },
-    {
-      "hypothesis_id": "hyp_20260319_112331_SUI_LONG_001",
-      "coin": "SUI",
-      "direction": "LONG",
-      "survival_score": 0.0,
-      "verdict": "KILLED",
-      "recommended_size_modifier": 0.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "No similar losing trades found",
-          "failures_found": 0
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "Hurst 0.811 \u2014 kill at 0.5 not near",
-          "conditions_checked": 4,
-          "conditions_near": 1
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "adding LONG increases long exposure to $64 (56% of equity), 3% drop = -$1.92",
-          "same_direction_positions": 1,
-          "stress_impact_usd": 1.92,
-          "directional_pct": 55.7
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "confidence 0.52",
-          "confidence": 0.522,
-          "evidence_for_count": 3,
-          "evidence_against_count": 2
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "signal in shifting regime \u2014 direction unclear",
-          "regime": "shift",
-          "signal_style": "neutral"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "LONG with funding rate +0.00049% \u2014 paying ~$0.07/day to hold $50 position",
-          "funding_rate": 0.000491,
+          "detail": "LONG with funding rate -0.000094",
+          "funding_rate": -9.4e-05,
           "funding_velocity": "stable",
           "funding_reversal": false
         },
@@ -2883,9 +2880,9 @@
         },
         {
           "attack": "timeframe_alignment",
-          "severity": 0.5,
+          "severity": 0.0,
           "weight": 1.5,
-          "detail": "LONG vs CONFIRMATION_SHORT \u2014 timeframe says don't go long"
+          "detail": "timeframe aligned"
         },
         {
           "attack": "rule_based",
@@ -2898,7 +2895,7 @@
           "attack": "macro_regime",
           "severity": 0.6,
           "weight": 1.44,
-          "detail": "RISK_OFF market + LONG = fighting the tide (fear=42.8); BTC down -5.1% in 24h \u2014 LONGs fighting gravity"
+          "detail": "RISK_OFF market + LONG = fighting the tide (fear=43.2); BTC down -4.1% in 24h \u2014 LONGs fighting gravity"
         },
         {
           "attack": "session_risk",
@@ -2908,60 +2905,60 @@
         },
         {
           "attack": "regime_transition",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.3,
-          "detail": "transition prob 25%, direction: destabilizing"
+          "detail": "transition prob 15%, direction: unknown"
         },
         {
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (0 instances)"
+          "detail": "family immature (8 instances)"
         },
         {
           "attack": "data_disagreement",
           "severity": 0.8,
           "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: max delta 200.0% >25% threshold; 6 indicators disagree >10%",
+          "detail": "ENVY/TAAPI divergence: max delta 198.1% >25% threshold; 6 indicators disagree >10%",
           "indicators_checked": 7,
           "indicators_disagreeing": 6,
-          "max_delta_pct": 200.0,
+          "max_delta_pct": 198.12,
           "disagreements": [
             {
               "indicator": "RSI_24H",
-              "envy": 37.058231,
-              "taapi": 0.363217,
-              "delta_pct": 196.12
+              "envy": 40.005811,
+              "taapi": 0.402491,
+              "delta_pct": 196.02
             },
             {
               "indicator": "MACD_N_24H",
-              "envy": -0.010524,
-              "taapi": -0.016707,
-              "delta_pct": 45.41
+              "envy": -0.00974,
+              "taapi": -0.01248,
+              "delta_pct": 24.66
             },
             {
               "indicator": "ADX_3H30M",
-              "envy": 8.216433,
-              "taapi": 0.321659,
-              "delta_pct": 184.93
+              "envy": 58.878505,
+              "taapi": 0.277797,
+              "delta_pct": 198.12
             },
             {
               "indicator": "CMO_3H30M",
-              "envy": -4.178273,
-              "taapi": 0.302439,
-              "delta_pct": 200.0
+              "envy": 26.470588,
+              "taapi": 0.413091,
+              "delta_pct": 193.85
             },
             {
               "indicator": "BB_POS_24H",
-              "envy": 0.092304,
+              "envy": 0.284636,
               "taapi": 0.5,
-              "delta_pct": 137.66
+              "delta_pct": 54.9
             },
             {
               "indicator": "ROC_24H",
-              "envy": -6.255661,
-              "taapi": -3.95852,
-              "delta_pct": 44.98
+              "envy": -4.529594,
+              "taapi": -4.075634,
+              "delta_pct": 10.55
             }
           ]
         },
@@ -2986,11 +2983,11 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000426 \u2014 within normal range",
-          "premium": -0.000426
+          "detail": "premium -0.000736 \u2014 within normal range",
+          "premium": -0.00073563
         }
       ],
-      "active_attacks": 9
+      "active_attacks": 6
     }
   ]
 }

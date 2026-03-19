@@ -58,8 +58,13 @@ CYCLE_SECONDS = 300  # 5 minutes
 
 # ─── SUPABASE (optional — never crashes execution if missing) ─────────────────
 try:
+    import sys as _sys
+    from pathlib import Path as _Path
+    _project_root = str(_Path(__file__).parent.parent.parent)
+    if _project_root not in _sys.path:
+        _sys.path.insert(0, _project_root)
     from scanner.supabase.client import supabase as _supabase
-except Exception:
+except Exception as _import_err:
     _supabase = None
 MIN_HOLD_BEFORE_EXIT_MINS = 120  # don't evaluate exit expressions before 2 hours
 

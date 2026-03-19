@@ -30,9 +30,14 @@ from pathlib import Path
 
 # ─── SUPABASE (optional — never crashes risk agent if missing) ────────────────
 try:
+    # Ensure project root is in path for scanner.supabase import
+    _project_root = str(Path(__file__).parent.parent.parent)
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
     from scanner.supabase.client import supabase as _supabase
-except Exception:
+except Exception as _import_err:
     _supabase = None
+    print(f"  [info] Supabase not available: {_import_err}")
 
 # ─── PATHS ───
 AGENT_DIR = Path(__file__).parent
