@@ -248,25 +248,52 @@ def fetch_indicators_batch(coins, indicators, api_key):
     return all_data
 
 
-def fetch_all_indicators(api_key):
-    merged = {}
-    total_indicators = sum(len(b) for b in ALL_INDICATOR_BATCHES)
-    log(f"  [envy] fetching ALL {total_indicators} indicators in {len(ALL_INDICATOR_BATCHES)} batches x {len(ALL_COINS)} coins...")
-    for batch_idx, ind_batch in enumerate(ALL_INDICATOR_BATCHES):
-        batch_data = fetch_indicators_batch(ALL_COINS, ind_batch, api_key)
-        for coin, vals in batch_data.items():
-            merged.setdefault(coin, {}).update(vals)
-        log(f"  [envy] batch {batch_idx+1}/{len(ALL_INDICATOR_BATCHES)} done ({len(ind_batch)} indicators)")
-    log(f"  [envy] all done: {len(merged)} coins, ~{total_indicators} indicators each")
+STALE_WS_THRESHOLD = 60  # Accept WS data up to 60s old
 
-    # Overlay WebSocket data if fresher (acceleration layer)
+
+def fetch_all_indicators(api_key):
+    """WS-first, API-fallback indicator fetching."""
+    merged = {}
+
+    # ── TRY WEBSOCKET FIRST (15s updates, zero API calls) ──
     ws_file = Path(__file__).parent.parent / "bus" / "ws_indicators.json"
+    ws_used = False
     try:
         if ws_file.exists():
             with open(ws_file) as f:
                 ws = json.load(f)
-            ws_age = (datetime.now(timezone.utc) - datetime.fromisoformat(ws.get("received_at", "2000-01-01T00:00:00+00:00").replace("Z", "+00:00"))).total_seconds()
+            ws_age = (datetime.now(timezone.utc) - datetime.fromisoformat(
+                ws.get("received_at", "2000-01-01T00:00:00+00:00").replace("Z", "+00:00")
+            )).total_seconds()
             if ws_age < STALE_WS_THRESHOLD:
+                ws_coins = ws.get("coins", {})
+                if ws_coins and len(ws_coins) >= 10:  # Sanity: need enough coins
+                    for coin, indicators in ws_coins.items():
+                        if isinstance(indicators, dict):
+                            merged.setdefault(coin, {}).update(indicators)
+                    ws_used = True
+                    log(f"  [ws] PRIMARY: {len(merged)} coins from WebSocket ({ws_age:.0f}s old) — skipping API poll")
+            else:
+                log(f"  [ws] stale ({ws_age:.0f}s), falling back to API")
+    except Exception as e:
+        log(f"  [ws] read failed ({e}), falling back to API")
+
+    # ── API FALLBACK (only if WS unavailable/stale) ──
+    if not ws_used:
+        total_indicators = sum(len(b) for b in ALL_INDICATOR_BATCHES)
+        log(f"  [envy] fetching ALL {total_indicators} indicators in {len(ALL_INDICATOR_BATCHES)} batches x {len(ALL_COINS)} coins...")
+        for batch_idx, ind_batch in enumerate(ALL_INDICATOR_BATCHES):
+            batch_data = fetch_indicators_batch(ALL_COINS, ind_batch, api_key)
+            for coin, vals in batch_data.items():
+                merged.setdefault(coin, {}).update(vals)
+            log(f"  [envy] batch {batch_idx+1}/{len(ALL_INDICATOR_BATCHES)} done ({len(ind_batch)} indicators)")
+        log(f"  [envy] all done: {len(merged)} coins, ~{total_indicators} indicators each")
+
+        # Still overlay WS if available (even if stale, it's fresher than API)
+        try:
+            if ws_file.exists():
+                with open(ws_file) as f:
+                    ws = json.load(f)
                 ws_coins = ws.get("coins", {})
                 if ws_coins:
                     ws_count = 0
@@ -276,16 +303,11 @@ def fetch_all_indicators(api_key):
                                 merged.setdefault(coin, {})[code] = val
                                 ws_count += 1
                     if ws_count:
-                        log(f"  [ws] overlaid {ws_count} fresher values (age: {ws_age:.0f}s)")
-            else:
-                log(f"  [ws] stale ({ws_age:.0f}s), skipping")
-    except Exception as e:
-        log(f"  [ws] overlay failed: {e}")
+                        log(f"  [ws] overlaid {ws_count} fresher values")
+        except Exception:
+            pass
 
     return merged
-
-
-STALE_WS_THRESHOLD = 60  # Accept WS data up to 60s old
 
 
 # ==========================================================================

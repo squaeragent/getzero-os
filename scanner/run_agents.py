@@ -64,6 +64,7 @@ AGENTS = [
     ("hl_enrichment",       AGENTS_DIR / "hl_enrichment.py",          120,    5),  # HL enrichment: premium, impact spread, OI — single call (2-min)
     ("pack_refresher",      AGENTS_DIR / "pack_refresher.py",       7200,  240),  # Signal pack refresher — pulls new packs from ENVY API (2h)
     ("ws_stream",           AGENTS_DIR / "ws_stream.py",              30,    3),  # WebSocket indicator stream — real-time 15s push
+    ("realtime_evaluator",  AGENTS_DIR / "realtime_evaluator.py",    30,    3),  # Real-time signal evaluation against WS data (30s)
 ]
 
 processes = {}

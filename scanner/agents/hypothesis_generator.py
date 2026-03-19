@@ -137,9 +137,10 @@ BASE_URL = "https://gate.getzero.dev/api/claw"
 CYCLE_SECONDS = 600  # 10 minutes
 COINS_PER_REQUEST = 10
 INDICATORS_PER_REQUEST = 7
-MIN_SHARPE = 1.0
+MIN_SHARPE = 1.5
 MIN_WIN_RATE = 55
 CHAOTIC_MIN_SHARPE = 2.5
+FEAR_MIN_SHARPE = 2.0  # When F&G < 30
 
 # Expression tokens that are operators, not indicator names
 EXPR_OPERATORS = {"AND", "OR", "NOT"}
@@ -1444,6 +1445,16 @@ def run_cycle(api_key):
         return
 
     # ── EVALUATE SIGNAL PACKS ──
+    # Read Fear & Greed for dynamic Sharpe floor
+    fg = 50
+    try:
+        macro_path = Path(__file__).parent.parent / "bus" / "macro_intel.json"
+        if macro_path.exists():
+            with open(macro_path) as _mf:
+                fg = json.load(_mf).get("fear_greed", 50)
+    except Exception:
+        pass
+
     candidates = []
     stats = {"evaluated": 0, "fired": 0, "filtered": 0, "missing_data": 0}
 
@@ -1464,11 +1475,15 @@ def run_cycle(api_key):
             expression = pack.get("expression", "")
 
             trade_count = pack.get("trade_count", 0)
-            if sharpe < MIN_SHARPE or win_rate < MIN_WIN_RATE or trade_count < 5:
-                stats["filtered"] += 1
-                continue
 
-            if regime == "chaotic" and sharpe < CHAOTIC_MIN_SHARPE:
+            # Dynamic Sharpe floor based on market conditions
+            effective_min_sharpe = MIN_SHARPE
+            if regime == "chaotic":
+                effective_min_sharpe = max(effective_min_sharpe, CHAOTIC_MIN_SHARPE)
+            elif fg < 30:
+                effective_min_sharpe = max(effective_min_sharpe, FEAR_MIN_SHARPE)
+
+            if sharpe < effective_min_sharpe or win_rate < MIN_WIN_RATE or trade_count < 5:
                 stats["filtered"] += 1
                 continue
 

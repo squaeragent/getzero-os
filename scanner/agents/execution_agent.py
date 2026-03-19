@@ -82,6 +82,65 @@ SIGNAL_BLACKLIST = {
     "ARCH_SOCIAL_EXHAUSTION_LONG",     # 1T, 0% WR, -$0.26
 }
 
+# Dynamic signal blacklist: auto-populated from trade results
+# {signal_name: expiry_timestamp}
+_DYNAMIC_BLACKLIST = {}
+_DYNAMIC_BLACKLIST_FILE = BUS_DIR / "signal_blacklist.json"
+
+def _load_dynamic_blacklist():
+    """Load dynamic blacklist from bus file."""
+    global _DYNAMIC_BLACKLIST
+    try:
+        if _DYNAMIC_BLACKLIST_FILE.exists():
+            with open(_DYNAMIC_BLACKLIST_FILE) as f:
+                raw = json.load(f)
+            now = time.time()
+            # Prune expired entries
+            _DYNAMIC_BLACKLIST = {k: v for k, v in raw.items() if v > now}
+    except Exception:
+        _DYNAMIC_BLACKLIST = {}
+
+def _save_dynamic_blacklist():
+    """Save dynamic blacklist to bus file."""
+    try:
+        with open(_DYNAMIC_BLACKLIST_FILE, "w") as f:
+            json.dump(_DYNAMIC_BLACKLIST, f, indent=2)
+    except Exception:
+        pass
+
+def _update_signal_blacklist(signal_name, won):
+    """Track signal performance. Blacklist after 3 consecutive losses."""
+    global _DYNAMIC_BLACKLIST
+    _load_dynamic_blacklist()
+    tracker_file = BUS_DIR / "signal_tracker.json"
+    try:
+        tracker = {}
+        if tracker_file.exists():
+            with open(tracker_file) as f:
+                tracker = json.load(f)
+        record = tracker.get(signal_name, {"streak": 0, "total": 0, "wins": 0})
+        record["total"] = record.get("total", 0) + 1
+        if won:
+            record["wins"] = record.get("wins", 0) + 1
+            record["streak"] = max(0, record.get("streak", 0)) + 1
+        else:
+            record["streak"] = min(0, record.get("streak", 0)) - 1
+
+        tracker[signal_name] = record
+
+        # Auto-blacklist: 3 consecutive losses → block for 24h
+        if record["streak"] <= -3:
+            expiry = time.time() + 86400  # 24 hours
+            _DYNAMIC_BLACKLIST[signal_name] = expiry
+            _save_dynamic_blacklist()
+            log(f"  ⛔ BLACKLIST: {signal_name} — {abs(record['streak'])} consecutive losses, blocked 24h")
+            record["streak"] = 0  # Reset streak after blacklisting
+
+        with open(tracker_file, "w") as f:
+            json.dump(tracker, f, indent=2)
+    except Exception as e:
+        log(f"  WARN: signal tracker update failed: {e}")
+
 # ─── TELEGRAM ALERTS ───
 TELEGRAM_CHAT_ID = "133058580"  # Igor
 
@@ -342,14 +401,48 @@ def extract_indicators_from_expressions(positions):
     return list(indicators)
 
 
+def fetch_indicators_from_ws(coins, indicators):
+    """Read indicator values from WebSocket bus file (15s updates, zero API calls)."""
+    ws_path = os.path.join(BUS_DIR, "ws_indicators.json")
+    if not os.path.exists(ws_path):
+        return {}
+    try:
+        ws_age = time.time() - os.path.getmtime(ws_path)
+        if ws_age > 60:
+            log(f"  [ws-exit] WS data stale ({ws_age:.0f}s), falling back to API")
+            return {}
+        with open(ws_path) as f:
+            ws = json.load(f)
+        ws_coins = ws.get("coins", {})
+        result = {}
+        for coin in coins:
+            if coin in ws_coins and isinstance(ws_coins[coin], dict):
+                result[coin] = {k: v for k, v in ws_coins[coin].items() if k in indicators}
+        if result:
+            log(f"  [ws-exit] Got indicators from WS for {list(result.keys())} ({ws_age:.0f}s old)")
+        return result
+    except Exception as e:
+        log(f"  [ws-exit] Failed: {e}")
+        return {}
+
+
 def fetch_indicators_for_exit(coins, indicators, api_key):
-    """Fetch indicator values from Envy API for exit expression evaluation."""
+    """Fetch indicator values — WS first, API fallback."""
     if not indicators or not coins:
         return {}
 
-    result = {}
-    # Batch: max 10 coins, max 7 indicators per request
-    coin_batches = [coins[i:i+10] for i in range(0, len(coins), 10)]
+    # Try WebSocket data first (15s updates, no API call needed)
+    result = fetch_indicators_from_ws(coins, set(indicators))
+    # Check if we got all coins with enough indicators
+    missing_coins = [c for c in coins if c not in result or len(result.get(c, {})) < len(indicators) * 0.5]
+    if not missing_coins:
+        return result
+
+    # Fallback: API poll for missing coins
+    if missing_coins:
+        log(f"  [exit] WS incomplete for {missing_coins}, fetching from API")
+
+    coin_batches = [missing_coins[i:i+10] for i in range(0, len(missing_coins), 10)]
     ind_batches = [indicators[i:i+7] for i in range(0, len(indicators), 7)]
 
     for coin_batch in coin_batches:
@@ -712,6 +805,10 @@ def should_open(trade, positions, cfg):
         return False, f"signal family {_family} blacklisted (proven loser)"
     if _sig in SIGNAL_BLACKLIST:
         return False, f"signal {_sig} blacklisted (0% WR)"
+    # Dynamic blacklist (auto-populated from trade results)
+    _load_dynamic_blacklist()
+    if _sig in _DYNAMIC_BLACKLIST:
+        return False, f"signal {_sig} auto-blacklisted (3+ consecutive losses)"
 
     if trade.get("sharpe", 0) < min_sharpe:
         return False, f"sharpe {trade.get('sharpe', 0):.2f} < {min_sharpe}"
@@ -1138,6 +1235,11 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
     fee_str = f" (fees=${fees_usd:.4f}, net=${pnl_after_fees:+.4f})" if fees_usd is not None else ""
     log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f}){fee_str}")
 
+    # ── SIGNAL P&L TRACKING (auto-blacklist losers) ──
+    signal_name = pos.get("signal", "")
+    if signal_name:
+        _update_signal_blacklist(signal_name, pnl_usd > 0)
+
     # ── SUPABASE: persist trade + remove position ──────────────────────────
     if _supabase is not None:
         try:
@@ -1320,6 +1422,29 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             log(f"[{coin}] Skipping exit eval — hold {hold_mins:.0f}m < {MIN_HOLD_BEFORE_EXIT_MINS}m minimum")
             remaining.append(pos)
             continue
+
+        # ── REAL-TIME EXIT SIGNALS (from realtime_evaluator, 30s cycle) ──
+        rt_exit_file = BUS_DIR / "exit_signals.json"
+        if rt_exit_file.exists():
+            try:
+                rt_data = load_json(rt_exit_file, {})
+                rt_age = time.time() - os.path.getmtime(str(rt_exit_file))
+                if rt_age < 120:  # Only trust signals < 2 min old
+                    for rt_sig in rt_data.get("exit_signals", []):
+                        if rt_sig.get("coin") == coin and rt_sig.get("direction") == pos["direction"]:
+                            log(f"⚡ RT EXIT {coin} {pos['direction']} | real-time evaluator | {pnl_pct*100:+.2f}%")
+                            close_and_record(client, pos, current, pnl_pct, "rt_exit_expression", portfolio, dry, main_address=main_address)
+                            # Remove consumed signal
+                            rt_data["exit_signals"] = [s for s in rt_data["exit_signals"]
+                                                       if not (s.get("coin") == coin and s.get("direction") == pos["direction"])]
+                            save_json(rt_exit_file, rt_data)
+                            break
+                    else:
+                        pass  # No matching RT exit, continue to regular evaluation
+                    if coin not in [p.get("coin") for p in remaining]:
+                        continue  # Was closed by RT exit
+            except Exception:
+                pass
 
         # ── EXIT EXPRESSION (same logic as paper scanner) ──
         # Only fire exit expressions when trade is losing OR has significant profit.
