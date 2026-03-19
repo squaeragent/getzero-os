@@ -4868,3 +4868,13 @@
 [2026-03-19 05:17:07 UTC] [EXEC]   Fees: open=$0.000000 close=$0.009996 total=$0.009996 | P&L after fees: $-0.0331
 [2026-03-19 05:17:07 UTC] [EXEC]   Closed INJ SHORT | kill_condition | -0.10% ($-0.02) (fees=$0.0100, net=$-0.0331)
 [2026-03-19 05:17:07 UTC] [EXEC] Summary: 2 positions, $57.53 notional, trades=47
+[2026-03-19 05:22:09 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 05:22:09 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-19 05:22:09 UTC] [EXEC]   Fetching 6 exit indicators for ['XPL', 'LINK']
+[2026-03-19 05:22:10 UTC] [EXEC] EXIT SIGNAL LINK SHORT | expression fired | +0.02%
+[2026-03-19 05:22:10 UTC] [EXEC]   Expression: ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0
+[2026-03-19 05:22:11 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3.9", "avgPx": "9.1939", "oid": 354030919257}}]}}}
+[2026-03-19 05:22:12 UTC] [EXEC]   Fees: open=$0.016138 close=$0.016135 total=$0.032273 | P&L after fees: $-0.0255
+[2026-03-19 05:22:12 UTC] [EXEC]   Closed LINK SHORT | exit_expression | +0.02% ($+0.01) (fees=$0.0323, net=$-0.0255)
+[2026-03-19 05:22:12 UTC] [EXEC] [XPL] Skipping exit eval — hold 20m < 120m minimum
+[2026-03-19 05:22:12 UTC] [EXEC] Summary: 1 positions, $21.93 notional, trades=48

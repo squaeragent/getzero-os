@@ -47,6 +47,7 @@ from scanner.senses.envy_plugin import EnvyPlugin
 from scanner.senses.hl_plugin import HyperliquidPlugin
 from scanner.senses.talib_plugin import TalibPlugin
 from scanner.hands.telegram_adapter import TelegramAdapter
+from scanner.hands.aitrader_adapter import AITraderAdapter
 
 # ─── App ───
 app = FastAPI(
@@ -127,7 +128,7 @@ def health():
             plugins[plugin_cls.__name__] = {"status": "error", "error": str(e)}
 
     adapters = {}
-    for adapter_cls in [TelegramAdapter]:
+    for adapter_cls in [TelegramAdapter, AITraderAdapter]:
         try:
             a = adapter_cls()
             adapters[a.name] = a.health_check()
