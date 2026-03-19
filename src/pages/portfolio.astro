@@ -152,9 +152,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .section {
     border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
   }
   .sb {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem 1rem;
   }
   .dim { opacity: 0.5; font-size: 0.6rem; }
   .muted {
@@ -355,8 +356,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .system-ph:hover { color: var(--phosphor); }
   .system-healthy {
     font-family: var(--font-head);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-dim);
+    line-height: 1.4;
+    word-break: break-word;
   }
   .system-body { display: none; margin-top: 0.75rem; }
   .system-body.expanded { display: block; }
@@ -544,7 +547,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
   }
   .stats-panel {
     font-family: var(--font-head);
@@ -986,6 +989,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var abs = Math.abs(v);
     var s = abs.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
     return v<0 ? '-$'+s : '$'+s;
+  }
+  function fmtPrice(v){
+    if(v==null) return '—';
+    if(v >= 1000) return '$'+v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if(v >= 1) return '$'+v.toFixed(2);
+    if(v >= 0.01) return '$'+v.toFixed(4);
+    return '$'+v.toPrecision(3);
   }
   function fmtPct(v){
     if(v==null) return '—';
@@ -1469,12 +1479,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     left += '</tbody></table>';
     if(coinKeys.length > COIN_LIMIT){
-      left += '<div class="show-all-toggle" id="coin-toggle" style="margin-top:0.5rem">'+(showAllCoins ? 'show less' : (coinKeys.length - COIN_LIMIT)+' more coins')+'</div>';
+      left += '<div class="show-all-toggle" id="coin-toggle" style="margin-top:0.5rem">'+(showAllCoins ? 'show less' : 'show all ('+(coinKeys.length - COIN_LIMIT)+' more)')+'</div>';
     }
     left += '</div>';
 
     var right = '<div class="stats-panel">';
-    right += '<div class="stats-panel-title">Performance</div>';
+    right += '<div class="stats-panel-title">Breakdown</div>';
     var best = stats.bestTrade || {};
     var worst = stats.worstTrade || {};
     right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+(best.coin||'—')+' '+(best.direction||'')+' '+fmtPct(best.pnlPct)+' ('+fmt$(best.pnl)+')</span></div>';
@@ -1519,8 +1529,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       html += '<div class="closed-row">';
       html += '<span class="cr-coin">'+c.coin+'</span>';
       html += '<span class="cr-dir '+dirCls2+'">'+c.direction+'</span>';
-      html += '<span class="cr-prices">'+fmt$(c.entry_price)+'→'+fmt$(c.exit_price)+'</span>';
-      html += '<span class="cr-pct '+pnlClass(c.pnl_pct||pnlVal)+'">'+fmtPct(c.pnl_pct)+'</span>';
+      html += '<span class="cr-prices">'+fmtPrice(c.entry_price)+'→'+fmtPrice(c.exit_price)+'</span>';
+      // Use dollar P&L as single source of truth for color on both % and $
+      html += '<span class="cr-pct '+pnlClass(pnlVal)+'">'+fmtPct(c.pnl_pct)+'</span>';
       html += '<span class="cr-pnl '+pnlClass(pnlVal)+'">'+fmt$(pnlVal)+'</span>';
       html += '<span class="cr-reason">'+(c.exit_reason||'')+'</span>';
       // Show exit age first, then hold duration if available
