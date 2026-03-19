@@ -62,19 +62,52 @@ ALL_COINS = [
     "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
 ]
 
-# Envy indicator batches -- max 16 per request
-FAST_INDICATORS = [
-    "CLOSE_PRICE_15M", "RSI_3H30M", "EMA_CROSS_15M_N", "MACD_CROSS_15M_N",
-    "BB_POSITION_15M", "CMO_3H30M", "ADX_3H30M", "MOMENTUM_2H30M_N",
-    "EMA_3H_N", "CLOUD_POSITION_15M",
+# Envy indicator batches -- ALL 81 indicators, max 16 per request
+# Batch 1: Chaos + Predictor + Price (13)
+BATCH_1 = [
+    "HURST_24H", "HURST_48H", "DFA_24H", "DFA_48H", "LYAPUNOV_24H", "LYAPUNOV_48H",
+    "DOJI_SIGNAL", "DOJI_DISTANCE", "DOJI_VELOCITY",
+    "DOJI_SIGNAL_L", "DOJI_DISTANCE_L", "DOJI_VELOCITY_L",
+    "CLOSE_PRICE_15M",
+]
+# Batch 2: Social + Technical fast (part 1) (16)
+BATCH_2 = [
+    "XONE_A_NET", "XONE_I_NET", "XONE_U_NET", "XONE_A_U_DIV",
+    "XONE_AVG_NET_DELTA", "XONE_AVG_NET", "XONE_SPREAD",
+    "RSI_3H30M", "ROC_3H", "ADX_3H30M", "CMO_3H30M", "ICHIMOKU_BULL",
+    "BB_POSITION_15M", "CLOUD_POSITION_15M", "EMA_3H_N", "EMA_6H30M_N",
+]
+# Batch 3: Technical fast (part 2) (16)
+BATCH_3 = [
+    "MACD_6H30M_N", "MACD_SIGNAL_2H15M_N", "BB_UPPER_5H_N", "BB_LOWER_5H_N",
+    "TENKAN_2H15M_N", "KIJUN_6H30M_N", "SENKOU_A_6H30M_N", "SENKOU_B_13H_N",
+    "CHIKOU_6H30M_N", "MOMENTUM_2H30M_N", "EMA_CROSS_15M_N", "MACD_CROSS_15M_N",
+    "TENKAN_KIJUN_CROSS_15M_N",
+    "RSI_6H", "MACD_N_6H", "MOMENTUM_N_6H",
+]
+# Batch 4: Tech 6h (rest) + 12h + 24h (16)
+BATCH_4 = [
+    "ROC_6H", "BB_POS_6H", "EMA_N_6H",
+    "RSI_12H", "MACD_N_12H", "MOMENTUM_N_12H", "ROC_12H", "BB_POS_12H", "EMA_N_12H",
+    "RSI_24H", "MACD_N_24H", "MOMENTUM_N_24H", "ROC_24H", "BB_POS_24H", "EMA_N_24H",
+    "RSI_48H",
+]
+# Batch 5: Tech 48h + TechnicalRaw (part 1) (16)
+BATCH_5 = [
+    "MACD_N_48H", "MOMENTUM_N_48H", "ROC_48H", "BB_POS_48H", "EMA_N_48H",
+    "EMA_3H", "EMA_6H30M", "MACD_6H30M", "MACD_SIGNAL_2H15M",
+    "BB_UPPER_5H", "BB_LOWER_5H", "TENKAN_2H15M", "KIJUN_6H30M",
+    "SENKOU_A_6H30M", "SENKOU_B_13H", "CHIKOU_6H30M",
+]
+# Batch 6: TechnicalRaw (rest) (4)
+BATCH_6 = [
+    "MOMENTUM_2H30M", "EMA_CROSS_15M", "MACD_CROSS_15M", "TENKAN_KIJUN_CROSS_15M",
 ]
 
-SLOW_AND_CHAOS_INDICATORS = [
-    "RSI_24H", "EMA_N_24H", "MACD_N_24H", "ROC_24H",
-    "HURST_24H", "HURST_48H", "DFA_24H", "DFA_48H",
-    "LYAPUNOV_24H", "LYAPUNOV_48H", "BB_POS_24H",
-    "MOMENTUM_N_24H", "EMA_N_48H",
-]
+ALL_INDICATOR_BATCHES = [BATCH_1, BATCH_2, BATCH_3, BATCH_4, BATCH_5, BATCH_6]
+# Flat list for backward compat
+FAST_INDICATORS = BATCH_1 + BATCH_2 + BATCH_3
+SLOW_AND_CHAOS_INDICATORS = BATCH_4 + BATCH_5 + BATCH_6
 
 # -- REGIME THRESHOLDS --
 HURST_HIGH             = 0.55
@@ -216,20 +249,15 @@ def fetch_indicators_batch(coins, indicators, api_key):
 
 
 def fetch_all_indicators(api_key):
-    log(f"  [envy] fast indicators ({len(FAST_INDICATORS)} x {len(ALL_COINS)} coins)...")
-    fast_data = fetch_indicators_batch(ALL_COINS, FAST_INDICATORS, api_key)
-    log(f"  [envy] fast done: {len(fast_data)} coins")
-
-    log(f"  [envy] slow+chaos indicators ({len(SLOW_AND_CHAOS_INDICATORS)} x {len(ALL_COINS)} coins)...")
-    slow_data = fetch_indicators_batch(ALL_COINS, SLOW_AND_CHAOS_INDICATORS, api_key)
-    log(f"  [envy] slow+chaos done: {len(slow_data)} coins")
-
     merged = {}
-    for coin in set(list(fast_data.keys()) + list(slow_data.keys())):
-        d = {}
-        d.update(fast_data.get(coin, {}))
-        d.update(slow_data.get(coin, {}))
-        merged[coin] = d
+    total_indicators = sum(len(b) for b in ALL_INDICATOR_BATCHES)
+    log(f"  [envy] fetching ALL {total_indicators} indicators in {len(ALL_INDICATOR_BATCHES)} batches x {len(ALL_COINS)} coins...")
+    for batch_idx, ind_batch in enumerate(ALL_INDICATOR_BATCHES):
+        batch_data = fetch_indicators_batch(ALL_COINS, ind_batch, api_key)
+        for coin, vals in batch_data.items():
+            merged.setdefault(coin, {}).update(vals)
+        log(f"  [envy] batch {batch_idx+1}/{len(ALL_INDICATOR_BATCHES)} done ({len(ind_batch)} indicators)")
+    log(f"  [envy] all done: {len(merged)} coins, ~{total_indicators} indicators each")
     return merged
 
 
@@ -915,12 +943,8 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
             "strength":           strength,
             "confirmation_score": conf_score,
             "adx":                round(adx_val, 4) if adx_val is not None else None,
-            "fast_indicators":    {k: round(v, 6) if isinstance(v, float) else v
-                                   for k, v in ind.items()
-                                   if k in FAST_INDICATORS},
-            "slow_indicators":    {k: round(v, 6) if isinstance(v, float) else v
-                                   for k, v in ind.items()
-                                   if k in SLOW_AND_CHAOS_INDICATORS},
+            "indicators":         {k: round(v, 6) if isinstance(v, float) else v
+                                   for k, v in ind.items()},
         }
         legacy_tf_coins[coin] = tf_entry
 

@@ -1055,6 +1055,20 @@ def run_cycle(api_key):
                 "exit_expression": pack.get("exit_expression", ""),
             })
 
+    # ─── Merge ENVY indicators from world_state into indicator_data ───
+    try:
+        ws_path = Path(__file__).parent.parent / "bus" / "world_state.json"
+        if ws_path.exists():
+            with open(ws_path) as _f:
+                ws = json.load(_f)
+            for coin, coin_ws in ws.get("coins", {}).items():
+                envy_inds = coin_ws.get("indicators", {})
+                if envy_inds:
+                    indicator_data.setdefault(coin, {}).update(envy_inds)
+            print(f"  Merged ENVY indicators from world_state ({len(ws.get('coins', {}))} coins)")
+    except Exception as e:
+        print(f"  WARN: Could not merge ENVY data: {e}")
+
     # ─── ARCHETYPE SIGNALS (multi-domain convergence) ───
     archetype_candidates = generate_archetype_signals(
         indicator_data, regime_coins, timeframe_data, funding_data, ts_iso
