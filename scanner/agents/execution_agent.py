@@ -52,6 +52,9 @@ CLOSED_FILE       = LIVE_DIR / "closed.jsonl"
 PORTFOLIO_FILE    = LIVE_DIR / "portfolio.json"
 LOG_FILE          = LIVE_DIR / "executor.log"
 KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
+REGIMES_FILE      = BUS_DIR  / "regimes.json"
+
+STRATEGY_VERSION = 5  # v5: adversary calibration + metadata propagation + exit fixes
 
 HL_URL = "https://api.hyperliquid.xyz"
 CYCLE_SECONDS = 300  # 5 minutes
@@ -73,6 +76,11 @@ MIN_HOLD_BEFORE_EXIT_MINS = 120  # don't evaluate exit expressions before 2 hour
 # INFLUENCER: -$0.09 (0% WR), ICHIMOKU: -$0.09 (0% WR).
 # These get re-evaluated when counterfactual learning matures.
 SIGNAL_FAMILY_BLACKLIST = {"SOCIAL", "INFLUENCER", "ICHIMOKU"}
+# Specific signals with proven 0% WR (v5 Fix 4)
+SIGNAL_BLACKLIST = {
+    "ARCH_CHAOS_REGIME_CONVERGENCE",   # 6T, 0% WR, -$0.41
+    "ARCH_SOCIAL_EXHAUSTION_LONG",     # 1T, 0% WR, -$0.26
+}
 
 # ─── TELEGRAM ALERTS ───
 TELEGRAM_CHAT_ID = "133058580"  # Igor
@@ -179,6 +187,16 @@ def save_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
+
+
+def _get_current_regime(coin):
+    """Read current regime for a coin from regimes.json (Fix 2B)."""
+    try:
+        with open(REGIMES_FILE) as f:
+            regimes = json.load(f)
+        return regimes.get("coins", {}).get(coin, {}).get("regime", "unknown")
+    except Exception:
+        return "unknown"
 
 
 def append_jsonl(path, record):
@@ -585,14 +603,19 @@ def compute_size(trade, cfg, throttle):
     # Apply risk throttle
     base_size *= throttle
 
-    # Apply adversary size modifier (Phase 3: Cognitive Loop)
-    adversary_modifier = trade.get("recommended_size_modifier", 1.0)
-    if adversary_modifier != 1.0:
-        adversary_verdict = trade.get("adversary_verdict", "")
+    # v5 Fix 7: Position sizing from adversary verdict
+    adversary_verdict = trade.get("adversary_verdict", "PROCEED")
+    adversary_modifier = trade.get("recommended_size_modifier") or trade.get("size_modifier")
+    if adversary_modifier is None:
+        # Derive from verdict if not explicitly set
         if adversary_verdict == "WEAK":
-            log(f"  [ADVERSARY] WEAK verdict for {trade.get('coin')} {trade.get('direction')} — reducing size by 60%")
+            adversary_modifier = 0.4
         elif adversary_verdict == "PROCEED_WITH_CAUTION":
-            log(f"  [ADVERSARY] CAUTION verdict for {trade.get('coin')} {trade.get('direction')} — reducing size by 30%")
+            adversary_modifier = 0.7
+        else:
+            adversary_modifier = 1.0
+    if adversary_modifier != 1.0:
+        log(f"  [ADVERSARY] {adversary_verdict} → size modifier {adversary_modifier}")
         base_size *= adversary_modifier
 
     # Upgrade 4: Drawdown-responsive streak modifier
@@ -687,6 +710,8 @@ def should_open(trade, positions, cfg):
     _family = _sig.split("_")[0].upper() if _sig else ""
     if _family in SIGNAL_FAMILY_BLACKLIST:
         return False, f"signal family {_family} blacklisted (proven loser)"
+    if _sig in SIGNAL_BLACKLIST:
+        return False, f"signal {_sig} blacklisted (0% WR)"
 
     if trade.get("sharpe", 0) < min_sharpe:
         return False, f"sharpe {trade.get('sharpe', 0):.2f} < {min_sharpe}"
@@ -989,9 +1014,9 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
         "direction": direction,
         "signal": trade.get("signal", ""),
         "hypothesis_id": trade.get("hypothesis_id", ""),
-        "regime": trade.get("regime", ""),
-        "adversary_verdict": trade.get("adversary_verdict"),
-        "survival_score": trade.get("survival_score"),
+        "regime": trade.get("regime") or _get_current_regime(coin),
+        "adversary_verdict": trade.get("adversary_verdict", "UNKNOWN"),
+        "survival_score": trade.get("survival_score", 0),
         "entry_price": fill_price,
         "intended_price": intended_price,
         "entry_time": datetime.now(timezone.utc).isoformat(),
@@ -1099,7 +1124,7 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
         "fees_usd": fees_usd,
         "pnl_after_fees": pnl_after_fees,
         # Propagate fields for Supabase analytics
-        "strategy_version": 4,
+        "strategy_version": STRATEGY_VERSION,
         "sharpe": pos.get("sharpe"),
         "win_rate": pos.get("win_rate"),
         "adversary_verdict": pos.get("adversary_verdict"),
@@ -1321,37 +1346,44 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
         # Post-trade alignment exits DISABLED — they were closing positions
         # at 30-40min hold, before the thesis could play out (-$1.90 in losses).
         # Only TRAP patterns still force close, but only after min hold period.
+        # DISABLED (v5 Fix 3): alignment_exit and alignment_exit_trap both killed
+        # alignment_exit: 10T, 0% WR, -$1.79 | alignment_exit_trap: 3T, 33% WR, -$0.00
+        # Cross-timeframe conflicts are logged but never trigger exits.
         if tf_data:
             misaligned, pattern = check_alignment(pos, tf_data)
             if misaligned:
-                is_trap = pattern in ("TRAP_LONG", "TRAP_SHORT")
-                # Use hold_mins already computed above (from entry_dt)
-                if is_trap and hold_mins >= MIN_HOLD_BEFORE_EXIT_MINS and pnl_pct < -0.01:
-                    reason = "alignment_exit_trap"
-                    log(f"{reason.upper()} {coin} {pos['direction']} | pattern={pattern} | {pnl_pct*100:+.2f}% | held {held_mins:.0f}min")
-                    close_and_record(client, pos, current, pnl_pct, reason, portfolio, dry, main_address=main_address)
-                    continue
-                elif misaligned:
-                    log(f"  INFO [{coin}] alignment conflict (pattern={pattern}) — monitoring, no exit (held {hold_mins:.0f}min)")
+                log(f"  INFO [{coin}] alignment conflict (pattern={pattern}) — monitoring only (held {hold_mins:.0f}min)")
 
-        # ── TIME-DECAY STOP (v4): tighten stop on stale losers ──
-        # 30m-2h bucket has 33.3% WR and -$0.20 P&L. If you're losing after 30m,
-        # the thesis is failing. Tighten stop from original to 60% of original.
-        # At 60m+: tighten to 40% of original. This cuts losses faster on stale trades.
+        # ── TIME-DECAY STOP (v5 Fix 8B): more gradual tightening ──
         original_stop_pct = pos.get("stop_loss_pct", 3.6) / 100  # stored as percentage
-        if hold_mins >= 60 and pnl_pct < 0:
-            tightened = original_stop_pct * 0.40
+        if hold_mins >= 120 and pnl_pct < -0.001:
+            tightened = original_stop_pct * 0.35
             tightened_price = entry * (1 + tightened) if not is_long else entry * (1 - tightened)
             if (is_long and current <= tightened_price) or (not is_long and current >= tightened_price):
-                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop tightened to {tightened*100:.1f}%")
+                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop@{tightened*100:.1f}%")
                 close_and_record(client, pos, current, pnl_pct, "time_decay_stop", portfolio, dry, main_address=main_address)
                 continue
-        elif hold_mins >= 30 and pnl_pct < -0.005:
-            tightened = original_stop_pct * 0.60
+        elif hold_mins >= 90 and pnl_pct < -0.003:
+            tightened = original_stop_pct * 0.50
             tightened_price = entry * (1 + tightened) if not is_long else entry * (1 - tightened)
             if (is_long and current <= tightened_price) or (not is_long and current >= tightened_price):
-                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop tightened to {tightened*100:.1f}%")
+                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop@{tightened*100:.1f}%")
                 close_and_record(client, pos, current, pnl_pct, "time_decay_stop", portfolio, dry, main_address=main_address)
+                continue
+        elif hold_mins >= 45 and pnl_pct < -0.005:
+            tightened = original_stop_pct * 0.70
+            tightened_price = entry * (1 + tightened) if not is_long else entry * (1 - tightened)
+            if (is_long and current <= tightened_price) or (not is_long and current >= tightened_price):
+                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop@{tightened*100:.1f}%")
+                close_and_record(client, pos, current, pnl_pct, "time_decay_stop", portfolio, dry, main_address=main_address)
+                continue
+
+        # ── TAKE PROFIT (v5 Fix 8C): lock gains when P&L > 3% ──
+        if pnl_pct > 0.03:
+            peak = pos.get("peak_pnl_pct", 0)
+            if peak > 0.02:
+                log(f"TAKE PROFIT {coin} {pos['direction']} | {pnl_pct*100:+.2f}% | peak={peak*100:.2f}%")
+                close_and_record(client, pos, current, pnl_pct, "take_profit", portfolio, dry, main_address=main_address)
                 continue
 
         # ── Update peak ──

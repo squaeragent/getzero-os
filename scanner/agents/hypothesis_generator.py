@@ -1463,7 +1463,8 @@ def run_cycle(api_key):
             direction = pack.get("signal_type", "LONG")
             expression = pack.get("expression", "")
 
-            if sharpe < MIN_SHARPE or win_rate < MIN_WIN_RATE:
+            trade_count = pack.get("trade_count", 0)
+            if sharpe < MIN_SHARPE or win_rate < MIN_WIN_RATE or trade_count < 5:
                 stats["filtered"] += 1
                 continue
 

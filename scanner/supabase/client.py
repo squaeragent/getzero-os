@@ -191,7 +191,7 @@ class SupabaseClient:
                 "signal": closed.get("signal"),
                 "sharpe": closed.get("sharpe"),
                 "win_rate": closed.get("win_rate"),
-                "strategy_version": closed.get("strategy_version", 4),
+                "strategy_version": closed.get("strategy_version", 5),
                 "adversary_verdict": closed.get("adversary_verdict"),
                 "survival_score": closed.get("survival_score"),
                 "regime": closed.get("regime"),
@@ -266,7 +266,7 @@ class SupabaseClient:
                 "unrealized_pnl": snapshot.get("unrealized_pnl", 0),
                 "realized_pnl": snapshot.get("realized_pnl_today") or snapshot.get("realized_pnl", 0),
                 "open_positions": snapshot.get("open_positions", 0),
-                "strategy_version": snapshot.get("strategy_version", 3),
+                "strategy_version": snapshot.get("strategy_version", 5),
                 "recorded_at": snapshot.get("recorded_at") or datetime.now(timezone.utc).isoformat(),
             }
             return self._post("equity_snapshots", payload)

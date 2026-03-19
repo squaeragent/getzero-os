@@ -216,13 +216,38 @@ def load_candidates():
             adversary_ts = data.get("adversary_timestamp")
 
             if raw_candidates:
+                # v5 Fix 6: Reject stale candidates (>10 min old)
+                cand_ts = data.get("timestamp", "")
+                if cand_ts:
+                    try:
+                        from datetime import datetime as _dt
+                        cand_age = (datetime.now(timezone.utc) - _dt.fromisoformat(cand_ts.replace("Z", "+00:00"))).total_seconds()
+                        if cand_age > 600:
+                            print(f"  [stale] candidates are {cand_age:.0f}s old — skipping")
+                            return []
+                    except Exception:
+                        pass
+
                 if not adversary_ts:
                     # Adversary has never run — skip all candidates to avoid race
                     print("  [warn] candidates.json has no adversary_timestamp — awaiting adversary, skipping all")
                     return []
 
+                # v5 Fix 5: Hard gate LONGs in Extreme Fear
+                try:
+                    with open(BUS_DIR / "macro_intel.json") as _mf:
+                        macro = json.load(_mf)
+                except Exception:
+                    macro = {}
+                fg = macro.get("fear_greed", 50)
+
                 approved_candidates = []
                 for cand in raw_candidates:
+                    # F&G hard gate — never LONG in Extreme Fear
+                    if fg < 25 and cand.get("direction") == "LONG":
+                        print(f"  [block] {cand.get('coin')} LONG — F&G={fg} (Extreme Fear hard gate)")
+                        continue
+
                     verdict = cand.get("adversary_verdict")
 
                     if verdict is None:

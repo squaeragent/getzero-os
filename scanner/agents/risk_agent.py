@@ -64,8 +64,8 @@ HEARTBEAT_STALE_MINUTES = 10
 
 # Strategy version — increment when major strategy changes are deployed.
 # Trades before this version are excluded from streak/rolling calculations.
-STRATEGY_VERSION = 4
-STRATEGY_VERSION_EPOCH = "2026-03-19T13:30:00"  # v4: MIN_HOLD on kills, SOCIAL/INFLUENCER/ICHIMOKU blacklist, F&G sizing
+STRATEGY_VERSION = 5
+STRATEGY_VERSION_EPOCH = "2026-03-20T03:30:00"  # v5: adversary calibration, metadata propagation, exit fixes
 
 # ─── RISK THRESHOLDS ───
 DRAWDOWN_YELLOW = 3.0
@@ -630,9 +630,14 @@ def run_cycle(main_address):
     write_risk(risk_state)
     write_heartbeat()
 
-    # ── SUPABASE: persist equity snapshot + heartbeats ───────────────────
+    # ── SUPABASE: persist equity snapshot + heartbeats (v5 Fix 10B: sanity check) ──
     if _supabase is not None:
         try:
+            # Sanity check: equity shouldn't jump >50% between snapshots
+            prev = equity_history[-1] if equity_history else None
+            prev_val = prev.get("account_value", 0) if prev else 0
+            if prev_val > 0 and abs(account_value / prev_val - 1) > 0.5:
+                print(f"  ⚠ EQUITY JUMP: ${prev_val:.2f} → ${account_value:.2f} (>{50}%) — writing but flagging")
             _supabase.insert_equity_snapshot(risk_state)
         except Exception as _e:
             print(f"  [warn] Supabase equity snapshot failed: {_e}")

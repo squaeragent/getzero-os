@@ -99,12 +99,14 @@ REGIME_PREDICTIONS_FILE = BUS_DIR / "regime_predictions.json"
 GENEALOGY_FILE = BUS_DIR / "genealogy.json"
 
 CYCLE_SECONDS = 300  # 5 minutes
-TOTAL_EQUITY = 115.0  # approximate portfolio equity for stress tests
+TOTAL_EQUITY = 750.0  # portfolio equity for stress tests
 
-# Survival thresholds
-THRESHOLD_PROCEED = 0.7
-THRESHOLD_CAUTION = 0.5
-THRESHOLD_WEAK = 0.3
+# Survival thresholds — recalibrated for 18 attacks (v5 spec Fix 1A)
+# With 18 attacks, normal severity ~2.0 → survival 0.33. Old thresholds killed everything.
+THRESHOLD_PROCEED = 0.55
+THRESHOLD_CAUTION = 0.35
+THRESHOLD_WEAK = 0.15
+MAX_TOTAL_SEVERITY = 3.0  # Cap to prevent severity runaway (Fix 1B)
 
 
 # ─── LOGGING ───
@@ -956,15 +958,20 @@ def attack_session_risk(hypothesis, world_state_meta):
 # ─── SURVIVAL SCORE ───
 def compute_survival_score(attacks):
     """
-    Multiply down from 1.0 using each attack's severity * weight.
-    Clamp to [0.0, 1.0].
+    Additive severity model (v5 Fix 1B) — replaces multiplicative.
+    Multiplicative killed everything: 18 attacks × 0.1 severity = 0.15 score.
+    Additive: sum severities, cap at MAX_TOTAL_SEVERITY, convert to 0-1.
     """
-    score = 1.0
+    total_severity = 0.0
     for attack in attacks:
         severity = attack.get("severity", 0.0)
         weight = attack.get("weight", 1.0)
         if severity > 0:
-            score *= (1.0 - severity * weight)
+            total_severity += severity * weight
+    # Cap to prevent runaway
+    total_severity = min(total_severity, MAX_TOTAL_SEVERITY)
+    # Convert to survival score: 0 severity = 1.0, MAX severity = 0.0
+    score = 1.0 - (total_severity / MAX_TOTAL_SEVERITY)
     return round(max(0.0, min(1.0, score)), 4)
 
 
@@ -1096,7 +1103,7 @@ def attack_timeframe_alignment(hypothesis, world_coins):
         severity = 0.7 if pattern == "TRAP_SHORT" else 0.5
         details.append(f"SHORT vs {pattern} — timeframe says don't go short")
 
-    return {"attack": "timeframe_alignment", "severity": round(severity, 3), "weight": 1.5,
+    return {"attack": "timeframe_alignment", "severity": round(severity, 3), "weight": 1.0,
             "detail": "; ".join(details) if details else "timeframe aligned"}
 
 
@@ -1392,7 +1399,7 @@ def attack_regime_transition(hypothesis, regime_predictions: dict) -> dict:
     return {
         "attack":   "regime_transition",
         "severity": round(severity, 3),
-        "weight":   1.3,
+        "weight":   0.8,  # Reduced from 1.3 — fires too broadly (v5 Fix 1C)
         "detail":   (
             f"transition prob {prob:.0%}, "
             f"direction: {dir_pred or 'unknown'}"
@@ -1715,13 +1722,18 @@ def run_cycle():
 
     write_heartbeat()
 
-    # ── Summary ──
+    # ── Summary (Fix 1D — diagnostic logging) ──
     log(f"{'='*60}")
     log(f"Received:  {len(hypotheses)}")
     log(f"Killed:    {killed}")
     log(f"Cautioned: {cautioned}")
     log(f"Proceeded: {proceeded}")
     log(f"Survivors: {len(survivors)}")
+    survival_rate = len(survivors) / len(hypotheses) * 100 if hypotheses else 0
+    avg_survival = sum(h.get("survival_score", 0) for h in hypotheses) / len(hypotheses) if hypotheses else 0
+    log(f"Survival rate: {survival_rate:.0f}% | Avg survival score: {avg_survival:.3f}")
+    if survival_rate < 10:
+        log(f"⚠ LOW SURVIVAL — adversary may be too aggressive")
 
     if survivors:
         log("Surviving hypotheses:")
