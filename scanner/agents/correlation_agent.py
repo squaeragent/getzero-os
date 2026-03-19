@@ -237,7 +237,7 @@ def load_candidates():
                     if verdict in ("PROCEED", "PROCEED_WITH_CAUTION", "WEAK"):
                         if verdict == "WEAK":
                             # Apply adversary size modifier (0.4x) for weak signals
-                            size_mod = cand.get("adversary_size_modifier", 0.4)
+                            size_mod = cand.get("recommended_size_modifier") or cand.get("adversary_size_modifier") or 0.4
                             cand = dict(cand)
                             cand["size_modifier"] = size_mod
                             print(f"  [weak] {cand.get('coin')} — adversary verdict WEAK, size_modifier={size_mod}")

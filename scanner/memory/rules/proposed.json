@@ -40,5 +40,47 @@
     "status": "proposed",
     "source": "reflection",
     "raw_rule": "_004: IF (coin == 'AVAX' && direction == 'LONG') THEN set_stop_loss(5%) BECAUSE our LONG position in AVAX has a lower win rate than our overall win rate, suggesting potential for increased risk management."
+  },
+  {
+    "id": "RULE_004",
+    "condition": "(direction == 'SHORT' && upnl > $0.50)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "scale_in(10%)",
+    "evidence": "recent wins suggest an edge in profitable short trades.",
+    "generation": 1,
+    "created": "2026-03-19T10:30:17.167312+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (direction == 'SHORT' && upnl > $0.50) THEN scale_in(10%) BECAUSE recent wins suggest an edge in profitable short trades."
+  },
+  {
+    "id": "RULE_005",
+    "condition": "(position_age > 24 hours && upnl < -$0.25)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "close_position",
+    "evidence": "prolonged losing positions may indicate a need to re-evaluate the trade.",
+    "generation": 1,
+    "created": "2026-03-19T10:30:17.167590+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (position_age > 24 hours && upnl < -$0.25) THEN close_position BECAUSE prolonged losing positions may indicate a need to re-evaluate the trade."
+  },
+  {
+    "id": "RULE_006",
+    "condition": "(coin == 'AVAX' && rsi(14) < 30)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "enter_long",
+    "evidence": "AVAX has been profitable in the past, and an oversold RSI may indicate a buying opportunity.",
+    "generation": 1,
+    "created": "2026-03-19T10:30:17.167808+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (coin == 'AVAX' && rsi(14) < 30) THEN enter_long BECAUSE AVAX has been profitable in the past, and an oversold RSI may indicate a buying opportunity."
   }
 ]
