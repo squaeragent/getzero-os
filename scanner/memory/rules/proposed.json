@@ -166,5 +166,47 @@
     "status": "proposed",
     "source": "reflection",
     "raw_rule": "_004: IF (PAXG_price < 20-day_MA) THEN consider_long BECAUSE a price below the 20-day moving average may indicate a potential reversal, and considering long positions could help diversify our portfolio."
+  },
+  {
+    "id": "RULE_013",
+    "condition": "(short_position && price > entry_price * 1.05)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "close_position",
+    "evidence": "recent data suggests that the system has some edge in identifying profitable short opportunities, and this rule aims to lock in profits more quickly.",
+    "generation": 1,
+    "created": "2026-03-19T20:11:22.190350+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (short_position && price > entry_price * 1.05) THEN close_position BECAUSE recent data suggests that the system has some edge in identifying profitable short opportunities, and this rule aims to lock in profits more quickly."
+  },
+  {
+    "id": "RULE_014",
+    "condition": "(new_short_signal && portfolio_short_exposure > 0.6)",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_position_size",
+    "evidence": "the current portfolio is overweight towards short selling, and this rule aims to mitigate potential losses by reducing position size when new short signals are generated.",
+    "generation": 1,
+    "created": "2026-03-19T20:11:22.190699+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (new_short_signal && portfolio_short_exposure > 0.6) THEN reduce_position_size BECAUSE the current portfolio is overweight towards short selling, and this rule aims to mitigate potential losses by reducing position size when new short signals are generated."
+  },
+  {
+    "id": "RULE_015",
+    "condition": "(winning_trade && trade_duration < 2 hours)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "scale_in",
+    "evidence": "the system's win rate suggests that it can identify profitable trades quickly, and scaling in on winning trades with shorter durations could potentially increase returns.",
+    "generation": 1,
+    "created": "2026-03-19T20:11:22.190988+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (winning_trade && trade_duration < 2 hours) THEN scale_in BECAUSE the system's win rate suggests that it can identify profitable trades quickly, and scaling in on winning trades with shorter durations could potentially increase returns."
   }
 ]

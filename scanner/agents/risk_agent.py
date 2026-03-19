@@ -132,10 +132,23 @@ def parse_hl_state(hl_data):
             p = pos.get("position", {})
             unrealized_pnl += float(p.get("unrealizedPnl", 0))
 
-        # True equity = totalRawUsd (includes spot USDC collateral + perp P&L)
-        # accountValue only shows perp side; totalRawUsd is the real number
-        total_raw_usd = float(margin_summary.get("totalRawUsd", 0))
-        account_value = total_raw_usd if total_raw_usd > 0 else (STARTING_EQUITY + unrealized_pnl)
+        # True equity = spot USDC total + perp unrealized P&L
+        # accountValue only shows perp side; totalRawUsd = accountValue + notional (not what we want)
+        # We need to query spot balance separately for accurate equity
+        account_value = STARTING_EQUITY + unrealized_pnl  # fallback
+        try:
+            spot_req = urllib.request.Request(
+                "https://api.hyperliquid.xyz/info",
+                data=json.dumps({"type": "spotClearinghouseState", "user": "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"}).encode(),
+                headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(spot_req, timeout=10) as spot_resp:
+                spot_data = json.loads(spot_resp.read().decode())
+            for bal in spot_data.get("balances", []):
+                if bal.get("coin") == "USDC":
+                    account_value = float(bal.get("total", 0)) + unrealized_pnl
+                    break
+        except Exception:
+            pass  # fallback to STARTING_EQUITY + uPnL
 
         return {
             "account_value": account_value,
