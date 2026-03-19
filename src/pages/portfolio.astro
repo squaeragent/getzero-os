@@ -1364,38 +1364,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var totalPnl = totalRealized + totalUnrealized;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
-    // Uptime — show "active Xh" based on first throttle>0 or oldest open/closed trade
+    // Uptime — show time since first trade (oldest closed trade entry_time)
     var uptimeStr = '—';
     (function(){
-      // Try: find when trading became active (throttle > 0) or earliest trade
-      var activeStart = null;
-      // Check if there's a throttle_started timestamp
-      if(lt.throttle_started){
-        activeStart = new Date(lt.throttle_started).getTime();
-      }
-      // Fallback: oldest open position entry time
-      if(!activeStart && livePos.length > 0){
-        for(var _i=0; _i<livePos.length; _i++){
-          var _et = livePos[_i].entry_time || (livePos[_i].entry_time_ms ? new Date(livePos[_i].entry_time_ms) : null);
-          if(_et){
-            var _ms = new Date(_et).getTime();
-            if(!activeStart || _ms < activeStart) activeStart = _ms;
-          }
+      var oldest = null;
+      // Find oldest trade entry time across all trades
+      for(var _j=0; _j<liveClosed.length; _j++){
+        if(liveClosed[_j].entry_time){
+          var _ms2 = new Date(liveClosed[_j].entry_time).getTime();
+          if(!oldest || _ms2 < oldest) oldest = _ms2;
         }
       }
-      // Fallback: oldest closed trade open time
-      if(!activeStart && liveClosed.length > 0){
-        for(var _j=0; _j<liveClosed.length; _j++){
-          if(liveClosed[_j].entry_time){
-            var _ms2 = new Date(liveClosed[_j].entry_time).getTime();
-            if(!activeStart || _ms2 < activeStart) activeStart = _ms2;
-          }
+      for(var _i=0; _i<livePos.length; _i++){
+        var _et = livePos[_i].entry_time;
+        if(_et){
+          var _ms = new Date(_et).getTime();
+          if(!oldest || _ms < oldest) oldest = _ms;
         }
       }
-      if(activeStart){
-        var _activeMs = Date.now() - activeStart;
-        var _activeH = Math.floor(_activeMs / 3600000);
-        uptimeStr = 'active ' + (_activeH < 24 ? _activeH + 'h' : Math.floor(_activeH/24) + 'd ' + (_activeH%24) + 'h');
+      if(oldest){
+        var _totalMs = Date.now() - oldest;
+        var _totalH = Math.round(_totalMs / 3600000);
+        if(_totalH < 1){
+          var _totalMin = Math.round(_totalMs / 60000);
+          uptimeStr = _totalMin + 'min';
+        } else if(_totalH < 24){
+          uptimeStr = _totalH + 'h';
+        } else {
+          uptimeStr = Math.floor(_totalH/24) + 'd ' + (_totalH%24) + 'h';
+        }
       }
     })();
 
