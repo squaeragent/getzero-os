@@ -624,10 +624,8 @@ def should_open(trade, positions, cfg):
     # All coins with signal caches + HL markets are approved for live trading
     # Liquidity agent filters out illiquid coins downstream
 
-    # Macro event hard gate — no new positions within 24h of FOMC
-    macro = load_json(BUS_DIR / "macro_intel.json", {})
-    if macro.get("days_to_fomc", 999) == 0:
-        return False, "FOMC day — no new positions"
+    # FOMC awareness: adversary handles this via attack_macro_event (1.4x weight)
+    # No hard gate — FOMC days produce the biggest moves, blocking = missing edge
 
     # Check liquidity
     liquidity = load_liquidity()
@@ -810,28 +808,14 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
 
     size_usd = compute_size(trade, cfg, throttle)
 
-    # ── FIX 1: Hard block LONGs in RISK_OFF macro ──────────────────────────
-    if direction == "LONG":
-        try:
-            world_state_file = BUS_DIR / "world_state.json"
-            with open(world_state_file) as _f:
-                _ws = json.load(_f)
-            _macro_state = _ws.get("meta", {}).get("macro", {}).get("state", "")
-            if _macro_state == "RISK_OFF":
-                log(f"BLOCKED: LONG in RISK_OFF macro ({coin} {trade.get('signal','')})")
-                return None
-        except Exception as _e:
-            log(f"WARN: Could not read world_state for RISK_OFF check: {_e}")
+    # RISK_OFF LONG blocking removed — the adversary's attack_macro_regime (1.4x)
+    # and attack_fear_greed (1.3x) already heavily penalize LONGs in bearish macro.
+    # Hard blocks prevent the system from learning; adversary severity lets
+    # exceptionally strong signals still pass while weak ones die.
 
-    # ── FIX 4: Coin+direction blacklist ─────────────────────────────────────
-    # Based on historical data: specific coin+direction combos with 0% WR
-    # TODO: Make dynamic — read from genealogy/observer data
-    _COIN_DIRECTION_BLACKLIST = {
-        ("SOL", "LONG"),   # 0% WR across 3 trades, -$1.22
-    }
-    if (coin, direction) in _COIN_DIRECTION_BLACKLIST:
-        log(f"BLOCKED: {coin} {direction} blacklisted (0% WR historical)")
-        return None
+    # Coin+direction blacklisting removed — 3 trades is not enough sample.
+    # The adversary's family_track_record attack (1.3x) handles this dynamically
+    # with genealogy data (requires 20+ instances at 0% WR to activate).
 
     # ── FIX 2: Genealogy dead-family blacklist ──────────────────────────────
     _signal_name = trade.get("signal", "")
