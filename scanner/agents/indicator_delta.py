@@ -34,6 +34,12 @@ try:
 except ImportError:
     HAS_TALIB = False
 
+try:
+    from scanner.senses.taapi_plugin import TaapiPlugin
+    HAS_TAAPI = True
+except ImportError:
+    HAS_TAAPI = False
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -386,8 +392,21 @@ ENVY_TO_OWN: dict[str, str] = {
 def compute_deltas(
     envy_vals: dict[str, float],
     own_vals: dict[str, float],
+    taapi_vals: Optional[dict[str, float]] = None,
 ) -> dict[str, dict]:
-    """Compare ENVY vs own for each matched indicator.  Returns delta records."""
+    """
+    Compare ENVY vs TA-Lib (own) and optionally TAAPI for each matched indicator.
+
+    Output shape per indicator:
+      {
+        "envy":  0.45,
+        "talib": 44.8,
+        "taapi": 45.1,           # if taapi_vals provided
+        "delta_taapi_pct": 0.66, # if taapi_vals provided
+        "delta": ...,
+        "pct": ...,
+      }
+    """
     deltas: dict[str, dict] = {}
     for envy_code, own_code in ENVY_TO_OWN.items():
         e_val = envy_vals.get(envy_code)
@@ -406,18 +425,62 @@ def compute_deltas(
         denom = (abs(e_f) + abs(o_f)) / 2
         pct = (delta / denom * 100) if denom > 1e-9 else 0.0
 
-        deltas[envy_code] = {
+        entry: dict = {
             "envy":  round(e_f, 6),
-            "own":   round(o_f, 6),
+            "talib": round(o_f, 6),
             "delta": round(delta, 6),
             "pct":   round(pct, 4),
         }
+
+        # Wire TAAPI values if provided — use the same ENVY code as key
+        if taapi_vals is not None:
+            t_val = taapi_vals.get(envy_code)
+            if t_val is not None:
+                try:
+                    t_f = float(t_val)
+                    t_delta = abs(e_f - t_f)
+                    t_denom = (abs(e_f) + abs(t_f)) / 2
+                    t_pct   = (t_delta / t_denom * 100) if t_denom > 1e-9 else 0.0
+                    entry["taapi"]           = round(t_f, 6)
+                    entry["delta_taapi_pct"] = round(t_pct, 4)
+                except (TypeError, ValueError):
+                    pass
+
+        deltas[envy_code] = entry
     return deltas
 
 
 # ---------------------------------------------------------------------------
 # Main cycle
 # ---------------------------------------------------------------------------
+
+def fetch_taapi_snapshot(coins: list[str]) -> dict[str, dict[str, float]]:
+    """
+    Fetch TAAPI indicators for all coins and return a snapshot dict:
+      { coin: { INDICATOR_CODE: raw_value, ... } }
+
+    Maps taapi.{INDICATOR} dimension names back to bare indicator codes
+    so they align with ENVY_TO_OWN keys.
+    """
+    if not HAS_TAAPI:
+        log("WARN: taapi_plugin not importable — skipping TAAPI source")
+        return {}
+
+    taapi_snapshot: dict[str, dict[str, float]] = {}
+    try:
+        plugin = TaapiPlugin()
+        observations = plugin.fetch(coins)
+        for obs in observations:
+            # dimension format: "taapi.RSI_24H"
+            if obs.dimension.startswith("taapi."):
+                code = obs.dimension[len("taapi."):]
+                taapi_snapshot.setdefault(obs.coin, {})[code] = obs.value
+        log(f"TAAPI snapshot: {sum(len(v) for v in taapi_snapshot.values())} indicators across {len(taapi_snapshot)} coins")
+    except Exception as e:
+        log(f"WARN: TAAPI fetch failed: {e}")
+
+    return taapi_snapshot
+
 
 def run_once() -> None:
     if not HAS_TALIB:
@@ -431,6 +494,9 @@ def run_once() -> None:
         return
 
     log(f"Loaded ENVY snapshot for {len(envy_snapshot)} coins")
+
+    # 2. Fetch TAAPI snapshot (best-effort — won't block on failure)
+    taapi_snapshot = fetch_taapi_snapshot(DELTA_COINS)
 
     now = datetime.now(timezone.utc)
     ts  = now.strftime("%Y-%m-%dT%H:%M:%S")
@@ -446,7 +512,7 @@ def run_once() -> None:
             log(f"  WARN {coin}: not in ENVY snapshot")
             continue
 
-        # 2. Compute own indicators from HL
+        # 3. Compute own (TA-Lib) indicators from HL
         try:
             own_vals = compute_own_indicators(coin)
         except Exception as e:
@@ -457,8 +523,11 @@ def run_once() -> None:
             log(f"  WARN {coin}: own computation returned empty")
             continue
 
-        # 3. Compute deltas
-        deltas = compute_deltas(envy_vals, own_vals)
+        # 4. Get TAAPI values for this coin (may be empty if fetch failed)
+        taapi_vals = taapi_snapshot.get(coin)
+
+        # 5. Compute deltas (ENVY vs TA-Lib, plus optional TAAPI cross-check)
+        deltas = compute_deltas(envy_vals, own_vals, taapi_vals)
 
         if not deltas:
             log(f"  WARN {coin}: no comparable indicators found")
@@ -469,12 +538,12 @@ def run_once() -> None:
         max_pct = max(pcts) if pcts else 0.0
         max_ind = max(deltas, key=lambda k: deltas[k]["pct"]) if deltas else ""
 
-        # 4. Warn on large deltas
+        # 6. Warn on large deltas
         for ind_code, d in deltas.items():
             if d["pct"] > WARNING_PCT:
                 log(f"  WARNING {coin} {ind_code}: delta={d['delta']:.4f} ({d['pct']:.2f}%) exceeds {WARNING_PCT}% threshold")
 
-        # 5. Write to JSONL
+        # 7. Write to JSONL
         record = {
             "t":                  ts,
             "coin":               coin,
@@ -482,6 +551,11 @@ def run_once() -> None:
             "avg_delta_pct":      round(avg_pct, 4),
             "max_delta_pct":      round(max_pct, 4),
             "max_delta_indicator": max_ind,
+            "sources":            {
+                "envy":  True,
+                "talib": bool(own_vals),
+                "taapi": bool(taapi_vals),
+            },
         }
         with open(delta_file, "a") as f:
             f.write(json.dumps(record) + "\n")
