@@ -5275,3 +5275,24 @@
 [2026-03-19 08:44:52 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 354201572808}}]}}}
 [2026-03-19 08:44:52 UTC] [EXEC]   Open fill fee for SUI: $0.007475
 [2026-03-19 08:44:53 UTC] [EXEC] Summary: 5 positions, $98.11 notional, trades=57
+[2026-03-19 08:49:54 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 08:49:54 UTC] [EXEC] Positions: 5 | Throttle: 0.5 | Kill: False
+[2026-03-19 08:49:55 UTC] [EXEC]   Fetching 10 exit indicators for ['ZEC', 'AVAX', 'PAXG', 'DOGE', 'SUI']
+[2026-03-19 08:49:55 UTC] [EXEC] [PAXG] Skipping exit eval — hold 112m < 120m minimum
+[2026-03-19 08:49:55 UTC] [EXEC] [AVAX] Skipping exit eval — hold 36m < 120m minimum
+[2026-03-19 08:49:55 UTC] [EXEC] [ZEC] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-19 08:49:55 UTC] [EXEC] [DOGE] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-19 08:49:55 UTC] [EXEC] [SUI] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 08:49:55 UTC] [EXEC] Summary: 5 positions, $98.11 notional, trades=57
+[2026-03-19 08:54:58 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 08:54:58 UTC] [EXEC] Positions: 5 | Throttle: 0.5 | Kill: False
+[2026-03-19 08:54:58 UTC] [EXEC]   Fetching 10 exit indicators for ['ZEC', 'AVAX', 'PAXG', 'DOGE', 'SUI']
+[2026-03-19 08:54:59 UTC] [EXEC] [PAXG] Skipping exit eval — hold 117m < 120m minimum
+[2026-03-19 08:54:59 UTC] [EXEC] [AVAX] Skipping exit eval — hold 41m < 120m minimum
+[2026-03-19 08:54:59 UTC] [EXEC] [ZEC] Skipping exit eval — hold 20m < 120m minimum
+[2026-03-19 08:54:59 UTC] [EXEC] KILL SIGNAL DOGE LONG | condition: 'funding reverses to intensifying short' | +0.17%
+[2026-03-19 08:55:00 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "135.0", "avgPx": "0.094257", "oid": 354210018052}}]}}}
+[2026-03-19 08:55:01 UTC] [EXEC]   Fees: open=$0.005716 close=$0.005726 total=$0.011442 | P&L after fees: $+0.0107
+[2026-03-19 08:55:01 UTC] [EXEC]   Closed DOGE LONG | kill_condition | +0.17% ($+0.02) (fees=$0.0114, net=$+0.0107)
+[2026-03-19 08:55:01 UTC] [EXEC] [SUI] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 08:55:01 UTC] [EXEC] Summary: 4 positions, $85.41 notional, trades=58
