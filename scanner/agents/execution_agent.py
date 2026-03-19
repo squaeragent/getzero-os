@@ -55,6 +55,12 @@ KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
 
 HL_URL = "https://api.hyperliquid.xyz"
 CYCLE_SECONDS = 300  # 5 minutes
+
+# ─── SUPABASE (optional — never crashes execution if missing) ─────────────────
+try:
+    from scanner.supabase.client import supabase as _supabase
+except Exception:
+    _supabase = None
 MIN_HOLD_BEFORE_EXIT_MINS = 120  # don't evaluate exit expressions before 2 hours
 
 # ─── TELEGRAM ALERTS ───
@@ -985,6 +991,13 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
         )
         send_trade_alert(_alert)
 
+    # ── SUPABASE: persist new position ────────────────────────────────────
+    if _supabase is not None:
+        try:
+            _supabase.upsert_position(position)
+        except Exception as _e:
+            log(f"  WARN: Supabase upsert_position failed: {_e}")
+
     return position
 
 
@@ -1051,6 +1064,14 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
     append_jsonl(CLOSED_FILE, closed)
     fee_str = f" (fees=${fees_usd:.4f}, net=${pnl_after_fees:+.4f})" if fees_usd is not None else ""
     log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f}){fee_str}")
+
+    # ── SUPABASE: persist trade + remove position ──────────────────────────
+    if _supabase is not None:
+        try:
+            _supabase.insert_trade(closed)
+            _supabase.delete_position(coin)
+        except Exception as _e:
+            log(f"  WARN: Supabase post-close sync failed: {_e}")
 
     # ── TELEGRAM ALERT: TRADE CLOSED ──
     if not dry:

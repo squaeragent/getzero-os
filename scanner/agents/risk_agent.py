@@ -28,6 +28,12 @@ import urllib.error
 from datetime import datetime, timezone, date
 from pathlib import Path
 
+# ─── SUPABASE (optional — never crashes risk agent if missing) ────────────────
+try:
+    from scanner.supabase.client import supabase as _supabase
+except Exception:
+    _supabase = None
+
 # ─── PATHS ───
 AGENT_DIR = Path(__file__).parent
 SCANNER_DIR = AGENT_DIR.parent
@@ -603,6 +609,13 @@ def run_cycle(main_address):
 
     write_risk(risk_state)
     write_heartbeat()
+
+    # ── SUPABASE: persist equity snapshot ──────────────────────────────────
+    if _supabase is not None:
+        try:
+            _supabase.insert_equity_snapshot(risk_state)
+        except Exception as _e:
+            print(f"  [warn] Supabase equity snapshot failed: {_e}")
 
     # 10. Print summary
     status_icon = {"green": "OK", "yellow": "WARN", "orange": "DANGER", "red": "KILL"}
