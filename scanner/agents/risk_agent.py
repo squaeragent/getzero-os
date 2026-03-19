@@ -27,6 +27,24 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone, date
 from pathlib import Path
+import tempfile
+
+def save_json_atomic(path, data, indent=2):
+    """Write JSON atomically — crash-safe via tempfile + rename."""
+    path_str = str(path)
+    dir_name = os.path.dirname(path_str) or "."
+    os.makedirs(dir_name, exist_ok=True)
+    tmp_fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+    try:
+        with os.fdopen(tmp_fd, "w") as f:
+            json.dump(data, f, indent=indent)
+        os.replace(tmp_path, path_str)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 # ─── SUPABASE (optional — never crashes risk agent if missing) ────────────────
 try:
@@ -439,9 +457,10 @@ def reconcile_balance(user_addr, expected_capital, positions, closed_trades):
         with urllib.request.urlopen(req2, timeout=10) as resp2:
             perp = json.loads(resp2.read().decode())
         perp_raw = float(perp.get("marginSummary", {}).get("totalRawUsd", 0))
+        unrealized_pnl = float(perp.get("marginSummary", {}).get("totalUnrealizedPnl", 0))
 
-        # totalRawUsd already includes spot USDC, so don't double-count
-        actual_total = perp_raw if perp_raw > 0 else usdc_balance
+        # Real equity = spot USDC + open unrealized P&L (totalRawUsd is just perp notional)
+        actual_total = usdc_balance + unrealized_pnl
 
         # Expected: starting capital + realized P&L
         realized_pnl = sum(t.get("pnl_usd", 0) for t in closed_trades)
@@ -692,19 +711,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-def save_json_atomic(path, data):
-    """Write JSON atomically — crash-safe."""
-    import tempfile
-    tmp_fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(path), suffix='.tmp')
-    try:
-        with os.fdopen(tmp_fd, 'w') as f:
-            json.dump(data, f, indent=2)
-        os.replace(tmp_path, str(path))
-    except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-        raise
