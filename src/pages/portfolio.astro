@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="ZERO OS — Live Trading" description="10-agent autonomous trading system. 1,190+ signals across 40 coins. Live on Hyperliquid.">
+<BaseLayout title="ZERO OS — Live Trading" description="14-agent autonomous trading system. 1,190+ signals across 40 coins. Live on Hyperliquid.">
   <div class="page">
     <div class="terminal-border">
 
@@ -49,26 +49,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="section" id="market-state-section">
         <div class="ph">MARKET STATE</div>
         <div class="sb">
-          <div class="regime-map" id="regime-map"></div>
-          <div class="regime-legend">
-            <span class="leg-dot" style="background:#c8ff00"></span>trending
-            <span class="leg-dot" style="background:#aaa"></span>stable
-            <span class="leg-dot" style="background:#ffb000"></span>shift
-            <span class="leg-dot" style="background:#ff3333"></span>chaotic
-          </div>
+          <div class="regime-summary" id="regime-summary"><span class="muted">Loading regimes...</span></div>
           <div class="status-line" id="status-line">
             <span class="status-ok">Spreads ✓</span>
             <span class="status-ok">Funding ✓</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- SIGNAL ARCHETYPES -->
-      <div class="section" id="archetypes-section">
-        <div class="ph">SIGNAL ARCHETYPES</div>
-        <div class="sb">
-          <div class="archetype-grid" id="archetype-grid">
-            <div class="muted">Monitoring 6 signal archetypes...</div>
           </div>
         </div>
       </div>
@@ -87,14 +71,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <!-- PERFORMANCE (≥5 trades) -->
       <div class="section" id="stats-section" style="display:none">
         <div class="ph">PERFORMANCE</div>
-        <div class="sb stats-grid" id="stats-dashboard">
-          <div class="muted">Loading stats...</div>
+        <div class="sb">
+          <div class="dir-cards" id="dir-cards"></div>
+          <div class="stats-grid" id="stats-dashboard">
+            <div class="muted">Loading stats...</div>
+          </div>
         </div>
       </div>
 
       <!-- TRADE HISTORY -->
       <div class="section">
-        <div class="ph">CLOSED TRADES <span class="dim" id="closed-count">(0)</span></div>
+        <div class="ph">CLOSED TRADES <span class="dim" id="closed-count">(0)</span> <span class="show-all-toggle" id="show-all-toggle" style="display:none">show all</span></div>
         <div class="sb" id="closed-body">
           <div class="muted">Fetching live data...</div>
         </div>
@@ -699,6 +686,69 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .footer-link:hover { color: var(--phosphor); }
 
+  /* ─── REGIME SUMMARY ─── */
+  .regime-summary {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.04em;
+  }
+  .regime-trending { color: #c8ff00; }
+  .regime-stable { color: #aaa; }
+  .regime-shift { color: #ffb000; }
+  .regime-chaotic { color: #ff3333; }
+
+  /* ─── LONG/SHORT DIR CARDS ─── */
+  .dir-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .dir-card {
+    border: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    background: rgba(255,255,255,0.02);
+  }
+  .dir-card-label {
+    font-family: var(--font-head);
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+  .dir-card-big {
+    font-family: var(--font-head);
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+  .dir-card-meta {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  /* ─── SHOW ALL TOGGLE ─── */
+  .show-all-toggle {
+    cursor: pointer;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem;
+    margin-left: 0.5rem;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .show-all-toggle:hover {
+    color: var(--phosphor);
+    border-color: rgba(200,255,0,0.4);
+  }
+
   /* ─── MOBILE ─── */
   @media (max-width: 600px) {
     .page { padding: 0.5rem; }
@@ -955,23 +1005,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function renderMarketState(data){
     if(!data || !data.agents) return;
     var agents = data.agents;
-    var regimeColors = {trending:'#c8ff00',stable:'#aaa',shift:'#ffb000',chaotic:'#ff3333'};
 
-    // Regime map
-    var regimeMap = document.getElementById('regime-map');
-    if(regimeMap && agents.regimes && agents.regimes.coins){
+    // Regime summary as text counts
+    var regimeSummary = document.getElementById('regime-summary');
+    if(regimeSummary && agents.regimes && agents.regimes.coins){
       var coins = agents.regimes.coins;
-      var html = '';
+      var counts = {trending:0, stable:0, chaotic:0, shift:0};
       for(var coin in coins){
-        var regime = (coins[coin].regime || 'stable').toLowerCase();
-        var color = regimeColors[regime] || '#aaa';
-        var shortName = coin.replace('USDT','').replace('PERP','').slice(0,3);
-        html += '<div class="regime-coin-wrap">';
-        html += '<span class="regime-dot" style="background:'+color+'"></span>';
-        html += '<span class="regime-coin-name">'+shortName+'</span>';
-        html += '</div>';
+        var r = (coins[coin].regime || 'stable').toLowerCase();
+        if(counts[r] != null) counts[r]++;
+        else counts.stable++;
       }
-      regimeMap.innerHTML = html || '<span class="muted">No regime data</span>';
+      var parts = [];
+      if(counts.trending > 0) parts.push('<span class="regime-trending">'+counts.trending+' trending</span>');
+      if(counts.stable > 0) parts.push('<span class="regime-stable">'+counts.stable+' stable</span>');
+      if(counts.chaotic > 0) parts.push('<span class="regime-chaotic">'+counts.chaotic+' chaotic</span>');
+      if(counts.shift > 0) parts.push('<span class="regime-shift">'+counts.shift+' shift</span>');
+      regimeSummary.innerHTML = parts.length > 0 ? parts.join(' · ') : '<span class="muted">No regime data</span>';
     }
 
     // Exception-only status line
@@ -1063,8 +1113,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       return;
     }
 
-    var allAgents = ['regime','liquidity','spread_monitor','cross_timeframe','funding','harvester','correlation','risk','evolution','execution'];
+    var allAgents = [
+      'parameter_evolution','regime_transition','genealogy','counterfactual',
+      'observer','correlation','risk','execution','adversary','reflection',
+      'adversary_evolution','perception','hypothesis','signal_evolution'
+    ];
     var online = 0;
+    var yellow = 0;
     var failed = [];
     for(var i=0; i<allAgents.length; i++){
       var name = allAgents[i];
@@ -1072,21 +1127,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var secs = agoFromISO(ts);
       if(secs < 900){
         online++;
+      } else if(secs < 2400){
+        online++;
+        yellow++;
       } else {
         failed.push(name);
       }
     }
     var total = allAgents.length;
     if(summaryEl){
-      if(online === total){
+      if(failed.length === 0){
         summaryEl.innerHTML = '<span class="c-pos">'+total+'/'+total+' ✓</span>';
       } else {
         summaryEl.innerHTML = '<span class="c-neg">'+online+'/'+total+'</span>';
       }
     }
     if(healthyEl){
-      if(online === total){
-        healthyEl.textContent = 'Pipeline healthy — all agents reporting';
+      if(failed.length === 0){
+        healthyEl.textContent = 'Pipeline healthy — all 14 agents reporting';
         healthyEl.style.color = '';
       } else {
         healthyEl.textContent = 'Agents offline: ' + failed.join(', ');
@@ -1100,10 +1158,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var pipeline = document.getElementById('agent-pipeline');
     if(!pipeline || !agents || !agents.heartbeat) return;
     var stages = [
-      {label:'DATA', agents:['regime','liquidity','spread_monitor']},
-      {label:'ANALYSIS', agents:['cross_timeframe','funding']},
-      {label:'SIGNALS', agents:['harvester','correlation']},
-      {label:'ACTION', agents:['risk','evolution','execution']},
+      {label:'PERCEPTION', agents:['perception','observer','correlation']},
+      {label:'ANALYSIS', agents:['regime_transition','hypothesis','counterfactual']},
+      {label:'SIGNALS', agents:['signal_evolution','parameter_evolution','genealogy']},
+      {label:'ACTION', agents:['risk','execution','adversary','adversary_evolution','reflection']},
     ];
     var html = '';
     for(var s=0; s<stages.length; s++){
@@ -1116,7 +1174,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         var name = stage.agents[a];
         var ts = agents.heartbeat[name];
         var secs = agoFromISO(ts);
-        var color = secs < 900 ? '#c8ff00' : (secs < 2400 ? '#ffb000' : '#ff3333');
+        var color = secs < 900 ? '#c8ff00' : secs < 2400 ? '#ffb000' : '#ff3333';
         var label = ts ? ago(new Date(ts).getTime()) : 'unknown';
         html += '<div class="agent-item">';
         html += '<span class="agent-dot" style="background:'+color+'"></span>';
@@ -1133,6 +1191,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function renderStats(stats){
     var section = document.getElementById('stats-section');
     var el = document.getElementById('stats-dashboard');
+    var dirCards = document.getElementById('dir-cards');
     if(!el || !section) return;
     if(!stats || !stats.total || stats.total < 5){
       section.style.display = 'none';
@@ -1140,19 +1199,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     section.style.display = 'block';
 
+    // ── LONG / SHORT prominent cards (issue 7) ──
+    if(dirCards){
+      var longPnl = stats.longPnl != null ? stats.longPnl : null;
+      var shortPnl = stats.shortPnl != null ? stats.shortPnl : null;
+      var longWR = stats.longWinRate != null ? stats.longWinRate.toFixed(0)+'%' : '—';
+      var shortWR = stats.shortWinRate != null ? stats.shortWinRate.toFixed(0)+'%' : '—';
+      var longCount = stats.longCount || 0;
+      var shortCount = stats.shortCount || 0;
+      var lh = '<div class="dir-card">';
+      lh += '<div class="dir-card-label">Long</div>';
+      lh += '<div class="dir-card-big c-long">'+longWR+'</div>';
+      lh += '<div class="dir-card-meta">'+longCount+' trades · '+(longPnl != null ? '<span class="'+pnlClass(longPnl)+'">'+fmt$(longPnl)+'</span>' : '—')+'</div>';
+      lh += '</div>';
+      var sh = '<div class="dir-card">';
+      sh += '<div class="dir-card-label">Short</div>';
+      sh += '<div class="dir-card-big c-short">'+shortWR+'</div>';
+      sh += '<div class="dir-card-meta">'+shortCount+' trades · '+(shortPnl != null ? '<span class="'+pnlClass(shortPnl)+'">'+fmt$(shortPnl)+'</span>' : '—')+'</div>';
+      sh += '</div>';
+      dirCards.innerHTML = lh + sh;
+    }
+
+    // ── P&L by coin table — sorted by absolute P&L desc (issue 4 & 6) ──
     var left = '<div class="stats-panel">';
     left += '<div class="stats-panel-title">P&L by coin</div>';
     left += '<table class="coin-stats-table"><thead><tr><th>Coin</th><th>Trades</th><th>WR%</th><th>P&L</th></tr></thead><tbody>';
     var coins = stats.byCoin || {};
-    var coinKeys = Object.keys(coins).sort(function(a,b){ return (coins[b].pnl||0) - (coins[a].pnl||0); });
+    var coinKeys = Object.keys(coins).sort(function(a,b){
+      return Math.abs(coins[b].pnl||0) - Math.abs(coins[a].pnl||0);
+    });
     for(var i=0; i<coinKeys.length; i++){
       var c = coinKeys[i];
       var s = coins[c];
+      var pnlCls = pnlClass(s.pnl);
       left += '<tr>';
       left += '<td style="color:var(--phosphor);font-weight:700">'+c+'</td>';
       left += '<td>'+s.trades+'</td>';
       left += '<td>'+(s.winRate != null ? s.winRate.toFixed(0)+'%' : '—')+'</td>';
-      left += '<td class="'+pnlClass(s.pnl)+'">'+fmt$(s.pnl)+'</td>';
+      left += '<td class="'+pnlCls+'" style="font-weight:700">'+fmt$(s.pnl)+'</td>';
       left += '</tr>';
     }
     left += '</tbody></table></div>';
@@ -1166,12 +1250,86 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     right += '<div class="stat-row"><span class="stat-row-label">Avg Hold</span><span class="stat-row-value">'+fmtHold(stats.avgHoldHours)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Avg P&L</span><span class="stat-row-value '+pnlClass(stats.avgPnl)+'">'+fmt$(stats.avgPnl)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Total P&L</span><span class="stat-row-value '+pnlClass(stats.totalPnl)+'">'+fmt$(stats.totalPnl)+'</span></div>';
-    right += '<div class="stats-panel-title" style="margin-top:0.75rem">Long vs Short</div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Long WR ('+(stats.longCount||0)+')</span><span class="stat-row-value">'+(stats.longWinRate != null ? stats.longWinRate.toFixed(1)+'%' : '—')+'</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Short WR ('+(stats.shortCount||0)+')</span><span class="stat-row-value">'+(stats.shortWinRate != null ? stats.shortWinRate.toFixed(1)+'%' : '—')+'</span></div>';
     right += '</div>';
 
     el.innerHTML = left + right;
+  }
+
+  // ─── CLOSED TRADES RENDERER ─── (issues 3, 10)
+  var showAllClosed = false;
+
+  function buildClosedHtml(trades, limit){
+    if(!trades || trades.length === 0) return '<div class="muted">No closed trades yet.</div>';
+    var html = '<div class="closed-rows">';
+    var shown = limit ? trades.slice(0, limit) : trades;
+    for(var j=0; j<shown.length; j++){
+      var c = shown[j];
+      var dirCls2 = c.direction === 'LONG' ? 'c-long' : 'c-short';
+      var pnlVal = c.pnl_usd || c.pnl_dollars || 0;
+      // Hold duration from entry→exit
+      var holdStr = '';
+      if(c.entry_time && c.exit_time){
+        var holdMs = new Date(c.exit_time).getTime() - new Date(c.entry_time).getTime();
+        holdStr = fmtHold(Math.round(holdMs / 360000) / 10);
+      }
+      // Relative time since exit (issue 10)
+      var exitAge = '';
+      if(c.exit_time){
+        exitAge = ago(new Date(c.exit_time).getTime());
+      }
+      html += '<div class="closed-row">';
+      html += '<span class="cr-coin">'+c.coin+'</span>';
+      html += '<span class="cr-dir '+dirCls2+'">'+c.direction+'</span>';
+      html += '<span class="cr-prices">'+fmt$(c.entry_price)+'→'+fmt$(c.exit_price)+'</span>';
+      html += '<span class="cr-pct '+pnlClass(c.pnl_pct||pnlVal)+'">'+fmtPct(c.pnl_pct)+'</span>';
+      html += '<span class="cr-pnl '+pnlClass(pnlVal)+'">'+fmt$(pnlVal)+'</span>';
+      html += '<span class="cr-reason">'+(c.exit_reason||'')+'</span>';
+      // Show exit age first, then hold duration if available
+      html += '<span class="cr-age">'+(exitAge||holdStr||'')+'</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderClosedTrades(rawClosed){
+    var closedBody = document.getElementById('closed-body');
+    var toggle = document.getElementById('show-all-toggle');
+    if(!closedBody) return;
+
+    // Deduplicate by trade id or coin+entry_price+entry_time combo
+    var seen = {};
+    var deduped = [];
+    for(var i=0; i<rawClosed.length; i++){
+      var t = rawClosed[i];
+      var key = t.id || (t.coin + '|' + t.entry_price + '|' + t.entry_time);
+      if(!seen[key]){
+        seen[key] = true;
+        deduped.push(t);
+      }
+    }
+
+    // Most recent first
+    var sorted = deduped.slice().reverse();
+
+    var total = sorted.length;
+    var DEFAULT_LIMIT = 10;
+
+    if(toggle){
+      if(total > DEFAULT_LIMIT){
+        toggle.style.display = 'inline';
+        toggle.textContent = showAllClosed ? 'show less' : 'show all (' + total + ')';
+        toggle.onclick = function(){
+          showAllClosed = !showAllClosed;
+          renderClosedTrades(rawClosed);
+        };
+      } else {
+        toggle.style.display = 'none';
+      }
+    }
+
+    var limit = (showAllClosed || total <= DEFAULT_LIMIT) ? null : DEFAULT_LIMIT;
+    closedBody.innerHTML = buildClosedHtml(sorted, limit);
   }
 
   // ─── MAIN RENDER ───
@@ -1206,17 +1364,40 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var totalPnl = totalRealized + totalUnrealized;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
-    // Uptime
+    // Uptime — show "active Xh" based on first throttle>0 or oldest open/closed trade
     var uptimeStr = '—';
-    if(lt.started){
-      var uptimeMs = Date.now() - new Date(lt.started).getTime();
-      var uptimeH = Math.floor(uptimeMs / 3600000);
-      if(uptimeH < 24){
-        uptimeStr = uptimeH + 'h';
-      } else {
-        uptimeStr = Math.floor(uptimeH / 24) + 'd ' + (uptimeH % 24) + 'h';
+    (function(){
+      // Try: find when trading became active (throttle > 0) or earliest trade
+      var activeStart = null;
+      // Check if there's a throttle_started timestamp
+      if(lt.throttle_started){
+        activeStart = new Date(lt.throttle_started).getTime();
       }
-    }
+      // Fallback: oldest open position entry time
+      if(!activeStart && livePos.length > 0){
+        for(var _i=0; _i<livePos.length; _i++){
+          var _et = livePos[_i].entry_time || (livePos[_i].entry_time_ms ? new Date(livePos[_i].entry_time_ms) : null);
+          if(_et){
+            var _ms = new Date(_et).getTime();
+            if(!activeStart || _ms < activeStart) activeStart = _ms;
+          }
+        }
+      }
+      // Fallback: oldest closed trade open time
+      if(!activeStart && liveClosed.length > 0){
+        for(var _j=0; _j<liveClosed.length; _j++){
+          if(liveClosed[_j].entry_time){
+            var _ms2 = new Date(liveClosed[_j].entry_time).getTime();
+            if(!activeStart || _ms2 < activeStart) activeStart = _ms2;
+          }
+        }
+      }
+      if(activeStart){
+        var _activeMs = Date.now() - activeStart;
+        var _activeH = Math.floor(_activeMs / 3600000);
+        uptimeStr = 'active ' + (_activeH < 24 ? _activeH + 'h' : Math.floor(_activeH/24) + 'd ' + (_activeH%24) + 'h');
+      }
+    })();
 
     var trades = lt.trades || 0;
     var wins = lt.wins || 0;
@@ -1264,9 +1445,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Market state
     renderMarketState(d);
-
-    // Archetypes
-    renderArchetypes(d.agents && d.agents.archetypes);
 
     // Stats
     renderStats(lt.stats);
@@ -1355,40 +1533,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       posBody.innerHTML = html;
     }
 
-    // ─── TRADE HISTORY (compact rows) ───
-    var closedBody = document.getElementById('closed-body');
-    if(liveClosed.length === 0){
-      closedBody.innerHTML = '<div class="muted">No closed trades yet.</div>';
-    } else {
-      var html = '<div class="closed-rows">';
-      // Most recent first, show last 20
-      var recentTrades = liveClosed.slice().reverse().slice(0,20);
-      for(var j=0; j<recentTrades.length; j++){
-        var c = recentTrades[j];
-        var dirCls2 = c.direction === 'LONG' ? 'c-long' : 'c-short';
-        var pnlVal = c.pnl_usd || c.pnl_dollars || 0;
-        var holdStr = '';
-        if(c.entry_time && c.exit_time){
-          var ms = new Date(c.exit_time).getTime() - new Date(c.entry_time).getTime();
-          holdStr = fmtHold(Math.round(ms / 360000) / 10);
-        }
-        var entryAge = '';
-        if(c.exit_time){
-          entryAge = ago(new Date(c.exit_time).getTime());
-        }
-        html += '<div class="closed-row">';
-        html += '<span class="cr-coin">'+c.coin+'</span>';
-        html += '<span class="cr-dir '+dirCls2+'">'+c.direction+'</span>';
-        html += '<span class="cr-prices">'+fmt$(c.entry_price)+'→'+fmt$(c.exit_price)+'</span>';
-        html += '<span class="cr-pct '+pnlClass(c.pnl_pct||pnlVal)+'">'+fmtPct(c.pnl_pct)+'</span>';
-        html += '<span class="cr-pnl '+pnlClass(pnlVal)+'">'+fmt$(pnlVal)+'</span>';
-        html += '<span class="cr-reason">'+(c.exit_reason||'')+'</span>';
-        html += '<span class="cr-age">'+(holdStr||entryAge)+'</span>';
-        html += '</div>';
-      }
-      html += '</div>';
-      closedBody.innerHTML = html;
-    }
+    // ─── TRADE HISTORY (compact rows) ─── issues 3, 10 ───
+    renderClosedTrades(liveClosed);
   }
 
   // ─── DATA FETCHING ───
