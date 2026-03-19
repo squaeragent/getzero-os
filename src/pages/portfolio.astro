@@ -1311,7 +1311,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var allAgents = [
       'parameter_evolution','regime_transition','genealogy','counterfactual',
       'observer','correlation','risk','execution','adversary','reflection',
-      'adversary_evolution','perception','hypothesis','signal_evolution'
+      'adversary_evolution','perception','hypothesis','signal_evolution',
+      'hl_enrichment','pattern_scanner','taapi_fetcher'
     ];
     var online = 0;
     var yellow = 0;
@@ -1353,9 +1354,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var pipeline = document.getElementById('agent-pipeline');
     if(!pipeline || !agents || !agents.heartbeat) return;
     var stages = [
-      {label:'PERCEPTION', agents:['perception','observer','correlation']},
-      {label:'ANALYSIS', agents:['regime_transition','hypothesis','counterfactual']},
-      {label:'SIGNALS', agents:['signal_evolution','parameter_evolution','genealogy']},
+      {label:'PERCEPTION', agents:['perception','observer','correlation','hl_enrichment']},
+      {label:'ANALYSIS', agents:['regime_transition','hypothesis','counterfactual','pattern_scanner']},
+      {label:'SIGNALS', agents:['signal_evolution','parameter_evolution','genealogy','taapi_fetcher']},
       {label:'ACTION', agents:['risk','execution','adversary','adversary_evolution','reflection']},
     ];
     var html = '';
