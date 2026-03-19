@@ -68,7 +68,7 @@ for group, coins in CORRELATION_GROUPS.items():
         COIN_TO_GROUP[coin] = group
 
 # ─── PORTFOLIO RULES ───
-MAX_NET_EXPOSURE_PCT = 80  # max % capital in one direction (allows 2 same-direction at $50 each on $115)
+MAX_NET_EXPOSURE_PCT = 80  # max % capital in one direction
 MAX_PER_GROUP = 2  # max positions in same correlation group
 CORRELATION_BLOCK_THRESHOLD = 0.7  # block if correlation > this
 
@@ -343,7 +343,7 @@ def compute_portfolio_state(positions, capital=115):
     }
 
 
-def would_exceed_exposure(positions, candidate, capital=115):
+def would_exceed_exposure(positions, candidate, capital=750):
     """Check if adding candidate would exceed net exposure cap."""
     direction = candidate.get("direction", "").upper()
     # Estimate size: use recommended_size_pct or default to ~$30

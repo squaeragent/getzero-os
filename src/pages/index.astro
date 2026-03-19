@@ -1250,7 +1250,7 @@ function fetchPerformanceData(){
 
 function renderPerformance(data){
   // API returns: total_trades, win_rate, total_pnl_usd, win_loss_ratio, wins, losses
-  var equity = 115 + (data.total_pnl_usd || 0);
+  var equity = 750 + (data.total_pnl_usd || 0);
   document.getElementById('perf-equity').textContent = '$'+equity.toFixed(2);
 
   var trades = data.total_trades || 0;

@@ -375,7 +375,7 @@ def portfolio_json():
         "updated": datetime.now(timezone.utc).isoformat(),
         "liveTrading": {
             "enabled": True,
-            "capital": 115,
+            "capital": 750,
             "positions": positions,
             "trades": len(closed),
             "wins": len(wins),

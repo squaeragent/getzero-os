@@ -41,8 +41,8 @@ FIRES_LOG = DATA_DIR / "fires.jsonl"
 HL_URL = "https://api.hyperliquid.xyz"
 
 # Risk params — concentrated mode
-# $115 spot USDC as cross collateral. 2-3 big positions on best signals.
-INITIAL_CAPITAL = 115.0
+# Spot USDC as cross-margin collateral. Capital loaded from config.yaml.
+INITIAL_CAPITAL = 750.0
 MAX_POSITION_USD = 50.0         # up to $50 per position
 MIN_POSITION_USD = 30.0         # minimum $30 (meaningful size)
 MAX_OPEN_POSITIONS = 3          # max 3 positions

@@ -897,6 +897,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var regimeData       = results[4] || {};
       var worldData        = results[5] || {};
 
+      // Use earliest equity snapshot as starting equity baseline (no more hardcoding)
+      if(equitySnapshots && equitySnapshots.length > 0) {
+        var firstEq = equitySnapshots[0].equity_usd || equitySnapshots[0].eq;
+        if(firstEq && firstEq > 100) startingEquity = firstEq;
+      }
+
       // Map positions → existing format
       var mappedPositions = positions.map(function(p){
         var stopLoss = null;

@@ -1483,7 +1483,7 @@ def run_cycle(client, cfg, dry, main_address=None):
     # Load state
     positions = load_json(POSITIONS_FILE, [])
     portfolio = load_json(PORTFOLIO_FILE, {
-        "capital": cfg.get("capital", 115),
+        "capital": cfg.get("capital", 750),
         "started": datetime.now(timezone.utc).isoformat(),
         "trades": 0, "wins": 0, "daily_loss": 0,
         "daily_reset": datetime.now(timezone.utc).strftime("%Y-%m-%d"),

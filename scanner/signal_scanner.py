@@ -457,7 +457,7 @@ def export_snapshot():
         },
         "liveTrading": {
             "enabled": True,
-            "capital": 115.0,
+            "capital": 750.0,
             "positions": live_positions,
             "trades": live_portfolio.get("trades", 0),
             "wins": live_portfolio.get("wins", 0),
