@@ -788,7 +788,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var portfolioData = null;
   var livePrices = {};
   var lastPriceUpdate = 0;
-  var startingEquity = 115;
+  var startingEquity = 750;
 
   // ─── SUPABASE CONFIG ───
   // NOTE: RLS should be enabled on Supabase dashboard to restrict anon to SELECT only
@@ -1610,8 +1610,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       totalRealized += liveClosed[i].pnl_usd || liveClosed[i].pnl_dollars || 0;
     }
 
-    var equity = startingEquity + totalRealized + totalUnrealized;
-    var totalPnl = totalRealized + totalUnrealized;
+    // Use latest equity snapshot if available (accurate — reads real HL balance)
+    var latestSnapshot = equitySnapshots && equitySnapshots.length > 0
+      ? equitySnapshots[equitySnapshots.length - 1]
+      : null;
+    var equity = latestSnapshot ? (latestSnapshot.equity_usd || latestSnapshot.eq) : (startingEquity + totalRealized + totalUnrealized);
+    var totalPnl = equity - startingEquity;
     var pnlPct = startingEquity > 0 ? (totalPnl / startingEquity) * 100 : 0;
 
     // Uptime — show time since first trade (oldest closed trade entry_time)
