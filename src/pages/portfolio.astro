@@ -774,6 +774,179 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var lastPriceUpdate = 0;
   var startingEquity = 115;
 
+  // ─── SUPABASE CONFIG ───
+  // NOTE: RLS should be enabled on Supabase dashboard to restrict anon to SELECT only
+  var SUPABASE_URL = 'https://fzzotmxxrcnmrqtmsesi.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6em90bXh4cmNubXJxdG1zZXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTc0MTcsImV4cCI6MjA4OTQ5MzQxN30.m8PgL6n-0Fbgi_Fm2hchlcMWE6xwCx6wr3xOyaokRlo';
+
+  function sbFetch(path){
+    return fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      }
+    }).then(function(res){
+      if(!res.ok) throw new Error('Supabase HTTP ' + res.status + ' on ' + path);
+      return res.json();
+    });
+  }
+
+  function computeStats(trades){
+    if(!trades || trades.length === 0) return null;
+    var total = trades.length;
+    var wins = 0;
+    var longPnl = 0, shortPnl = 0;
+    var longWins = 0, shortWins = 0;
+    var longCount = 0, shortCount = 0;
+    var totalPnl = 0;
+    var totalHoldHours = 0;
+    var holdCount = 0;
+    var byCoin = {};
+    var bestTrade = null, worstTrade = null;
+    for(var i = 0; i < trades.length; i++){
+      var t = trades[i];
+      var pnl = t.pnl_dollars || 0;
+      var isWin = pnl >= 0;
+      if(isWin) wins++;
+      totalPnl += pnl;
+      if(t.direction === 'LONG'){
+        longCount++; longPnl += pnl;
+        if(isWin) longWins++;
+      } else {
+        shortCount++; shortPnl += pnl;
+        if(isWin) shortWins++;
+      }
+      if(t.entry_time && t.exit_time){
+        var holdMs = new Date(t.exit_time).getTime() - new Date(t.entry_time).getTime();
+        if(holdMs > 0){ totalHoldHours += holdMs / 3600000; holdCount++; }
+      }
+      if(!byCoin[t.coin]) byCoin[t.coin] = {trades:0, wins:0, pnl:0};
+      byCoin[t.coin].trades++;
+      if(isWin) byCoin[t.coin].wins++;
+      byCoin[t.coin].pnl += pnl;
+      if(bestTrade === null || pnl > bestTrade.pnl){
+        bestTrade = {coin:t.coin, direction:t.direction, pnlPct:t.pnl_pct, pnl:pnl};
+      }
+      if(worstTrade === null || pnl < worstTrade.pnl){
+        worstTrade = {coin:t.coin, direction:t.direction, pnlPct:t.pnl_pct, pnl:pnl};
+      }
+    }
+    for(var coin in byCoin){
+      var cs = byCoin[coin];
+      cs.winRate = cs.trades > 0 ? (cs.wins / cs.trades * 100) : 0;
+    }
+    return {
+      total: total,
+      wins: wins,
+      losses: total - wins,
+      winRate: total > 0 ? (wins / total * 100) : 0,
+      totalPnl: totalPnl,
+      avgPnl: total > 0 ? totalPnl / total : 0,
+      avgHoldHours: holdCount > 0 ? totalHoldHours / holdCount : 0,
+      longCount: longCount, shortCount: shortCount,
+      longPnl: longPnl, shortPnl: shortPnl,
+      longWinRate: longCount > 0 ? (longWins / longCount * 100) : 0,
+      shortWinRate: shortCount > 0 ? (shortWins / shortCount * 100) : 0,
+      byCoin: byCoin,
+      bestTrade: bestTrade,
+      worstTrade: worstTrade
+    };
+  }
+
+  function fetchPortfolioData(){
+    return Promise.all([
+      sbFetch('positions?order=entry_time.desc'),
+      sbFetch('trades?order=exit_time.desc&limit=20'),
+      sbFetch('equity_snapshots?order=recorded_at.desc&limit=200'),
+      sbFetch('agent_heartbeats?order=last_heartbeat.desc')
+    ]).then(function(results){
+      var positions        = results[0] || [];
+      var trades           = results[1] || [];
+      var equitySnapshots  = results[2] || [];
+      var heartbeats       = results[3] || [];
+
+      // Map positions → existing format
+      var mappedPositions = positions.map(function(p){
+        var stopLoss = null;
+        if(p.stop_loss_pct && p.entry_price){
+          var isLong = p.direction === 'LONG';
+          stopLoss = isLong
+            ? p.entry_price * (1 - p.stop_loss_pct / 100)
+            : p.entry_price * (1 + p.stop_loss_pct / 100);
+        }
+        return {
+          coin: p.coin,
+          direction: p.direction,
+          entry_price: p.entry_price,
+          size_usd: p.size_usd,
+          entry_time: p.entry_time,
+          signal_type: p.signal,
+          sharpe: p.sharpe,
+          win_rate: p.win_rate,
+          stop_loss: stopLoss,
+          adversary_verdict: p.adversary_verdict,
+          survival_score: p.survival_score,
+          exit_expression: p.exit_expression,
+          max_hold_hours: p.max_hold_hours,
+          metadata: p.metadata
+        };
+      });
+
+      // Map trades → closed format
+      var mappedClosed = trades.map(function(t){
+        return {
+          coin: t.coin,
+          direction: t.direction,
+          entry_price: t.entry_price,
+          exit_price: t.exit_price,
+          size_usd: t.size_usd,
+          pnl_dollars: t.pnl_dollars,
+          pnl_pct: t.pnl_pct,
+          entry_time: t.entry_time,
+          exit_time: t.exit_time,
+          exit_reason: t.exit_reason,
+          signal: t.signal,
+          sharpe: t.sharpe
+        };
+      });
+
+      // Build equity curve (snapshots come desc; reverse for chart oldest→newest)
+      var liveEquityCurve = equitySnapshots.slice().reverse().map(function(s){
+        return {t: new Date(s.recorded_at).getTime(), v: s.equity_usd};
+      });
+
+      // Build heartbeat map: { agent_name: iso_timestamp }
+      var heartbeatMap = {};
+      for(var i = 0; i < heartbeats.length; i++){
+        heartbeatMap[heartbeats[i].agent] = heartbeats[i].last_heartbeat;
+      }
+
+      // Compute stats directly from trades
+      var stats = computeStats(trades);
+
+      var wins = 0;
+      for(var k = 0; k < trades.length; k++){
+        if((trades[k].pnl_dollars || 0) >= 0) wins++;
+      }
+
+      return {
+        liveTrading: {
+          enabled: true,
+          positions: mappedPositions,
+          closed: mappedClosed,
+          trades: trades.length,
+          wins: wins,
+          dailyLoss: 0,
+          stats: stats
+        },
+        liveEquityCurve: liveEquityCurve,
+        agents: {
+          heartbeat: heartbeatMap
+        }
+      };
+    });
+  }
+
   function fmt$(v){
     if(v==null) return '—';
     var abs = Math.abs(v);
@@ -1550,9 +1723,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   function loadPortfolio(){
-    return fetch(PORTFOLIO_API).then(function(res){ return res.json(); }).then(function(d){
+    return fetchPortfolioData().then(function(d){
       portfolioData = d;
-    }).catch(function(e){ console.error('Portfolio fetch failed:', e); });
+    }).catch(function(supaErr){
+      console.warn('Supabase fetch failed, falling back to portfolio.json:', supaErr);
+      return fetch(PORTFOLIO_API).then(function(res){ return res.json(); }).then(function(d){
+        portfolioData = d;
+      }).catch(function(e){ console.error('Fallback portfolio fetch failed:', e); });
+    });
   }
 
   // ─── SYSTEM STATUS TOGGLE ───
