@@ -6257,3 +6257,23 @@
 [2026-03-19 13:37:31 UTC] [EXEC] Positions: 1 | Throttle: 1.0 | Kill: False
 [2026-03-19 13:37:31 UTC] [EXEC]   Fetching 3 exit indicators for ['AVAX']
 [2026-03-19 13:37:31 UTC] [EXEC] Summary: 1 positions, $24.00 notional, trades=63
+[2026-03-19 13:42:33 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 13:42:33 UTC] [EXEC] Positions: 1 | Throttle: 1.0 | Kill: False
+[2026-03-19 13:42:33 UTC] [EXEC]   Fetching 3 exit indicators for ['AVAX']
+[2026-03-19 13:42:34 UTC] [EXEC]   INFO [AVAX] alignment conflict (pattern=CONFIRMATION_SHORT) — monitoring, no exit (held 328min)
+[2026-03-19 13:42:34 UTC] [EXEC] LIVE OPEN NEAR SHORT | $40.00 (29.9) @ $1.3376 | sharpe=2.50
+[2026-03-19 13:42:36 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "29.9", "avgPx": "1.3366", "oid": 354454799692}}]}}}
+[2026-03-19 13:42:36 UTC] [EXEC]   Filled @ $1.3366
+[2026-03-19 13:42:36 UTC] [EXEC]   Execution: intended=$1.3376 filled=$1.3366 slippage=0.0710% ($0.0284) fill_time=1755ms spread=0.030143
+[2026-03-19 13:42:36 UTC] [EXEC]   NEAR ATR-stop: ATR=0.225% → stop=3.00%
+[2026-03-19 13:42:36 UTC] [EXEC]   Stop loss: NEAR trigger @ $1.3847 (buy 29.9)
+[2026-03-19 13:42:38 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 354454862824}}]}}}
+[2026-03-19 13:42:38 UTC] [EXEC]   Open fill fee for NEAR: $0.017983
+[2026-03-19 13:42:39 UTC] [EXEC]   Skip NEAR SHORT: max 1 on NEAR
+[2026-03-19 13:42:39 UTC] [EXEC] Summary: 2 positions, $64.00 notional, trades=63
+[2026-03-19 13:47:41 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 13:47:41 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-19 13:47:41 UTC] [EXEC]   Fetching 3 exit indicators for ['AVAX']
+[2026-03-19 13:47:41 UTC] [EXEC]   INFO [AVAX] alignment conflict (pattern=TRAP_LONG) — monitoring, no exit (held 333min)
+[2026-03-19 13:47:41 UTC] [EXEC] [NEAR] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 13:47:42 UTC] [EXEC] Summary: 2 positions, $64.00 notional, trades=63

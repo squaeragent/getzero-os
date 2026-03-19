@@ -958,10 +958,27 @@ function initData(){
 }
 
 function fetchLiveData(){
-  fetch('/api/envy').then(function(r){
+  // ENVY proxy killed — was costing $168/mo on Vercel serverless.
+  // Matrix uses static seed data. Live data available via Intelligence API
+  // at api.getzero.dev (Cloudflare tunnel, zero Vercel cost).
+  fetch('https://api.getzero.dev/world').then(function(r){
     if(!r.ok)return;
     return r.json();
   }).then(function(d){
+    if(!d||!d.coins)return;
+    // Convert Intelligence API format to matrix format
+    var matrix = {};
+    for(var coin in d.coins){
+      var ind = d.coins[coin].indicators || {};
+      matrix[coin] = {
+        HURST_24H: ind.HURST_24H,
+        DFA_24H: ind.DFA_24H,
+        XONE_AVG_NET: ind.XONE_AVG_NET,
+        LYAPUNOV_24H: ind.LYAPUNOV_24H,
+        ROC_3H: ind.ROC_3H
+      };
+    }
+    d = {live: true, matrix: matrix};
     if(!d||!d.live||!d.matrix)return;
     LIVE_DATA=d.matrix;
     S.data.forEach(function(row){
