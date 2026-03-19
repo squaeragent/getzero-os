@@ -765,6 +765,48 @@ def attack_fear_greed(hypothesis, macro_intel):
     }
 
 
+# ─── ATTACK: SOCIAL SENTIMENT DIVERGENCE (weight 1.2x) ───
+def attack_social_sentiment(hypothesis, world_coins):
+    """
+    Penalize trades that go against strong social consensus.
+    Uses XONE indicators as filters — don't SHORT when everyone is bullish,
+    don't LONG when everyone is bearish.
+    """
+    coin = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "")
+    coin_data = world_coins.get(coin, {}).get("indicators", {})
+
+    xone_avg = coin_data.get("XONE_AVG_NET")
+    xone_spread = coin_data.get("XONE_SPREAD")
+
+    if xone_avg is None:
+        return {"attack": "social_sentiment", "severity": 0.0, "weight": 1.2,
+                "detail": "No social data available"}
+
+    severity = 0.0
+    detail = f"XONE_AVG_NET={xone_avg:.0f}, XONE_SPREAD={xone_spread}"
+
+    # LONG against extreme bearish sentiment — contrarian, risky
+    if direction == "LONG" and xone_avg < -60:
+        severity = 0.4
+        detail = f"LONG against extreme bearish social (AVG_NET={xone_avg:.0f})"
+    # SHORT against extreme bullish sentiment — contrarian, risky
+    elif direction == "SHORT" and xone_avg > 60:
+        severity = 0.4
+        detail = f"SHORT against extreme bullish social (AVG_NET={xone_avg:.0f})"
+    # High spread = disagreement = uncertainty
+    elif xone_spread is not None and xone_spread > 120:
+        severity = 0.2
+        detail = f"High social disagreement (spread={xone_spread:.0f})"
+
+    return {
+        "attack": "social_sentiment",
+        "severity": round(severity, 3),
+        "weight": 1.2,
+        "detail": detail,
+    }
+
+
 # ─── ATTACK: MACRO EVENT FILTER (weight 1.4x) ───
 def attack_macro_event(hypothesis, macro_intel):
     """
@@ -1531,6 +1573,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_fear_greed(hyp, macro_intel),                     # New: Fear & Greed filter
             attack_macro_event(hyp, macro_intel),                    # New: macro event filter
             attack_premium_divergence(hyp, world_coins),             # New: mark-oracle premium crowding
+            attack_social_sentiment(hyp, world_coins),               # New: social sentiment filter
         ]
 
         # Apply evolved weights from counterfactual learning (overrides static weights)

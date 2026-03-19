@@ -601,6 +601,104 @@ def generate_archetype_signals(indicator_data, regime_data, timeframe_data, fund
                 8, regime, tf_pattern, ts_iso
             ))
 
+        # ── ARCHETYPE 5b: Multi-Timeframe Momentum Alignment ──
+        # Uses 6h + 12h + 24h — the gap we were missing
+        rsi_6h = ind.get("RSI_6H", 50)
+        rsi_12h = ind.get("RSI_12H", 50)
+        rsi_24h = ind.get("RSI_24H", 50)
+        roc_6h = ind.get("ROC_6H", 0)
+        roc_12h = ind.get("ROC_12H", 0)
+        roc_24h = ind.get("ROC_24H", 0)
+        macd_6h = ind.get("MACD_N_6H", 0)
+        macd_12h = ind.get("MACD_N_12H", 0)
+        ema_6h = ind.get("EMA_N_6H", 1.0)
+        ema_12h = ind.get("EMA_N_12H", 1.0)
+        bb_6h = ind.get("BB_POS_6H", 0.5)
+        rsi_48h = ind.get("RSI_48H", 50)
+        roc_48h = ind.get("ROC_48H", 0)
+
+        # LONG: all 3 timeframes bullish
+        if (rsi_6h > 55 and rsi_12h > 55 and rsi_24h > 45
+                and roc_6h > 0 and roc_12h > 0 and macd_6h > 0 and macd_12h > 0
+                and ema_6h > 1.001 and ema_12h > 1.001):
+            score = 7.0 + min((rsi_6h - 55) / 20, 1.0)
+            candidates.append(_archetype_candidate(
+                coin, "LONG", "ARCH_MTF_MOMENTUM_LONG", score,
+                "RSI_6H < 45 OR ROC_12H < 0",
+                24, regime, tf_pattern, ts_iso
+            ))
+
+        # SHORT: all 3 timeframes bearish
+        if (rsi_6h < 45 and rsi_12h < 45 and rsi_24h < 55
+                and roc_6h < 0 and roc_12h < 0 and macd_6h < 0 and macd_12h < 0
+                and ema_6h < 0.999 and ema_12h < 0.999):
+            score = 7.0 + min((45 - rsi_6h) / 20, 1.0)
+            candidates.append(_archetype_candidate(
+                coin, "SHORT", "ARCH_MTF_MOMENTUM_SHORT", score,
+                "RSI_6H > 55 OR ROC_12H > 0",
+                24, regime, tf_pattern, ts_iso
+            ))
+
+        # ── ARCHETYPE 5c: DOJI Reversal Predictor ──
+        # Uses the proprietary DOJI predictor — unique edge
+        doji_dist = ind.get("DOJI_DISTANCE", 999)
+        doji_dist_l = ind.get("DOJI_DISTANCE_L", 999)
+        doji_vel = ind.get("DOJI_VELOCITY", 0)
+        doji_vel_l = ind.get("DOJI_VELOCITY_L", 0)
+        doji_sig = ind.get("DOJI_SIGNAL", 0)
+        doji_sig_l = ind.get("DOJI_SIGNAL_L", 0)
+
+        # SHORT: doji signal fired + approaching from above + bearish momentum
+        if doji_sig >= 1.0 and doji_dist < 5 and doji_vel < -2 and rsi > 60:
+            score = 7.5 + min(abs(doji_vel) / 5, 1.5)
+            candidates.append(_archetype_candidate(
+                coin, "SHORT", "ARCH_DOJI_REVERSAL_SHORT", score,
+                "DOJI_DISTANCE > 15 OR RSI_3H30M < 40",
+                12, regime, tf_pattern, ts_iso
+            ))
+
+        # LONG: doji_l signal fired + approaching from below + bullish momentum
+        if doji_sig_l >= 1.0 and doji_dist_l < 5 and doji_vel_l > 2 and rsi < 40:
+            score = 7.5 + min(abs(doji_vel_l) / 5, 1.5)
+            candidates.append(_archetype_candidate(
+                coin, "LONG", "ARCH_DOJI_REVERSAL_LONG", score,
+                "DOJI_DISTANCE_L > 15 OR RSI_3H30M > 60",
+                12, regime, tf_pattern, ts_iso
+            ))
+
+        # ── ARCHETYPE 5d: BB Squeeze Breakout ──
+        # Uses raw BB bands for squeeze detection
+        bb_upper = ind.get("BB_UPPER_5H_N", 1.01)
+        bb_lower = ind.get("BB_LOWER_5H_N", 0.99)
+        bb_width = bb_upper - bb_lower
+        if bb_width < 0.012 and adx < 20:  # Tight squeeze + low ADX = breakout imminent
+            mom = ind.get("MOMENTUM_2H30M_N", 0)
+            direction = "LONG" if mom > 0 else "SHORT"
+            score = 7.0 + (0.012 - bb_width) * 200  # tighter = higher score
+            candidates.append(_archetype_candidate(
+                coin, direction, "ARCH_BB_SQUEEZE_BREAKOUT", min(score, 9.0),
+                "BB_UPPER_5H_N - BB_LOWER_5H_N > 0.025 OR ADX_3H30M > 40",
+                16, regime, tf_pattern, ts_iso
+            ))
+
+        # ── ARCHETYPE 5e: 48h Trend Exhaustion ──
+        # Long-term trend losing steam
+        if rsi_48h < 30 and roc_48h < -5 and rsi < 35 and h24 > 0.55:
+            # Extreme oversold on 48h + persistent trend = potential reversal LONG
+            score = 7.0 + min((30 - rsi_48h) / 10, 1.5)
+            candidates.append(_archetype_candidate(
+                coin, "LONG", "ARCH_48H_EXHAUSTION_LONG", score,
+                "RSI_48H > 50 OR ROC_48H > 0",
+                48, regime, tf_pattern, ts_iso
+            ))
+        if rsi_48h > 70 and roc_48h > 5 and rsi > 65 and h24 > 0.55:
+            score = 7.0 + min((rsi_48h - 70) / 10, 1.5)
+            candidates.append(_archetype_candidate(
+                coin, "SHORT", "ARCH_48H_EXHAUSTION_SHORT", score,
+                "RSI_48H < 50 OR ROC_48H < 0",
+                48, regime, tf_pattern, ts_iso
+            ))
+
         # ── ARCHETYPE 6: Compound Killer (meta-signal) ──
         score_long, score_short = _compound_score(
             coin, ind, regime, tf_pattern, coin_funding
@@ -712,6 +810,31 @@ def _compound_score(coin, ind, regime, tf_pattern, coin_funding):
     if doji_s >= 50:
         score_long += 0.5
         score_short += 0.5
+
+    # Multi-timeframe alignment bonus (+1.5) — uses 6h + 12h
+    rsi_6h = ind.get("RSI_6H", 50)
+    rsi_12h = ind.get("RSI_12H", 50)
+    roc_6h = ind.get("ROC_6H", 0)
+    roc_12h = ind.get("ROC_12H", 0)
+
+    long_align = sum([rsi_6h > 55, rsi_12h > 55, roc_6h > 0, roc_12h > 0])
+    short_align = sum([rsi_6h < 45, rsi_12h < 45, roc_6h < 0, roc_12h < 0])
+    if long_align >= 3:
+        score_long += 0.5 * long_align  # up to +2.0
+    if short_align >= 3:
+        score_short += 0.5 * short_align
+
+    # DOJI predictor distance bonus (+1.0) — closer = stronger signal
+    doji_dist = ind.get("DOJI_DISTANCE", 999)
+    doji_dist_l = ind.get("DOJI_DISTANCE_L", 999)
+    if doji_dist < 5:
+        score_short += 1.0
+    elif doji_dist < 10:
+        score_short += 0.5
+    if doji_dist_l < 5:
+        score_long += 1.0
+    elif doji_dist_l < 10:
+        score_long += 0.5
 
     return round(score_long, 2), round(score_short, 2)
 
