@@ -870,12 +870,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         },
         body: JSON.stringify({points: 200})
       }).then(function(res){ return res.ok ? res.json() : []; }).catch(function(){ return []; }),
-      sbFetch('agent_heartbeats?order=last_heartbeat.desc')
+      sbFetch('agent_heartbeats?order=last_heartbeat.desc'),
+      fetch(API_BASE + '/regime').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }),
+      fetch(API_BASE + '/world').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; })
     ]).then(function(results){
       var positions        = results[0] || [];
       var trades           = results[1] || [];
       var equitySnapshots  = results[2] || [];
       var heartbeats       = results[3] || [];
+      var regimeData       = results[4] || {};
+      var worldData        = results[5] || {};
 
       // Map positions → existing format
       var mappedPositions = positions.map(function(p){
@@ -955,7 +959,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         liveEquityCurve: liveEquityCurve,
         agents: {
           heartbeat: heartbeatMap,
-          risk: { status: 'green' }
+          risk: { status: 'green' },
+          regimes: regimeData,
+          spread: worldData.spread || {},
+          funding: worldData.funding || {}
         }
       };
     });

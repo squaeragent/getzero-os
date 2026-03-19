@@ -40,6 +40,15 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+# ─── SUPABASE (optional — never crashes adversary if missing) ─────────────────
+try:
+    _project_root = str(Path(__file__).parent.parent.parent)
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
+    from scanner.supabase.client import supabase as _supabase
+except Exception:
+    _supabase = None
+
 
 # ─── EVOLVED WEIGHTS LOADER ───
 def load_evolved_weights():
@@ -1189,6 +1198,9 @@ def attack_data_disagreement(hypothesis, world_coins, taapi_snapshot: dict) -> d
     checked = 0
     max_delta = 0.0
 
+    # Indicators where TAAPI normalizes 0-1 but ENVY uses 0-100
+    _TAAPI_NORMALIZED_0_1 = {"RSI_24H", "RSI_6H", "ADX_3H30M", "CMO_3H30M"}
+
     for indicator in _DISAGREEMENT_INDICATORS:
         envy_val = envy_indicators.get(indicator)
         taapi_val = taapi_coin.get(indicator)
@@ -1202,6 +1214,10 @@ def attack_data_disagreement(hypothesis, world_coins, taapi_snapshot: dict) -> d
             taapi_f = float(taapi_val)
         except (TypeError, ValueError):
             continue
+
+        # Normalize TAAPI 0-1 values to 0-100 scale to match ENVY
+        if indicator in _TAAPI_NORMALIZED_0_1 and 0 <= taapi_f <= 1.0:
+            taapi_f = taapi_f * 100.0
 
         checked += 1
         delta = _pct_delta(envy_f, taapi_f)
@@ -1544,6 +1560,24 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
 
         # Update episode
         update_episode(hyp_id, result)
+
+        # Persist to Supabase
+        if _supabase is not None:
+            try:
+                _supabase.insert_signal({
+                    "coin": coin,
+                    "direction": direction,
+                    "signal_name": hyp.get("signal", ""),
+                    "sharpe": hyp.get("sharpe"),
+                    "win_rate": hyp.get("win_rate"),
+                    "adversary_verdict": verdict,
+                    "survival_score": survival_score,
+                    "attacks": attacks,
+                    "regime": hyp.get("regime"),
+                    "was_approved": verdict != "KILLED",
+                })
+            except Exception:
+                pass
 
         if verdict == "KILLED":
             killed_count += 1
