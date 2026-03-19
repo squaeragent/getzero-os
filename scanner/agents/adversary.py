@@ -1198,10 +1198,16 @@ def attack_data_disagreement(hypothesis, world_coins, taapi_snapshot: dict) -> d
     checked = 0
     max_delta = 0.0
 
-    # Indicators where TAAPI normalizes 0-1 but ENVY uses 0-100
-    _TAAPI_NORMALIZED_0_1 = {"RSI_24H", "RSI_6H", "ADX_3H30M", "CMO_3H30M"}
+    # Only compare indicators where both sources use the same scale reliably.
+    # RSI/ADX/CMO have scale mismatches (ENVY=0-100, TAAPI=0-1). BB_POS also differs.
+    # Only EMA_N, MACD_N, and ROC are on the same scale across sources.
+    _SAME_SCALE_INDICATORS = {"EMA_N_24H", "MACD_N_24H", "ROC_24H"}
 
     for indicator in _DISAGREEMENT_INDICATORS:
+        # Skip indicators with known scale mismatches
+        if indicator not in _SAME_SCALE_INDICATORS:
+            continue
+
         envy_val = envy_indicators.get(indicator)
         taapi_val = taapi_coin.get(indicator)
 
@@ -1214,10 +1220,6 @@ def attack_data_disagreement(hypothesis, world_coins, taapi_snapshot: dict) -> d
             taapi_f = float(taapi_val)
         except (TypeError, ValueError):
             continue
-
-        # Normalize TAAPI 0-1 values to 0-100 scale to match ENVY
-        if indicator in _TAAPI_NORMALIZED_0_1 and 0 <= taapi_f <= 1.0:
-            taapi_f = taapi_f * 100.0
 
         checked += 1
         delta = _pct_delta(envy_f, taapi_f)
@@ -1245,19 +1247,16 @@ def attack_data_disagreement(hypothesis, world_coins, taapi_snapshot: dict) -> d
     severity = 0.0
     reason_parts = []
 
-    # Rule: any indicator delta > 25% → severity 0.6
-    if max_delta > 25.0:
-        severity = max(severity, 0.6)
-        reason_parts.append(f"max delta {max_delta:.1f}% >25% threshold")
-
-    # Rule: 5+ indicators disagree >10% → severity 0.8
-    if n_disagree >= 5:
-        severity = max(severity, 0.8)
-        reason_parts.append(f"{n_disagree} indicators disagree >10%")
-    # Rule: 3+ indicators disagree >10% → severity 0.5
-    elif n_disagree >= 3:
+    # With only ~3 same-scale indicators, require strong evidence:
+    # - All 3 disagree >10% → severity 0.5
+    # - 2+ disagree >10% AND max delta >50% → severity 0.4
+    # - Single indicator off by 25-50% → noise, don't fire (MACD is sensitive to candle alignment)
+    if n_disagree >= 3:
         severity = max(severity, 0.5)
-        reason_parts.append(f"{n_disagree} indicators disagree >10%")
+        reason_parts.append(f"all {n_disagree} indicators disagree >10%")
+    elif n_disagree >= 2 and max_delta > 50.0:
+        severity = max(severity, 0.4)
+        reason_parts.append(f"{n_disagree} indicators disagree, max delta {max_delta:.0f}%")
 
     if not reason_parts:
         detail = (

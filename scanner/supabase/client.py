@@ -280,7 +280,7 @@ class SupabaseClient:
             payload = {
                 "coin": signal["coin"],
                 "direction": signal["direction"],
-                "signal_name": signal.get("signal"),
+                "signal_name": signal.get("signal_name") or signal.get("signal"),
                 "sharpe": signal.get("sharpe"),
                 "win_rate": signal.get("win_rate"),
                 "adversary_verdict": signal.get("adversary_verdict"),
