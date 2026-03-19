@@ -258,7 +258,37 @@ def fetch_all_indicators(api_key):
             merged.setdefault(coin, {}).update(vals)
         log(f"  [envy] batch {batch_idx+1}/{len(ALL_INDICATOR_BATCHES)} done ({len(ind_batch)} indicators)")
     log(f"  [envy] all done: {len(merged)} coins, ~{total_indicators} indicators each")
+
+    # Overlay WebSocket data if fresher (acceleration layer)
+    ws_file = Path(__file__).parent.parent / "bus" / "ws_indicators.json"
+    try:
+        if ws_file.exists():
+            with open(ws_file) as f:
+                ws = json.load(f)
+            ws_age = (datetime.now(timezone.utc) - datetime.fromisoformat(ws.get("received_at", "2000-01-01T00:00:00+00:00").replace("Z", "+00:00"))).total_seconds()
+            if ws_age < STALE_WS_THRESHOLD:
+                ws_snapshot = ws.get("data", {}).get("snapshot", {})
+                if ws_snapshot:
+                    ws_count = 0
+                    for coin, indicators in ws_snapshot.items():
+                        if isinstance(indicators, list):
+                            for ind in indicators:
+                                code = ind.get("indicatorCode", "")
+                                val = ind.get("value")
+                                if code and val is not None:
+                                    merged.setdefault(coin, {})[code] = val
+                                    ws_count += 1
+                    if ws_count:
+                        log(f"  [ws] overlaid {ws_count} fresher values (age: {ws_age:.0f}s)")
+            else:
+                log(f"  [ws] stale ({ws_age:.0f}s), skipping")
+    except Exception as e:
+        log(f"  [ws] overlay failed: {e}")
+
     return merged
+
+
+STALE_WS_THRESHOLD = 60  # Accept WS data up to 60s old
 
 
 # ==========================================================================

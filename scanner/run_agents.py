@@ -62,6 +62,8 @@ AGENTS = [
     ("pattern_scanner",     AGENTS_DIR / "pattern_scanner.py",       900,   30),  # TAAPI candlestick pattern signals (15-min)
     ("macro_plugin",        SENSES_DIR / "macro_plugin.py",          900,   30),  # Free macro: F&G, DVOL, options expiry, FOMC (15-min)
     ("hl_enrichment",       AGENTS_DIR / "hl_enrichment.py",          120,    5),  # HL enrichment: premium, impact spread, OI — single call (2-min)
+    ("pack_refresher",      AGENTS_DIR / "pack_refresher.py",       7200,  240),  # Signal pack refresher — pulls new packs from ENVY API (2h)
+    ("ws_stream",           AGENTS_DIR / "ws_stream.py",              30,    3),  # WebSocket indicator stream — real-time 15s push
 ]
 
 processes = {}

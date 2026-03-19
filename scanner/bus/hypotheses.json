@@ -1,214 +1,35 @@
 {
-  "timestamp": "2026-03-19T19:19:29.001270+00:00",
-  "count": 12,
+  "timestamp": "2026-03-19T19:42:56.478191+00:00",
+  "count": 11,
   "hypotheses": [
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "WEIGHTED_TREND_SHORT_ENHANCED_V1_MH216",
-      "sharpe": 1.6082,
-      "win_rate": 69.23,
-      "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 1.5,
-      "signal_heat": 0.5,
-      "recent_record": "0W/0L",
-      "composite_score": 7.74,
-      "timeframe_pattern": "DIVERGENCE_BULL",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 216,
-      "exit_expression": "EMA_3H_N > 1.1",
-      "entry_expression": "((EMA_3H_N < 0.998) * 3) + ((MACD_6H30M_N < -0.001) * 2) + ((DFA_48H > 0.5) * 2) + ((ROC_3H < -0.2) * 2) + ((CMO_3H30M < -10) * 1) >= 5",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_XPL_SHORT_001",
-      "thesis": "Hurst 0.76 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
-      "confidence": 0.792,
-      "evidence_for": [
-        "regime trending \u2014 momentum signal aligned",
-        "Hurst 0.76 > 0.5 \u2192 trending market",
-        "funding stable (rate 0.001250)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe",
-        "liquidity below tradeable threshold"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "manual_take_profit",
-          "outcome": "win",
-          "pnl_pct": 1.8487,
-          "exit_reason": "manual_take_profit",
-          "entry_time": "2026-03-18T12:45:00+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
-          "outcome": "loss",
-          "pnl_pct": -0.5,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:00:06.065825+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
-          "outcome": "win",
-          "pnl_pct": 1.39,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:36:58.503194+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.759,
-        "hurst_24h": 0.7584,
-        "hurst_48h": 0.7438,
-        "funding_rate": 0.00125,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 53.6,
-        "tradeable": false,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ]
-    },
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "KIJUN_EMA_DIVERGENCE_BEAR_V2_EX3_MH288_FR3_MH144",
-      "sharpe": 1.5985,
-      "win_rate": 65.52,
-      "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 1.5,
-      "signal_heat": 0.5,
-      "recent_record": "0W/0L",
-      "composite_score": 7.61,
-      "timeframe_pattern": "DIVERGENCE_BULL",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 144,
-      "exit_expression": "KIJUN_6H30M_N < 0.843",
-      "entry_expression": "KIJUN_6H30M_N > 0.9576 AND EMA_3H_N < 0.998 AND DFA_48H > 0.5",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_XPL_SHORT_002",
-      "thesis": "Hurst 0.76 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
-      "confidence": 0.755,
-      "evidence_for": [
-        "regime trending \u2014 momentum signal aligned",
-        "Hurst 0.76 > 0.5 \u2192 trending market",
-        "funding stable (rate 0.001250)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe",
-        "liquidity below tradeable threshold"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "manual_take_profit",
-          "outcome": "win",
-          "pnl_pct": 1.8487,
-          "exit_reason": "manual_take_profit",
-          "entry_time": "2026-03-18T12:45:00+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
-          "outcome": "loss",
-          "pnl_pct": -0.5,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:00:06.065825+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
-          "outcome": "win",
-          "pnl_pct": 1.39,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:36:58.503194+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.759,
-        "hurst_24h": 0.7584,
-        "hurst_48h": 0.7438,
-        "funding_rate": 0.00125,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 53.6,
-        "tradeable": false,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ]
-    },
     {
       "coin": "SOL",
       "direction": "SHORT",
-      "signal": "SOCIAL_DELTA_TREND_SHORT_V2_FR4_EX7",
-      "sharpe": 2.1072,
-      "win_rate": 70.97,
+      "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_R5V3_EX3",
+      "sharpe": 2.8409,
+      "win_rate": 60.47,
       "regime": "stable",
       "regime_match": true,
       "regime_match_score": 0.5,
       "signal_heat": 0.5,
       "recent_record": "0W/0L",
-      "composite_score": 7.04,
+      "composite_score": 7.83,
       "timeframe_pattern": "DIVERGENCE_BULL",
       "timeframe_confirmation": 0,
       "signal_weight": 1.0,
       "vwap_bonus": 0.0,
       "funding_bonus": 0.0,
-      "max_hold_hours": 72,
-      "exit_expression": "XONE_AVG_NET_DELTA >= 12 OR RSI_3H30M <= 21.25",
-      "entry_expression": "XONE_AVG_NET_DELTA <= -30 AND RSI_3H30M >= 38.4 AND HURST_48H >= 0.55 AND DOJI_VELOCITY < 0.5",
+      "max_hold_hours": 36,
+      "exit_expression": "RSI_3H30M <= 18.7 OR XONE_AVG_NET_DELTA >= 15",
+      "entry_expression": "((XONE_AVG_NET_DELTA <= -10) * 3) + ((XONE_A_NET <= -20) * 2) + ((RSI_3H30M >= 65) * 2) + ((BB_POS_6H >= 0.90) * 3) + ((XONE_U_NET <= -10) * 2) >= 5",
       "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_SOL_SHORT_001",
-      "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding positive (0.00074) + stable regime + \u2192 momentum continuation SHORT",
+      "hypothesis_id": "hyp_20260319_194256_SOL_SHORT_001",
+      "thesis": "Hurst 0.79 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
       "anti_thesis": "bullish divergence building on higher timeframe",
-      "confidence": 0.61,
+      "confidence": 0.505,
       "evidence_for": [
         "regime stable \u2014 low volatility environment",
+        "funding stable (rate 0.000379)",
         "deep liquidity (score 100)",
         "spread normal \u2014 no MM manipulation detected"
       ],
@@ -253,10 +74,10 @@
       "world_snapshot": {
         "regime": "stable",
         "regime_confidence": 0.5,
-        "hurst_24h": 0.7265,
-        "hurst_48h": 0.7574,
-        "funding_rate": 0.000739,
-        "funding_direction": "intensifying",
+        "hurst_24h": 0.7901,
+        "hurst_48h": 0.7542,
+        "funding_rate": 0.000379,
+        "funding_direction": "stable",
         "funding_reversal": false,
         "spread_status": "NORMAL",
         "liquidity_score": 100,
@@ -270,40 +91,38 @@
       ]
     },
     {
-      "coin": "PAXG",
+      "coin": "XPL",
       "direction": "SHORT",
-      "signal": "SPREAD_BEARISH_RSI_SHORT_FR0_EX3_FR4",
-      "sharpe": 2.1785,
-      "win_rate": 66.67,
-      "regime": "stable",
+      "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72_MH36",
+      "sharpe": 1.6001,
+      "win_rate": 62.24,
+      "regime": "trending",
       "regime_match": true,
-      "regime_match_score": 0.5,
+      "regime_match_score": 1.5,
       "signal_heat": 0.5,
       "recent_record": "0W/0L",
-      "composite_score": 7.02,
-      "timeframe_pattern": "DIVERGENCE_BULL",
+      "composite_score": 7.52,
+      "timeframe_pattern": "TRAP_LONG",
       "timeframe_confirmation": 0,
       "signal_weight": 1.0,
       "vwap_bonus": 0.0,
       "funding_bonus": 0.0,
-      "max_hold_hours": 72,
-      "exit_expression": "RSI_3H30M <= 25.5 OR XONE_AVG_NET >= 20",
-      "entry_expression": "XONE_SPREAD >= 48 AND XONE_AVG_NET <= -16 AND RSI_3H30M >= 50",
+      "max_hold_hours": 36,
+      "exit_expression": "MOMENTUM_N_6H > 0.13",
+      "entry_expression": "MOMENTUM_N_6H < 0.025 AND MOMENTUM_N_24H < 0.08 AND LYAPUNOV_48H <= 1.96",
       "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_PAXG_SHORT_001",
-      "thesis": "Hurst 0.85 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe",
-      "confidence": 0.617,
+      "hypothesis_id": "hyp_20260319_194256_XPL_SHORT_001",
+      "thesis": "Hurst 0.74 + TRAP_LONG + funding positive (0.00119) + trending regime + \u2192 momentum continuation SHORT",
+      "anti_thesis": "Hurst drifting 0.74\u21920.74, regime may rotate",
+      "confidence": 0.43,
       "evidence_for": [
-        "regime stable \u2014 low volatility environment",
-        "funding stable (rate 0.001250)",
-        "deep liquidity (score 95)",
+        "regime trending \u2014 momentum signal aligned",
+        "Hurst 0.74 > 0.5 \u2192 trending market",
         "spread normal \u2014 no MM manipulation detected"
       ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe"
-      ],
+      "evidence_against": [],
       "kill_conditions": [
+        "regime shifts to chaotic or shift",
         "Hurst drops below 0.5 (momentum collapses)",
         "funding reverses to intensifying long",
         "spread enters MM_SETUP",
@@ -311,14 +130,350 @@
       ],
       "similar_past_trades": [
         {
-          "coin": "PAXG",
-          "direction": "LONG",
-          "signal": "ARCH_SOCIAL_EXHAUSTION_LONG",
-          "outcome": "loss",
-          "pnl_pct": -1.07,
-          "exit_reason": "exit_expression",
-          "entry_time": "2026-03-19T06:58:04.122414+00:00"
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "manual_take_profit",
+          "outcome": "win",
+          "pnl_pct": 1.8487,
+          "exit_reason": "manual_take_profit",
+          "entry_time": "2026-03-18T12:45:00+00:00"
         },
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+          "outcome": "loss",
+          "pnl_pct": -0.5,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T18:00:06.065825+00:00"
+        },
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
+          "outcome": "win",
+          "pnl_pct": 1.39,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T18:36:58.503194+00:00"
+        }
+      ],
+      "world_snapshot": {
+        "regime": "trending",
+        "regime_confidence": 0.785,
+        "hurst_24h": 0.7403,
+        "hurst_48h": 0.7448,
+        "funding_rate": 0.001185,
+        "funding_direction": "intensifying",
+        "funding_reversal": false,
+        "spread_status": "NORMAL",
+        "liquidity_score": 53.9,
+        "tradeable": true,
+        "timeframe_pattern": "TRAP_LONG",
+        "fast_bias": "bullish",
+        "slow_bias": "bearish"
+      },
+      "applied_rules": [
+        "RULE_001"
+      ]
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_MOMENTUM_BEAR_SHORT_V2_MH168",
+      "sharpe": 1.5919,
+      "win_rate": 61.76,
+      "regime": "trending",
+      "regime_match": true,
+      "regime_match_score": 1.5,
+      "signal_heat": 0.5,
+      "recent_record": "0W/0L",
+      "composite_score": 7.49,
+      "timeframe_pattern": "TRAP_LONG",
+      "timeframe_confirmation": 0,
+      "signal_weight": 1.0,
+      "vwap_bonus": 0.0,
+      "funding_bonus": 0.0,
+      "max_hold_hours": 168,
+      "exit_expression": "MOMENTUM_N_6H > 0.025",
+      "entry_expression": "((MOMENTUM_N_6H < 0.015) * 3) + ((ROC_3H < -0.3) * 2) + ((HURST_24H > 0.68) * 2) + ((BB_POSITION_15M > 0.5) * 1) + ((ADX_3H30M > 25) * 2) >= 5",
+      "source": "signal_pack",
+      "hypothesis_id": "hyp_20260319_194256_XPL_SHORT_002",
+      "thesis": "Hurst 0.74 + TRAP_LONG + funding positive (0.00119) + trending regime + \u2192 momentum continuation SHORT",
+      "anti_thesis": "Hurst drifting 0.74\u21920.74, regime may rotate",
+      "confidence": 0.407,
+      "evidence_for": [
+        "regime trending \u2014 momentum signal aligned",
+        "Hurst 0.74 > 0.5 \u2192 trending market",
+        "spread normal \u2014 no MM manipulation detected"
+      ],
+      "evidence_against": [],
+      "kill_conditions": [
+        "regime shifts to chaotic or shift",
+        "Hurst drops below 0.5 (momentum collapses)",
+        "funding reverses to intensifying long",
+        "spread enters MM_SETUP",
+        "liquidity drops below tradeable threshold"
+      ],
+      "similar_past_trades": [
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "manual_take_profit",
+          "outcome": "win",
+          "pnl_pct": 1.8487,
+          "exit_reason": "manual_take_profit",
+          "entry_time": "2026-03-18T12:45:00+00:00"
+        },
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+          "outcome": "loss",
+          "pnl_pct": -0.5,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T18:00:06.065825+00:00"
+        },
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
+          "outcome": "win",
+          "pnl_pct": 1.39,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T18:36:58.503194+00:00"
+        }
+      ],
+      "world_snapshot": {
+        "regime": "trending",
+        "regime_confidence": 0.785,
+        "hurst_24h": 0.7403,
+        "hurst_48h": 0.7448,
+        "funding_rate": 0.001185,
+        "funding_direction": "intensifying",
+        "funding_reversal": false,
+        "spread_status": "NORMAL",
+        "liquidity_score": 53.9,
+        "tradeable": true,
+        "timeframe_pattern": "TRAP_LONG",
+        "fast_bias": "bullish",
+        "slow_bias": "bearish"
+      },
+      "applied_rules": [
+        "RULE_001"
+      ]
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "WEIGHTED_MOMENTUM_BEAR_CMO_V1_MH84",
+      "sharpe": 1.5824,
+      "win_rate": 60.78,
+      "regime": "trending",
+      "regime_match": true,
+      "regime_match_score": 1.5,
+      "signal_heat": 0.5,
+      "recent_record": "0W/0L",
+      "composite_score": 7.45,
+      "timeframe_pattern": "TRAP_LONG",
+      "timeframe_confirmation": 0,
+      "signal_weight": 1.0,
+      "vwap_bonus": 0.0,
+      "funding_bonus": 0.0,
+      "max_hold_hours": 84,
+      "exit_expression": "CMO_3H30M < -30 AND ROC_6H > 1.0",
+      "entry_expression": "((CMO_3H30M > 10) * 2) + ((ROC_6H < -1.0) * 3) + ((HURST_24H > 0.7) * 2) + ((EMA_3H_N < 1.001) * 2) + ((ADX_3H30M > 25) * 1) >= 5",
+      "source": "signal_pack",
+      "hypothesis_id": "hyp_20260319_194256_XPL_SHORT_003",
+      "thesis": "Hurst 0.74 + TRAP_LONG + funding positive (0.00119) + trending regime + \u2192 momentum continuation SHORT",
+      "anti_thesis": "Hurst drifting 0.74\u21920.74, regime may rotate",
+      "confidence": 0.403,
+      "evidence_for": [
+        "regime trending \u2014 momentum signal aligned",
+        "Hurst 0.74 > 0.5 \u2192 trending market",
+        "spread normal \u2014 no MM manipulation detected"
+      ],
+      "evidence_against": [],
+      "kill_conditions": [
+        "regime shifts to chaotic or shift",
+        "Hurst drops below 0.5 (momentum collapses)",
+        "funding reverses to intensifying long",
+        "spread enters MM_SETUP",
+        "liquidity drops below tradeable threshold"
+      ],
+      "similar_past_trades": [
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "manual_take_profit",
+          "outcome": "win",
+          "pnl_pct": 1.8487,
+          "exit_reason": "manual_take_profit",
+          "entry_time": "2026-03-18T12:45:00+00:00"
+        },
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
+          "outcome": "loss",
+          "pnl_pct": -0.5,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T18:00:06.065825+00:00"
+        },
+        {
+          "coin": "XPL",
+          "direction": "SHORT",
+          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
+          "outcome": "win",
+          "pnl_pct": 1.39,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T18:36:58.503194+00:00"
+        }
+      ],
+      "world_snapshot": {
+        "regime": "trending",
+        "regime_confidence": 0.785,
+        "hurst_24h": 0.7403,
+        "hurst_48h": 0.7448,
+        "funding_rate": 0.001185,
+        "funding_direction": "intensifying",
+        "funding_reversal": false,
+        "spread_status": "NORMAL",
+        "liquidity_score": 53.9,
+        "tradeable": true,
+        "timeframe_pattern": "TRAP_LONG",
+        "fast_bias": "bullish",
+        "slow_bias": "bearish"
+      },
+      "applied_rules": [
+        "RULE_001"
+      ]
+    },
+    {
+      "coin": "FARTCOIN",
+      "direction": "LONG",
+      "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+      "sharpe": 2.47,
+      "win_rate": 77.2,
+      "regime": "trending",
+      "regime_match": true,
+      "regime_match_score": 1.0,
+      "signal_heat": 0.5,
+      "recent_record": "archetype",
+      "composite_score": 7.4,
+      "timeframe_pattern": "TRAP_LONG",
+      "timeframe_confirmation": 0.0,
+      "signal_weight": 1.0,
+      "vwap_bonus": 0.0,
+      "funding_bonus": 0.0,
+      "max_hold_hours": 24,
+      "exit_expression": "HURST_24H > 0.55 AND LYAPUNOV_24H >= 1.90",
+      "source": "archetype",
+      "hypothesis_id": "hyp_20260319_194256_FARTCOIN_LONG_001",
+      "thesis": "Hurst 0.79 + TRAP_LONG + funding stable + trending regime + \u2192 momentum continuation LONG",
+      "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG",
+      "confidence": 0.229,
+      "evidence_for": [
+        "Hurst 0.79 > 0.55 \u2192 persistent upward momentum",
+        "funding stable (rate 0.001250)",
+        "adequate liquidity (score 69)",
+        "spread normal \u2014 no MM manipulation detected"
+      ],
+      "evidence_against": [
+        "timeframe pattern TRAP_LONG conflicts with LONG"
+      ],
+      "kill_conditions": [
+        "regime shifts to chaotic or shift",
+        "Hurst drops below 0.5 (momentum collapses)",
+        "funding reverses to intensifying short",
+        "spread enters MM_SETUP",
+        "liquidity drops below tradeable threshold"
+      ],
+      "similar_past_trades": [
+        {
+          "coin": "ETH",
+          "direction": "LONG",
+          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+          "outcome": "loss",
+          "pnl_pct": -0.02,
+          "exit_reason": "exit_expression",
+          "entry_time": "2026-03-18T09:52:26.986682+00:00"
+        },
+        {
+          "coin": "BTC",
+          "direction": "LONG",
+          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+          "outcome": "loss",
+          "pnl_pct": -0.05,
+          "exit_reason": "exit_expression",
+          "entry_time": "2026-03-18T10:36:55.527420+00:00"
+        },
+        {
+          "coin": "TON",
+          "direction": "LONG",
+          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+          "outcome": "loss",
+          "pnl_pct": -0.24,
+          "exit_reason": "alignment_exit",
+          "entry_time": "2026-03-18T12:54:53.418482+00:00"
+        }
+      ],
+      "world_snapshot": {
+        "regime": "trending",
+        "regime_confidence": 0.902,
+        "hurst_24h": 0.7941,
+        "hurst_48h": 0.7146,
+        "funding_rate": 0.00125,
+        "funding_direction": "stable",
+        "funding_reversal": false,
+        "spread_status": "NORMAL",
+        "liquidity_score": 69.2,
+        "tradeable": true,
+        "timeframe_pattern": "TRAP_LONG",
+        "fast_bias": "bullish",
+        "slow_bias": "bearish"
+      }
+    },
+    {
+      "coin": "TRX",
+      "direction": "LONG",
+      "signal": "TENKAN_KIJUN_ICHIMOKU_LONG_V1_MH24_Q0_MH12_MH60_Q1",
+      "sharpe": 2.1028,
+      "win_rate": 63.64,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
+      "signal_heat": 0.5,
+      "recent_record": "0W/0L",
+      "composite_score": 6.93,
+      "timeframe_pattern": "DIVERGENCE_BULL",
+      "timeframe_confirmation": 0,
+      "signal_weight": 1.0,
+      "vwap_bonus": 0.0,
+      "funding_bonus": 0.12,
+      "max_hold_hours": 60,
+      "exit_expression": "TENKAN_KIJUN_CROSS_15M_N <= -0.012",
+      "entry_expression": "TENKAN_KIJUN_CROSS_15M_N >= 0.0008 AND ICHIMOKU_BULL >= 1 AND HURST_48H >= 0.76 AND DOJI_VELOCITY < -4.7109743850 AND MACD_SIGNAL_2H15M_N < 0.0011138300",
+      "source": "signal_pack",
+      "hypothesis_id": "hyp_20260319_194256_TRX_LONG_001",
+      "thesis": "Hurst 0.58 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation LONG",
+      "anti_thesis": "Hurst declining 0.83\u21920.58 \u2014 momentum may be exhausting",
+      "confidence": 0.486,
+      "evidence_for": [
+        "regime stable \u2014 low volatility environment",
+        "fast bullish divergence building (DIVERGENCE_BULL)",
+        "funding stable (rate 0.001250)",
+        "spread normal \u2014 no MM manipulation detected"
+      ],
+      "evidence_against": [
+        "Hurst declining 0.83\u21920.58 \u2014 momentum may be exhausting"
+      ],
+      "kill_conditions": [
+        "Hurst drops below 0.5 (momentum collapses)",
+        "funding reverses to intensifying short",
+        "spread enters MM_SETUP",
+        "liquidity drops below tradeable threshold"
+      ],
+      "similar_past_trades": [
         {
           "coin": "ETH",
           "direction": "SHORT",
@@ -332,55 +487,52 @@
       "world_snapshot": {
         "regime": "stable",
         "regime_confidence": 0.5,
-        "hurst_24h": 0.8499,
-        "hurst_48h": 0.8142,
+        "hurst_24h": 0.5761,
+        "hurst_48h": 0.8327,
         "funding_rate": 0.00125,
         "funding_direction": "stable",
         "funding_reversal": false,
         "spread_status": "NORMAL",
-        "liquidity_score": 95.0,
+        "liquidity_score": 56.8,
         "tradeable": true,
         "timeframe_pattern": "DIVERGENCE_BULL",
         "fast_bias": "bullish",
         "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ]
+      }
     },
     {
-      "coin": "DOGE",
+      "coin": "SOL",
       "direction": "SHORT",
-      "signal": "CMO_BB_LYAPUNOV_SHORT_V1_EX2_Q2_EX5",
-      "sharpe": 2.2156,
-      "win_rate": 72.67,
-      "regime": "shift",
-      "regime_match": false,
-      "regime_match_score": 0.0,
+      "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_R5V1_MH32_EX5",
+      "sharpe": 2.2286,
+      "win_rate": 57.09,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.5,
       "signal_heat": 0.5,
-      "recent_record": "0W/1L",
-      "composite_score": 6.5,
+      "recent_record": "0W/0L",
+      "composite_score": 6.81,
       "timeframe_pattern": "DIVERGENCE_BULL",
       "timeframe_confirmation": 0,
       "signal_weight": 1.0,
       "vwap_bonus": 0.0,
       "funding_bonus": 0.0,
-      "max_hold_hours": 48,
-      "exit_expression": "CMO_3H30M <= -19.5 OR BB_POSITION_15M <= 0.30",
-      "entry_expression": "CMO_3H30M >= 30 AND BB_POSITION_15M >= 0.70 AND LYAPUNOV_24H <= 1.66 AND CLOUD_POSITION_15M < 2.0000000000",
+      "max_hold_hours": 32,
+      "exit_expression": "RSI_3H30M <= 18 OR XONE_AVG_NET_DELTA >= 18",
+      "entry_expression": "((XONE_AVG_NET_DELTA <= -15) * 3) + ((XONE_A_NET <= -20) * 2) + ((RSI_3H30M >= 62) * 2) + ((BB_POS_6H >= 0.85) * 3) + ((XONE_I_NET <= 0) * 2) >= 5",
       "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_DOGE_SHORT_001",
-      "thesis": "Hurst 0.63 + DIVERGENCE_BULL + funding positive (0.00026) + shift regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "regime transitioning (shift) \u2014 direction unclear; bullish divergence building on higher timeframe; Hurst declining 0.73\u21920.63 \u2014 momentum may be exhausting",
-      "confidence": 0.677,
+      "hypothesis_id": "hyp_20260319_194256_SOL_SHORT_002",
+      "thesis": "Hurst 0.79 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation SHORT",
+      "anti_thesis": "bullish divergence building on higher timeframe",
+      "confidence": 0.471,
       "evidence_for": [
-        "deep liquidity (score 93)",
+        "regime stable \u2014 low volatility environment",
+        "funding stable (rate 0.000379)",
+        "deep liquidity (score 100)",
         "spread normal \u2014 no MM manipulation detected"
       ],
       "evidence_against": [
-        "regime transitioning (shift) \u2014 direction unclear",
-        "bullish divergence building on higher timeframe",
-        "Hurst declining 0.73\u21920.63 \u2014 momentum may be exhausting"
+        "bullish divergence building on higher timeframe"
       ],
       "kill_conditions": [
         "Hurst drops below 0.5 (momentum collapses)",
@@ -390,34 +542,43 @@
       ],
       "similar_past_trades": [
         {
-          "coin": "DOGE",
+          "coin": "SOL",
           "direction": "SHORT",
-          "signal": "CMO_BB_LYAPUNOV_SHORT_V1_EX2_Q2_EX5",
-          "outcome": "win",
-          "pnl_pct": 0.03,
+          "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3",
+          "outcome": "loss",
+          "pnl_pct": -0.06,
           "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T19:17:34.260281+00:00"
+          "entry_time": "2026-03-19T06:58:10.373407+00:00"
         },
         {
-          "coin": "DOGE",
+          "coin": "SOL",
           "direction": "LONG",
-          "signal": "DOJI_L_QUALITY_LONG_V3_EX6",
-          "outcome": "win",
-          "pnl_pct": 0.17,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-19T08:34:41.188247+00:00"
+          "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
+          "outcome": "loss",
+          "pnl_pct": -0.27,
+          "exit_reason": "risk_kill",
+          "entry_time": "2026-03-18T06:45:50.866796+00:00"
+        },
+        {
+          "coin": "SOL",
+          "direction": "LONG",
+          "signal": "SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7",
+          "outcome": "loss",
+          "pnl_pct": -2.27,
+          "exit_reason": "alignment_exit",
+          "entry_time": "2026-03-18T08:26:45.345988+00:00"
         }
       ],
       "world_snapshot": {
-        "regime": "shift",
-        "regime_confidence": 0.603,
-        "hurst_24h": 0.6287,
-        "hurst_48h": 0.7309,
-        "funding_rate": 0.000257,
-        "funding_direction": "intensifying",
+        "regime": "stable",
+        "regime_confidence": 0.5,
+        "hurst_24h": 0.7901,
+        "hurst_48h": 0.7542,
+        "funding_rate": 0.000379,
+        "funding_direction": "stable",
         "funding_reversal": false,
         "spread_status": "NORMAL",
-        "liquidity_score": 93.2,
+        "liquidity_score": 100,
         "tradeable": true,
         "timeframe_pattern": "DIVERGENCE_BULL",
         "fast_bias": "bullish",
@@ -431,14 +592,14 @@
       "coin": "INJ",
       "direction": "LONG",
       "signal": "TAAPI_ENGULFING_4H_LONG",
-      "sharpe": 2.23,
-      "win_rate": 71.6,
-      "regime": "stable",
+      "sharpe": 2.04,
+      "win_rate": 69.2,
+      "regime": "trending",
       "regime_match": true,
-      "regime_match_score": 0.864,
+      "regime_match_score": 0.768,
       "signal_heat": 0.5,
       "recent_record": "pattern",
-      "composite_score": 6.05,
+      "composite_score": 5.38,
       "timeframe_pattern": "",
       "timeframe_confirmation": 0.0,
       "signal_weight": 1.0,
@@ -450,21 +611,19 @@
       "source": "taapi_pattern",
       "pattern": "engulfing",
       "pattern_interval": "4h",
-      "pattern_confidence": 0.864,
-      "hypothesis_id": "hyp_20260319_191929_INJ_LONG_001",
-      "thesis": "Hurst 0.70 + DIVERGENCE_BULL + funding stable + stable regime + \u2192 momentum continuation LONG",
-      "anti_thesis": "spread elevated \u2014 potential MM activity; funding strongly negative (-0.004259) \u2014 shorts rewarded; Hurst declining 0.77\u21920.70 \u2014 momentum may be exhausting",
-      "confidence": 0.466,
+      "pattern_confidence": 0.768,
+      "hypothesis_id": "hyp_20260319_194256_INJ_LONG_001",
+      "thesis": "Hurst 0.79 + TRAP_LONG + funding negative (-0.00458) + stable regime + \u2192 momentum continuation LONG",
+      "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG; spread elevated \u2014 potential MM activity; funding strongly negative (-0.004582) \u2014 shorts rewarded",
+      "confidence": 0.392,
       "evidence_for": [
-        "regime stable \u2014 low volatility environment",
-        "fast bullish divergence building (DIVERGENCE_BULL)",
-        "funding stable (rate -0.004259)",
-        "adequate liquidity (score 63)"
+        "regime stable \u2014 low volatility environment"
       ],
       "evidence_against": [
+        "timeframe pattern TRAP_LONG conflicts with LONG",
         "spread elevated \u2014 potential MM activity",
-        "funding strongly negative (-0.004259) \u2014 shorts rewarded",
-        "Hurst declining 0.77\u21920.70 \u2014 momentum may be exhausting"
+        "funding strongly negative (-0.004582) \u2014 shorts rewarded",
+        "thin liquidity (score 50)"
       ],
       "kill_conditions": [
         "Hurst drops below 0.5 (momentum collapses)",
@@ -504,356 +663,21 @@
       "world_snapshot": {
         "regime": "stable",
         "regime_confidence": 0.5,
-        "hurst_24h": 0.6958,
-        "hurst_48h": 0.7749,
-        "funding_rate": -0.004259,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "ELEVATED",
-        "liquidity_score": 62.6,
-        "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      }
-    },
-    {
-      "coin": "SOL",
-      "direction": "LONG",
-      "signal": "TAAPI_MARUBOZU_1H_LONG",
-      "sharpe": 2.12,
-      "win_rate": 70.2,
-      "regime": "stable",
-      "regime_match": true,
-      "regime_match_score": 0.81,
-      "signal_heat": 0.5,
-      "recent_record": "pattern",
-      "composite_score": 5.67,
-      "timeframe_pattern": "",
-      "timeframe_confirmation": 0.0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 4,
-      "exit_expression": "",
-      "entry_expression": "TAAPI_MARUBOZU_1H fired",
-      "source": "taapi_pattern",
-      "pattern": "marubozu",
-      "pattern_interval": "1h",
-      "pattern_confidence": 0.81,
-      "hypothesis_id": "hyp_20260319_191929_SOL_LONG_001",
-      "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding positive (0.00074) + stable regime + \u2192 momentum continuation LONG",
-      "anti_thesis": "Hurst drifting 0.76\u21920.73, regime may rotate",
-      "confidence": 0.602,
-      "evidence_for": [
-        "regime stable \u2014 low volatility environment",
-        "fast bullish divergence building (DIVERGENCE_BULL)",
-        "funding positive supports LONG (rate 0.000739)",
-        "deep liquidity (score 100)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [],
-      "kill_conditions": [
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying short",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "SOL",
-          "direction": "LONG",
-          "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-          "outcome": "loss",
-          "pnl_pct": -0.27,
-          "exit_reason": "risk_kill",
-          "entry_time": "2026-03-18T06:45:50.866796+00:00"
-        },
-        {
-          "coin": "SOL",
-          "direction": "LONG",
-          "signal": "SOCIAL_INFLUENCER_BULL_LONG_EX4_Q7",
-          "outcome": "loss",
-          "pnl_pct": -2.27,
-          "exit_reason": "alignment_exit",
-          "entry_time": "2026-03-18T08:26:45.345988+00:00"
-        },
-        {
-          "coin": "SOL",
-          "direction": "LONG",
-          "signal": "DOJI_VEL_XONE_NET_LONG_EX1_Q14",
-          "outcome": "loss",
-          "pnl_pct": 0.0,
-          "exit_reason": "alignment_exit_trap",
-          "entry_time": "2026-03-18T18:57:16.878488+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "stable",
-        "regime_confidence": 0.5,
-        "hurst_24h": 0.7265,
-        "hurst_48h": 0.7574,
-        "funding_rate": 0.000739,
+        "hurst_24h": 0.7949,
+        "hurst_48h": 0.7816,
+        "funding_rate": -0.004582,
         "funding_direction": "intensifying",
         "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 100,
+        "spread_status": "ELEVATED",
+        "liquidity_score": 49.7,
         "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
+        "timeframe_pattern": "TRAP_LONG",
         "fast_bias": "bullish",
         "slow_bias": "bearish"
       }
     },
     {
-      "coin": "TIA",
-      "direction": "SHORT",
-      "signal": "DOJI_VELOCITY_SCORED_SHORT_V2_FR6_EX2",
-      "sharpe": 1.3811,
-      "win_rate": 70.75,
-      "regime": "shift",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "recent_record": "0W/0L",
-      "composite_score": 5.58,
-      "timeframe_pattern": "DIVERGENCE_BULL",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.39,
-      "max_hold_hours": 48,
-      "exit_expression": "BB_POSITION_15M <= -0.15",
-      "entry_expression": "((DOJI_SIGNAL >= 100) * 3) + ((DOJI_VELOCITY <= -4.6) * 2) + ((RSI_6H >= 58) * 2) + ((BB_POSITION_15M >= 0.75) * 2) + ((CMO_3H30M >= 20) * 1) >= 5",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_TIA_SHORT_001",
-      "thesis": "Hurst 0.73 + DIVERGENCE_BULL + funding stable + shift regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "regime transitioning (shift) \u2014 direction unclear; bullish divergence building on higher timeframe; spread elevated \u2014 potential MM activity",
-      "confidence": 0.558,
-      "evidence_for": [
-        "funding stable (rate -0.003915)",
-        "adequate liquidity (score 69)"
-      ],
-      "evidence_against": [
-        "regime transitioning (shift) \u2014 direction unclear",
-        "bullish divergence building on higher timeframe",
-        "spread elevated \u2014 potential MM activity"
-      ],
-      "kill_conditions": [
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "TIA",
-          "direction": "LONG",
-          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-          "outcome": "loss",
-          "pnl_pct": -0.48,
-          "exit_reason": "alignment_exit",
-          "entry_time": "2026-03-18T13:25:24.136883+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "shift",
-        "regime_confidence": 0.735,
-        "hurst_24h": 0.7329,
-        "hurst_48h": 0.7484,
-        "funding_rate": -0.003915,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "ELEVATED",
-        "liquidity_score": 68.9,
-        "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ]
-    },
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "DOJI_VELOCITY_BEAR_SCORING_V1_EX3_EX3_MH96",
-      "sharpe": 1.5602,
-      "win_rate": 61.54,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "recent_record": "0W/0L",
-      "composite_score": 5.19,
-      "timeframe_pattern": "DIVERGENCE_BULL",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 96,
-      "exit_expression": "RSI_3H30M < 14.45",
-      "entry_expression": "((DOJI_SIGNAL >= 100) * 3) + ((DOJI_VELOCITY < -4) * 2) + ((DOJI_DISTANCE >= 8) * 2) + ((RSI_3H30M > 50) * 1) + ((ADX_3H30M > 25) * 2) >= 5",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_XPL_SHORT_003",
-      "thesis": "Hurst 0.76 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
-      "confidence": 0.715,
-      "evidence_for": [
-        "Hurst 0.76 > 0.5 \u2192 trending market",
-        "funding stable (rate 0.001250)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe",
-        "liquidity below tradeable threshold"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "manual_take_profit",
-          "outcome": "win",
-          "pnl_pct": 1.8487,
-          "exit_reason": "manual_take_profit",
-          "entry_time": "2026-03-18T12:45:00+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
-          "outcome": "loss",
-          "pnl_pct": -0.5,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:00:06.065825+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
-          "outcome": "win",
-          "pnl_pct": 1.39,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:36:58.503194+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.759,
-        "hurst_24h": 0.7584,
-        "hurst_48h": 0.7438,
-        "funding_rate": 0.00125,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 53.6,
-        "tradeable": false,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ]
-    },
-    {
-      "coin": "XPL",
-      "direction": "SHORT",
-      "signal": "WEIGHTED_CHAOS_BEAR_SHORT_EX3_EX3_EX3",
-      "sharpe": 1.5761,
-      "win_rate": 60.32,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "recent_record": "0W/0L",
-      "composite_score": 5.17,
-      "timeframe_pattern": "DIVERGENCE_BULL",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 60,
-      "exit_expression": "RSI_3H30M < 18.42375",
-      "entry_expression": "((RSI_3H30M > 60) * 2) + ((BB_POSITION_15M > 0.7) * 2) + ((HURST_48H < 0.69) * 3) + ((DOJI_DISTANCE >= 8) * 2) + ((CMO_3H30M > 20) * 1) >= 5",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260319_191929_XPL_SHORT_004",
-      "thesis": "Hurst 0.76 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe; liquidity below tradeable threshold",
-      "confidence": 0.703,
-      "evidence_for": [
-        "Hurst 0.76 > 0.5 \u2192 trending market",
-        "funding stable (rate 0.001250)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe",
-        "liquidity below tradeable threshold"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "manual_take_profit",
-          "outcome": "win",
-          "pnl_pct": 1.8487,
-          "exit_reason": "manual_take_profit",
-          "entry_time": "2026-03-18T12:45:00+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72",
-          "outcome": "loss",
-          "pnl_pct": -0.5,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:00:06.065825+00:00"
-        },
-        {
-          "coin": "XPL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_ICHIMOKU_BEAR_SCORE_V2_EX2",
-          "outcome": "win",
-          "pnl_pct": 1.39,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-18T18:36:58.503194+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.759,
-        "hurst_24h": 0.7584,
-        "hurst_48h": 0.7438,
-        "funding_rate": 0.00125,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 53.6,
-        "tradeable": false,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ]
-    },
-    {
-      "coin": "ETH",
+      "coin": "DOGE",
       "direction": "LONG",
       "signal": "TAAPI_ENGULFING_1H_LONG",
       "sharpe": 1.94,
@@ -876,19 +700,19 @@
       "pattern": "engulfing",
       "pattern_interval": "1h",
       "pattern_confidence": 0.72,
-      "hypothesis_id": "hyp_20260319_191929_ETH_LONG_001",
-      "thesis": "Hurst 0.72 + DIVERGENCE_BULL + funding positive (0.00094) + stable regime + \u2192 momentum continuation LONG",
-      "anti_thesis": "Hurst declining 0.78\u21920.72 \u2014 momentum may be exhausting",
-      "confidence": 0.53,
+      "hypothesis_id": "hyp_20260319_194256_DOGE_LONG_001",
+      "thesis": "Hurst 0.74 + TRAP_LONG + funding stable + shift regime + \u2192 momentum continuation LONG",
+      "anti_thesis": "regime transitioning (shift) \u2014 direction unclear; timeframe pattern TRAP_LONG conflicts with LONG; funding reversal detected",
+      "confidence": 0.43,
       "evidence_for": [
-        "regime stable \u2014 low volatility environment",
-        "fast bullish divergence building (DIVERGENCE_BULL)",
-        "funding positive supports LONG (rate 0.000944)",
+        "funding stable (rate -0.000002)",
         "deep liquidity (score 100)",
         "spread normal \u2014 no MM manipulation detected"
       ],
       "evidence_against": [
-        "Hurst declining 0.78\u21920.72 \u2014 momentum may be exhausting"
+        "regime transitioning (shift) \u2014 direction unclear",
+        "timeframe pattern TRAP_LONG conflicts with LONG",
+        "funding reversal detected"
       ],
       "kill_conditions": [
         "Hurst drops below 0.5 (momentum collapses)",
@@ -898,13 +722,22 @@
       ],
       "similar_past_trades": [
         {
-          "coin": "ETH",
+          "coin": "DOGE",
           "direction": "LONG",
-          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-          "outcome": "loss",
-          "pnl_pct": -0.02,
-          "exit_reason": "exit_expression",
-          "entry_time": "2026-03-18T09:52:26.986682+00:00"
+          "signal": "DOJI_L_QUALITY_LONG_V3_EX6",
+          "outcome": "win",
+          "pnl_pct": 0.17,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-19T08:34:41.188247+00:00"
+        },
+        {
+          "coin": "DOGE",
+          "direction": "SHORT",
+          "signal": "CMO_BB_LYAPUNOV_SHORT_V1_EX2_Q2_EX5",
+          "outcome": "win",
+          "pnl_pct": 0.03,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T19:17:34.260281+00:00"
         },
         {
           "coin": "ETH",
@@ -917,23 +750,23 @@
         }
       ],
       "world_snapshot": {
-        "regime": "stable",
-        "regime_confidence": 0.5,
-        "hurst_24h": 0.7214,
-        "hurst_48h": 0.7757,
-        "funding_rate": 0.000944,
-        "funding_direction": "intensifying",
-        "funding_reversal": false,
+        "regime": "shift",
+        "regime_confidence": 0.695,
+        "hurst_24h": 0.7358,
+        "hurst_48h": 0.7354,
+        "funding_rate": -2e-06,
+        "funding_direction": "stable",
+        "funding_reversal": true,
         "spread_status": "NORMAL",
         "liquidity_score": 100,
         "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
+        "timeframe_pattern": "TRAP_LONG",
         "fast_bias": "bullish",
         "slow_bias": "bearish"
       }
     },
     {
-      "coin": "ETH",
+      "coin": "DOGE",
       "direction": "LONG",
       "signal": "TAAPI_HARAMI_4H_LONG",
       "sharpe": 1.58,
@@ -956,19 +789,19 @@
       "pattern": "harami",
       "pattern_interval": "4h",
       "pattern_confidence": 0.54,
-      "hypothesis_id": "hyp_20260319_191929_ETH_LONG_002",
-      "thesis": "Hurst 0.72 + DIVERGENCE_BULL + funding positive (0.00094) + stable regime + \u2192 momentum continuation LONG",
-      "anti_thesis": "Hurst declining 0.78\u21920.72 \u2014 momentum may be exhausting",
-      "confidence": 0.485,
+      "hypothesis_id": "hyp_20260319_194256_DOGE_LONG_002",
+      "thesis": "Hurst 0.74 + TRAP_LONG + funding stable + shift regime + \u2192 momentum continuation LONG",
+      "anti_thesis": "regime transitioning (shift) \u2014 direction unclear; timeframe pattern TRAP_LONG conflicts with LONG; funding reversal detected",
+      "confidence": 0.385,
       "evidence_for": [
-        "regime stable \u2014 low volatility environment",
-        "fast bullish divergence building (DIVERGENCE_BULL)",
-        "funding positive supports LONG (rate 0.000944)",
+        "funding stable (rate -0.000002)",
         "deep liquidity (score 100)",
         "spread normal \u2014 no MM manipulation detected"
       ],
       "evidence_against": [
-        "Hurst declining 0.78\u21920.72 \u2014 momentum may be exhausting"
+        "regime transitioning (shift) \u2014 direction unclear",
+        "timeframe pattern TRAP_LONG conflicts with LONG",
+        "funding reversal detected"
       ],
       "kill_conditions": [
         "Hurst drops below 0.5 (momentum collapses)",
@@ -978,13 +811,101 @@
       ],
       "similar_past_trades": [
         {
-          "coin": "ETH",
+          "coin": "DOGE",
           "direction": "LONG",
-          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
+          "signal": "DOJI_L_QUALITY_LONG_V3_EX6",
+          "outcome": "win",
+          "pnl_pct": 0.17,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-19T08:34:41.188247+00:00"
+        },
+        {
+          "coin": "DOGE",
+          "direction": "SHORT",
+          "signal": "CMO_BB_LYAPUNOV_SHORT_V1_EX2_Q2_EX5",
+          "outcome": "win",
+          "pnl_pct": 0.03,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-18T19:17:34.260281+00:00"
+        },
+        {
+          "coin": "ETH",
+          "direction": "SHORT",
+          "signal": "TAAPI_ENGULFING_4H_SHORT",
           "outcome": "loss",
-          "pnl_pct": -0.02,
+          "pnl_pct": -0.23,
+          "exit_reason": "kill_condition",
+          "entry_time": "2026-03-19T15:35:50.929627+00:00"
+        }
+      ],
+      "world_snapshot": {
+        "regime": "shift",
+        "regime_confidence": 0.695,
+        "hurst_24h": 0.7358,
+        "hurst_48h": 0.7354,
+        "funding_rate": -2e-06,
+        "funding_direction": "stable",
+        "funding_reversal": true,
+        "spread_status": "NORMAL",
+        "liquidity_score": 100,
+        "tradeable": true,
+        "timeframe_pattern": "TRAP_LONG",
+        "fast_bias": "bullish",
+        "slow_bias": "bearish"
+      }
+    },
+    {
+      "coin": "ARB",
+      "direction": "LONG",
+      "signal": "TAAPI_DOJI_4H_LONG",
+      "sharpe": 1.58,
+      "win_rate": 63.5,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.54,
+      "signal_heat": 0.5,
+      "recent_record": "pattern",
+      "composite_score": 3.78,
+      "timeframe_pattern": "",
+      "timeframe_confirmation": 0.0,
+      "signal_weight": 1.0,
+      "vwap_bonus": 0.0,
+      "funding_bonus": 0.0,
+      "max_hold_hours": 16,
+      "exit_expression": "",
+      "entry_expression": "TAAPI_DOJI_4H fired",
+      "source": "taapi_pattern",
+      "pattern": "doji",
+      "pattern_interval": "4h",
+      "pattern_confidence": 0.54,
+      "hypothesis_id": "hyp_20260319_194256_ARB_LONG_001",
+      "thesis": "Hurst 0.79 + TRAP_LONG + funding negative (-0.00006) + stable regime + \u2192 momentum continuation LONG",
+      "anti_thesis": "timeframe pattern TRAP_LONG conflicts with LONG; funding reversal detected",
+      "confidence": 0.435,
+      "evidence_for": [
+        "regime stable \u2014 low volatility environment",
+        "adequate liquidity (score 73)",
+        "spread normal \u2014 no MM manipulation detected"
+      ],
+      "evidence_against": [
+        "timeframe pattern TRAP_LONG conflicts with LONG",
+        "funding reversal detected"
+      ],
+      "kill_conditions": [
+        "Hurst drops below 0.5 (momentum collapses)",
+        "funding reverses to intensifying short",
+        "spread enters MM_SETUP",
+        "liquidity drops below tradeable threshold"
+      ],
+      "similar_past_trades": [
+        {
+          "coin": "ARB",
+          "direction": "LONG",
+          "signal": "BB_OVERSOLD_LYAP_LONG_FR10_EX4_Q1_FR1_EX3_EX2",
+          "outcome": "win",
+          "pnl_pct": 0.12,
           "exit_reason": "exit_expression",
-          "entry_time": "2026-03-18T09:52:26.986682+00:00"
+          "entry_time": "2026-03-18T10:47:05.366343+00:00"
         },
         {
           "coin": "ETH",
@@ -999,15 +920,15 @@
       "world_snapshot": {
         "regime": "stable",
         "regime_confidence": 0.5,
-        "hurst_24h": 0.7214,
-        "hurst_48h": 0.7757,
-        "funding_rate": 0.000944,
+        "hurst_24h": 0.794,
+        "hurst_48h": 0.7529,
+        "funding_rate": -5.9e-05,
         "funding_direction": "intensifying",
-        "funding_reversal": false,
+        "funding_reversal": true,
         "spread_status": "NORMAL",
-        "liquidity_score": 100,
+        "liquidity_score": 73.0,
         "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
+        "timeframe_pattern": "TRAP_LONG",
         "fast_bias": "bullish",
         "slow_bias": "bearish"
       }
