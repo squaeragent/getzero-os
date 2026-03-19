@@ -776,6 +776,49 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
 
     size_usd = compute_size(trade, cfg, throttle)
 
+    # ── FIX 1: Hard block LONGs in RISK_OFF macro ──────────────────────────
+    if direction == "LONG":
+        try:
+            world_state_file = BUS_DIR / "world_state.json"
+            with open(world_state_file) as _f:
+                _ws = json.load(_f)
+            _macro_state = _ws.get("meta", {}).get("macro", {}).get("state", "")
+            if _macro_state == "RISK_OFF":
+                log(f"BLOCKED: LONG in RISK_OFF macro ({coin} {trade.get('signal','')})")
+                return None
+        except Exception as _e:
+            log(f"WARN: Could not read world_state for RISK_OFF check: {_e}")
+
+    # ── FIX 4: SOL LONG blacklist ───────────────────────────────────────────
+    # TODO: Remove when SOL LONG WR > 30% over 10+ trades
+    if coin == "SOL" and direction == "LONG":
+        log(f"BLOCKED: SOL LONG blacklisted (0% WR historical)")
+        return None
+
+    # ── FIX 2: Genealogy dead-family blacklist ──────────────────────────────
+    _signal_name = trade.get("signal", "")
+    _family_base = re.split(r'_V\d|_EX|_Q\d*|_MH', _signal_name)[0] if _signal_name else ""
+    if _family_base:
+        try:
+            genealogy_file = BUS_DIR / "genealogy.json"
+            with open(genealogy_file) as _gf:
+                _genealogy = json.load(_gf)
+            _families = _genealogy.get("families", _genealogy)
+            # Build lookup key: try family|regime|direction composite keys
+            _fam_data = None
+            for _key, _fval in _families.items():
+                if isinstance(_fval, dict) and _fval.get("family") == _family_base and _fval.get("direction") == direction:
+                    _fam_data = _fval
+                    break
+            if _fam_data is not None:
+                _count = _fam_data.get("total_instances", 0)
+                _wr = _fam_data.get("win_rate", None)
+                if _count >= 20 and _wr == 0:
+                    log(f"BLOCKED: dead signal family {_family_base} (0% WR, {_count} instances)")
+                    return None
+        except Exception as _e:
+            log(f"WARN: Could not read genealogy for blacklist check: {_e}")
+
     # Check remaining notional cap
     max_notional = cfg.get("max_notional", 100)
     current_notional = sum(p.get("size_usd", 0) for p in positions)
@@ -791,6 +834,12 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
     if price <= 0:
         log(f"  Skip {coin}: no price")
         return None
+
+    # ── FIX 3: US session LONG size penalty ────────────────────────────────
+    _utc_hour = datetime.now(timezone.utc).hour
+    if _utc_hour >= 16 and direction == "LONG":
+        size_usd *= 0.5
+        log(f"US_SESSION: LONG size halved to ${size_usd:.2f} for {coin}")
 
     sz_dec = COIN_SIZE_DECIMALS.get(coin, 2)
     size_coins = round(size_usd / price, sz_dec)
