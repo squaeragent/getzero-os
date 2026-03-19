@@ -42,8 +42,11 @@ def get_api_key():
     env_file = Path.home() / ".config" / "openclaw" / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
-            if line.startswith("ENVY_API_KEY="):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
+            clean = line.strip()
+            if clean.startswith("export "):
+                clean = clean[7:]
+            if clean.startswith("ENVY_API_KEY="):
+                return clean.split("=", 1)[1].strip().strip('"').strip("'")
     raise RuntimeError("ENVY_API_KEY not found")
 
 
@@ -60,16 +63,37 @@ def update_heartbeat():
         pass
 
 
-def save_snapshot(data):
-    """Save WebSocket snapshot to bus file."""
+def save_snapshot(raw_data):
+    """Save WebSocket snapshot to bus file.
+    
+    WS sends: {type, timestamp, coinsReturned, data: {COIN: [{indicatorCode, value, ...}]}}
+    We flatten to: {source, received_at, coins: {COIN: {INDICATOR: value}}}
+    """
     BUS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Parse the WS data format into our flat format
+    ws_data = raw_data.get("data", raw_data.get("snapshot", {}))
+    coins = {}
+    for coin, indicators in ws_data.items():
+        if isinstance(indicators, list):
+            flat = {}
+            for ind in indicators:
+                code = ind.get("indicatorCode", "")
+                val = ind.get("value")
+                if code and val is not None:
+                    flat[code] = val
+            if flat:
+                coins[coin] = flat
+
     snapshot = {
         "source": "websocket",
         "received_at": datetime.now(timezone.utc).isoformat(),
-        "data": data,
+        "ws_timestamp": raw_data.get("timestamp", ""),
+        "coin_count": len(coins),
+        "coins": coins,
     }
     with open(WS_FILE, "w") as f:
-        json.dump(snapshot, f, indent=2)
+        json.dump(snapshot, f)
 
 
 async def connect_and_stream():
@@ -90,7 +114,7 @@ async def connect_and_stream():
     while True:
         try:
             log(f"Connecting to WebSocket...")
-            async with websockets.connect(url, ping_interval=30, ping_timeout=10) as ws:
+            async with websockets.connect(url, ping_interval=30, ping_timeout=10, max_size=None) as ws:
                 log(f"Connected! Streaming indicators every 15s")
                 delay = RECONNECT_DELAY  # Reset backoff on successful connect
 
@@ -103,13 +127,20 @@ async def connect_and_stream():
                             log("Server requested reconnect")
                             break
 
+                        # Skip auth/welcome messages (no data)
+                        if isinstance(data, dict) and "data" not in data and "snapshot" not in data:
+                            msg_type = data.get("type", "unknown")
+                            log(f"Auth message: {msg_type}")
+                            continue
+
                         save_snapshot(data)
                         msg_count += 1
 
-                        if msg_count % 20 == 0:  # Log every ~5 minutes
+                        if msg_count == 1 or msg_count % 20 == 0:  # First + every ~5 minutes
                             update_heartbeat()
-                            coins = len(data.get("snapshot", {})) if isinstance(data, dict) else 0
-                            log(f"Streaming OK: {msg_count} messages received, {coins} coins in latest")
+                            ws_data = data.get("data", data.get("snapshot", {}))
+                            coins_count = len(ws_data) if isinstance(ws_data, dict) else 0
+                            log(f"Streaming OK: {msg_count} messages, {coins_count} coins in latest")
 
                     except json.JSONDecodeError:
                         log(f"WARN: Non-JSON message received")
@@ -125,15 +156,15 @@ async def connect_and_stream():
 
 
 def main():
+    # Accept --loop flag (supervisor passes it) — WS is always a loop
     log("=== ZERO OS WebSocket Indicator Stream ===")
 
-    # Check if websockets is available
     try:
         import websockets
         log(f"websockets v{websockets.__version__}")
     except ImportError:
         log("websockets not installed. Installing...")
-        os.system(f"{sys.executable} -m pip install websockets")
+        os.system(f"{sys.executable} -m pip install --break-system-packages websockets")
         try:
             import websockets
         except ImportError:

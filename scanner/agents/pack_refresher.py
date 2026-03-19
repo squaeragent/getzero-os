@@ -61,8 +61,11 @@ def get_api_key():
     env_file = Path.home() / ".config" / "openclaw" / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
-            if line.startswith("ENVY_API_KEY="):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
+            clean = line.strip()
+            if clean.startswith("export "):
+                clean = clean[7:]
+            if clean.startswith("ENVY_API_KEY="):
+                return clean.split("=", 1)[1].strip().strip('"').strip("'")
     raise RuntimeError("ENVY_API_KEY not found")
 
 

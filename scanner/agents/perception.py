@@ -267,17 +267,14 @@ def fetch_all_indicators(api_key):
                 ws = json.load(f)
             ws_age = (datetime.now(timezone.utc) - datetime.fromisoformat(ws.get("received_at", "2000-01-01T00:00:00+00:00").replace("Z", "+00:00"))).total_seconds()
             if ws_age < STALE_WS_THRESHOLD:
-                ws_snapshot = ws.get("data", {}).get("snapshot", {})
-                if ws_snapshot:
+                ws_coins = ws.get("coins", {})
+                if ws_coins:
                     ws_count = 0
-                    for coin, indicators in ws_snapshot.items():
-                        if isinstance(indicators, list):
-                            for ind in indicators:
-                                code = ind.get("indicatorCode", "")
-                                val = ind.get("value")
-                                if code and val is not None:
-                                    merged.setdefault(coin, {})[code] = val
-                                    ws_count += 1
+                    for coin, indicators in ws_coins.items():
+                        if isinstance(indicators, dict):
+                            for code, val in indicators.items():
+                                merged.setdefault(coin, {})[code] = val
+                                ws_count += 1
                     if ws_count:
                         log(f"  [ws] overlaid {ws_count} fresher values (age: {ws_age:.0f}s)")
             else:
