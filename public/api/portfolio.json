@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-19T10:10:51.044241+00:00",
+  "updated": "2026-03-19T10:11:05.148818+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 115,
@@ -65,6 +65,37 @@
           "fill_price": 39.869,
           "spread_at_entry": 0.015101,
           "depth_at_entry": 372275.7
+        }
+      },
+      {
+        "coin": "ZEC",
+        "direction": "SHORT",
+        "signal": "ARCH_DOJI_BREAKOUT",
+        "hypothesis_id": "",
+        "entry_price": 244.4,
+        "intended_price": 244.435,
+        "entry_time": "2026-03-19T10:11:04.285001+00:00",
+        "entry_time_ms": 1773915064285,
+        "size_usd": 18.1,
+        "size_coins": 0.07,
+        "sharpe": 2.31,
+        "win_rate": 75.8,
+        "max_hold_hours": 8,
+        "exit_expression": "ADX_3H30M >= 40 OR DOJI_VELOCITY < 1.0",
+        "stop_loss": 251.73,
+        "stop_loss_pct": 3.0,
+        "stop_type": "volatility",
+        "peak_pnl_pct": 0.0,
+        "open_fee": 0.015394999999999999,
+        "exec_quality": {
+          "slippage_pct": 0.014319,
+          "slippage_usd": 0.002592,
+          "mark_slippage_pct": 0.0041,
+          "fill_time_ms": 1484,
+          "pre_mark": 244.39,
+          "fill_price": 244.4,
+          "spread_at_entry": 0.004096,
+          "depth_at_entry": 278105.49
         }
       }
     ],
@@ -1196,29 +1227,29 @@
   },
   "agents": {
     "heartbeat": {
-      "parameter_evolution": "2026-03-19T10:08:13.853825+00:00",
-      "regime_transition": "2026-03-19T10:08:14.055292+00:00",
-      "genealogy": "2026-03-19T09:58:15.592897+00:00",
+      "parameter_evolution": "2026-03-19T10:11:03.948648+00:00",
+      "regime_transition": "2026-03-19T10:11:03.961386+00:00",
+      "genealogy": "2026-03-19T10:11:04.095812+00:00",
       "counterfactual": "2026-03-19T09:58:25.015889+00:00",
-      "observer": "2026-03-19T10:10:15.479378+00:00",
-      "correlation": "2026-03-19T10:08:14.179479+00:00",
-      "risk": "2026-03-19T10:10:17.563914+00:00",
-      "execution": "2026-03-19T10:10:50.983598+00:00",
-      "adversary": "2026-03-19T10:08:14.045630+00:00",
-      "reflection": "2026-03-19T09:58:42.349765+00:00",
-      "adversary_evolution": "2026-03-19T09:58:15.443690+00:00",
+      "observer": "2026-03-19T10:11:04.065992+00:00",
+      "correlation": "2026-03-19T10:11:04.121550+00:00",
+      "risk": "2026-03-19T10:11:04.417199+00:00",
+      "execution": "2026-03-19T10:11:05.097583+00:00",
+      "adversary": "2026-03-19T10:11:03.946285+00:00",
+      "reflection": "2026-03-19T10:11:00.167754+00:00",
+      "adversary_evolution": "2026-03-19T10:11:03.956649+00:00",
       "perception": "2026-03-19T10:08:59.336782+00:00",
       "hypothesis": "2026-03-19T10:09:05.179623+00:00",
       "signal_evolution": "2026-03-19T01:44:28.775360+00:00",
       "pattern_scanner": "2026-03-19T09:58:46.713491+00:00",
       "taapi_fetcher": "2026-03-19T09:58:48.129597+00:00",
-      "hl_enrichment": "2026-03-19T10:10:16.654704+00:00"
+      "hl_enrichment": "2026-03-19T10:11:04.454270+00:00"
     },
     "risk": {
       "status": "yellow",
       "throttle": 0.5,
       "killAll": false,
-      "drawdownPct": 1.38,
+      "drawdownPct": 1.37,
       "peakEquity": 116.83,
       "winStreak": 1,
       "loseStreak": 0,
@@ -1231,14 +1262,11 @@
       "alerts": [
         "Win rate 0.0% below 50.0%",
         "Win/loss ratio 0.00 below 1.0",
-        "Balance drift: $+2.55 (+2.19%)",
-        "STALE: genealogy last seen 12m ago",
-        "STALE: counterfactual last seen 12m ago",
-        "STALE: reflection last seen 12m ago",
-        "STALE: adversary_evolution last seen 12m ago",
-        "STALE: signal_evolution last seen 506m ago",
+        "Balance drift: $+5.97 (+5.14%)",
+        "STALE: counterfactual last seen 13m ago",
+        "STALE: signal_evolution last seen 507m ago",
         "STALE: pattern_scanner last seen 12m ago",
-        "STALE: taapi_fetcher last seen 11m ago"
+        "STALE: taapi_fetcher last seen 12m ago"
       ]
     },
     "regimes": {
@@ -1451,8 +1479,8 @@
       },
       "updated": "2026-03-19T10:08:24.552015+00:00"
     },
-    "candidates": 15,
-    "approved": 0,
+    "candidates": 1,
+    "approved": 1,
     "blocked": 0,
     "spread": {
       "summary": {
@@ -1870,18 +1898,6 @@
     ]
   },
   "liveEquityCurve": [
-    {
-      "t": "2026-03-18T22:10:08.392877+00:00",
-      "v": 115.29
-    },
-    {
-      "t": "2026-03-18T22:10:08.621135+00:00",
-      "v": 115.29
-    },
-    {
-      "t": "2026-03-18T22:12:09.115167+00:00",
-      "v": 115.26
-    },
     {
       "t": "2026-03-18T22:12:09.299388+00:00",
       "v": 115.26
@@ -3869,6 +3885,18 @@
     {
       "t": "2026-03-19T10:10:17.043555+00:00",
       "v": 115.22
+    },
+    {
+      "t": "2026-03-19T10:10:53.824018+00:00",
+      "v": 115.23
+    },
+    {
+      "t": "2026-03-19T10:10:59.079176+00:00",
+      "v": 115.22
+    },
+    {
+      "t": "2026-03-19T10:11:03.969323+00:00",
+      "v": 115.23
     }
   ]
 }
