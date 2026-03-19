@@ -5019,3 +5019,96 @@
 [2026-03-19 07:03:16 UTC] [EXEC]   Fees: open=$0.007268 close=$0.007272 total=$0.014540 | P&L after fees: $-0.0244
 [2026-03-19 07:03:16 UTC] [EXEC]   Closed SOL SHORT | kill_condition | -0.06% ($-0.01) (fees=$0.0145, net=$-0.0244)
 [2026-03-19 07:03:16 UTC] [EXEC] Summary: 1 positions, $24.00 notional, trades=52
+[2026-03-19 07:08:17 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:08:17 UTC] [EXEC] Positions: 1 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:08:18 UTC] [EXEC]   Fetching 3 exit indicators for ['PAXG']
+[2026-03-19 07:08:18 UTC] [EXEC] [PAXG] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 07:08:18 UTC] [EXEC]   Skip JUP LONG: liquidity: spread=0.061786%, depth=$60025
+[2026-03-19 07:08:18 UTC] [EXEC] LIVE OPEN INJ SHORT | $11.32 (3.7) @ $3.0196 | sharpe=1.63
+[2026-03-19 07:08:20 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3.7", "avgPx": "3.0187", "oid": 354105646333}}]}}}
+[2026-03-19 07:08:20 UTC] [EXEC]   Filled @ $3.0187
+[2026-03-19 07:08:20 UTC] [EXEC]   Execution: intended=$3.0196 filled=$3.0187 slippage=0.0281% ($0.0032) fill_time=1294ms spread=0.049625
+[2026-03-19 07:08:20 UTC] [EXEC]   INJ ATR-stop: ATR=0.190% → stop=3.00%
+[2026-03-19 07:08:20 UTC] [EXEC]   Stop loss: INJ trigger @ $3.1274 (buy 3.7)
+[2026-03-19 07:08:21 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 354105661140}}]}}}
+[2026-03-19 07:08:21 UTC] [EXEC]   Open fill fee for INJ: $0.005026
+[2026-03-19 07:08:21 UTC] [EXEC]   Skip INJ SHORT: max 1 on INJ
+[2026-03-19 07:08:21 UTC] [EXEC]   Skip INJ SHORT: max 1 on INJ
+[2026-03-19 07:08:22 UTC] [EXEC] LIVE OPEN XPL SHORT | $11.00 (104.0) @ $0.1061 | sharpe=1.60
+[2026-03-19 07:08:23 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "104.0", "avgPx": "0.10613", "oid": 354105676648}}]}}}
+[2026-03-19 07:08:23 UTC] [EXEC]   Filled @ $0.1061
+[2026-03-19 07:08:23 UTC] [EXEC]   Execution: intended=$0.1061 filled=$0.1061 slippage=0.0141% ($0.0016) fill_time=1360ms spread=0.028237
+[2026-03-19 07:08:23 UTC] [EXEC]   XPL ATR-stop: ATR=0.412% → stop=3.00%
+[2026-03-19 07:08:23 UTC] [EXEC]   Stop loss: XPL trigger @ $0.1100 (buy 104.0)
+[2026-03-19 07:08:25 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 354105706694}}]}}}
+[2026-03-19 07:08:25 UTC] [EXEC]   Open fill fee for XPL: $0.004966
+[2026-03-19 07:08:25 UTC] [EXEC]   Skip XPL SHORT: max 1 on XPL
+[2026-03-19 07:08:25 UTC] [EXEC]   Skip XPL SHORT: max 1 on XPL
+[2026-03-19 07:08:25 UTC] [EXEC]   Skip XRP LONG: sharpe 1.12 < 1.5
+[2026-03-19 07:08:25 UTC] [EXEC] Summary: 3 positions, $46.32 notional, trades=52
+[2026-03-19 07:13:27 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:13:27 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:13:27 UTC] [EXEC]   Fetching 6 exit indicators for ['PAXG', 'XPL', 'INJ']
+[2026-03-19 07:13:27 UTC] [EXEC] [PAXG] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-19 07:13:27 UTC] [EXEC] KILL SIGNAL INJ SHORT | condition: 'funding reverses to intensifying long' | +0.42%
+[2026-03-19 07:13:29 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3.7", "avgPx": "3.0069", "oid": 354111705222}}]}}}
+[2026-03-19 07:13:29 UTC] [EXEC]   Fees: open=$0.005026 close=$0.005006 total=$0.010032 | P&L after fees: $+0.0374
+[2026-03-19 07:13:29 UTC] [EXEC]   Closed INJ SHORT | kill_condition | +0.42% ($+0.05) (fees=$0.0100, net=$+0.0374)
+[2026-03-19 07:13:29 UTC] [EXEC] [XPL] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 07:13:30 UTC] [EXEC] Summary: 2 positions, $35.00 notional, trades=53
+[2026-03-19 07:18:31 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:18:31 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:18:32 UTC] [EXEC]   Fetching 4 exit indicators for ['PAXG', 'XPL']
+[2026-03-19 07:18:32 UTC] [EXEC] [PAXG] Skipping exit eval — hold 20m < 120m minimum
+[2026-03-19 07:18:32 UTC] [EXEC] [XPL] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 07:18:32 UTC] [EXEC]   Skip BNB LONG: sharpe 1.36 < 1.5
+[2026-03-19 07:18:32 UTC] [EXEC]   Skip kBONK LONG: sharpe 1.03 < 1.5
+[2026-03-19 07:18:32 UTC] [EXEC] Summary: 2 positions, $35.00 notional, trades=53
+[2026-03-19 07:23:33 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:23:33 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:23:34 UTC] [EXEC]   Fetching 4 exit indicators for ['PAXG', 'XPL']
+[2026-03-19 07:23:34 UTC] [EXEC] [PAXG] Skipping exit eval — hold 26m < 120m minimum
+[2026-03-19 07:23:34 UTC] [EXEC] [XPL] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-19 07:23:34 UTC] [EXEC] Summary: 2 positions, $35.00 notional, trades=53
+[2026-03-19 07:28:36 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:28:36 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:28:36 UTC] [EXEC]   Fetching 4 exit indicators for ['PAXG', 'XPL']
+[2026-03-19 07:28:36 UTC] [EXEC] [PAXG] Skipping exit eval — hold 31m < 120m minimum
+[2026-03-19 07:28:36 UTC] [EXEC] KILL SIGNAL XPL SHORT | condition: 'liquidity drops below tradeable threshold' | +1.95%
+[2026-03-19 07:28:38 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "104.0", "avgPx": "0.10408", "oid": 354130889643}}]}}}
+[2026-03-19 07:28:38 UTC] [EXEC]   Fees: open=$0.004966 close=$0.004870 total=$0.009836 | P&L after fees: $+0.2047
+[2026-03-19 07:28:38 UTC] [EXEC]   Closed XPL SHORT | kill_condition | +1.95% ($+0.21) (fees=$0.0098, net=$+0.2047)
+[2026-03-19 07:28:39 UTC] [EXEC] LIVE OPEN FARTCOIN LONG | $13.48 (68.6) @ $0.1965 | sharpe=1.85
+[2026-03-19 07:28:40 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "68.6", "avgPx": "0.19645", "oid": 354130922689}}]}}}
+[2026-03-19 07:28:40 UTC] [EXEC]   Filled @ $0.1965
+[2026-03-19 07:28:40 UTC] [EXEC]   Execution: intended=$0.1965 filled=$0.1965 slippage=0.0102% ($0.0014) fill_time=1457ms spread=0.035514
+[2026-03-19 07:28:40 UTC] [EXEC]   FARTCOIN ATR-stop: ATR=0.773% → stop=3.00%
+[2026-03-19 07:28:40 UTC] [EXEC]   Stop loss: FARTCOIN trigger @ $0.1894 (sell 68.6)
+[2026-03-19 07:28:42 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 354130943185}}]}}}
+[2026-03-19 07:28:42 UTC] [EXEC]   Open fill fee for FARTCOIN: $0.006064
+[2026-03-19 07:28:42 UTC] [EXEC]   Skip ZEC: order $9.74 < $10 min
+[2026-03-19 07:28:43 UTC] [EXEC] LIVE OPEN NEAR LONG | $10.51 (7.8) @ $1.3487 | sharpe=1.55
+[2026-03-19 07:28:44 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "7.8", "avgPx": "1.3489", "oid": 354130967707}}]}}}
+[2026-03-19 07:28:44 UTC] [EXEC]   Filled @ $1.3489
+[2026-03-19 07:28:44 UTC] [EXEC]   Execution: intended=$1.3487 filled=$1.3489 slippage=0.0111% ($0.0012) fill_time=1488ms spread=0.022202
+[2026-03-19 07:28:44 UTC] [EXEC]   NEAR ATR-stop: ATR=0.277% → stop=3.00%
+[2026-03-19 07:28:44 UTC] [EXEC]   Stop loss: NEAR trigger @ $1.3003 (sell 7.8)
+[2026-03-19 07:28:46 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 354131014246}}]}}}
+[2026-03-19 07:28:46 UTC] [EXEC]   Open fill fee for NEAR: $0.004734
+[2026-03-19 07:28:46 UTC] [EXEC]   Skip FARTCOIN LONG: sharpe 1.45 < 1.5
+[2026-03-19 07:28:46 UTC] [EXEC] Summary: 3 positions, $47.99 notional, trades=54
+[2026-03-19 07:33:48 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:33:48 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:33:48 UTC] [EXEC]   Fetching 7 exit indicators for ['PAXG', 'NEAR', 'FARTCOIN']
+[2026-03-19 07:33:48 UTC] [EXEC] [PAXG] Skipping exit eval — hold 36m < 120m minimum
+[2026-03-19 07:33:48 UTC] [EXEC] [FARTCOIN] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 07:33:48 UTC] [EXEC] [NEAR] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 07:33:49 UTC] [EXEC] Summary: 3 positions, $47.99 notional, trades=54
+[2026-03-19 07:38:50 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 07:38:50 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-19 07:38:51 UTC] [EXEC]   Fetching 7 exit indicators for ['PAXG', 'NEAR', 'FARTCOIN']
+[2026-03-19 07:38:51 UTC] [EXEC] [PAXG] Skipping exit eval — hold 41m < 120m minimum
+[2026-03-19 07:38:51 UTC] [EXEC] [FARTCOIN] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 07:38:51 UTC] [EXEC] [NEAR] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 07:38:51 UTC] [EXEC]   Skip XPL SHORT: liquidity: spread=0.057604%, depth=$121013
+[2026-03-19 07:38:51 UTC] [EXEC] Summary: 3 positions, $47.99 notional, trades=54

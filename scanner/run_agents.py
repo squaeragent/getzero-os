@@ -53,6 +53,8 @@ AGENTS = [
     ("adversary_evolution", AGENTS_DIR / "adversary_evolution.py",  7200,  240),  # Meta-learning: evolves attack weights (2h)
     ("regime_transition",   AGENTS_DIR / "regime_transition.py",     300,   10),  # Predictive regime transition detection (5-min)
     ("genealogy",           AGENTS_DIR / "genealogy.py",             900,   30),  # Hypothesis genealogy + family learning (15-min)
+    ("envy_cache",          AGENTS_DIR / "envy_cache.py",            900,   30),  # ENVY snapshot cache — resilience layer (15-min)
+    ("indicator_delta",     AGENTS_DIR / "indicator_delta.py",       900,   30),  # Indicator delta monitor — parallel own computation (15-min)
 ]
 
 processes = {}
