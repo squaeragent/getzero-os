@@ -739,17 +739,20 @@ def attack_fear_greed(hypothesis, macro_intel):
 
     if direction == "LONG":
         if fg <= 20:
-            severity = 0.6
-            detail = f"Extreme Fear (F&G={fg}) + LONG — market panic, high reversal risk"
+            severity = 0.9  # v4: data shows 31% WR for LONGs. Near-kill in extreme fear.
+            detail = f"Extreme Fear (F&G={fg}) + LONG — 31% WR historically, near-block"
         elif fg <= 30:
-            severity = 0.3
-            detail = f"Fear (F&G={fg}) + LONG — cautious territory for new longs"
+            severity = 0.6  # v4: raised from 0.3. F&G=23 was letting LONGs through.
+            detail = f"Fear (F&G={fg}) + LONG — historically unprofitable direction"
+        elif fg <= 45:
+            severity = 0.2
+            detail = f"Cautious (F&G={fg}) + LONG — slightly unfavorable for longs"
     elif direction == "SHORT":
         if fg >= 80:
-            severity = 0.6
-            detail = f"Extreme Greed (F&G={fg}) + SHORT — euphoria, shorts may get squeezed"
+            severity = 0.9
+            detail = f"Extreme Greed (F&G={fg}) + SHORT — euphoria, shorts get squeezed"
         elif fg >= 70:
-            severity = 0.3
+            severity = 0.6
             detail = f"Greed (F&G={fg}) + SHORT — cautious territory for new shorts"
 
     return {

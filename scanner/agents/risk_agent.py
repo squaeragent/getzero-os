@@ -64,8 +64,8 @@ HEARTBEAT_STALE_MINUTES = 10
 
 # Strategy version — increment when major strategy changes are deployed.
 # Trades before this version are excluded from streak/rolling calculations.
-STRATEGY_VERSION = 3
-STRATEGY_VERSION_EPOCH = "2026-03-19T10:15:00"  # v3: removed hard blocks, 17 attacks, 8 data sources
+STRATEGY_VERSION = 4
+STRATEGY_VERSION_EPOCH = "2026-03-19T13:30:00"  # v4: MIN_HOLD on kills, SOCIAL/INFLUENCER/ICHIMOKU blacklist, F&G sizing
 
 # ─── RISK THRESHOLDS ───
 DRAWDOWN_YELLOW = 3.0

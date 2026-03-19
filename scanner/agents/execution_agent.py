@@ -989,6 +989,9 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
         "direction": direction,
         "signal": trade.get("signal", ""),
         "hypothesis_id": trade.get("hypothesis_id", ""),
+        "regime": trade.get("regime", ""),
+        "adversary_verdict": trade.get("adversary_verdict"),
+        "survival_score": trade.get("survival_score"),
         "entry_price": fill_price,
         "intended_price": intended_price,
         "entry_time": datetime.now(timezone.utc).isoformat(),
@@ -1095,6 +1098,16 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
         "pnl_usd": round(pnl_usd, 2),
         "fees_usd": fees_usd,
         "pnl_after_fees": pnl_after_fees,
+        # Propagate fields for Supabase analytics
+        "strategy_version": 4,
+        "sharpe": pos.get("sharpe"),
+        "win_rate": pos.get("win_rate"),
+        "adversary_verdict": pos.get("adversary_verdict"),
+        "survival_score": pos.get("survival_score"),
+        "regime": pos.get("regime"),
+        "stop_loss_pct": pos.get("stop_loss_pct"),
+        "hl_order_id": pos.get("hl_order_id"),
+        "exec_quality": pos.get("exec_quality"),
     }
     append_jsonl(CLOSED_FILE, closed)
     fee_str = f" (fees=${fees_usd:.4f}, net=${pnl_after_fees:+.4f})" if fees_usd is not None else ""
@@ -1220,7 +1233,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
     Exit expressions are evaluated first — they match the paper scanner's behavior."""
     if tf_data is None:
         tf_data = {}
-    trailing_trigger = cfg.get("trailing_stop_trigger", 0.02)
+    trailing_trigger = cfg.get("trailing_stop_trigger", 0.003)  # v4: lowered from 2% to 0.3% — lock gains earlier
     trailing_lock = cfg.get("trailing_stop_lock", 0.50)
     remaining = []
 
@@ -1320,6 +1333,26 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
                     continue
                 elif misaligned:
                     log(f"  INFO [{coin}] alignment conflict (pattern={pattern}) — monitoring, no exit (held {hold_mins:.0f}min)")
+
+        # ── TIME-DECAY STOP (v4): tighten stop on stale losers ──
+        # 30m-2h bucket has 33.3% WR and -$0.20 P&L. If you're losing after 30m,
+        # the thesis is failing. Tighten stop from original to 60% of original.
+        # At 60m+: tighten to 40% of original. This cuts losses faster on stale trades.
+        original_stop_pct = pos.get("stop_loss_pct", 3.6) / 100  # stored as percentage
+        if hold_mins >= 60 and pnl_pct < 0:
+            tightened = original_stop_pct * 0.40
+            tightened_price = entry * (1 + tightened) if not is_long else entry * (1 - tightened)
+            if (is_long and current <= tightened_price) or (not is_long and current >= tightened_price):
+                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop tightened to {tightened*100:.1f}%")
+                close_and_record(client, pos, current, pnl_pct, "time_decay_stop", portfolio, dry, main_address=main_address)
+                continue
+        elif hold_mins >= 30 and pnl_pct < -0.005:
+            tightened = original_stop_pct * 0.60
+            tightened_price = entry * (1 + tightened) if not is_long else entry * (1 - tightened)
+            if (is_long and current <= tightened_price) or (not is_long and current >= tightened_price):
+                log(f"TIME-DECAY STOP {coin} {pos['direction']} | held {hold_mins:.0f}m losing {pnl_pct*100:+.2f}% | stop tightened to {tightened*100:.1f}%")
+                close_and_record(client, pos, current, pnl_pct, "time_decay_stop", portfolio, dry, main_address=main_address)
+                continue
 
         # ── Update peak ──
         peak = pos.get("peak_pnl_pct", 0)
