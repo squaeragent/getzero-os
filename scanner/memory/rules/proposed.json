@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "id": "RULE_001",
+    "condition": "(SOL price < 20-day EMA) AND (direction == 'SHORT')",
+    "action": "boost_confidence",
+    "value": 0.1,
+    "action_description": "increase_position_size",
+    "evidence": "historical data shows that SOL tends to continue its downward trend when below the 20-day EMA.",
+    "generation": 1,
+    "created": "2026-03-19T21:39:21.200704+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (SOL price < 20-day EMA) AND (direction == 'SHORT') THEN increase_position_size BECAUSE historical data shows that SOL tends to continue its downward trend when below the 20-day EMA."
+  },
+  {
+    "id": "RULE_002",
+    "condition": "(number of consecutive winning trades > 3)",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_position_size",
+    "evidence": "this could indicate a potential mean reversion, and reducing position size can help mitigate losses.",
+    "generation": 1,
+    "created": "2026-03-19T21:39:21.200958+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (number of consecutive winning trades > 3) THEN reduce_position_size BECAUSE this could indicate a potential mean reversion, and reducing position size can help mitigate losses."
+  },
+  {
+    "id": "RULE_003",
+    "condition": "(SOL volatility > 2*average_volatility)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "hedge_position",
+    "evidence": "high volatility may indicate increased uncertainty, and hedging can help reduce potential losses.",
+    "generation": 1,
+    "created": "2026-03-19T21:39:21.201151+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (SOL volatility > 2*average_volatility) THEN hedge_position BECAUSE high volatility may indicate increased uncertainty, and hedging can help reduce potential losses."
+  }
+]

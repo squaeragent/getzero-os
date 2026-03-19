@@ -427,4 +427,6 @@ def push():
 
 if __name__ == "__main__":
     export()
-    push()
+    # KILLED: git push was overwriting code commits with snapshot data
+    # Portfolio page reads from Supabase directly now
+    # push()
