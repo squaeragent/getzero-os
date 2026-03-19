@@ -1386,6 +1386,65 @@ def attack_family_track_record(hypothesis, family_stats: dict) -> dict:
     }
 
 
+# ─── ATTACK: PREMIUM DIVERGENCE ───
+def attack_premium_divergence(hypothesis, world_coins) -> dict:
+    """
+    Attack: mark-oracle premium divergence.
+
+    Positive premium means mark > oracle → longs are overleveraged.
+    Going LONG into a strongly positive premium is risky (longs get squeezed).
+
+    Negative premium means mark < oracle → shorts are overleveraged.
+    Going SHORT into a strongly negative premium is risky.
+
+    Threshold: abs(premium) > 0.002 triggers severity 0.5.
+    Weight: 1.2x (premium is a reliable crowding indicator).
+    """
+    coin      = hypothesis.get("coin", "")
+    direction = hypothesis.get("direction", "")
+    coin_data = world_coins.get(coin, {})
+
+    # Premium lives in oi sub-dict (injected by perception from hl_enrichment)
+    oi_data = coin_data.get("oi", {})
+    premium = safe_float_adv(oi_data.get("premium"))
+
+    PREMIUM_THRESHOLD = 0.002  # 2x historical average signal level
+
+    severity = 0.0
+    details  = []
+
+    if direction == "LONG" and premium > PREMIUM_THRESHOLD:
+        severity = 0.5
+        details.append(
+            f"premium {premium:.5f} > {PREMIUM_THRESHOLD} — longs overleveraged, "
+            f"risky to go LONG (mark above oracle by {premium*100:.3f}%)"
+        )
+    elif direction == "SHORT" and premium < -PREMIUM_THRESHOLD:
+        severity = 0.5
+        details.append(
+            f"premium {premium:.5f} < -{PREMIUM_THRESHOLD} — shorts overleveraged, "
+            f"risky to go SHORT (mark below oracle by {abs(premium)*100:.3f}%)"
+        )
+
+    return {
+        "attack":   "premium_divergence",
+        "severity": round(severity, 3),
+        "weight":   1.2,
+        "detail":   "; ".join(details) if details else f"premium {premium:.6f} — within normal range",
+        "premium":  round(premium, 8),
+    }
+
+
+def safe_float_adv(val, default=0.0):
+    """Safe float conversion for adversary module."""
+    if val is None or val == "":
+        return default
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return default
+
+
 def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state_meta=None):
     """
     Run all attacks on each hypothesis. Return (survivors, killed, results).
@@ -1453,6 +1512,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_data_disagreement(hyp, world_coins, taapi_snapshot),  # New: cross-source disagreement
             attack_fear_greed(hyp, macro_intel),                     # New: Fear & Greed filter
             attack_macro_event(hyp, macro_intel),                    # New: macro event filter
+            attack_premium_divergence(hyp, world_coins),             # New: mark-oracle premium crowding
         ]
 
         # Apply evolved weights from counterfactual learning (overrides static weights)

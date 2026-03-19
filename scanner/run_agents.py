@@ -61,6 +61,7 @@ AGENTS = [
     ("taapi_fetcher",       AGENTS_DIR / "taapi_fetcher.py",         900,   30),  # TAAPI snapshot — cross-source disagreement feed (15-min)
     ("pattern_scanner",     AGENTS_DIR / "pattern_scanner.py",       900,   30),  # TAAPI candlestick pattern signals (15-min)
     ("macro_plugin",        SENSES_DIR / "macro_plugin.py",          900,   30),  # Free macro: F&G, DVOL, options expiry, FOMC (15-min)
+    ("hl_enrichment",       AGENTS_DIR / "hl_enrichment.py",          120,    5),  # HL enrichment: premium, impact spread, OI — single call (2-min)
 ]
 
 processes = {}
