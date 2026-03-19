@@ -53,7 +53,7 @@ def fetch_coins():
 
 def fetch_pack(coin, pack_type):
     """Fetch one batch of signals for a coin/type."""
-    url = f"{BASE_URL}/paid/signals/pack?coins={coin}&pack_type={pack_type}"
+    url = f"{BASE_URL}/paid/signals/pack?coin={coin}&type={pack_type}"
     req = urllib.request.Request(url, headers={"X-API-Key": API_KEY})
     try:
         with urllib.request.urlopen(req, timeout=20) as resp:
