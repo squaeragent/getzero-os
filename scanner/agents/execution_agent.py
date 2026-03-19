@@ -1194,6 +1194,10 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
         is_long = pos["direction"] == "LONG"
         pnl_pct = (current - entry) / entry if is_long else (entry - current) / entry
 
+        # ── MINIMUM HOLD TIME (computed once, used by kill signals + exit logic) ──
+        entry_dt = datetime.fromisoformat(pos["entry_time"])
+        hold_mins = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 60
+
         # ── OBSERVER KILL SIGNALS ──
         kill_signals_data = load_json(KILL_SIGNALS_FILE, {})
         kill_signals_list = kill_signals_data.get("signals", [])
@@ -1204,7 +1208,16 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
         )
         if kill_match:
             kc = kill_match.get("kill_condition", "observer_kill")
-            log(f"KILL SIGNAL {coin} {pos['direction']} | condition: '{kc}' | {pnl_pct*100:+.2f}%")
+            urgency = kill_match.get("urgency", "warning")
+
+            # Only "immediate" urgency bypasses min hold (regime chaotic, MM_SETUP, liquidity death)
+            # "warning" urgency (Hurst flicker, funding drift) respects the 2h hold
+            if urgency != "immediate" and hold_mins < MIN_HOLD_BEFORE_EXIT_MINS:
+                log(f"[{coin}] Kill signal '{kc}' deferred — urgency={urgency}, hold {hold_mins:.0f}m < {MIN_HOLD_BEFORE_EXIT_MINS}m")
+                remaining.append(pos)
+                continue
+
+            log(f"KILL SIGNAL {coin} {pos['direction']} | condition: '{kc}' | urgency={urgency} | {pnl_pct*100:+.2f}%")
             close_and_record(client, pos, current, pnl_pct, "kill_condition", portfolio, dry, main_address=main_address)
             # Remove consumed signal from file
             remaining_signals = [s for s in kill_signals_list
@@ -1216,9 +1229,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
                 KILL_SIGNALS_FILE.unlink(missing_ok=True)
             continue
 
-        # ── MINIMUM HOLD TIME CHECK ──
-        entry_dt = datetime.fromisoformat(pos["entry_time"])
-        hold_mins = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 60
+        # ── MINIMUM HOLD TIME CHECK (for exit expressions) ──
         if hold_mins < MIN_HOLD_BEFORE_EXIT_MINS:
             log(f"[{coin}] Skipping exit eval — hold {hold_mins:.0f}m < {MIN_HOLD_BEFORE_EXIT_MINS}m minimum")
             remaining.append(pos)
@@ -1253,14 +1264,14 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             misaligned, pattern = check_alignment(pos, tf_data)
             if misaligned:
                 is_trap = pattern in ("TRAP_LONG", "TRAP_SHORT")
-                held_mins = (time.time() - pos.get("entry_time_ms", 0) / 1000) / 60 if pos.get("entry_time_ms") else 999
-                if is_trap and held_mins >= MIN_HOLD_BEFORE_EXIT_MINS and pnl_pct < -0.01:
+                # Use hold_mins already computed above (from entry_dt)
+                if is_trap and hold_mins >= MIN_HOLD_BEFORE_EXIT_MINS and pnl_pct < -0.01:
                     reason = "alignment_exit_trap"
                     log(f"{reason.upper()} {coin} {pos['direction']} | pattern={pattern} | {pnl_pct*100:+.2f}% | held {held_mins:.0f}min")
                     close_and_record(client, pos, current, pnl_pct, reason, portfolio, dry, main_address=main_address)
                     continue
                 elif misaligned:
-                    log(f"  INFO [{coin}] alignment conflict (pattern={pattern}) — monitoring, no exit (held {held_mins:.0f}min)")
+                    log(f"  INFO [{coin}] alignment conflict (pattern={pattern}) — monitoring, no exit (held {hold_mins:.0f}min)")
 
         # ── Update peak ──
         peak = pos.get("peak_pnl_pct", 0)
@@ -1293,8 +1304,7 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
                 continue
 
         # ── MAX HOLD TIME ──
-        entry_dt = datetime.fromisoformat(pos["entry_time"])
-        hours_held = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 3600
+        hours_held = hold_mins / 60
         max_hold = pos.get("max_hold_hours", 48)
         if hours_held >= max_hold:
             log(f"MAX HOLD {coin} {pos['direction']} | {hours_held:.1f}h | {pnl_pct*100:+.2f}%")
