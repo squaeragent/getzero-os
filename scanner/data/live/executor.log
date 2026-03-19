@@ -4613,3 +4613,68 @@
 [2026-03-19 02:35:14 UTC] [EXEC]   Fetching 3 exit indicators for ['WLD']
 [2026-03-19 02:35:15 UTC] [EXEC] [WLD] Skipping exit eval — hold 50m < 120m minimum
 [2026-03-19 02:35:15 UTC] [EXEC] Summary: 1 positions, $71.60 notional, trades=41
+[2026-03-19 02:40:16 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 02:40:16 UTC] [EXEC] Positions: 1 | Throttle: 1.0 | Kill: False
+[2026-03-19 02:40:17 UTC] [EXEC]   Fetching 3 exit indicators for ['WLD']
+[2026-03-19 02:40:17 UTC] [EXEC] KILL SIGNAL WLD SHORT | condition: 'liquidity drops below tradeable threshold' | +0.96%
+[2026-03-19 02:40:18 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "195.8", "avgPx": "0.36228", "oid": 353920242843}}]}}}
+[2026-03-19 02:40:19 UTC] [EXEC]   Fees: open=$0.032220 close=$0.031920 total=$0.064140 | P&L after fees: $+0.6231
+[2026-03-19 02:40:19 UTC] [EXEC]   Closed WLD SHORT | kill_condition | +0.96% ($+0.69) (fees=$0.0641, net=$+0.6231)
+[2026-03-19 02:40:19 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=42
+[2026-03-19 02:45:20 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 02:45:20 UTC] [EXEC] Positions: 0 | Throttle: 1.0 | Kill: False
+[2026-03-19 02:45:21 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-19 02:45:21 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=42
+[2026-03-19 02:50:22 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 02:50:22 UTC] [EXEC] Positions: 0 | Throttle: 1.0 | Kill: False
+[2026-03-19 02:50:23 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-19 02:50:23 UTC] [EXEC] LIVE OPEN LINK SHORT | $35.60 (3.9) @ $9.1984 | sharpe=2.28
+[2026-03-19 02:50:25 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "3.9", "avgPx": "9.1956", "oid": 353925868842}}]}}}
+[2026-03-19 02:50:25 UTC] [EXEC]   Filled @ $9.1956
+[2026-03-19 02:50:25 UTC] [EXEC]   Execution: intended=$9.1984 filled=$9.1956 slippage=0.0310% ($0.0110) fill_time=2024ms spread=0.01087
+[2026-03-19 02:50:25 UTC] [EXEC]   LINK ATR-stop: ATR=0.110% → stop=3.00%
+[2026-03-19 02:50:25 UTC] [EXEC]   Stop loss: LINK trigger @ $9.5266 (buy 3.9)
+[2026-03-19 02:50:27 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353925895755}}]}}}
+[2026-03-19 02:50:27 UTC] [EXEC]   Open fill fee for LINK: $0.016138
+[2026-03-19 02:50:27 UTC] [EXEC] Summary: 1 positions, $35.60 notional, trades=42
+[2026-03-19 02:55:29 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 02:55:29 UTC] [EXEC] Positions: 1 | Throttle: 1.0 | Kill: False
+[2026-03-19 02:55:29 UTC] [EXEC]   Fetching 3 exit indicators for ['LINK']
+[2026-03-19 02:55:29 UTC] [EXEC] [LINK] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 02:55:29 UTC] [EXEC] Summary: 1 positions, $35.60 notional, trades=42
+[2026-03-19 03:00:31 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 03:00:31 UTC] [EXEC] Positions: 1 | Throttle: 1.0 | Kill: False
+[2026-03-19 03:00:31 UTC] [EXEC]   Fetching 3 exit indicators for ['LINK']
+[2026-03-19 03:00:31 UTC] [EXEC] [LINK] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 03:00:32 UTC] [EXEC] LIVE OPEN WLD SHORT | $33.32 (91.9) @ $0.3627 | sharpe=2.17
+[2026-03-19 03:00:33 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "91.9", "avgPx": "0.36267", "oid": 353931828426}}]}}}
+[2026-03-19 03:00:33 UTC] [EXEC]   Filled @ $0.3627
+[2026-03-19 03:00:33 UTC] [EXEC]   Execution: intended=$0.3627 filled=$0.3627 slippage=0.0193% ($0.0064) fill_time=1394ms spread=0.049509
+[2026-03-19 03:00:34 UTC] [EXEC]   WLD ATR-stop: ATR=0.237% → stop=3.00%
+[2026-03-19 03:00:34 UTC] [EXEC]   Stop loss: WLD trigger @ $0.3757 (buy 91.9)
+[2026-03-19 03:00:35 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353931841513}}]}}}
+[2026-03-19 03:00:35 UTC] [EXEC]   Open fill fee for WLD: $0.014998
+[2026-03-19 03:00:35 UTC] [EXEC]   Skip WLD SHORT: max 1 on WLD
+[2026-03-19 03:00:36 UTC] [EXEC] LIVE OPEN XPL SHORT | $21.84 (203.0) @ $0.1073 | sharpe=1.59
+[2026-03-19 03:00:37 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "203.0", "avgPx": "0.10734", "oid": 353931853499}}]}}}
+[2026-03-19 03:00:37 UTC] [EXEC]   Filled @ $0.1073
+[2026-03-19 03:00:37 UTC] [EXEC]   Execution: intended=$0.1073 filled=$0.1073 slippage=0.0047% ($0.0010) fill_time=1384ms spread=0.027963
+[2026-03-19 03:00:37 UTC] [EXEC]   XPL ATR-stop: ATR=0.249% → stop=3.00%
+[2026-03-19 03:00:37 UTC] [EXEC]   Stop loss: XPL trigger @ $0.1112 (buy 203.0)
+[2026-03-19 03:00:39 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 353931865374}}]}}}
+[2026-03-19 03:00:39 UTC] [EXEC]   Open fill fee for XPL: $0.009805
+[2026-03-19 03:00:40 UTC] [EXEC] Summary: 3 positions, $90.76 notional, trades=42
+[2026-03-19 03:05:41 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 03:05:41 UTC] [EXEC] Positions: 3 | Throttle: 1.0 | Kill: False
+[2026-03-19 03:05:42 UTC] [EXEC]   Fetching 5 exit indicators for ['XPL', 'LINK', 'WLD']
+[2026-03-19 03:05:42 UTC] [EXEC] [LINK] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-19 03:05:42 UTC] [EXEC] [WLD] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 03:05:42 UTC] [EXEC] [XPL] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-19 03:05:42 UTC] [EXEC] Summary: 3 positions, $90.76 notional, trades=42
+[2026-03-19 03:10:44 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 03:10:44 UTC] [EXEC] Positions: 3 | Throttle: 1.0 | Kill: False
+[2026-03-19 03:10:44 UTC] [EXEC]   Fetching 5 exit indicators for ['XPL', 'LINK', 'WLD']
+[2026-03-19 03:10:44 UTC] [EXEC] [LINK] Skipping exit eval — hold 20m < 120m minimum
+[2026-03-19 03:10:44 UTC] [EXEC] [WLD] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 03:10:44 UTC] [EXEC] [XPL] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-19 03:10:44 UTC] [EXEC] Summary: 3 positions, $90.76 notional, trades=42

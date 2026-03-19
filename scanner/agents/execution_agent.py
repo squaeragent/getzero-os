@@ -789,10 +789,14 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
         except Exception as _e:
             log(f"WARN: Could not read world_state for RISK_OFF check: {_e}")
 
-    # ── FIX 4: SOL LONG blacklist ───────────────────────────────────────────
-    # TODO: Remove when SOL LONG WR > 30% over 10+ trades
-    if coin == "SOL" and direction == "LONG":
-        log(f"BLOCKED: SOL LONG blacklisted (0% WR historical)")
+    # ── FIX 4: Coin+direction blacklist ─────────────────────────────────────
+    # Based on historical data: specific coin+direction combos with 0% WR
+    # TODO: Make dynamic — read from genealogy/observer data
+    _COIN_DIRECTION_BLACKLIST = {
+        ("SOL", "LONG"),   # 0% WR across 3 trades, -$1.22
+    }
+    if (coin, direction) in _COIN_DIRECTION_BLACKLIST:
+        log(f"BLOCKED: {coin} {direction} blacklisted (0% WR historical)")
         return None
 
     # ── FIX 2: Genealogy dead-family blacklist ──────────────────────────────
@@ -1161,16 +1165,22 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             continue
 
         # ── EXIT EXPRESSION (same logic as paper scanner) ──
+        # Only fire exit expressions when trade is losing OR has significant profit.
+        # Prevents cutting winners early on indicator noise.
         exit_expr = pos.get("exit_expression", "")
         if exit_expr and coin not in exit_indicators:
             log(f"  ⚠ No indicator data for {coin} — exit expression skipped (HL stop + max hold protect)")
         if exit_expr and coin in exit_indicators:
             triggered, missing = evaluate_expression(exit_expr, exit_indicators[coin])
             if triggered:
-                log(f"EXIT SIGNAL {coin} {pos['direction']} | expression fired | {pnl_pct*100:+.2f}%")
-                log(f"  Expression: {exit_expr}")
-                close_and_record(client, pos, current, pnl_pct, "exit_expression", portfolio, dry, main_address=main_address)
-                continue
+                # Gate: if winning but below 1%, let trailing stop handle it instead
+                if 0 < pnl_pct < 0.01:
+                    log(f"  [{coin}] Exit expression fired but pnl={pnl_pct*100:+.2f}% — deferring to trailing stop")
+                else:
+                    log(f"EXIT SIGNAL {coin} {pos['direction']} | expression fired | {pnl_pct*100:+.2f}%")
+                    log(f"  Expression: {exit_expr}")
+                    close_and_record(client, pos, current, pnl_pct, "exit_expression", portfolio, dry, main_address=main_address)
+                    continue
             elif missing:
                 log(f"  WARN: exit expression missing indicators for {coin}: {missing}")
 
