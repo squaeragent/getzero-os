@@ -262,7 +262,7 @@ class SupabaseClient:
         """Insert an equity curve data point."""
         try:
             payload = {
-                "equity_usd": snapshot.get("account_value") or snapshot.get("equity_usd"),
+                "equity_usd": snapshot.get("account_value", None) if snapshot.get("account_value") is not None else snapshot.get("equity_usd", snapshot.get("equity", 0)),
                 "unrealized_pnl": snapshot.get("unrealized_pnl", 0),
                 "realized_pnl": snapshot.get("realized_pnl_today") or snapshot.get("realized_pnl", 0),
                 "open_positions": snapshot.get("open_positions", 0),
@@ -333,14 +333,14 @@ class SupabaseClient:
             log.warning("insert_counterfactual error: %s", exc)
             return False
 
-    def update_heartbeat(self, agent: str) -> bool:
+    def update_heartbeat(self, agent: str, ts: str | None = None) -> bool:
         """Upsert agent heartbeat timestamp."""
         try:
-            now = datetime.now(timezone.utc).isoformat()
+            now = ts or datetime.now(timezone.utc).isoformat()
             payload = {
                 "agent": agent,
                 "last_heartbeat": now,
-                "updated_at": now,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
             }
             headers_override = dict(self._headers)
             headers_override["Prefer"] = "resolution=merge-duplicates,return=minimal"

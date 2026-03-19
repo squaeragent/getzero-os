@@ -610,12 +610,22 @@ def run_cycle(main_address):
     write_risk(risk_state)
     write_heartbeat()
 
-    # ── SUPABASE: persist equity snapshot ──────────────────────────────────
+    # ── SUPABASE: persist equity snapshot + heartbeats ───────────────────
     if _supabase is not None:
         try:
             _supabase.insert_equity_snapshot(risk_state)
         except Exception as _e:
             print(f"  [warn] Supabase equity snapshot failed: {_e}")
+        # Sync all agent heartbeats to Supabase
+        try:
+            import json as _json
+            _hb_path = BUS_DIR / "heartbeat.json"
+            if _hb_path.exists():
+                _hb_data = _json.loads(_hb_path.read_text())
+                for _agent_name, _ts in _hb_data.items():
+                    _supabase.update_heartbeat(_agent_name, _ts)
+        except Exception as _e2:
+            print(f"  [warn] Supabase heartbeat sync failed: {_e2}")
 
     # 10. Print summary
     status_icon = {"green": "OK", "yellow": "WARN", "orange": "DANGER", "red": "KILL"}

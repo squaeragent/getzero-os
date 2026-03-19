@@ -779,12 +779,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var SUPABASE_URL = 'https://fzzotmxxrcnmrqtmsesi.supabase.co';
   var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6em90bXh4cmNubXJxdG1zZXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTc0MTcsImV4cCI6MjA4OTQ5MzQxN30.m8PgL6n-0Fbgi_Fm2hchlcMWE6xwCx6wr3xOyaokRlo';
 
-  function sbFetch(path){
+  function sbFetch(path, extraHeaders){
+    var headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    };
+    if(extraHeaders){
+      for(var k in extraHeaders) headers[k] = extraHeaders[k];
+    }
     return fetch(SUPABASE_URL + '/rest/v1/' + path, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY
-      }
+      headers: headers
     }).then(function(res){
       if(!res.ok) throw new Error('Supabase HTTP ' + res.status + ' on ' + path);
       return res.json();
@@ -857,7 +861,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return Promise.all([
       sbFetch('positions?order=entry_time.desc'),
       sbFetch('trades?order=exit_time.desc&limit=200'),
-      sbFetch('equity_snapshots?order=recorded_at.desc&limit=200'),
+      sbFetch('equity_snapshots?order=recorded_at.desc&limit=3000', {'Range': '0-2999'}),
       sbFetch('agent_heartbeats?order=last_heartbeat.desc')
     ]).then(function(results){
       var positions        = results[0] || [];
@@ -912,9 +916,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
 
       // Build equity curve (snapshots come desc; reverse for chart oldest→newest)
-      var liveEquityCurve = equitySnapshots.slice().reverse().map(function(s){
+      var allPoints = equitySnapshots.slice().reverse().map(function(s){
         return {t: new Date(s.recorded_at).getTime(), v: s.equity_usd};
       });
+      // Downsample to ~200 points for chart performance
+      var liveEquityCurve;
+      if(allPoints.length <= 200){
+        liveEquityCurve = allPoints;
+      } else {
+        liveEquityCurve = [];
+        var step = (allPoints.length - 1) / 199;
+        for(var si = 0; si < 200; si++){
+          liveEquityCurve.push(allPoints[Math.round(si * step)]);
+        }
+      }
 
       // Build heartbeat map: { agent_name: iso_timestamp }
       var heartbeatMap = {};
