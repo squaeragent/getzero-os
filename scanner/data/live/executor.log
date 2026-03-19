@@ -5296,3 +5296,33 @@
 [2026-03-19 08:55:01 UTC] [EXEC]   Closed DOGE LONG | kill_condition | +0.17% ($+0.02) (fees=$0.0114, net=$+0.0107)
 [2026-03-19 08:55:01 UTC] [EXEC] [SUI] Skipping exit eval — hold 10m < 120m minimum
 [2026-03-19 08:55:01 UTC] [EXEC] Summary: 4 positions, $85.41 notional, trades=58
+[2026-03-19 09:00:03 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 09:00:03 UTC] [EXEC] Positions: 4 | Throttle: 0.5 | Kill: False
+[2026-03-19 09:00:03 UTC] [EXEC]   Fetching 9 exit indicators for ['PAXG', 'AVAX', 'SUI', 'ZEC']
+[2026-03-19 09:00:03 UTC] [EXEC] EXIT SIGNAL PAXG LONG | expression fired | -1.07%
+[2026-03-19 09:00:03 UTC] [EXEC]   Expression: XONE_I_NET >= 50 OR RSI_3H30M >= 60
+[2026-03-19 09:00:05 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.005", "avgPx": "4702.4", "oid": 354213437575}}]}}}
+[2026-03-19 09:00:05 UTC] [EXEC]   Fees: open=$0.000000 close=$0.000000 total=$0.000000 | P&L after fees: $-0.2573
+[2026-03-19 09:00:05 UTC] [EXEC]   Closed PAXG LONG | exit_expression | -1.07% ($-0.26) (fees=$0.0000, net=$-0.2573)
+[2026-03-19 09:00:05 UTC] [EXEC] [AVAX] Skipping exit eval — hold 46m < 120m minimum
+[2026-03-19 09:00:05 UTC] [EXEC] [ZEC] Skipping exit eval — hold 26m < 120m minimum
+[2026-03-19 09:00:05 UTC] [EXEC] [SUI] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-19 09:00:05 UTC] [EXEC] Summary: 3 positions, $61.41 notional, trades=59
+[2026-03-19 09:05:07 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 09:05:07 UTC] [EXEC] Positions: 3 | Throttle: 0.5 | Kill: False
+[2026-03-19 09:05:07 UTC] [EXEC]   Fetching 7 exit indicators for ['AVAX', 'SUI', 'ZEC']
+[2026-03-19 09:05:07 UTC] [EXEC] [AVAX] Skipping exit eval — hold 51m < 120m minimum
+[2026-03-19 09:05:07 UTC] [EXEC] [ZEC] Skipping exit eval — hold 31m < 120m minimum
+[2026-03-19 09:05:07 UTC] [EXEC] KILL SIGNAL SUI SHORT | condition: 'funding reverses to intensifying long' | +0.06%
+[2026-03-19 09:05:09 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "17.3", "avgPx": "0.9598", "oid": 354218026852}}]}}}
+[2026-03-19 09:05:09 UTC] [EXEC]   Fees: open=$0.007475 close=$0.007472 total=$0.014947 | P&L after fees: $-0.0058
+[2026-03-19 09:05:09 UTC] [EXEC]   Closed SUI SHORT | kill_condition | +0.06% ($+0.01) (fees=$0.0149, net=$-0.0058)
+[2026-03-19 09:05:09 UTC] [EXEC]   Skip PAXG: order $9.41 < $10 min
+[2026-03-19 09:05:10 UTC] [EXEC] Summary: 2 positions, $44.78 notional, trades=60
+[2026-03-19 09:10:11 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-19 09:10:11 UTC] [EXEC] Positions: 2 | Throttle: 0.5 | Kill: False
+[2026-03-19 09:10:12 UTC] [EXEC]   Fetching 6 exit indicators for ['AVAX', 'ZEC']
+[2026-03-19 09:10:12 UTC] [EXEC] [AVAX] Skipping exit eval — hold 56m < 120m minimum
+[2026-03-19 09:10:12 UTC] [EXEC] [ZEC] Skipping exit eval — hold 36m < 120m minimum
+[2026-03-19 09:10:12 UTC] [EXEC]   Skip PAXG: order $9.39 < $10 min
+[2026-03-19 09:10:13 UTC] [EXEC] Summary: 2 positions, $44.78 notional, trades=60

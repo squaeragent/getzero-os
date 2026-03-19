@@ -172,7 +172,6 @@ def fetch_indicator_history(coin: str, secret: str) -> dict[str, list[float]]:
         "symbol": symbol,
         "interval": INTERVAL,
         "results": N_CANDLES,
-        "backtracks": 1,  # TAAPI uses 'backtracks' for array mode
     }
 
     raw: dict[str, list] = {}
@@ -601,6 +600,7 @@ def evaluate_expression(expression: str, values: dict[str, float]) -> tuple[bool
 # ─── Signal Testability ───────────────────────────────────────────────────────
 # Indicators we CAN evaluate (from TAAPI)
 TAAPI_AVAILABLE = {
+    # Standard TA — from TAAPI
     "RSI_6H", "RSI_12H", "RSI_24H", "RSI_48H", "RSI_3H30M",
     "EMA_N_6H", "EMA_N_12H", "EMA_N_24H", "EMA_N_48H",
     "EMA_3H_N", "EMA_6H30M_N", "EMA_CROSS_15M_N",
@@ -612,6 +612,22 @@ TAAPI_AVAILABLE = {
     "ADX_3H30M", "CMO_3H30M",
     "MOMENTUM_N_6H", "MOMENTUM_N_12H", "MOMENTUM_N_24H", "MOMENTUM_N_48H",
     "MOMENTUM_2H30M_N",
+    # Ichimoku — from TAAPI
+    "ICHIMOKU_BULL", "CLOUD_POSITION_15M",
+    "KIJUN_6H30M_N", "TENKAN_2H15M_N",
+    "SENKOU_A_6H30M_N", "SENKOU_B_13H_N",
+    "TENKAN_KIJUN_CROSS_15M_N",
+    # Price & ATR — from TAAPI/HL
+    "CLOSE_PRICE_15M", "ATR_24H",
+    # Chaos indicators — computed ourselves from HL candles
+    "HURST_24H", "HURST_48H",
+    "DFA_24H", "DFA_48H",
+    "LYAPUNOV_24H", "LYAPUNOV_48H",
+    # Doji — ENVY-only, but available via cache (mark as testable, will use cached values)
+    "DOJI_VELOCITY", "DOJI_VELOCITY_L", "DOJI_DISTANCE", "DOJI_DISTANCE_L",
+    "DOJI_SIGNAL", "DOJI_SIGNAL_L",
+    # BTC correlation — can compute from HL candles
+    "BTC_CORR_7D", "BTC_CORR_7D_DELTA",
 }
 
 
@@ -620,7 +636,7 @@ def is_signal_testable(signal: dict) -> tuple[bool, set[str]]:
     Returns (testable, missing_indicators).
     A signal is testable if ALL indicators in its entry expression are TAAPI-available.
     """
-    expression = signal.get("expression", "")
+    expression = signal.get("entry_expression", "") or signal.get("expression", "")
     exit_expr  = signal.get("exit_expression", "")
     required = extract_indicators_from_expr(expression)
     required |= extract_indicators_from_expr(exit_expr)
