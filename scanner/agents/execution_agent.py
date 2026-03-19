@@ -57,6 +57,35 @@ HL_URL = "https://api.hyperliquid.xyz"
 CYCLE_SECONDS = 300  # 5 minutes
 MIN_HOLD_BEFORE_EXIT_MINS = 120  # don't evaluate exit expressions before 2 hours
 
+# ─── TELEGRAM ALERTS ───
+TELEGRAM_CHAT_ID = "133058580"  # Igor
+
+
+def _get_telegram_bot_token():
+    """Read Telegram bot token from .env."""
+    env = load_env()
+    return env.get("TELEGRAM_BOT_TOKEN", "")
+
+
+def send_trade_alert(message):
+    """Send trade alert to Igor via Telegram."""
+    try:
+        token = _get_telegram_bot_token()
+        if not token:
+            log("WARN: No Telegram bot token found for trade alerts")
+            return
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = json.dumps({
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": message,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }).encode()
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=10)
+    except Exception as e:
+        log(f"WARN: Telegram alert failed: {e}")
+
 # ─── COIN TABLES (fetched from HL meta on startup) ───
 COIN_TO_ASSET = {}
 COIN_SIZE_DECIMALS = {}
@@ -956,6 +985,17 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
             "depth_at_entry": round(depth_at_entry, 2) if depth_at_entry else None,
         },
     }
+    # ── TELEGRAM ALERT: TRADE OPENED ──
+    if not dry:
+        _dir_emoji = "🟢" if direction == "LONG" else "🔴"
+        _alert = (
+            f"{_dir_emoji} <b>{coin} {direction}</b> opened\n"
+            f"Entry: ${fill_price:,.4f} | Size: ${size_usd:.0f}\n"
+            f"Stop: ${stop_price:,.4f} ({stop_pct:.1f}% {stop_type_label})\n"
+            f"Sharpe: {trade.get('sharpe', 0):.2f} | WR: {trade.get('win_rate', 0):.0f}%"
+        )
+        send_trade_alert(_alert)
+
     return position
 
 
@@ -1022,6 +1062,26 @@ def close_and_record(client, pos, current_price, pnl_pct, reason, portfolio, dry
     append_jsonl(CLOSED_FILE, closed)
     fee_str = f" (fees=${fees_usd:.4f}, net=${pnl_after_fees:+.4f})" if fees_usd is not None else ""
     log(f"  Closed {coin} {pos['direction']} | {reason} | {pnl_pct*100:+.2f}% (${pnl_usd:+.2f}){fee_str}")
+
+    # ── TELEGRAM ALERT: TRADE CLOSED ──
+    if not dry:
+        _pnl_emoji = "✅" if pnl_usd > 0 else "❌"
+        _dir_emoji = "🟢" if pos["direction"] == "LONG" else "🔴"
+        _hold = ""
+        if pos.get("entry_time"):
+            try:
+                _entry_dt = datetime.fromisoformat(pos["entry_time"])
+                _hold_mins = (datetime.now(timezone.utc) - _entry_dt).total_seconds() / 60
+                _hold = f" | Hold: {_hold_mins:.0f}min" if _hold_mins < 60 else f" | Hold: {_hold_mins/60:.1f}h"
+            except Exception:
+                pass
+        _alert = (
+            f"{_pnl_emoji} <b>{coin} {pos['direction']}</b> closed\n"
+            f"Entry: ${pos['entry_price']:,.4f} → Exit: ${current_price:,.4f}\n"
+            f"P&L: {pnl_pct*100:+.2f}% (${pnl_usd:+.2f}){fee_str}\n"
+            f"Reason: {reason}{_hold}"
+        )
+        send_trade_alert(_alert)
 
 
 def get_mark_price(coin):
