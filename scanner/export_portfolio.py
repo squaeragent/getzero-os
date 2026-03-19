@@ -369,7 +369,7 @@ def export():
             "trades": live_total_trades,
             "wins": live_total_wins,
             "dailyLoss": live_portfolio.get("daily_loss", 0),
-            "closed": live_closed[-20:],
+            "closed": live_closed,
             "started": live_portfolio.get("started", now_iso),
             "stats": live_stats,
         },
