@@ -861,7 +861,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return Promise.all([
       sbFetch('positions?order=entry_time.desc'),
       sbFetch('trades?order=exit_time.desc&limit=200'),
-      sbFetch('equity_snapshots?order=recorded_at.desc&limit=3000', {'Range': '0-2999'}),
+      fetch(SUPABASE_URL + '/rest/v1/rpc/get_equity_curve', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({points: 200})
+      }).then(function(res){ return res.ok ? res.json() : []; }).catch(function(){ return []; }),
       sbFetch('agent_heartbeats?order=last_heartbeat.desc')
     ]).then(function(results){
       var positions        = results[0] || [];
@@ -915,21 +923,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         };
       });
 
-      // Build equity curve (snapshots come desc; reverse for chart oldest→newest)
-      var allPoints = equitySnapshots.slice().reverse().map(function(s){
-        return {t: new Date(s.recorded_at).getTime(), v: s.equity_usd};
+      // Build equity curve (RPC returns data in ascending order already)
+      var liveEquityCurve = equitySnapshots.map(function(s){
+        return {t: new Date(s.recorded_at).getTime(), v: parseFloat(s.equity_usd)};
       });
-      // Downsample to ~200 points for chart performance
-      var liveEquityCurve;
-      if(allPoints.length <= 200){
-        liveEquityCurve = allPoints;
-      } else {
-        liveEquityCurve = [];
-        var step = (allPoints.length - 1) / 199;
-        for(var si = 0; si < 200; si++){
-          liveEquityCurve.push(allPoints[Math.round(si * step)]);
-        }
-      }
 
       // Build heartbeat map: { agent_name: iso_timestamp }
       var heartbeatMap = {};
