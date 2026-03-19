@@ -1237,7 +1237,18 @@ def sync_positions_with_hl(client, positions):
             log(f"SYNC {coin}: gone from HL, removing local tracker")
 
     for coin, hl in hl_map.items():
-        log(f"SYNC {coin}: on HL but not tracked ({hl['direction']} {hl['size']})")
+        log(f"SYNC {coin}: on HL but not tracked ({hl['direction']} {hl['size']}) — AUTO-CLOSING")
+        # Auto-close orphan positions (no metadata = no management)
+        try:
+            is_buy = hl["direction"] == "SHORT"
+            prices = client.get_all_prices()
+            mid = float(prices.get(coin, 0))
+            if mid > 0:
+                px = client.round_price(mid * 1.01 if is_buy else mid * 0.99)
+                result = client.place_order(coin, is_buy, hl["size"], px, reduce_only=True, order_type="ioc")
+                log(f"  ORPHAN CLOSED {coin}: {json.dumps(result)[:200]}")
+        except Exception as e:
+            log(f"  ORPHAN CLOSE FAILED {coin}: {e}")
 
     return synced
 
