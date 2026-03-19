@@ -2,573 +2,1644 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="ZERO OS" description="Adversarial cognition engine. 14 agents. 40 coins. Live on Hyperliquid.">
+<BaseLayout title="ZERO OS — AI trades better than you">
+
 <div class="page">
-<div class="terminal-border">
 
-  <!-- NAV -->
-  <div class="nav-bar">
-    <span class="nav-item nav-active">◇ ZERO OS</span>
-    <a href="/portfolio" class="nav-item">PORTFOLIO</a>
-    <a href="/thesis" class="nav-item">THESIS</a>
-  </div>
+  <div class="page-inner">
 
-  <!-- HERO -->
-  <div class="hero-section">
-    <div class="hero-body">
-      <h1 class="hero-title">Adversarial Cognition Engine</h1>
-      <p class="hero-sub">A system that challenges its own predictions before acting on them.</p>
-      <p class="hero-sub dim">Live on Hyperliquid. Real money. No paper trading.</p>
-    </div>
-  </div>
-
-  <!-- LIVE STATS -->
-  <div class="section">
-    <div class="ph">LIVE PERFORMANCE</div>
-    <div class="sb">
-      <div class="stats-row" id="stats-row">
-        <div class="stat">
-          <div class="stat-value" id="s-equity">$—</div>
-          <div class="stat-label">EQUITY</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="s-trades">—</div>
-          <div class="stat-label">TRADES</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="s-wr">—</div>
-          <div class="stat-label">WIN RATE</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="s-ratio">—</div>
-          <div class="stat-label">WIN/LOSS RATIO</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="s-pnl">—</div>
-          <div class="stat-label">REALIZED P&L</div>
-        </div>
+  <!-- CRT BOOT + MATRIX (two-column hero) -->
+  <header class="hero hero-split">
+    <div class="hero-left">
+      <div class="boot-sequence">
+        <pre class="boot-line b1" data-text="ZERO OS v0.1 .................... BOOT"></pre>
+        <pre class="boot-line b2" data-text="ENVY MATRIX .................... ACTIVE"></pre>
+        <pre class="boot-line b3" data-text="PORTFOLIO ENGINE ............... SELF-CUSTODIAL"></pre>
       </div>
-      <div class="eq-wrap">
-        <canvas id="equity-canvas" width="860" height="100"></canvas>
+
+      <div class="logo-wrap">
+        <pre class="logo-art">████████╗ ███████╗ ██████╗   ██████╗
+╚══███╔═╝ ██╔════╝ ██╔══██╗ ██╔═══██╗
+  ███╔╝   █████╗   ██████╔╝ ██║   ██║
+ ███╔╝    ██╔══╝   ██╔══██╗ ██║   ██║
+████████╗ ███████╗ ██║  ██║ ╚██████╔╝
+╚═══════╝ ╚══════╝ ╚═╝  ╚═╝  ╚═════╝</pre>
+        <div class="crt-scanline"></div>
+      </div>
+
+      <h1 class="hero-title">AI trades better than you.<br>And you're OK with it.</h1>
+
+      <p class="hero-bridge">Because this one doesn't guess.</p>
+
+      <p class="hero-sub">
+        79 dimensions of market intelligence. Self-custodial.<br>
+        Every other trading bot reads 5 indicators. This one reads 79.
+      </p>
+
+      <p class="hero-tertiary">Agent · Skill · CLI — works with OpenClaw, Claude Code, Perplexity Computer</p>
+
+      <div class="hero-cta">
+        <a href="#access" class="btn-primary">Request Early Access →</a>
+        <a href="/thesis" class="btn-ghost">Read the thesis →</a>
       </div>
     </div>
-  </div>
 
-  <!-- OPEN POSITIONS -->
-  <div class="section">
-    <div class="ph">OPEN POSITIONS <span class="dim" id="pos-count"></span></div>
-    <div class="sb" id="positions-body">
-      <span class="muted">Loading...</span>
+    <div class="hero-right">
+      <div class="matrix-head">
+        <p class="section-label p matrix-label">SIGNAL MATRIX — SIMULATION</p>
+        <span class="matrix-status" id="matrix-status">scanning</span>
+      </div>
+      <div class="matrix-wrap">
+        <canvas id="matrix-canvas"></canvas>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <!-- MARKET STATE -->
-  <div class="section">
-    <div class="ph">MARKET STATE — <span id="coin-count">40</span> COINS</div>
-    <div class="sb">
-      <div class="regime-bar" id="regime-bar"></div>
-      <div class="regime-legend" id="regime-legend"></div>
-      <div class="macro-line" id="macro-line"></div>
-    </div>
-  </div>
-
-  <!-- HOW IT WORKS -->
-  <div class="section">
-    <div class="ph">ARCHITECTURE</div>
-    <div class="sb">
-      <div class="arch-flow">
-        <div class="arch-stage">
-          <div class="arch-name">PERCEIVE</div>
-          <div class="arch-desc">81 indicators · 40 coins · regime classification</div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-stage">
-          <div class="arch-name">HYPOTHESIZE</div>
-          <div class="arch-desc">1,190 signals · composite scoring · genealogy</div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-stage arch-adversary">
-          <div class="arch-name">CHALLENGE</div>
-          <div class="arch-desc" id="adv-desc">13 attacks · evolving weights · counterfactual validation</div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-stage">
-          <div class="arch-name">ACT</div>
-          <div class="arch-desc">Hyperliquid perps · on-chain stops · position sync</div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-stage">
-          <div class="arch-name">EVOLVE</div>
-          <div class="arch-desc">Parameter evolution · adversary evolution · signal blacklisting</div>
+  <!-- ═══ PANE: INTELLIGENCE ═══ -->
+  <div class="pane-grid reveal">
+    <div class="pane">
+      <div class="pane-header"><span class="p">■</span> INTELLIGENCE <span class="pane-dim">— 79 dimensions</span></div>
+      <div class="pane-body">
+        <p class="pane-text">Technical indicators across 7 timeframes. Ichimoku cloud. Sentiment analysis. Candlestick patterns. Your bot checks RSI. Ours checks everything — and knows when RSI is lying.</p>
+        <div class="edge-contrast">
+          <div class="edge-row">
+            <span class="edge-them dim">RSI says overbought</span>
+            <span class="edge-us p">→ We know if RSI even applies right now</span>
+          </div>
+          <div class="edge-row">
+            <span class="edge-them dim">MACD crossover detected</span>
+            <span class="edge-us p">→ We tell you if it's a signal or a trap</span>
+          </div>
         </div>
       </div>
-      <div class="arch-loop">↻ every trade feeds back into the next decision</div>
     </div>
-  </div>
-
-  <!-- KEY NUMBERS -->
-  <div class="section">
-    <div class="ph">SYSTEM</div>
-    <div class="sb">
-      <div class="sys-grid">
-        <div class="sys-item"><span class="sys-val">14</span> <span class="sys-key">agents</span></div>
-        <div class="sys-item"><span class="sys-val">40</span> <span class="sys-key">coins monitored</span></div>
-        <div class="sys-item"><span class="sys-val">81</span> <span class="sys-key">indicators per coin</span></div>
-        <div class="sys-item"><span class="sys-val">1,190</span> <span class="sys-key">signals in library</span></div>
-        <div class="sys-item"><span class="sys-val">13</span> <span class="sys-key">adversarial attacks</span></div>
-        <div class="sys-item"><span class="sys-val" id="s-counterfactual">172</span> <span class="sys-key">counterfactual validations</span></div>
-        <div class="sys-item"><span class="sys-val" id="s-adv-accuracy">71%</span> <span class="sys-key">adversary accuracy</span></div>
-        <div class="sys-item"><span class="sys-val" id="s-families">161</span> <span class="sys-key">signal families tracked</span></div>
+    <div class="pane">
+      <div class="pane-header"><span class="p">■</span> MARKET STATE <span class="pane-dim">— live detection</span></div>
+      <div class="pane-body">
+        <div class="regime-viz">
+          <div class="rv-bar-group">
+            <div class="rv-bar">
+              <span class="rv-label dim">TREND</span>
+              <div class="rv-track">
+                <div class="rv-fill" id="rv-hurst"></div>
+                <div class="rv-marker" id="rv-hurst-marker"></div>
+              </div>
+              <span class="rv-val" id="rv-hurst-val">0.50</span>
+            </div>
+            <div class="rv-bar">
+              <span class="rv-label dim">PATTERN</span>
+              <div class="rv-track">
+                <div class="rv-fill" id="rv-dfa"></div>
+                <div class="rv-marker" id="rv-dfa-marker"></div>
+              </div>
+              <span class="rv-val" id="rv-dfa-val">0.50</span>
+            </div>
+            <div class="rv-bar">
+              <span class="rv-label dim">CHAOS</span>
+              <div class="rv-track">
+                <div class="rv-fill rv-fill-lyap" id="rv-lyap"></div>
+                <div class="rv-marker" id="rv-lyap-marker"></div>
+              </div>
+              <span class="rv-val" id="rv-lyap-val">0.00</span>
+            </div>
+          </div>
+          <div class="rv-output">
+            <div class="rv-regime-badge" id="rv-badge">SCANNING</div>
+            <p class="rv-verdict" id="rv-verdict">MACD crossover → <span class="p">ANALYZING</span></p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- RECENT TRADES -->
-  <div class="section">
-    <div class="ph">RECENT TRADES <span class="dim" id="closed-count"></span></div>
-    <div class="sb" id="trades-body">
-      <span class="muted">Loading...</span>
+  <!-- ═══ PANE: BACKTEST ═══ -->
+  <div class="pane-full reveal" id="proof">
+    <div class="pane">
+      <div class="pane-header"><span class="a">■</span> MONTE CARLO BACKTEST <span class="pane-dim">— Jan 2025 – Dec 2025 · 10K runs/coin · 0.1% fees · 0.05% slippage</span></div>
+      <div class="pane-body">
+        <div class="bt-split">
+          <div class="bt-table-wrap">
+            <table class="bt-table">
+              <thead>
+                <tr>
+                  <th class="bt-coin">COIN</th>
+                  <th>RETURN</th>
+                  <th>WIN RATE</th>
+                  <th>MAX DD</th>
+                  <th class="bt-hide-mobile">p5 RETURN*</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="bt-coin">BTC</td><td class="p">+52.2%</td><td>50.9%</td><td class="bt-dd">-14.9%</td><td class="p bt-hide-mobile">+35.3%</td></tr>
+                <tr><td class="bt-coin">ETH</td><td class="p">+77.4%</td><td>39.8%</td><td class="bt-dd">-28.3%</td><td class="p bt-hide-mobile">+42.0%</td></tr>
+                <tr><td class="bt-coin">SOL</td><td class="p">+86.5%</td><td>43.4%</td><td class="bt-dd">-16.0%</td><td class="p bt-hide-mobile">+50.4%</td></tr>
+                <tr><td class="bt-coin">ARB</td><td class="p">+95.8%</td><td>37.1%</td><td class="bt-dd">-23.1%</td><td class="p bt-hide-mobile">+45.6%</td></tr>
+                <tr><td class="bt-coin">CRV</td><td class="p">+127.0%</td><td>34.7%</td><td class="bt-dd bt-dd-hot">-31.5%</td><td class="p bt-hide-mobile">+43.7%</td></tr>
+                <tr><td class="bt-coin">KPEPE</td><td class="p">+256.1%</td><td>37.7%</td><td class="bt-dd">-20.4%</td><td class="p bt-hide-mobile">+165.0%</td></tr>
+                <tr><td class="bt-coin">KBONK</td><td class="p">+224.6%</td><td>32.6%</td><td class="bt-dd bt-dd-hot">-29.2%</td><td class="p bt-hide-mobile">+143.2%</td></tr>
+                <tr><td class="bt-coin">TRX</td><td class="p">+59.4%</td><td class="bt-wr-best">61.3%</td><td class="bt-dd bt-dd-safe">-8.3%</td><td class="p bt-hide-mobile">+47.8%</td></tr>
+                <tr><td class="bt-coin">DOGE</td><td class="p">+47.6%</td><td>38.2%</td><td class="bt-dd">-19.7%</td><td class="p bt-hide-mobile">+20.1%</td></tr>
+                <tr><td class="bt-coin">KSHIB</td><td class="p">+117.7%</td><td>43.0%</td><td class="bt-dd">-17.8%</td><td class="p bt-hide-mobile">+70.7%</td></tr>
+                <tr class="bt-neg"><td class="bt-coin">PAXG</td><td class="dim">-5.1%</td><td>49.2%</td><td class="bt-dd bt-dd-safe">-11.3%</td><td class="red bt-hide-mobile">-14.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="bt-highlights-side">
+            <div class="bt-stat tilt-card">
+              <div class="bt-stat-val p" data-count-to="14" data-count-suffix="/15">0/15</div>
+              <div class="bt-stat-label dim">coins profitable</div>
+            </div>
+            <div class="bt-stat tilt-card">
+              <div class="bt-stat-val a" data-count-to="37" data-count-suffix="%">0%</div>
+              <div class="bt-stat-label dim">avg win rate</div>
+            </div>
+            <div class="bt-stat tilt-card">
+              <div class="bt-stat-val ice">p5+</div>
+              <div class="bt-stat-label dim">worst 5% still profitable</div>
+            </div>
+          </div>
+        </div>
+        <p class="bt-footnote dim">* p5 = 5th percentile of Monte Carlo simulations. 95% of outcomes beat this.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PANE: MODES + AGENT ═══ -->
+  <div class="pane-grid reveal">
+    <div class="pane">
+      <div class="pane-header"><span class="a">■</span> AUTONOMY MODES</div>
+      <div class="pane-body">
+        <div class="mode-gradient">
+          <div class="mode-step" style="--mode-opacity: 0.4">
+            <div class="mode-bar"></div>
+            <div class="mode-content">
+              <span class="mode-label dim">OBSERVE</span>
+              <span class="mode-meta dim">LEARN</span>
+            </div>
+            <p class="mode-desc-inline dim">Watch the agent think. No trades.</p>
+          </div>
+          <div class="mode-step" style="--mode-opacity: 0.6">
+            <div class="mode-bar a"></div>
+            <div class="mode-content">
+              <span class="mode-label a">SIGNAL</span>
+              <span class="mode-meta dim">VALIDATE</span>
+            </div>
+            <p class="mode-desc-inline dim">Agent generates signals. You decide.</p>
+          </div>
+          <div class="mode-step" style="--mode-opacity: 0.8">
+            <div class="mode-bar ice"></div>
+            <div class="mode-content">
+              <span class="mode-label ice">SEMI-AUTO</span>
+              <span class="mode-meta dim">TRUST</span>
+            </div>
+            <p class="mode-desc-inline dim">One tap to approve. Kill switch.</p>
+          </div>
+          <div class="mode-step" style="--mode-opacity: 1">
+            <div class="mode-bar p"></div>
+            <div class="mode-content">
+              <span class="mode-label p">AUTO</span>
+              <span class="mode-meta p">DELEGATE</span>
+            </div>
+            <p class="mode-desc-inline dim">24/7 within your risk parameters.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pane">
+      <div class="pane-header"><span class="ice">■</span> RUNTIME</div>
+      <div class="pane-body">
+        <div class="agent-list">
+          <p class="agent-point dim"><span class="p">AGENT</span> Ships with OpenClaw runtime. Install, configure, trade.</p>
+          <p class="agent-point dim"><span class="p">SKILL</span> Plug into OpenClaw, Claude Code, or any agentic framework.</p>
+          <p class="agent-point dim"><span class="p">CLI</span> Direct command-line. Script it, automate it, integrate it.</p>
+        </div>
+        <div class="custody-list" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <p class="agent-point dim"><span class="p">✓</span> Keys encrypted locally</p>
+          <p class="agent-point dim"><span class="p">✓</span> Kill switch — pause instantly</p>
+          <p class="agent-point dim"><span class="p">✓</span> Position limits + daily loss caps</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PANE: ACCESS ═══ -->
+  <div class="pane-grid reveal" id="access">
+    <div class="pane pane-cta">
+      <div class="pane-header"><span class="p">■</span> ACCESS</div>
+      <div class="pane-body">
+        <p class="term-line dim term-cursor">$ zero-os --status</p>
+        <p class="term-line"><span class="p">▸</span> Intelligence: <span class="p">BUILT</span></p>
+        <p class="term-line"><span class="p">▸</span> Signal API: <span class="a">PRE-LAUNCH</span></p>
+        <p class="term-line"><span class="p">▸</span> Methodology: <a href="/thesis" style="color:var(--phosphor)">/thesis</a></p>
+        <p class="term-line"><span class="p">▸</span> Self-custodial: your keys, your machine</p>
+        <p class="term-line dim" style="margin-top:1rem">$ zero-os request_access</p>
+        <form class="term-form" id="access-form" action="#" method="POST">
+          <div class="term-input-row">
+            <span class="p">email:</span>
+            <input type="email" id="access-email" class="term-input" placeholder="you@fund.com" required autocomplete="email">
+          </div>
+          <button type="submit" class="term-submit">SUBMIT ↵</button>
+        </form>
+        <p class="term-confirm" id="term-confirm" style="display:none">
+          <span class="p">✓ ACCESS_REQUEST_QUEUED</span><br>
+          <span class="dim">ref: ZOS-<span id="req-id">0000</span> — we'll be in touch.</span>
+        </p>
+        <p class="term-error" id="term-error" style="display:none">
+          <span class="red">✗ CONNECTION_ERROR</span><br>
+          <span class="dim">Try again later.</span>
+        </p>
+      </div>
+    </div>
+    <div class="pane pane-status">
+      <div class="pane-header"><span class="dim">■</span> SYSTEM</div>
+      <div class="pane-body">
+        <p class="term-line dim">uptime .............. operational</p>
+        <p class="term-line dim">agents .............. 5 cognitive functions</p>
+        <p class="term-line dim">intelligence ........ 79 dimensions</p>
+        <p class="term-line dim">backtest ............ 14/15 profitable</p>
+        <p class="term-line dim">custody ............. self-custodial</p>
+        <p class="term-line dim">mode ................ design partners</p>
+        <p class="term-line dim" style="margin-top:1rem">next: signal API launch</p>
+      </div>
     </div>
   </div>
 
   <!-- FOOTER -->
-  <div class="footer">
-    <span class="dim">◇ ZERO OS — adversarial cognition engine</span>
-  </div>
+  <footer class="footer reveal">
+    <span class="p">◇</span> <span class="dim">ZERO OS</span>
+  </footer>
 
+  </div><!-- /page-inner -->
 </div>
-</div>
+
 </BaseLayout>
 
-<style is:global>
+<style>
+  html, body { overflow-x: hidden; max-width: 100vw; }
   .page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1rem;
-    min-height: 100vh;
+    margin: 0.5rem;
+    border: 1px solid rgba(200,255,0,0.4);
+    min-height: calc(100vh - 1rem);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    animation: borderFlash 0.3s ease 0.95s both;
   }
-  .terminal-border {
-    border: 1px solid rgba(200,255,0,0.25);
-    min-height: 100vh;
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(200,255,0,0.012) 2px, rgba(200,255,0,0.012) 4px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .page-inner { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 0.75rem 3rem 2rem; 
   }
 
-  /* NAV */
-  .nav-bar {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border);
+  /* CRT */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 100;
+  }
+  @media (max-width: 639px) {
+    body::before { opacity: 0.5; }
+    .page { margin: 0.5rem auto; min-height: calc(100vh - 1rem); }
+    .page-inner { padding: 0.5rem 1rem 1.25rem; }
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 0%, transparent 90%, rgba(0,0,0,0.1) 95%, rgba(0,0,0,0.2) 100%);
+    pointer-events: none;
+    z-index: 101;
+  }
+  @media (max-width: 639px) {
+    body::after { display: none; }
+  }
+
+  /* HERO — two-column split on desktop */
+  .hero-split {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .hero-split { grid-template-columns: 1fr; }
+  }
+  .hero-left { }
+  .hero-right { 
+    padding-top: 1rem;
+  }
+  /* Dual-column layout for modes + agent */
+  .dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  @media (max-width: 900px) {
+    .dual-grid { grid-template-columns: 1fr; }
+  }
+  .dual-col { }
+  .agent-list { margin-bottom: 1.25rem; }
+  .custody-list { 
+    border-top: 1px solid var(--border); 
+    padding-top: 1rem; 
+  }
+  .hero { padding: 0.5rem 0 2rem; border-bottom: 1px solid var(--border); }
+  .boot-sequence { margin-bottom: 1.25rem; }
+  .boot-line {
     font-family: var(--font-head);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    color: var(--text-dim);
+    margin: 0;
+    line-height: 1.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    min-height: 1.8em;
+    transition: text-shadow 0.2s ease;
   }
-  .nav-item { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
-  .nav-item:hover { color: var(--phosphor); }
-  .nav-active { color: var(--phosphor); border-bottom: 1px solid var(--phosphor); padding-bottom: 0.25rem; }
+  .boot-line .boot-cursor {
+    color: var(--phosphor);
+    animation: blink 0.6s step-end infinite;
+  }
 
-  /* HERO */
-  .hero-section { border-bottom: 1px solid var(--border); }
-  .hero-body { padding: 2rem 1rem 1.5rem; }
+  .logo-wrap { position: relative; margin-bottom: 1.5rem; overflow: hidden; }
+  .logo-art {
+    font-family: var(--font-head);
+    font-size: clamp(7px, calc((100vw - 30px) / 38), 22px);
+    line-height: 1.15;
+    color: var(--phosphor);
+    white-space: pre;
+    margin: 0;
+    background: transparent;
+    border: none;
+    opacity: 0;
+    animation: logoIn 0.4s ease 1.0s both, logoGlow 3s ease-in-out 1.5s infinite;
+  }
+  @keyframes logoIn {
+    0% { opacity: 0; filter: brightness(4) blur(3px); text-shadow: 0 0 30px rgba(200,255,0,0.8); }
+    40% { opacity: 0.8; filter: brightness(2) blur(1px); }
+    100% { opacity: 1; filter: brightness(1) blur(0); }
+  }
+  @keyframes logoGlow {
+    0%, 100% { text-shadow: 0 0 6px var(--phosphor-glow), 0 0 20px rgba(200,255,0,0.08); }
+    50% { text-shadow: 0 0 12px var(--phosphor-glow), 0 0 30px rgba(200,255,0,0.15), 0 0 50px rgba(200,255,0,0.05); }
+  }
+  .crt-scanline {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--phosphor);
+    opacity: 0.06;
+    animation: scanDrop 3s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scanDrop { 0% { top: 0; } 100% { top: 100%; } }
+
   .hero-title {
     font-family: var(--font-head);
-    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-size: clamp(1.6rem, 5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both;
+  }
+  .hero-bridge {
+    font-family: var(--font-head);
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
     font-weight: 700;
     color: var(--phosphor);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.35s both;
   }
   .hero-sub {
-    font-family: var(--font-body);
-    font-size: clamp(0.85rem, 2.5vw, 1rem);
-    color: var(--text);
-    margin-top: 0.5rem;
-    line-height: 1.4;
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    font-weight: 400;
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 560px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
   }
-  .dim { opacity: 0.5; }
-
-  /* SECTIONS */
-  .section { border-bottom: 1px solid var(--border); }
-  .ph {
+  .hero-tertiary {
     font-family: var(--font-head);
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text);
-    padding: 0.5rem 1rem 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-    border-left: 2px solid rgba(200,255,0,0.4);
-    background: rgba(0,0,0,0.6);
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.65s both;
   }
-  .sb { padding: 0.75rem 1rem; }
-  .muted { font-family: var(--font-head); font-size: 0.8rem; color: var(--text-dim); opacity: 0.4; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes borderFlash {
+    0% { border-color: rgba(200,255,0,0.4); box-shadow: none; }
+    50% { border-color: rgba(200,255,0,0.9); box-shadow: 0 0 30px rgba(200,255,0,0.15), inset 0 0 30px rgba(200,255,0,0.05); }
+    100% { border-color: rgba(200,255,0,0.4); box-shadow: none; }
+  }
 
-  /* STATS ROW */
-  .stats-row {
+  .hero-cta {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    margin-bottom: 0.75rem;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.8s both;
   }
-  .stat { flex: 1; min-width: 80px; }
-  .stat-value {
+  @media (max-width: 639px) {
+    .hero-cta { flex-direction: column; }
+    .hero-cta a { text-align: center; }
+  }
+  .btn-primary {
     font-family: var(--font-head);
-    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    font-size: 0.85rem;
     font-weight: 700;
+    letter-spacing: 0.05em;
     color: var(--phosphor);
-    line-height: 1;
-  }
-  .stat-label {
-    font-family: var(--font-head);
-    font-size: 0.5rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-top: 0.2rem;
-  }
-
-  /* EQUITY CURVE */
-  .eq-wrap { margin-top: 0.5rem; }
-  .eq-wrap canvas { width: 100%; height: 100px; display: block; }
-
-  /* POSITIONS */
-  .pos-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
-    font-family: var(--font-head);
-    font-size: 0.75rem;
-  }
-  .pos-card:last-child { border-bottom: none; }
-  .pos-coin { font-weight: 700; min-width: 50px; }
-  .pos-dir { font-size: 0.6rem; letter-spacing: 0.08em; padding: 0.1rem 0.3rem; }
-  .pos-long { color: #33ff66; border: 1px solid rgba(51,255,102,0.3); }
-  .pos-short { color: #ff3333; border: 1px solid rgba(255,51,51,0.3); }
-  .pos-entry { color: var(--text-dim); }
-  .pos-regime { color: var(--text-dim); font-size: 0.6rem; opacity: 0.6; }
-  .pos-pnl { margin-left: auto; font-weight: 600; }
-  .c-pos { color: #33ff66; }
-  .c-neg { color: #ff3333; }
-
-  /* REGIME BAR */
-  .regime-bar {
-    display: flex;
-    height: 6px;
-    border-radius: 1px;
+    background: transparent;
+    border: 1px solid var(--phosphor);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
     overflow: hidden;
-    margin-bottom: 0.5rem;
+    transition: color 0.3s, background 0.3s, box-shadow 0.3s;
   }
-  .regime-bar div { transition: width 0.5s; }
-  .regime-legend {
-    display: flex;
-    gap: 1rem;
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(200,255,0,0.1), transparent);
+    animation: scanSweep 3s linear infinite;
+  }
+  @keyframes scanSweep {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  .btn-primary:hover {
+    background: rgba(200,255,0,0.08);
+    box-shadow: 0 0 20px rgba(200,255,0,0.1), inset 0 0 20px rgba(200,255,0,0.05);
+    color: var(--phosphor);
+  }
+  .btn-ghost {
     font-family: var(--font-head);
-    font-size: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     color: var(--text-dim);
-    flex-wrap: wrap;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
   }
-  .regime-legend span::before {
+  .btn-ghost:hover {
+    border-color: rgba(200,255,0,0.25);
+    color: var(--text);
+    box-shadow: 0 0 12px rgba(200,255,0,0.04);
+  }
+
+  /* ═══ ORCHESTRATED BOOT SEQUENCE ═══ */
+  .hero-right {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: sectionIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.7s both;
+  }
+  @keyframes sectionIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Number counter animation */
+  .counter-animate {
+    display: inline-block;
+    animation: counterPop 0.4s ease both;
+  }
+  @keyframes counterPop {
+    0% { opacity: 0; transform: translateY(8px) scale(0.8); }
+    60% { transform: translateY(-2px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Mode step stagger */
+  .mode-step {
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+  }
+  .reveal.visible .mode-step:nth-child(1) { transition-delay: 0.05s; }
+  .reveal.visible .mode-step:nth-child(2) { transition-delay: 0.15s; }
+  .reveal.visible .mode-step:nth-child(3) { transition-delay: 0.25s; }
+  .reveal.visible .mode-step:nth-child(4) { transition-delay: 0.35s; }
+  .reveal.visible .mode-step {
+    opacity: var(--mode-opacity, 1);
+    transform: translateX(0);
+  }
+
+  /* Agent point stagger */
+  .agent-point {
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(1) { transition-delay: 0s; }
+  .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(2) { transition-delay: 0.08s; }
+  .reveal.visible .agent-col:nth-child(1) .agent-point:nth-child(3) { transition-delay: 0.16s; }
+  .reveal.visible .agent-col:nth-child(2) .agent-point:nth-child(1) { transition-delay: 0.05s; }
+  .reveal.visible .agent-col:nth-child(2) .agent-point:nth-child(2) { transition-delay: 0.13s; }
+  .reveal.visible .agent-col:nth-child(2) .agent-point:nth-child(3) { transition-delay: 0.21s; }
+  .reveal.visible .agent-point {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Hover micro-interactions */
+  .tilt-card {
+    transform: perspective(600px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.15s ease, border-color 0.4s, box-shadow 0.4s;
+    will-change: transform;
+  }
+
+  /* Edge row entrance */
+  .edge-row {
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .reveal.visible .edge-row:nth-child(1) { transition-delay: 0.1s; }
+  .reveal.visible .edge-row:nth-child(2) { transition-delay: 0.25s; }
+  .reveal.visible .edge-row {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Backtest table row entrance — only plays when parent section is visible */
+  .bt-table tbody tr {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  .reveal.visible .bt-table tbody tr {
+    animation: rowIn 0.3s ease both;
+  }
+  .reveal.visible .bt-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+  .reveal.visible .bt-table tbody tr:nth-child(2) { animation-delay: 0.12s; }
+  .reveal.visible .bt-table tbody tr:nth-child(3) { animation-delay: 0.19s; }
+  .reveal.visible .bt-table tbody tr:nth-child(4) { animation-delay: 0.26s; }
+  .reveal.visible .bt-table tbody tr:nth-child(5) { animation-delay: 0.33s; }
+  .reveal.visible .bt-table tbody tr:nth-child(6) { animation-delay: 0.40s; }
+  .reveal.visible .bt-table tbody tr:nth-child(7) { animation-delay: 0.47s; }
+  .reveal.visible .bt-table tbody tr:nth-child(8) { animation-delay: 0.54s; }
+  .reveal.visible .bt-table tbody tr:nth-child(9) { animation-delay: 0.61s; }
+  .reveal.visible .bt-table tbody tr:nth-child(10) { animation-delay: 0.68s; }
+  .reveal.visible .bt-table tbody tr:nth-child(11) { animation-delay: 0.75s; }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Terminal CTA typing cursor */
+  .term-line::after {
     content: '';
     display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin-right: 4px;
-    vertical-align: middle;
+    width: 0;
+    height: 0;
   }
-  .macro-line {
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    margin-top: 0.5rem;
+  .term-cursor::after {
+    content: '█';
+    animation: blink 1s step-end infinite;
+    color: var(--phosphor);
+    font-weight: 400;
   }
+  @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
 
-  /* ARCHITECTURE */
-  .arch-flow {
+  /* MATRIX */
+  .matrix-head {
     display: flex;
-    align-items: flex-start;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.4rem;
   }
-  .arch-stage {
-    flex: 1;
-    min-width: 100px;
-    padding: 0.5rem;
-    border: 1px solid var(--border);
-    text-align: center;
-  }
-  .arch-adversary { border-color: rgba(255,51,51,0.4); }
-  .arch-name {
+  .matrix-status {
     font-family: var(--font-head);
     font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
     color: var(--phosphor);
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.05em;
+    animation: pulse 2s ease infinite;
+    transition: opacity 0.15s ease;
   }
-  .arch-adversary .arch-name { color: #ff3333; }
-  .arch-desc {
-    font-family: var(--font-body);
-    font-size: 0.6rem;
-    color: var(--text-dim);
-    line-height: 1.3;
-  }
-  .arch-arrow {
-    font-family: var(--font-head);
-    color: var(--text-dim);
-    font-size: 0.8rem;
-    padding-top: 0.75rem;
-    opacity: 0.3;
-  }
-  .arch-loop {
-    text-align: center;
-    font-family: var(--font-head);
-    font-size: 0.6rem;
-    color: var(--text-dim);
-    opacity: 0.5;
-    margin-top: 0.5rem;
-  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-  /* SYSTEM GRID */
-  .sys-grid {
+  .matrix-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.6);
+    overflow: hidden;
+    max-width: 100%;
+    animation: matrixBreathe 4s ease-in-out infinite;
+    will-change: box-shadow, border-color;
+  }
+  @keyframes matrixBreathe {
+    0%,100% { box-shadow: 0 0 0px transparent, inset 0 0 0px transparent; border-color: var(--border); }
+    50% { box-shadow: 0 0 12px rgba(200,255,0,0.04), inset 0 0 20px rgba(200,255,0,0.02); border-color: rgba(200,255,0,0.15); }
+  }
+  #matrix-canvas {
+    display: block;
+    width: 100%;
+    image-rendering: pixelated;
+  }
+  /* regime badge animations handled in canvas via opacity cycling */
+
+  /* ═══ PANE SYSTEM — Terminal panels ═══ */
+  .pane-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
+    margin-bottom: 0.5rem;
   }
-  .sys-item {
-    font-family: var(--font-head);
-    font-size: 0.75rem;
-    padding: 0.4rem 0;
+  .pane-full { margin-bottom: 0.5rem; }
+  .pane {
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
   }
-  .sys-val { color: var(--phosphor); font-weight: 700; font-size: 0.9rem; }
-  .sys-key { color: var(--text-dim); margin-left: 0.3rem; }
-
-  /* TRADE LIST */
-  .trade-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.35rem 0;
-    border-bottom: 1px solid rgba(26,26,26,0.5);
+  .pane-header {
     font-family: var(--font-head);
     font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,10,0.6);
+    color: var(--text-dim);
   }
-  .trade-row:last-child { border-bottom: none; }
-  .tr-coin { font-weight: 700; min-width: 45px; }
-  .tr-dir { font-size: 0.55rem; letter-spacing: 0.06em; padding: 0.05rem 0.2rem; }
-  .tr-pnl { margin-left: auto; font-weight: 600; }
-  .tr-reason { color: var(--text-dim); font-size: 0.6rem; opacity: 0.6; }
-  .tr-time { color: var(--text-dim); font-size: 0.6rem; opacity: 0.4; }
+  .pane-dim { font-weight: 400; opacity: 0.5; font-size: 0.6rem; letter-spacing: 0.05em; }
+  .pane-body { padding: 1.25rem; overflow: hidden; }
+  .pane-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 900px) {
+    .pane-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Backtest split: table + highlights side by side */
+  .bt-split { display: grid; grid-template-columns: 1fr 200px; gap: 1.5rem; align-items: start; }
+  .bt-highlights-side { display: flex; flex-direction: column; gap: 0.75rem; }
+  @media (max-width: 900px) { .bt-split { grid-template-columns: 1fr; } }
+
+  /* ═══ SCROLL REVEAL (subtle — content visible, animates on enter) ═══ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-child {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible .reveal-child { opacity: 1; transform: translateY(0); }
+  .reveal.visible .reveal-child:nth-child(1) { transition-delay: 0s; }
+  .reveal.visible .reveal-child:nth-child(2) { transition-delay: .12s; }
+  .reveal.visible .reveal-child:nth-child(3) { transition-delay: .22s; }
+  .reveal.visible .reveal-child:nth-child(4) { transition-delay: .3s; }
+  .reveal.visible .reveal-child:nth-child(5) { transition-delay: .38s; }
+  .reveal.visible .reveal-child:nth-child(6) { transition-delay: .44s; }
+
+  /* ═══ EDGE CONTRAST ═══ */
+  .intel-explain {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 640px;
+    margin-bottom: 1.5rem;
+  }
+  .edge-contrast { margin-bottom: 1.25rem; }
+  .edge-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+  }
+  .edge-row:last-child { border-bottom: none; }
+  .edge-them {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+  .edge-us {
+    font-family: var(--font-head);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  /* ═══ PROPOSAL A: REGIME VISUALIZER ═══ */
+  .regime-viz { margin-top: 1rem; }
+  .rv-bar-group { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
+  .rv-bar {
+    display: grid;
+    grid-template-columns: 70px 1fr 42px;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-head);
+  }
+  .rv-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-align: right; }
+  .rv-track {
+    position: relative;
+    height: 20px;
+    background: rgba(26,26,26,0.6);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .rv-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 50%;
+    background: linear-gradient(90deg, rgba(200,255,0,0.15), rgba(200,255,0,0.05));
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.6s ease;
+  }
+  .rv-fill-lyap {
+    background: linear-gradient(90deg, rgba(0,212,255,0.1), rgba(255,51,51,0.15));
+  }
+  .rv-marker {
+    position: absolute;
+    top: 2px; bottom: 2px;
+    width: 3px;
+    left: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 8px var(--phosphor-glow);
+    transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease, box-shadow 0.4s ease;
+    will-change: left;
+  }
+  .rv-val {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .rv-output {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .rv-regime-badge {
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    transition: all 0.5s ease;
+  }
+  .rv-regime-badge.trending { color: var(--phosphor); border-color: var(--phosphor); background: rgba(200,255,0,0.08); box-shadow: 0 0 12px rgba(200,255,0,0.1); }
+  .rv-regime-badge.reverting { color: var(--amber); border-color: var(--amber); background: rgba(255,176,0,0.08); box-shadow: 0 0 12px rgba(255,176,0,0.1); }
+  .rv-regime-badge.chaotic { color: var(--red); border-color: var(--red); background: rgba(255,51,51,0.08); box-shadow: 0 0 12px rgba(255,51,51,0.1); animation: chaosPulse 0.8s ease infinite; }
+  .rv-regime-badge.shift { color: var(--ice); border-color: var(--ice); background: rgba(0,212,255,0.06); }
+  @keyframes chaosPulse { 0%,100%{opacity:1;}50%{opacity:.5;} }
+  .rv-verdict {
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ═══ BACKTEST TABLE ═══ */
+  .bt-sub { font-size: 0.9rem; line-height: 1.7; max-width: 640px; margin-bottom: 1.25rem; }
+  .bt-table-wrap {
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+  .bt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+  }
+  .bt-table thead { background: rgba(0,0,0,0.4); }
+  .bt-table th {
+    padding: 0.5rem 0.6rem;
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .bt-table th.bt-coin { text-align: left; }
+  .bt-table td {
+    padding: 0.4rem 0.6rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .bt-table td.bt-coin {
+    text-align: left;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .bt-table tr:hover { background: rgba(200,255,0,0.02); }
+  .bt-neg td { opacity: 0.5; }
+  .bt-dd { color: var(--text-dim); }
+  .bt-dd-hot { color: var(--amber); }
+  .bt-dd-safe { color: var(--ice); }
+  .bt-wr-best { color: var(--phosphor); font-weight: 700; }
+  @media (max-width: 639px) {
+    .bt-hide-mobile { display: none; }
+    .bt-table { font-size: 0.6rem; }
+    .bt-table th, .bt-table td { padding: 0.35rem 0.4rem; }
+  }
+
+  .bt-footnote { font-size: 0.7rem; line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+
+  /* BACKTEST HIGHLIGHTS */
+  .bt-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+  @media (max-width: 639px) { .bt-highlights { grid-template-columns: 1fr; } }
+  .bt-stat {
+    border: 1px solid var(--border);
+    padding: 1rem;
+    text-align: center;
+  }
+  .bt-stat-val {
+    font-family: var(--font-head);
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+  .bt-stat-label { font-size: 0.75rem; }
+
+  /* (steps removed — merged into agent section) */
+
+  /* ═══ MODES (gradient progression) ═══ */
+  .mode-gradient {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .mode-step {
+    display: grid;
+    grid-template-columns: 4px 180px 1fr;
+    gap: 0 1rem;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(26,26,26,0.3);
+    opacity: var(--mode-opacity, 1);
+    transition: opacity 0.3s, background 0.3s;
+  }
+  .mode-step:last-child { border-bottom: none; }
+  .mode-step:hover { opacity: 1; background: rgba(200,255,0,0.01); }
+  .mode-bar {
+    width: 4px;
+    height: 100%;
+    min-height: 24px;
+    background: var(--text-dim);
+    border-radius: 0;
+    transition: background 0.3s;
+  }
+  .mode-bar.p { background: var(--phosphor); box-shadow: 0 0 8px var(--phosphor-glow); }
+  .mode-bar.a { background: var(--amber); }
+  .mode-bar.ice { background: var(--ice); }
+  .mode-content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .mode-label {
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .mode-meta {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+  }
+  .mode-desc-inline { font-size: 0.8rem; line-height: 1.5; }
+  @media (max-width: 639px) {
+    .mode-step { grid-template-columns: 4px 1fr; }
+    .mode-desc-inline { grid-column: 2 / -1; margin-top: 0.2rem; font-size: 0.6rem; }
+    .mode-label { font-size: 0.8rem; }
+  }
+
+  /* ═══ AGENT ═══ */
+  .agent-point {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    margin-bottom: 0.4rem;
+  }
+  .agent-point span { margin-right: 0.3rem; }
+
+  /* ═══ MID-PAGE CTA ═══ */
+  .mid-cta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid transparent;
+    flex-wrap: wrap;
+  }
+  .mid-cta.visible { border-bottom-color: var(--border); }
+  .mid-cta-note { font-size: 0.55rem; line-height: 1.6; }
+  @media (max-width: 639px) {
+    .mid-cta { flex-direction: column; align-items: flex-start; }
+    .mid-cta .btn-primary { width: 100%; text-align: center; }
+  }
+
+  /* (credibility merged into access pane) */
+
+  /* ═══ PROPOSAL I: TILT HOVER ═══ */
+  .tilt-card {
+    transition: transform 0.2s ease, border-color 0.4s, box-shadow 0.4s;
+    transform-style: preserve-3d;
+  }
+  @media (hover: hover) {
+    .tilt-card:hover { transform: perspective(600px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); }
+  }
+
+  /* VISION */
+  /* (vision quote removed — replaced by token economy section) */
+
+  /* ═══ TERMINAL CTA (inside pane system) ═══ */
+  .pane-cta .pane-body, .pane-status .pane-body {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+  }
+  .term-line {
+    margin-bottom: 0.3rem;
+    line-height: 1.6;
+  }
+  .term-form { margin-top: 0.75rem; }
+  .term-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+  }
+  .term-input {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.3rem 0;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
+    caret-color: var(--phosphor);
+  }
+  .term-input:focus { border-color: var(--phosphor); }
+  .term-input::placeholder { color: var(--text-dim); }
+  .term-submit {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--phosphor);
+    background: transparent;
+    border: 1px solid var(--phosphor);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .term-submit:hover {
+    background: rgba(200,255,0,0.08);
+    box-shadow: 0 0 12px rgba(200,255,0,0.1);
+  }
+  .term-confirm, .term-error {
+    font-size: 0.65rem;
+    line-height: 1.7;
+    margin-top: 0.5rem;
+  }
+  .term-submit:disabled { opacity: 0.5; cursor: wait; }
 
   /* FOOTER */
   .footer {
-    padding: 0.75rem 1rem;
-    text-align: center;
+    padding: 1.5rem 0;
     font-family: var(--font-head);
     font-size: 0.55rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
+    text-align: center;
+    border-top: 1px solid var(--border);
   }
 
-  /* MOBILE */
-  @media (max-width: 600px) {
-    .arch-arrow { display: none; }
-    .arch-flow { flex-direction: column; }
-    .stats-row { gap: 0.75rem; }
-    .stat { min-width: 60px; }
-  }
+  /* UTILITY */
+  .p { color: var(--phosphor); }
+  .a { color: var(--amber); }
+  .ice { color: var(--ice); }
+  .dim { color: var(--text-dim); }
+  .red { color: var(--red); }
 </style>
 
-<script is:inline>
-(function(){
-  var API = 'https://api.getzero.dev';
+<script>
+// ═══════════════════════════════════════════════════
+// ZERO OS — Canvas Heat Map Matrix (fully canvas-rendered)
+// ═══════════════════════════════════════════════════
 
-  function fmt$(v){ return v==null?'—': (v<0?'-$':'$')+Math.abs(v).toFixed(2); }
-  function fmtPct(v){ return v==null?'—': (v>=0?'+':'')+v.toFixed(2)+'%'; }
+const ALL_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','SUI','NEAR','INJ'];
+const isMobile = window.innerWidth < 640;
+const COINS = isMobile ? ALL_COINS.slice(0, 8) : ALL_COINS;
+let LIVE_DATA = null; // filled by Envy API fetch
+const COLS = isMobile ? ['TREND','PATTERN','CHAOS','FLOW'] : ['TREND','PATTERN','SENT','CHAOS','FLOW'];
+const NC = COLS.length;
+const ROW_H = isMobile ? 34 : 30;
+const HDR_H = isMobile ? 28 : 26;
+const PAD = isMobile ? 6 : 10;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-  function ago(iso){
-    if(!iso) return '';
-    var s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-    if(s<60) return s+'s ago';
-    if(s<3600) return Math.floor(s/60)+'m ago';
-    return Math.floor(s/3600)+'h ago';
-  }
+// palette
+const CLR = {
+  phosphor: [200,255,0],
+  amber: [255,176,0],
+  red: [255,51,51],
+  ice: [0,212,255],
+  text: [232,228,223],
+  dim: [138,130,120],
+  bg: [5,5,5],
+  line: [26,26,26]
+};
 
-  // ─── FETCH AND RENDER ───
+const S = {
+  data: [], canvas: null, ctx: null,
+  w: 0, h: 0, coinW: isMobile ? 44 : 54, regW: isMobile ? 72 : 90, colW: 0,
+  glows: [], time: 0
+};
 
-  function loadAll(){
-    Promise.all([
-      fetch(API+'/performance').then(function(r){return r.json()}).catch(function(){return null}),
-      fetch(API+'/portfolio.json').then(function(r){return r.json()}).catch(function(){return null}),
-      fetch(API+'/regime').then(function(r){return r.json()}).catch(function(){return null}),
-      fetch(API+'/prices?coins=BTC,ETH,SOL,LINK,XPL,DOGE,AVAX,ARB,NEAR,SUI').then(function(r){return r.json()}).catch(function(){return null}),
-    ]).then(function(results){
-      var perf = results[0];
-      var portfolio = results[1];
-      var regime = results[2];
-      var prices = results[3];
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function lerp(a,b,t){return a+(b-a)*t;}
 
-      if(perf) renderStats(perf);
-      if(portfolio) renderPositions(portfolio, prices);
-      if(portfolio) renderTrades(portfolio);
-      if(portfolio) renderEquity(portfolio, perf);
-      if(regime) renderRegime(regime);
-    });
-  }
+function regime(h,d,ly){
+  if(ly>.85)return 'chaotic';
+  if(h<.45&&d<.45)return 'reverting';
+  if(h>.55&&d>.55)return 'trending';
+  if((h<.45&&d>.55)||(h>.55&&d<.45))return 'shift';
+  return '';
+}
 
-  function renderStats(p){
-    var el = function(id){ return document.getElementById(id); };
-    el('s-equity').textContent = '$' + (115 + (p.total_pnl_usd||0)).toFixed(2);
-    el('s-trades').textContent = p.total_trades || 0;
-    el('s-wr').textContent = (p.total_trades >= 5) ? p.win_rate + '%' : '—';
-    el('s-ratio').textContent = (p.total_trades >= 5) ? (p.win_loss_ratio||0).toFixed(2) + 'x' : '—';
-    el('s-pnl').textContent = fmt$(p.total_pnl_usd);
-    if(p.total_pnl_usd >= 0){
-      el('s-pnl').classList.add('c-pos');
+function heatRGBA(norm, alpha){
+  const d=Math.abs(norm-.5)*2;
+  const i=Math.pow(d,.7);
+  const c=norm<.5?CLR.phosphor:CLR.amber;
+  return `rgba(${c[0]},${c[1]},${c[2]},${i*alpha})`;
+}
+
+// Realistic seed ranges per coin — Hurst/DFA correlated for coherent regime detection
+// BTC/LINK/MATIC: stable, near random walk → regime rarely fires
+// SOL/SUI/NEAR: trending bias → Hurst&DFA both elevated
+// DOGE/INJ: chaotic bias → high Lyapunov, volatile
+// ETH/AVAX: mean-reverting bias → Hurst&DFA both low
+// ARB/OP: regime-shift prone → H high but D low (or vice versa)
+const SEEDS = {
+  BTC:  {h:[.47,.53], d:[.47,.53], s:[-.2,.2],  ly:[.10,.35], fl:[-.8,.8]},
+  ETH:  {h:[.38,.46], d:[.37,.45], s:[-.3,.3],  ly:[.15,.45], fl:[-1.2,1.2]},
+  SOL:  {h:[.56,.66], d:[.57,.65], s:[-.4,.4],  ly:[.20,.55], fl:[-1.5,1.5]},
+  DOGE: {h:[.40,.52], d:[.42,.50], s:[-.6,.7],  ly:[.70,.95], fl:[-2.5,2.5]},
+  AVAX: {h:[.36,.44], d:[.37,.45], s:[-.3,.3],  ly:[.20,.50], fl:[-1.2,1.2]},
+  LINK: {h:[.48,.54], d:[.48,.54], s:[-.2,.25], ly:[.12,.40], fl:[-.9,1.0]},
+  ARB:  {h:[.56,.64], d:[.38,.46], s:[-.4,.4],  ly:[.30,.60], fl:[-1.8,1.8]},
+  SUI:  {h:[.58,.68], d:[.56,.65], s:[-.4,.5],  ly:[.25,.60], fl:[-1.8,2.0]},
+  NEAR: {h:[.55,.63], d:[.54,.62], s:[-.35,.4], ly:[.22,.55], fl:[-1.5,1.8]},
+  INJ:  {h:[.42,.50], d:[.44,.52], s:[-.5,.6],  ly:[.65,.90], fl:[-2.2,2.2]}
+};
+
+// Column mapping: indices into full 5-value array [h,d,s,ly,fl]
+const COL_MAP = COLS.map(c=>({TREND:0,PATTERN:1,SENT:2,CHAOS:3,FLOW:4}[c]));
+
+function initData(){
+  COINS.forEach(coin=>{
+    const s=SEEDS[coin];
+    let full;
+    if(LIVE_DATA && LIVE_DATA[coin]){
+      const ld=LIVE_DATA[coin];
+      const h=ld.HURST_24H!=null?ld.HURST_24H:rnd(s.h[0],s.h[1]);
+      const d=ld.DFA_24H!=null?ld.DFA_24H:rnd(s.d[0],s.d[1]);
+      const sent=ld.XONE_AVG_NET!=null?(ld.XONE_AVG_NET/100):rnd(s.s[0],s.s[1]);
+      const ly=ld.LYAPUNOV_24H!=null?Math.min(ld.LYAPUNOV_24H,2)/2:rnd(s.ly[0],s.ly[1]);
+      const fl=ld.ROC_3H!=null?ld.ROC_3H:rnd(s.fl[0],s.fl[1]);
+      full=[h,d,sent,ly,fl];
+      // Tight drift around real values — movement for visual life, not regime flipping
+      s.h=[Math.max(0,h-.03),Math.min(1,h+.03)];
+      s.d=[Math.max(0,d-.03),Math.min(1,d+.03)];
+      s.s=[sent-.08,sent+.08];
+      s.ly=[Math.max(0,ly-.03),Math.min(1,ly+.03)];
+      s.fl=[fl-.5,fl+.5];
     } else {
-      el('s-pnl').classList.add('c-neg');
+      full=[rnd(s.h[0],s.h[1]),rnd(s.d[0],s.d[1]),rnd(s.s[0],s.s[1]),rnd(s.ly[0],s.ly[1]),rnd(s.fl[0],s.fl[1])];
     }
-  }
+    const v=COL_MAP.map(i=>full[i]);
+    const isLive = LIVE_DATA && LIVE_DATA[coin];
+    S.data.push({coin,v:[...v],t:[...v],full:[...full],reg:regime(full[0],full[1],full[3]),rt:0,seeds:s,liveLocked:!!isLive});
+  });
+}
 
-  function renderPositions(data, prices){
-    var positions = (data.liveTrading||{}).positions || [];
-    var body = document.getElementById('positions-body');
-    var count = document.getElementById('pos-count');
-    count.textContent = '(' + positions.length + ')';
+async function fetchLiveData(){
+  try{
+    const r=await fetch('/api/envy');
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!d.live||!d.matrix)return;
+    LIVE_DATA=d.matrix;
+    // Update existing data targets with live values
+    S.data.forEach(row=>{
+      const ld=LIVE_DATA[row.coin];
+      if(!ld)return;
+      const h=ld.HURST_24H!=null?ld.HURST_24H:row.full[0];
+      const df=ld.DFA_24H!=null?ld.DFA_24H:row.full[1];
+      const sent=ld.XONE_AVG_NET!=null?(ld.XONE_AVG_NET/100):row.full[2];
+      const ly=ld.LYAPUNOV_24H!=null?Math.min(ld.LYAPUNOV_24H,2)/2:row.full[3];
+      const fl=ld.ROC_3H!=null?ld.ROC_3H:row.full[4];
+      row.full=[h,df,sent,ly,fl];
+      row.t=COL_MAP.map(i=>row.full[i]);
+      row.seeds.h=[Math.max(0,h-.03),Math.min(1,h+.03)];
+      row.seeds.d=[Math.max(0,df-.03),Math.min(1,df+.03)];
+      row.seeds.s=[sent-.08,sent+.08];
+      row.seeds.ly=[Math.max(0,ly-.03),Math.min(1,ly+.03)];
+      row.seeds.fl=[fl-.5,fl+.5];
+      row.reg=regime(h,df,ly);
+      row.liveLocked=true;
+    });
+    // Update label
+    const lbl=document.querySelector('.matrix-label');
+    if(lbl){lbl.innerHTML='SIGNAL MATRIX — <span class="p">LIVE</span>';}
+    // Update verdict bar
+    updateVerdict();
+  }catch(e){console.warn('Envy API unavailable, using simulation',e);}
+}
 
-    if(!positions.length){
-      body.innerHTML = '<span class="muted">No open positions</span>';
-      return;
+
+function setup(){
+  const c=document.getElementById('matrix-canvas');
+  const wrap=c.parentElement;
+  const w=wrap.clientWidth;
+  const h=HDR_H+COINS.length*ROW_H+2;
+  c.width=w*DPR; c.height=h*DPR;
+  c.style.width=w+'px'; c.style.height=h+'px';
+  S.canvas=c; S.ctx=c.getContext('2d');
+  S.ctx.scale(DPR,DPR);
+  S.w=w; S.h=h;
+  S.colW=(w-S.coinW-S.regW-PAD*2)/NC;
+}
+
+function rgba(c,a){return `rgba(${c[0]},${c[1]},${c[2]},${a})`;}
+
+function draw(){
+  const {ctx,w,h,coinW,colW,regW}=S;
+  const dataX=PAD+coinW;
+
+  ctx.clearRect(0,0,w,h);
+
+  // header
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.fillRect(0,0,w,HDR_H);
+  ctx.font='bold '+(isMobile?'10':'9')+'px JetBrains Mono, monospace';
+  ctx.fillStyle=rgba(CLR.dim,.5);
+  ctx.textBaseline='middle';
+  ctx.textAlign='left';
+  ctx.fillText('ASSET',PAD,HDR_H/2);
+  ctx.textAlign='center';
+  COLS.forEach((c,j)=>{
+    ctx.fillText(c, dataX+j*colW+colW/2, HDR_H/2);
+  });
+  ctx.textAlign='right';
+  ctx.fillText('REGIME', w-PAD, HDR_H/2);
+
+  // header line
+  ctx.fillStyle=rgba(CLR.line,.6);
+  ctx.fillRect(0,HDR_H,w,1);
+
+  // rows
+  S.data.forEach((d,i)=>{
+    const y=HDR_H+1+i*ROW_H;
+
+    // alternating row bg
+    if(i%2===0){
+      ctx.fillStyle='rgba(255,255,255,0.008)';
+      ctx.fillRect(0,y,w,ROW_H);
     }
 
-    var priceMap = (prices && prices.matrix) || {};
-    var html = '';
-    for(var i=0; i<positions.length; i++){
-      var p = positions[i];
-      var dir = p.direction || 'LONG';
-      var dirClass = dir === 'LONG' ? 'pos-long' : 'pos-short';
-      var currentPrice = priceMap[p.coin] ? priceMap[p.coin].CLOSE_PRICE_15M : null;
-      var pnl = null;
-      if(currentPrice && p.entry_price){
-        if(dir === 'LONG') pnl = ((currentPrice - p.entry_price) / p.entry_price) * 100;
-        else pnl = ((p.entry_price - currentPrice) / p.entry_price) * 100;
+    // heat cells
+    d.v.forEach((val,j)=>{
+      const x=dataX+j*colW;
+      const fi=COL_MAP[j];
+      let norm;
+      if(fi<2) norm=val;
+      else if(fi===2) norm=(val+1)/2;
+      else if(fi===3) norm=1-Math.min(val,1.2)/1.2;
+      else norm=(val+3)/6;
+
+      // cell bg
+      ctx.fillStyle=heatRGBA(norm,.3);
+      ctx.fillRect(x+2, y+3, colW-4, ROW_H-6);
+
+      // subtle border on hot cells
+      const intensity=Math.abs(norm-.5)*2;
+      if(intensity>.6){
+        ctx.strokeStyle=heatRGBA(norm,.2);
+        ctx.lineWidth=1;
+        ctx.strokeRect(x+2.5, y+3.5, colW-5, ROW_H-7);
       }
-      var pnlStr = pnl != null ? fmtPct(pnl) : '—';
-      var pnlClass = pnl != null ? (pnl >= 0 ? 'c-pos' : 'c-neg') : '';
-      var regime = p.regime || '';
+    });
 
-      html += '<div class="pos-card">';
-      html += '<span class="pos-coin">' + p.coin + '</span>';
-      html += '<span class="pos-dir ' + dirClass + '">' + dir + '</span>';
-      html += '<span class="pos-entry">@ $' + (p.entry_price||0) + '</span>';
-      if(regime) html += '<span class="pos-regime">' + regime + '</span>';
-      html += '<span class="pos-pnl ' + pnlClass + '">' + pnlStr + '</span>';
-      html += '</div>';
+    // row line
+    ctx.fillStyle=rgba(CLR.line,.25);
+    ctx.fillRect(0, y+ROW_H-1, w, 1);
+
+    // coin label
+    ctx.font='bold '+(isMobile?'11':'10')+'px JetBrains Mono, monospace';
+    ctx.fillStyle=rgba(CLR.text,.85);
+    ctx.textAlign='left';
+    ctx.textBaseline='middle';
+    ctx.fillText(d.coin, PAD, y+ROW_H/2);
+
+    // values
+    ctx.font=(isMobile?'11':'10')+'px JetBrains Mono, monospace';
+    ctx.textAlign='center';
+    d.v.forEach((val,j)=>{
+      const fi=COL_MAP[j];
+      let norm;
+      if(fi<2) norm=val;
+      else if(fi===2) norm=(val+1)/2;
+      else if(fi===3) norm=1-Math.min(val,1.2)/1.2;
+      else norm=(val+3)/6;
+
+      const intensity=Math.abs(norm-.5)*2;
+      if(intensity>.5){
+        const c=norm<.5?CLR.phosphor:CLR.amber;
+        ctx.fillStyle=rgba(c, .6+intensity*.4);
+      } else {
+        ctx.fillStyle=rgba(CLR.text,.55);
+      }
+      ctx.fillText(val.toFixed(2), dataX+j*colW+colW/2, y+ROW_H/2);
+    });
+
+    // regime badge
+    if(d.reg){
+      const labels={trending:'TRENDING',reverting:'REVERTING',chaotic:'CHAOTIC',shift:'SHIFT'};
+      const colors={trending:CLR.phosphor,reverting:CLR.amber,chaotic:CLR.red,shift:CLR.ice};
+      const bgAlphas={trending:.12,reverting:.1,chaotic:.15,shift:.08};
+      const label=labels[d.reg];
+      const clr=colors[d.reg];
+      
+      ctx.font='bold 8px JetBrains Mono, monospace';
+      const tw=ctx.measureText(label).width;
+      const px=w-PAD-tw-10;
+      const py=y+ROW_H/2-6;
+      const pw=tw+10;
+      const ph=13;
+
+      // badge bg
+      let badgeAlpha=bgAlphas[d.reg];
+      if(d.reg==='chaotic'){
+        badgeAlpha*=.5+.5*Math.abs(Math.sin(S.time*4));
+      }
+      if(d.reg==='shift'){
+        const osc=Math.sin(S.time*2)*.5+.5;
+        const c1=CLR.ice, c2=CLR.amber;
+        const cr=Math.round(lerp(c1[0],c2[0],osc));
+        const cg=Math.round(lerp(c1[1],c2[1],osc));
+        const cb=Math.round(lerp(c1[2],c2[2],osc));
+        ctx.fillStyle=`rgba(${cr},${cg},${cb},.08)`;
+        ctx.fillRect(px,py,pw,ph);
+        ctx.fillStyle=`rgba(${cr},${cg},${cb},.85)`;
+      } else {
+        ctx.fillStyle=rgba(clr,badgeAlpha);
+        ctx.fillRect(px,py,pw,ph);
+        ctx.fillStyle=rgba(clr, d.reg==='chaotic'? .5+.5*Math.abs(Math.sin(S.time*4)) : .85);
+      }
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(label, px+pw/2, y+ROW_H/2);
+
+      // glow halo for active regimes
+      if(d.reg==='trending'||d.reg==='chaotic'){
+        const grad=ctx.createRadialGradient(px+pw/2,y+ROW_H/2,0,px+pw/2,y+ROW_H/2,pw);
+        grad.addColorStop(0,rgba(clr,.06));
+        grad.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=grad;
+        ctx.fillRect(px-pw/2,y,pw*2,ROW_H);
+      }
+    } else {
+      ctx.font='10px JetBrains Mono, monospace';
+      ctx.fillStyle=rgba(CLR.dim,.2);
+      ctx.textAlign='right';
+      ctx.fillText('—', w-PAD, y+ROW_H/2);
     }
-    body.innerHTML = html;
+  });
+
+  // glow bursts
+  S.glows=S.glows.filter(g=>{
+    const x=PAD+S.coinW+g.col*S.colW+S.colW/2;
+    const y=HDR_H+1+g.row*ROW_H+ROW_H/2;
+    const r=g.i*35;
+    const grad=ctx.createRadialGradient(x,y,0,x,y,r);
+    grad.addColorStop(0,`rgba(200,255,0,${g.i*.2})`);
+    grad.addColorStop(1,'rgba(200,255,0,0)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(x-r,y-r,r*2,r*2);
+    g.i-=g.d;
+    return g.i>.01;
+  });
+}
+
+function tick(){
+  S.time+=1/60;
+  S.data.forEach((d,i)=>{
+    d.v.forEach((_,j)=>{ d.v[j]=lerp(d.v[j],d.t[j],.06); });
+    if(Math.random()<.025){
+      const j=Math.floor(Math.random()*NC);
+      const fi=COL_MAP[j]; // full index
+      const s=d.seeds;
+      const ranges=[[s.h[0],s.h[1]],[s.d[0],s.d[1]],[s.s[0],s.s[1]],[s.ly[0],s.ly[1]],[s.fl[0],s.fl[1]]];
+      const nt=rnd(ranges[fi][0],ranges[fi][1]);
+      if(Math.abs(nt-d.v[j])>.08) S.glows.push({row:i,col:j,i:1,d:.015});
+      d.t[j]=nt;
+      d.full[fi]=nt; // keep full array in sync
+    }
+    d.rt--;
+    if(d.rt<=0&&!d.liveLocked){d.reg=regime(d.full[0],d.full[1],d.full[3]);d.rt=40+Math.floor(Math.random()*80);}
+  });
+}
+
+function updateStatus(){
+  const n=S.data.filter(d=>d.reg).length;
+  const el=document.getElementById('matrix-status');
+  if(!el) return;
+  const newText = n+' state'+(n!==1?'s':'')+' detected';
+  if(el.textContent !== newText && el.textContent !== 'scanning') {
+    el.style.opacity = '0';
+    setTimeout(()=>{
+      el.textContent = newText;
+      el.style.opacity = '1';
+    }, 150);
+  } else if(el.textContent === 'scanning') {
+    el.textContent = newText;
+  }
+}
+
+let fc=0;
+function frame(){
+  tick();
+  draw();
+  if(fc%30===0) updateStatus();
+  fc++;
+  requestAnimationFrame(frame);
+}
+
+function resize(){
+  const wrap=S.canvas.parentElement;
+  const w=wrap.clientWidth;
+  const h=HDR_H+COINS.length*ROW_H+2;
+  S.canvas.width=w*DPR; S.canvas.height=h*DPR;
+  S.canvas.style.width=w+'px'; S.canvas.style.height=h+'px';
+  S.ctx=S.canvas.getContext('2d'); S.ctx.scale(DPR,DPR);
+  S.w=w; S.h=h; S.colW=(w-S.coinW-S.regW-PAD*2)/NC;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  // Init immediately with simulated data — don't block on API
+  initData(); setup();
+  // Live data loaded at init
+  // Delay matrix animation start to sync with CSS boot sequence (1.7s entrance)
+  setTimeout(()=>{ updateStatus(); requestAnimationFrame(frame); }, 1500);
+  // Fetch live data async — upgrades simulation to live when ready
+  fetchLiveData();
+  // Refresh live data every 5 minutes
+  setInterval(fetchLiveData, 300000);
+
+  // ═══ CHARACTER-BY-CHARACTER BOOT TYPING ═══
+  function typeBootLine(el, delay) {
+    const text = el.getAttribute('data-text') || '';
+    el.innerHTML = '<span class="boot-cursor">█</span>';
+    let i = 0;
+    setTimeout(()=>{
+      const interval = setInterval(()=>{
+        if(i < text.length) {
+          // Color the phosphor keywords
+          let displayed = text.substring(0, i+1);
+          // Highlight known keywords in phosphor
+          displayed = displayed
+            .replace(/ZERO OS/g, '<span class="p">ZERO OS</span>')
+            .replace(/BOOT/g, '<span class="p">BOOT</span>')
+            .replace(/ENVY MATRIX/g, '<span class="p">ENVY MATRIX</span>')
+            .replace(/ACTIVE/g, '<span class="p">ACTIVE</span>')
+            .replace(/PORTFOLIO ENGINE/g, '<span class="p">PORTFOLIO ENGINE</span>')
+            .replace(/SELF-CUSTODIAL/g, '<span class="p">SELF-CUSTODIAL</span>');
+          el.innerHTML = displayed + '<span class="boot-cursor">█</span>';
+          i++;
+        } else {
+          // Done typing — remove cursor
+          let final = text
+            .replace(/ZERO OS/g, '<span class="p">ZERO OS</span>')
+            .replace(/BOOT/g, '<span class="p">BOOT</span>')
+            .replace(/ENVY MATRIX/g, '<span class="p">ENVY MATRIX</span>')
+            .replace(/ACTIVE/g, '<span class="p">ACTIVE</span>')
+            .replace(/PORTFOLIO ENGINE/g, '<span class="p">PORTFOLIO ENGINE</span>')
+            .replace(/SELF-CUSTODIAL/g, '<span class="p">SELF-CUSTODIAL</span>');
+          el.innerHTML = final;
+          // Flash the line green on completion
+          el.style.textShadow = '0 0 8px rgba(200,255,0,0.4)';
+          setTimeout(() => { el.style.textShadow = 'none'; }, 200);
+          clearInterval(interval);
+        }
+      }, 18); // ~18ms per char = ~55 chars/sec
+    }, delay);
+  }
+  document.querySelectorAll('.boot-line').forEach((el, idx) => {
+    typeBootLine(el, idx * 350); // 350ms between lines starting
+  });
+
+  // ═══ COUNTER ANIMATIONS (triggered on scroll reveal) ═══
+  function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-count-to'));
+    const suffix = el.getAttribute('data-count-suffix') || '';
+    if(isNaN(target)) return;
+    let current = 0;
+    const duration = 1200; // ms
+    const steps = 30;
+    const increment = target / steps;
+    const stepTime = duration / steps;
+    const interval = setInterval(()=>{
+      current += increment;
+      if(current >= target) {
+        current = target;
+        clearInterval(interval);
+      }
+      el.textContent = Math.round(current) + suffix;
+    }, stepTime);
   }
 
-  function renderTrades(data){
-    var closed = ((data.liveTrading||{}).closed || []).slice(-10).reverse();
-    var body = document.getElementById('trades-body');
-    var count = document.getElementById('closed-count');
-    var total = (data.liveTrading||{}).trades || closed.length;
-    count.textContent = '(last 10 of ' + total + ')';
+  // Watch for counters entering view
+  const counterObs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting) {
+        e.target.querySelectorAll('[data-count-to]').forEach(el => animateCounter(el));
+        counterObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.bt-highlights').forEach(el => counterObs.observe(el));
+  window.addEventListener('resize',resize);
 
-    if(!closed.length){
-      body.innerHTML = '<span class="muted">No closed trades yet</span>';
+  // ═══ PROPOSAL E: SCROLL REVEAL ═══
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+  }, { threshold: 0.05, rootMargin: '0px 0px 50px 0px' });
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  // ═══ PROPOSAL A: REGIME VISUALIZER ═══
+  // Regime viz uses correlated scenarios: trending, reverting, chaotic, shift, stable
+  const rvScenarios = [
+    {h:[.58,.68], d:[.57,.66], ly:[.15,.40], label:'trending'},
+    {h:[.35,.44], d:[.36,.44], ly:[.10,.35], label:'reverting'},
+    {h:[.42,.52], d:[.44,.54], ly:[.80,1.05], label:'chaotic'},
+    {h:[.58,.65], d:[.38,.46], ly:[.30,.55], label:'shift'},
+    {h:[.46,.54], d:[.46,.54], ly:[.20,.50], label:'stable'},
+  ];
+  let rvScene = rvScenarios[Math.floor(Math.random()*rvScenarios.length)];
+  let rvSceneTimer = 120 + Math.floor(Math.random()*200);
+  // Init from live BTC data if available
+  const btcLive = LIVE_DATA && LIVE_DATA.BTC;
+  const initH = btcLive && btcLive.HURST_24H != null ? btcLive.HURST_24H : 0.5;
+  const initD = btcLive && btcLive.DFA_24H != null ? btcLive.DFA_24H : 0.5;
+  const initLy = btcLive && btcLive.LYAPUNOV_24H != null ? Math.min(btcLive.LYAPUNOV_24H, 2)/2 : 0.3;
+  const rvState = { h: initH, d: initD, ly: initLy, ht: initH, dt: initD, lt: initLy };
+  // If live, override scenarios to oscillate near real values
+  if(btcLive){
+    rvScenarios.length=0;
+    rvScenarios.push({h:[initH-.04,initH+.04],d:[initD-.04,initD+.04],ly:[Math.max(0,initLy-.05),initLy+.05],label:'live'});
+    rvScene=rvScenarios[0];
+  }
+  function rvTick() {
+    rvSceneTimer--;
+    if(rvSceneTimer<=0){
+      rvScene = rvScenarios[Math.floor(Math.random()*rvScenarios.length)];
+      rvSceneTimer = 120 + Math.floor(Math.random()*200);
+    }
+    if(Math.random()<.04) rvState.ht = rnd(rvScene.h[0],rvScene.h[1]);
+    if(Math.random()<.04) rvState.dt = rnd(rvScene.d[0],rvScene.d[1]);
+    if(Math.random()<.03) rvState.lt = rnd(rvScene.ly[0],rvScene.ly[1]);
+    rvState.h = lerp(rvState.h, rvState.ht, .03);
+    rvState.d = lerp(rvState.d, rvState.dt, .03);
+    rvState.ly = lerp(rvState.ly, rvState.lt, .03);
+
+    const hPct = rvState.h * 100;
+    const dPct = rvState.d * 100;
+    const lPct = Math.max(0, Math.min(rvState.ly, 1.2)) / 1.2 * 100;
+
+    document.getElementById('rv-hurst').style.width = hPct + '%';
+    document.getElementById('rv-hurst-marker').style.left = hPct + '%';
+    document.getElementById('rv-hurst-val').textContent = rvState.h.toFixed(2);
+    document.getElementById('rv-dfa').style.width = dPct + '%';
+    document.getElementById('rv-dfa-marker').style.left = dPct + '%';
+    document.getElementById('rv-dfa-val').textContent = rvState.d.toFixed(2);
+    document.getElementById('rv-lyap').style.width = lPct + '%';
+    document.getElementById('rv-lyap-marker').style.left = lPct + '%';
+    document.getElementById('rv-lyap-val').textContent = rvState.ly.toFixed(2);
+
+    // regime + verdict
+    const badge = document.getElementById('rv-badge');
+    const verdict = document.getElementById('rv-verdict');
+    let reg = '', vtext = '', cls = '';
+    if(rvState.ly > .85) {
+      reg='CHAOTIC'; cls='chaotic';
+      vtext='Your MACD crossover is → <span class="red">UNRELIABLE</span>';
+    } else if(rvState.h<.45 && rvState.d<.45) {
+      reg='REVERTING'; cls='reverting';
+      vtext='Your MACD crossover is → <span class="a">A TRAP</span>';
+    } else if(rvState.h>.55 && rvState.d>.55) {
+      reg='TRENDING'; cls='trending';
+      vtext='Your MACD crossover is → <span class="p">MEANINGFUL</span>';
+    } else if((rvState.h<.45&&rvState.d>.55)||(rvState.h>.55&&rvState.d<.45)) {
+      reg='SHIFT'; cls='shift';
+      vtext='Your MACD crossover is → <span class="ice">TRANSITIONING</span>';
+    } else {
+      reg='SCANNING'; cls='';
+      vtext='Your MACD crossover is → <span class="dim">ANALYZING</span>';
+    }
+    badge.textContent = reg;
+    badge.className = 'rv-regime-badge ' + cls;
+    verdict.innerHTML = vtext;
+
+    // marker colors
+    const hMarker = document.getElementById('rv-hurst-marker');
+    const dMarker = document.getElementById('rv-dfa-marker');
+    const lMarker = document.getElementById('rv-lyap-marker');
+    hMarker.style.background = rvState.h<.45?'var(--amber)':rvState.h>.55?'var(--phosphor)':'var(--text-dim)';
+    hMarker.style.boxShadow = rvState.h<.45?'0 0 8px rgba(255,176,0,.3)':rvState.h>.55?'0 0 8px var(--phosphor-glow)':'none';
+    dMarker.style.background = rvState.d<.45?'var(--amber)':rvState.d>.55?'var(--phosphor)':'var(--text-dim)';
+    dMarker.style.boxShadow = rvState.d<.45?'0 0 8px rgba(255,176,0,.3)':rvState.d>.55?'0 0 8px var(--phosphor-glow)':'none';
+    lMarker.style.background = rvState.ly>.7?'var(--red)':rvState.ly<.2?'var(--ice)':'var(--text-dim)';
+    lMarker.style.boxShadow = rvState.ly>.7?'0 0 8px rgba(255,51,51,.3)':'none';
+  }
+  setInterval(rvTick, 50);
+
+  // ═══ PROPOSAL I: TILT ON HOVER ═══
+  document.querySelectorAll('.tilt-card').forEach(card=>{
+    card.addEventListener('mousemove',(e)=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5;
+      const y=(e.clientY-r.top)/r.height-.5;
+      card.style.setProperty('--tilt-y',x*4+'deg');
+      card.style.setProperty('--tilt-x',-y*4+'deg');
+    });
+    card.addEventListener('mouseleave',()=>{
+      card.style.setProperty('--tilt-y','0deg');
+      card.style.setProperty('--tilt-x','0deg');
+    });
+  });
+
+  // ═══ PROPOSAL D: TERMINAL CTA ═══
+  const form = document.getElementById('access-form');
+  if(form) form.addEventListener('submit', async(e)=>{
+    e.preventDefault();
+    const email = document.getElementById('access-email').value;
+    if(!email) return;
+    const btn = form.querySelector('.term-submit');
+    btn.textContent = 'SUBMITTING...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email})
+      });
+      if(!res.ok) throw new Error('API error');
+      const data = await res.json();
+      document.getElementById('req-id').textContent = data.ref || 'ZOS-' + Math.random().toString(36).substr(2,6).toUpperCase();
+      form.style.display = 'none';
+      document.getElementById('term-confirm').style.display = 'block';
+    } catch(e) {
+      btn.textContent = 'SUBMIT ↵';
+      btn.disabled = false;
+      document.getElementById('term-error').style.display = 'block';
       return;
     }
-
-    var html = '';
-    for(var i=0; i<closed.length; i++){
-      var t = closed[i];
-      var dir = t.direction || '';
-      var dirClass = dir === 'LONG' ? 'pos-long' : 'pos-short';
-      var pnl = t.pnl_usd || 0;
-      var pnlClass = pnl >= 0 ? 'c-pos' : 'c-neg';
-      var reason = t.exit_reason || t.reason || '';
-      html += '<div class="trade-row">';
-      html += '<span class="tr-coin">' + (t.coin||'') + '</span>';
-      html += '<span class="tr-dir ' + dirClass + '">' + dir + '</span>';
-      html += '<span class="tr-reason">' + reason + '</span>';
-      html += '<span class="tr-time">' + ago(t.exit_time) + '</span>';
-      html += '<span class="tr-pnl ' + pnlClass + '">' + fmt$(pnl) + '</span>';
-      html += '</div>';
-    }
-    body.innerHTML = html;
-  }
-
-  function renderEquity(data, perf){
-    var curve = data.liveEquityCurve || [];
-    var canvas = document.getElementById('equity-canvas');
-    if(!canvas || curve.length < 2) return;
-
-    var dpr = window.devicePixelRatio || 1;
-    var w = canvas.clientWidth;
-    var h = canvas.clientHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    var ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    var values = curve.map(function(c){ return c.equity || c.value || 115; });
-    var min = Math.min.apply(null, values);
-    var max = Math.max.apply(null, values);
-    var range = max - min || 1;
-    var currentEquity = 115 + ((perf && perf.total_pnl_usd) || 0);
-    var lineColor = currentEquity >= 115 ? '#33ff66' : '#ff3333';
-
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    for(var i=0; i<values.length; i++){
-      var x = (i / (values.length - 1)) * w;
-      var y = h - ((values[i] - min) / range) * (h - 10) - 5;
-      if(i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  }
-
-  var regimeColors = {trending:'#33ff66', stable:'#c8ff00', chaotic:'#ff3333', shift:'#ffb000', unknown:'#444'};
-
-  function renderRegime(data){
-    var dist = data.regime_distribution || {};
-    var total = 0;
-    for(var k in dist) total += dist[k];
-
-    var bar = document.getElementById('regime-bar');
-    var legend = document.getElementById('regime-legend');
-    var macro = document.getElementById('macro-line');
-
-    var barHtml = '';
-    var legendHtml = '';
-    var order = ['trending','stable','chaotic','shift'];
-    for(var i=0; i<order.length; i++){
-      var r = order[i];
-      if(!dist[r]) continue;
-      var pct = (dist[r] / total * 100).toFixed(0);
-      var color = regimeColors[r] || '#444';
-      barHtml += '<div style="width:'+pct+'%; background:'+color+'"></div>';
-      legendHtml += '<span style="color:'+color+'">'+r+' '+dist[r]+'</span>';
-    }
-    bar.innerHTML = barHtml;
-    legend.innerHTML = legendHtml;
-
-    var m = data.macro || {};
-    var parts = [];
-    if(m.macro_state) parts.push(m.macro_state);
-    if(m.btc_roc_24h != null) parts.push('BTC 24h: ' + (m.btc_roc_24h >= 0 ? '+' : '') + m.btc_roc_24h.toFixed(1) + '%');
-    if(m.session) parts.push('Session: ' + m.session);
-    macro.textContent = parts.join(' · ') || '';
-  }
-
-  // Initial load
-  loadAll();
-  // Refresh every 60s
-  setInterval(loadAll, 60000);
-})();
+  });
+});
 </script>
