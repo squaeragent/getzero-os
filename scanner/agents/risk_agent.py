@@ -114,7 +114,7 @@ def fetch_hl_account(main_address):
         return None
 
 
-STARTING_EQUITY = 115.0  # USDC deposited to HL (spot as cross-margin collateral)
+STARTING_EQUITY = 750.0  # Updated: Igor deposited ~€500 on 2026-03-19
 
 def parse_hl_state(hl_data):
     """Extract account value, unrealized PnL, and margin from HL response."""
@@ -132,9 +132,10 @@ def parse_hl_state(hl_data):
             p = pos.get("position", {})
             unrealized_pnl += float(p.get("unrealizedPnl", 0))
 
-        # True equity = starting capital + unrealized P&L
-        # HL margin_account_value only shows margin portion, not full capital
-        account_value = STARTING_EQUITY + unrealized_pnl
+        # True equity = totalRawUsd (includes spot USDC collateral + perp P&L)
+        # accountValue only shows perp side; totalRawUsd is the real number
+        total_raw_usd = float(margin_summary.get("totalRawUsd", 0))
+        account_value = total_raw_usd if total_raw_usd > 0 else (STARTING_EQUITY + unrealized_pnl)
 
         return {
             "account_value": account_value,
@@ -424,9 +425,10 @@ def reconcile_balance(user_addr, expected_capital, positions, closed_trades):
         )
         with urllib.request.urlopen(req2, timeout=10) as resp2:
             perp = json.loads(resp2.read().decode())
-        perp_value = float(perp.get("marginSummary", {}).get("accountValue", 0))
+        perp_raw = float(perp.get("marginSummary", {}).get("totalRawUsd", 0))
 
-        actual_total = usdc_balance + perp_value
+        # totalRawUsd already includes spot USDC, so don't double-count
+        actual_total = perp_raw if perp_raw > 0 else usdc_balance
 
         # Expected: starting capital + realized P&L
         realized_pnl = sum(t.get("pnl_usd", 0) for t in closed_trades)
