@@ -1044,6 +1044,12 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
             log(f"  [own_indicators] {coin} failed (non-fatal): {_e}")
 
         # ── Assemble world_state coin entry ──
+        # Pull in HL enrichment fields if available
+        _enrich = hl_enrich.get("coins", {}).get(coin, {})
+        _premium      = _enrich.get("premium",       hl.get("premium", 0))
+        _impact_spread = _enrich.get("impact_spread", 0.0)
+        _oi_usd       = _enrich.get("oi_usd",        hl.get("open_interest", 0) * hl.get("mark", 0))
+
         world_coins[coin] = {
             "regime":            regime,
             "regime_confidence": round(confidence, 3),
@@ -1060,7 +1066,9 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
                 "open_interest": hl.get("open_interest", 0),
                 "volume_24h":    hl.get("volume_24h", 0),
                 "mark_price":    hl.get("mark", 0),
-                "premium":       hl.get("premium", 0),
+                "premium":       _premium,
+                "impact_spread": round(_impact_spread, 8),
+                "oi_usd":        round(_oi_usd, 2),
             },
             "liquidity": {
                 "score":      liq.get("score", 0),

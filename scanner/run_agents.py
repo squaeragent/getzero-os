@@ -21,6 +21,7 @@ Agent execution order:
  10. Counterfactual (30-min)    — resolves killed hypotheses; determines adversary accuracy
  11. Adversary Evolution (2h)   — adjusts attack weights based on counterfactual precision
  12. TAAPI Fetcher (15-min)     — fetches TAAPI snapshot for cross-source disagreement attack
+ 13. Macro Plugin (15-min)      — free macro: F&G, CoinGecko global, DVOL, options expiry, FOMC
 """
 
 import json
@@ -33,6 +34,7 @@ from pathlib import Path
 
 SCANNER_DIR = Path(__file__).parent
 AGENTS_DIR = SCANNER_DIR / "agents"
+SENSES_DIR = SCANNER_DIR / "senses"
 BUS_DIR = SCANNER_DIR / "bus"
 
 PYTHON = "/opt/homebrew/bin/python3"
@@ -58,6 +60,7 @@ AGENTS = [
     ("indicator_delta",     AGENTS_DIR / "indicator_delta.py",       900,   30),  # Indicator delta monitor — parallel own computation (15-min)
     ("taapi_fetcher",       AGENTS_DIR / "taapi_fetcher.py",         900,   30),  # TAAPI snapshot — cross-source disagreement feed (15-min)
     ("pattern_scanner",     AGENTS_DIR / "pattern_scanner.py",       900,   30),  # TAAPI candlestick pattern signals (15-min)
+    ("macro_plugin",        SENSES_DIR / "macro_plugin.py",          900,   30),  # Free macro: F&G, DVOL, options expiry, FOMC (15-min)
 ]
 
 processes = {}

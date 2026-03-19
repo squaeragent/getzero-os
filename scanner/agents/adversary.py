@@ -692,6 +692,125 @@ def attack_funding_headwind(hypothesis, world_coins):
     }
 
 
+# ─── ATTACK: FEAR & GREED FILTER (weight 1.3x) ───
+def attack_fear_greed(hypothesis, macro_intel):
+    """
+    Penalize hypotheses that trade against the Fear & Greed index extremes.
+
+    Logic:
+      - F&G <= 20 ("Extreme Fear") + LONG  → severity 0.6 (market panic, don't go long)
+      - F&G >= 80 ("Extreme Greed") + SHORT → severity 0.6 (market euphoria, don't short)
+      - F&G <= 30 + LONG                   → severity 0.3 (moderate fear, caution for longs)
+      - F&G >= 70 + SHORT                  → severity 0.3 (moderate greed, caution for shorts)
+
+    Source: scanner/bus/macro_intel.json (populated by macro_intel agent)
+    """
+    if not macro_intel:
+        return {
+            "attack": "fear_greed",
+            "severity": 0.0,
+            "weight": 1.3,
+            "detail": "macro_intel.json unavailable — skipping F&G check",
+        }
+
+    fg = macro_intel.get("fear_greed")
+    fg_class = macro_intel.get("fear_greed_class", "")
+    direction = hypothesis.get("direction", "")
+
+    if fg is None:
+        return {
+            "attack": "fear_greed",
+            "severity": 0.0,
+            "weight": 1.3,
+            "detail": "fear_greed value missing from macro_intel",
+        }
+
+    severity = 0.0
+    detail = f"F&G={fg} ({fg_class}) direction={direction}"
+
+    if direction == "LONG":
+        if fg <= 20:
+            severity = 0.6
+            detail = f"Extreme Fear (F&G={fg}) + LONG — market panic, high reversal risk"
+        elif fg <= 30:
+            severity = 0.3
+            detail = f"Fear (F&G={fg}) + LONG — cautious territory for new longs"
+    elif direction == "SHORT":
+        if fg >= 80:
+            severity = 0.6
+            detail = f"Extreme Greed (F&G={fg}) + SHORT — euphoria, shorts may get squeezed"
+        elif fg >= 70:
+            severity = 0.3
+            detail = f"Greed (F&G={fg}) + SHORT — cautious territory for new shorts"
+
+    return {
+        "attack": "fear_greed",
+        "severity": round(severity, 3),
+        "weight": 1.3,
+        "detail": detail,
+        "fear_greed": fg,
+        "fear_greed_class": fg_class,
+    }
+
+
+# ─── ATTACK: MACRO EVENT FILTER (weight 1.4x) ───
+def attack_macro_event(hypothesis, macro_intel):
+    """
+    Penalize all new positions near scheduled macro events (FOMC, options expiry)
+    and in high-volatility regimes (DVOL > 60).
+
+    Logic:
+      - macro_event_imminent == True → severity 0.4 for ALL (reduce trading near FOMC/expiry)
+      - days_to_options_expiry <= 1  → severity 0.6 for ALL (expiry day = maximum chop)
+      - signals.high_vol == True (DVOL > 60) + LONG → severity 0.3 (high vol favors shorts)
+
+    Source: scanner/bus/macro_intel.json (populated by macro_intel agent)
+    """
+    if not macro_intel:
+        return {
+            "attack": "macro_event",
+            "severity": 0.0,
+            "weight": 1.4,
+            "detail": "macro_intel.json unavailable — skipping macro event check",
+        }
+
+    direction = hypothesis.get("direction", "")
+    macro_imminent = macro_intel.get("macro_event_imminent", False)
+    days_to_expiry = macro_intel.get("days_to_options_expiry")
+    signals = macro_intel.get("signals", {})
+    high_vol = signals.get("high_vol", False)
+
+    severity = 0.0
+    details = []
+
+    # Expiry day — maximum chop, penalize all directions hard
+    if days_to_expiry is not None and days_to_expiry <= 1:
+        severity = max(severity, 0.6)
+        details.append(f"options expiry in {days_to_expiry}d — maximum chop environment")
+
+    # FOMC or other macro event imminent — reduce all trading
+    if macro_imminent and severity < 0.4:
+        severity = max(severity, 0.4)
+        details.append("macro event imminent (FOMC/CPI) — elevated uncertainty")
+
+    # High vol (DVOL > 60) penalizes LONGs — high vol favors shorts/puts
+    if high_vol and direction == "LONG":
+        severity = max(severity, 0.3)
+        details.append("DVOL > 60 (high vol regime) + LONG — vol environment favors shorts")
+
+    detail = "; ".join(details) if details else "no macro events detected"
+
+    return {
+        "attack": "macro_event",
+        "severity": round(severity, 3),
+        "weight": 1.4,
+        "detail": detail,
+        "macro_event_imminent": macro_imminent,
+        "days_to_options_expiry": days_to_expiry,
+        "high_vol": high_vol,
+    }
+
+
 # ─── ATTACK 7 (Upgrade 1): MACRO REGIME ───
 def attack_macro_regime(hypothesis, world_state_meta):
     """If market is RISK_OFF, penalize LONG hypotheses heavily."""
@@ -1290,6 +1409,9 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
     if active_rules:
         log(f"  Loaded {len(active_rules)} active rules for rule-based attacks")
 
+    # Load macro intel for fear_greed + macro_event attacks
+    macro_intel = load_json_safe(BUS_DIR / "macro_intel.json", {})
+
     # Load regime predictions + genealogy family stats (new attacks)
     regime_predictions = load_regime_predictions()
     family_stats       = load_genealogy_family_stats()
@@ -1329,6 +1451,8 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
             attack_regime_transition(hyp, regime_predictions),       # New: predictive regime risk
             attack_family_track_record(hyp, family_stats),           # New: genealogy track record
             attack_data_disagreement(hyp, world_coins, taapi_snapshot),  # New: cross-source disagreement
+            attack_fear_greed(hyp, macro_intel),                     # New: Fear & Greed filter
+            attack_macro_event(hyp, macro_intel),                    # New: macro event filter
         ]
 
         # Apply evolved weights from counterfactual learning (overrides static weights)
