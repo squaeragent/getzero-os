@@ -350,6 +350,67 @@ def world():
     }
 
 
+@app.get("/portfolio.json")
+def portfolio_json():
+    """Portfolio data in the format the frontend expects (replaces static JSON export)."""
+    # Read directly from the export file — it's updated every cycle by export_portfolio.py
+    portfolio_path = SCANNER_DIR.parent / "public" / "api" / "portfolio.json"
+    if not portfolio_path.exists():
+        # Fallback: build from live data
+        portfolio_path = LIVE_DIR / "portfolio.json"
+    data = _read_json(portfolio_path)
+    if data:
+        return data
+    
+    # Build minimal response from raw files
+    positions = _read_json(LIVE_DIR / "positions.json") or []
+    closed = _read_jsonl(LIVE_DIR / "closed.jsonl", limit=500)
+    risk = _read_json(BUS_DIR / "risk.json") or {}
+    heartbeat = _read_json(BUS_DIR / "heartbeat.json") or {}
+    
+    wins = [t for t in closed if (t.get("pnl_usd", 0) or 0) > 0]
+    
+    return {
+        "live": True,
+        "updated": datetime.now(timezone.utc).isoformat(),
+        "liveTrading": {
+            "enabled": True,
+            "capital": 115,
+            "positions": positions,
+            "trades": len(closed),
+            "wins": len(wins),
+            "dailyLoss": 0,
+            "closed": closed,
+            "started": "2026-03-17T00:00:00+00:00",
+            "stats": {},
+        },
+        "agents": {
+            "heartbeat": heartbeat,
+            "risk": risk,
+        },
+        "liveEquityCurve": [],
+    }
+
+
+@app.get("/prices")
+def prices(coins: str = Query("BTC,ETH,SOL", description="Comma-separated coin symbols")):
+    """Live prices from Hyperliquid — replaces broken Envy proxy on Vercel."""
+    coin_list = [c.strip().upper() for c in coins.split(",") if c.strip()]
+    
+    try:
+        from scanner.senses.hl_plugin import _fetch_meta
+        meta = _fetch_meta()
+        
+        matrix = {}
+        for coin in coin_list:
+            if coin in meta:
+                matrix[coin] = {"CLOSE_PRICE_15M": meta[coin]["mark"]}
+        
+        return {"matrix": matrix, "source": "hyperliquid", "timestamp": time.time()}
+    except Exception as e:
+        return {"matrix": {}, "error": str(e)}
+
+
 @app.get("/schemas")
 def schemas():
     """JSON Schema definitions for API types."""

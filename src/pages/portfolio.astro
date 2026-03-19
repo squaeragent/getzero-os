@@ -764,9 +764,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script is:inline>
 (function(){
-  var PORTFOLIO_API = '/api/portfolio.json';
+  var API_BASE = 'https://api.getzero.dev';
+  var PORTFOLIO_API = API_BASE + '/portfolio.json';
   var BASE_PRICE_COINS = ['BTC','ETH','SOL','DOGE','AVAX','LINK','ARB','NEAR','SUI','INJ'];
-  var PRICE_API = '/api/envy?coins=' + BASE_PRICE_COINS.join(',') + '&indicators=CLOSE_PRICE_15M';
+  var PRICE_API = API_BASE + '/prices?coins=' + BASE_PRICE_COINS.join(',');
 
   var portfolioData = null;
   var livePrices = {};
@@ -1575,7 +1576,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
     // Envy API max 10 coins per request
-    return '/api/envy?coins=' + coins.slice(0, 10).join(',') + '&indicators=CLOSE_PRICE_15M';
+    return API_BASE + '/prices?coins=' + coins.slice(0, 10).join(',');
   }
 
   function fetchAllPrices(){
@@ -1593,7 +1594,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       batches.push(coins.slice(i, i+10));
     }
     var promises = batches.map(function(batch){
-      return fetch('/api/envy?coins=' + batch.join(',') + '&indicators=CLOSE_PRICE_15M')
+      return fetch(API_BASE + '/prices?coins=' + batch.join(','))
         .then(function(res){ return res.json(); })
         .then(function(d){
           if(d.matrix){
