@@ -411,6 +411,132 @@ def prices(coins: str = Query("BTC,ETH,SOL", description="Comma-separated coin s
         return {"matrix": {}, "error": str(e)}
 
 
+# ─── PORTFOLIO DATA (replaces Supabase) ──────────────────────────────────────
+
+V6_BUS = SCANNER_DIR / "v6" / "bus"
+
+
+@app.get("/v6/positions")
+def v6_positions():
+    """Open positions — replaces Supabase positions table."""
+    # Try V6 first, fall back to V5
+    pos = _read_json(V6_BUS / "positions.json")
+    if pos and "positions" in pos:
+        entries = pos["positions"]
+    else:
+        entries = _read_json(LIVE_DIR / "positions.json") or []
+        if isinstance(entries, dict):
+            entries = entries.get("positions", [])
+    
+    # Return Supabase-compatible format (array of objects)
+    result = []
+    for p in entries:
+        result.append({
+            "id": p.get("id", p.get("signal_name", "")),
+            "coin": p.get("coin"),
+            "direction": p.get("direction"),
+            "entry_price": p.get("entry_price"),
+            "entry_time": p.get("entry_time"),
+            "size_usd": p.get("size_usd"),
+            "size_coins": p.get("size_coins"),
+            "stop_loss_pct": p.get("stop_loss_pct"),
+            "signal": p.get("signal_name", p.get("signal")),
+            "strategy_version": p.get("strategy_version", 6),
+            "sharpe": p.get("sharpe"),
+            "win_rate": p.get("win_rate"),
+            "regime": p.get("regime"),
+        })
+    return result
+
+
+@app.get("/v6/trades")
+def v6_trades(limit: int = Query(200, ge=1, le=1000)):
+    """Closed trades — replaces Supabase trades table."""
+    closed = _read_jsonl(LIVE_DIR / "closed.jsonl", limit=limit)
+    # Also include V6 trades
+    v6_trades_file = SCANNER_DIR / "v6" / "data" / "trades.jsonl"
+    if v6_trades_file.exists():
+        v6_closed = _read_jsonl(v6_trades_file, limit=limit)
+        # Merge and sort by exit_time desc
+        closed = closed + v6_closed
+        closed.sort(key=lambda t: t.get("close_time", t.get("exit_time", "")), reverse=True)
+        closed = closed[:limit]
+    
+    result = []
+    for t in closed:
+        result.append({
+            "id": t.get("id", ""),
+            "coin": t.get("coin"),
+            "direction": t.get("direction"),
+            "entry_price": t.get("entry_price"),
+            "exit_price": t.get("exit_price", t.get("close_price")),
+            "entry_time": t.get("entry_time"),
+            "exit_time": t.get("close_time", t.get("exit_time")),
+            "pnl_usd": t.get("pnl_usd"),
+            "pnl_pct": t.get("pnl_pct"),
+            "size_usd": t.get("size_usd"),
+            "signal": t.get("signal"),
+            "exit_reason": t.get("exit_reason"),
+            "strategy_version": t.get("strategy_version"),
+            "sharpe": t.get("sharpe"),
+            "hold_hours": t.get("hold_hours"),
+            "fees_usd": t.get("fees_usd"),
+        })
+    return result
+
+
+@app.get("/v6/equity")
+def v6_equity(points: int = Query(200, ge=10, le=1000)):
+    """Equity curve — replaces Supabase get_equity_curve() RPC."""
+    # Read from equity history
+    eq_file = BUS_DIR / "equity_history.jsonl"
+    if not eq_file.exists():
+        eq_file = LIVE_DIR / "equity_history.jsonl"
+    
+    all_points = _read_jsonl(eq_file, limit=10000)
+    if not all_points:
+        return []
+    
+    # Downsample to requested points
+    if len(all_points) > points:
+        step = len(all_points) / points
+        sampled = []
+        for i in range(points):
+            idx = int(i * step)
+            if idx < len(all_points):
+                sampled.append(all_points[idx])
+        # Always include the last point
+        if sampled and sampled[-1] != all_points[-1]:
+            sampled[-1] = all_points[-1]
+        all_points = sampled
+    
+    result = []
+    for p in all_points:
+        result.append({
+            "recorded_at": p.get("timestamp", p.get("recorded_at", "")),
+            "equity_usd": p.get("equity", p.get("equity_usd", p.get("account_value", 750))),
+        })
+    return result
+
+
+@app.get("/v6/heartbeats")
+def v6_heartbeats():
+    """Agent heartbeats — replaces Supabase agent_heartbeats table."""
+    # V6 heartbeat
+    hb = _read_json(V6_BUS / "heartbeat.json") or {}
+    # V5 heartbeat as fallback
+    if not hb:
+        hb = _read_json(BUS_DIR / "heartbeat.json") or {}
+    
+    result = []
+    for agent, ts in hb.items():
+        result.append({
+            "agent_name": agent,
+            "last_heartbeat": ts,
+        })
+    return result
+
+
 @app.get("/schemas")
 def schemas():
     """JSON Schema definitions for API types."""

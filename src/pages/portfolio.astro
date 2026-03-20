@@ -790,23 +790,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var lastPriceUpdate = 0;
   var startingEquity = 750;
 
-  // ─── SUPABASE CONFIG ───
-  // NOTE: RLS should be enabled on Supabase dashboard to restrict anon to SELECT only
-  var SUPABASE_URL = 'https://fzzotmxxrcnmrqtmsesi.supabase.co';
-  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6em90bXh4cmNubXJxdG1zZXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTc0MTcsImV4cCI6MjA4OTQ5MzQxN30.m8PgL6n-0Fbgi_Fm2hchlcMWE6xwCx6wr3xOyaokRlo';
-
-  function sbFetch(path, extraHeaders){
-    var headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY
-    };
-    if(extraHeaders){
-      for(var k in extraHeaders) headers[k] = extraHeaders[k];
-    }
-    return fetch(SUPABASE_URL + '/rest/v1/' + path, {
-      headers: headers
-    }).then(function(res){
-      if(!res.ok) throw new Error('Supabase HTTP ' + res.status + ' on ' + path);
+  // ─── DATA API (replaces Supabase — served from api.getzero.dev) ───
+  function apiFetch(path){
+    return fetch(API_BASE + path).then(function(res){
+      if(!res.ok) throw new Error('API HTTP ' + res.status + ' on ' + path);
       return res.json();
     });
   }
@@ -875,20 +862,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   function fetchPortfolioData(){
     return Promise.all([
-      sbFetch('positions?order=entry_time.desc'),
-      sbFetch('trades?order=exit_time.desc&limit=200'),
-      fetch(SUPABASE_URL + '/rest/v1/rpc/get_equity_curve', {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({points: 200})
-      }).then(function(res){ return res.ok ? res.json() : []; }).catch(function(){ return []; }),
-      sbFetch('agent_heartbeats?order=last_heartbeat.desc'),
-      fetch(API_BASE + '/regime').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }),
-      fetch(API_BASE + '/world').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; })
+      apiFetch('/v6/positions'),
+      apiFetch('/v6/trades?limit=200'),
+      apiFetch('/v6/equity?points=200').catch(function(){ return []; }),
+      apiFetch('/v6/heartbeats').catch(function(){ return []; }),
+      apiFetch('/regime').catch(function(){ return {}; }),
+      apiFetch('/world').catch(function(){ return {}; })
     ]).then(function(results){
       var positions        = results[0] || [];
       var trades           = results[1] || [];
@@ -932,14 +911,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       // Map trades → closed format
       var mappedClosed = trades.map(function(t){
+        var pnl = t.pnl_usd || t.pnl_dollars || 0;
         return {
           coin: t.coin,
           direction: t.direction,
           entry_price: t.entry_price,
           exit_price: t.exit_price,
           size_usd: t.size_usd,
-          pnl_dollars: t.pnl_dollars,
-          pnl_usd: t.pnl_dollars,
+          pnl_dollars: pnl,
+          pnl_usd: pnl,
           pnl_pct: t.pnl_pct,
           entry_time: t.entry_time,
           exit_time: t.exit_time,
@@ -957,7 +937,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       // Build heartbeat map: { agent_name: iso_timestamp }
       var heartbeatMap = {};
       for(var i = 0; i < heartbeats.length; i++){
-        heartbeatMap[heartbeats[i].agent] = heartbeats[i].last_heartbeat;
+        var hb = heartbeats[i];
+        heartbeatMap[hb.agent_name || hb.agent] = hb.last_heartbeat;
       }
 
       // Compute stats directly from trades
@@ -1814,7 +1795,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return fetchPortfolioData().then(function(d){
       portfolioData = d;
     }).catch(function(supaErr){
-      console.warn('Supabase fetch failed, falling back to portfolio.json:', supaErr);
+      console.warn('API fetch failed, falling back to portfolio.json:', supaErr);
       return fetch(PORTFOLIO_API).then(function(res){ return res.json(); }).then(function(d){
         portfolioData = d;
       }).catch(function(e){ console.error('Fallback portfolio fetch failed:', e); });
