@@ -266,9 +266,26 @@ class HLClient:
         return json.loads(urllib.request.urlopen(req, timeout=10).read())
 
     def get_balance(self) -> float:
+        """Total equity = spot USDC + perp accountValue."""
+        # Perp margin
         result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
         margin = result.get("marginSummary", {})
-        return float(margin.get("accountValue", 0))
+        perp_value = float(margin.get("accountValue", 0))
+
+        # Spot USDC balance
+        spot_usdc = 0.0
+        try:
+            spot = self._info_post({"type": "spotClearinghouseState", "user": self.main_address})
+            for bal in spot.get("balances", []):
+                token = bal.get("coin", "")
+                if token == "USDC":
+                    total = float(bal.get("total", 0))
+                    spot_usdc = total
+                    break
+        except Exception:
+            pass
+
+        return spot_usdc + perp_value
 
     def get_positions(self) -> list:
         result = self._info_post({"type": "clearinghouseState", "user": self.main_address})

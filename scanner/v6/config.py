@@ -25,6 +25,7 @@ HEARTBEAT_FILE  = BUS_DIR / "heartbeat.json"
 
 # Data files
 TRADES_FILE = DATA_DIR / "trades.jsonl"
+EQUITY_HISTORY_FILE = BUS_DIR / "equity_history.jsonl"
 
 # ─── ACCOUNT ──────────────────────────────────────────────────────────────────
 CAPITAL           = 750.0

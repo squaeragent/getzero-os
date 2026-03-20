@@ -123,6 +123,22 @@ def get_equity() -> float:
     return CAPITAL
 
 
+def _record_equity(equity: float):
+    """Append equity snapshot to history JSONL for the portfolio chart."""
+    from scanner.v6.config import EQUITY_HISTORY_FILE
+    try:
+        snapshot = {
+            "timestamp": now_iso(),
+            "account_value": equity,
+            "unrealized_pnl": 0.0,
+            "n_positions": len(load_json(POSITIONS_FILE, {}).get("positions", [])),
+        }
+        with open(EQUITY_HISTORY_FILE, "a") as f:
+            f.write(json.dumps(snapshot) + "\n")
+    except Exception as e:
+        log(f"  WARN: equity record failed: {e}")
+
+
 def check_halt(risk: dict) -> tuple[bool, str]:
     """Check if trading is halted. Returns (halted, reason)."""
     if not risk.get("halted"):
@@ -245,6 +261,10 @@ def run_once():
     save_json_atomic(ENTRIES_FILE, {"updated_at": now_iso(), "entries": []})
     save_json_atomic(APPROVED_FILE, {"updated_at": now_iso(), "approved": approved})
     save_risk(risk)
+
+    # Record equity snapshot for chart
+    _record_equity(equity)
+
     update_heartbeat()
 
 

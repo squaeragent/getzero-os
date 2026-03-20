@@ -452,15 +452,15 @@ def v6_positions():
 @app.get("/v6/trades")
 def v6_trades(limit: int = Query(200, ge=1, le=1000)):
     """Closed trades — replaces Supabase trades table."""
-    closed = _read_jsonl(LIVE_DIR / "closed.jsonl", limit=limit)
+    closed = _read_jsonl(LIVE_DIR / "closed.jsonl", limit=10000)
     # Also include V6 trades
     v6_trades_file = SCANNER_DIR / "v6" / "data" / "trades.jsonl"
     if v6_trades_file.exists():
-        v6_closed = _read_jsonl(v6_trades_file, limit=limit)
-        # Merge and sort by exit_time desc
+        v6_closed = _read_jsonl(v6_trades_file, limit=10000)
         closed = closed + v6_closed
-        closed.sort(key=lambda t: t.get("close_time", t.get("exit_time", "")), reverse=True)
-        closed = closed[:limit]
+    # Always sort by exit_time desc (newest first)
+    closed.sort(key=lambda t: t.get("close_time", t.get("exit_time", "")), reverse=True)
+    closed = closed[:limit]
     
     result = []
     for t in closed:
@@ -488,12 +488,16 @@ def v6_trades(limit: int = Query(200, ge=1, le=1000)):
 @app.get("/v6/equity")
 def v6_equity(points: int = Query(200, ge=10, le=1000)):
     """Equity curve — replaces Supabase get_equity_curve() RPC."""
-    # Read from equity history
-    eq_file = BUS_DIR / "equity_history.jsonl"
-    if not eq_file.exists():
-        eq_file = LIVE_DIR / "equity_history.jsonl"
-    
-    all_points = _read_jsonl(eq_file, limit=10000)
+    # Merge equity from both old bus and V6 bus
+    all_points = []
+    old_eq = BUS_DIR / "equity_history.jsonl"
+    v6_eq = SCANNER_DIR / "v6" / "bus" / "equity_history.jsonl"
+    live_eq = LIVE_DIR / "equity_history.jsonl"
+    for f in [old_eq, v6_eq, live_eq]:
+        if f.exists():
+            all_points.extend(_read_jsonl(f, limit=10000))
+    # Sort by timestamp asc, dedup by rounding to nearest minute
+    all_points.sort(key=lambda p: p.get("timestamp", p.get("recorded_at", "")))
     if not all_points:
         return []
     
