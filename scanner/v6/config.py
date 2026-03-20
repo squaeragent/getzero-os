@@ -38,7 +38,7 @@ DAILY_LOSS_LIMIT  = CAPITAL * DAILY_LOSS_LIMIT_PCT  # static fallback
 MAX_PER_COIN      = 1
 MAX_POSITION_PCT  = 0.33    # 33% of equity max per position
 MIN_POSITION_PCT  = 0.07    # 7% of equity min per position
-FEE_RATE          = 0.00035  # 0.035% HL taker — update if volume tier changes
+FEE_RATE          = 0.00045  # 0.045% HL base taker — queried dynamically per trade
 
 
 def get_dynamic_limits(equity: float) -> dict:
@@ -91,6 +91,28 @@ def get_stop_pct(coin: str, signal_stop: float = 0) -> float:
     if signal_stop > 0 and signal_stop < vol_stop:
         return signal_stop
     return vol_stop
+# Per-asset slippage tolerance (derived from typical spread + vol)
+COIN_SLIPPAGE = {
+    "BTC":     0.002,   # 0.2% — deep book
+    "ETH":     0.003,   # 0.3%
+    "SOL":     0.005,   # 0.5%
+    "XRP":     0.004,   # 0.4%
+    "DOGE":    0.008,   # 0.8%
+    "PAXG":    0.003,   # 0.3% — gold, tight
+    "FARTCOIN": 0.015,  # 1.5% — meme, thin
+    "TRUMP":   0.012,   # 1.2% — meme
+    "PUMP":    0.015,   # 1.5% — meme
+    "HYPE":    0.010,   # 1.0% — volatile
+    "kBONK":   0.012,   # 1.2% — meme
+}
+DEFAULT_SLIPPAGE = 0.01  # 1% default
+
+
+def get_slippage(coin: str) -> float:
+    """Get per-asset slippage tolerance."""
+    return COIN_SLIPPAGE.get(coin, DEFAULT_SLIPPAGE)
+
+
 MIN_HOLD_MINUTES  = 15     # minimum hold before evaluating exits
 
 # ─── STRATEGY ─────────────────────────────────────────────────────────────────

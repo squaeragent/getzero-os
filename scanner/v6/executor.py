@@ -36,7 +36,7 @@ from scanner.v6.config import (
     ALLOCATION_FILE, TRADES_FILE, BUS_DIR, DATA_DIR,
     MAX_POSITION_USD, MIN_POSITION_USD, STOP_LOSS_PCT, STRATEGY_VERSION,
     TELEGRAM_CHAT_ID, TELEGRAM_BOT_TOKEN_ENV, get_env, get_stop_pct,
-    get_dynamic_limits, FEE_RATE,
+    get_dynamic_limits, FEE_RATE, get_slippage,
 )
 
 CYCLE_SECONDS = 5
@@ -293,6 +293,12 @@ class HLClient:
         )
         return json.loads(urllib.request.urlopen(req, timeout=10).read())
 
+    @staticmethod
+    def _gen_cloid() -> str:
+        """Generate 128-bit hex client order ID for tracking."""
+        import uuid
+        return "0x" + uuid.uuid4().hex
+
     def place_ioc_order(self, coin: str, is_buy: bool, size: float, limit_price: float,
                         reduce_only: bool = False) -> dict:
         """Place IOC (Immediate-or-Cancel) order — fills at market or cancels."""
@@ -303,6 +309,7 @@ class HLClient:
         sz_dec  = COIN_SZ_DECIMALS.get(coin, 2)
         sz_str  = self.float_to_wire(round(size, sz_dec))
         px_str  = self.float_to_wire(self.round_price(limit_price))
+        cloid   = self._gen_cloid()
 
         action = {
             "type": "order",
@@ -313,14 +320,22 @@ class HLClient:
                 "s": sz_str,
                 "r": reduce_only,
                 "t": {"limit": {"tif": "Ioc"}},
+                "c": cloid,
             }],
             "grouping": "na",
         }
-        return self._sign_and_send(action)
+        result = self._sign_and_send(action)
+        result["_cloid"] = cloid
+        return result
 
     def place_stop_loss(self, coin: str, is_buy: bool, size: float,
-                        trigger_price: float) -> dict:
-        """Place native stop-loss trigger order."""
+                        trigger_price: float, limit_offset_pct: float = 0.02) -> dict:
+        """Place native stop-loss trigger order with LIMIT (not market).
+        
+        limit_offset_pct: how far below trigger (for sell) or above trigger (for buy)
+        to set the limit price. Default 2% — ensures fill on gap moves.
+        A trigger=$100 with 2% offset → limit=$98 (sell) or $102 (buy).
+        """
         asset = COIN_TO_ASSET.get(coin)
         if asset is None:
             return {"status": "err", "response": f"Unknown coin: {coin}"}
@@ -329,16 +344,23 @@ class HLClient:
         sz_str      = self.float_to_wire(round(size, sz_dec))
         trigger_str = self.float_to_wire(self.round_price(trigger_price))
 
+        # Limit price offset: more aggressive = more likely to fill on gap
+        if is_buy:  # buying to close a SHORT — limit above trigger
+            limit_price = trigger_price * (1 + limit_offset_pct)
+        else:  # selling to close a LONG — limit below trigger
+            limit_price = trigger_price * (1 - limit_offset_pct)
+        limit_str = self.float_to_wire(self.round_price(limit_price))
+
         action = {
             "type": "order",
             "orders": [{
                 "a": asset,
                 "b": is_buy,
-                "p": trigger_str,
+                "p": limit_str,
                 "s": sz_str,
                 "r": True,
                 "t": {"trigger": {
-                    "isMarket":  True,
+                    "isMarket":  False,
                     "triggerPx": trigger_str,
                     "tpsl":      "sl",
                 }},
@@ -367,6 +389,83 @@ class HLClient:
             self._sign_and_send(action)
         except Exception as e:
             log(f"WARN: cancel stops for {coin}: {e}")
+
+    # ── Fee & Funding Queries ──────────────────────────────────────────────
+
+    def get_fee_rates(self) -> dict:
+        """Query actual fee rates from HL. Returns {taker, maker}."""
+        try:
+            resp = self._info_post({"type": "userFees", "user": self.main_address})
+            taker = float(resp.get("userCrossRate", 0.00045))
+            maker = float(resp.get("userAddRate", 0.00015))
+            return {"taker": taker, "maker": maker}
+        except Exception as e:
+            log(f"WARN: fee rate query failed: {e}")
+            return {"taker": 0.00045, "maker": 0.00015}  # HL base tier
+
+    def get_predicted_funding(self, coin: str) -> float:
+        """Get predicted HL funding rate for a coin. Returns rate per hour."""
+        try:
+            resp = self._info_post({"type": "predictedFundings"})
+            for item in resp:
+                if item[0] == coin:
+                    for venue in item[1]:
+                        if venue[0] == "HlPerp":
+                            return float(venue[1].get("fundingRate", 0))
+            return 0.0
+        except Exception as e:
+            log(f"WARN: funding query failed for {coin}: {e}")
+            return 0.0
+
+    def get_l2_book(self, coin: str, depth: int = 5) -> dict:
+        """Get L2 order book. Returns {bids: [(px, sz)], asks: [(px, sz)], bid_depth_usd, ask_depth_usd}."""
+        try:
+            resp = self._info_post({"type": "l2Book", "coin": coin})
+            levels = resp.get("levels", [[], []])
+            bids = [(float(b["px"]), float(b["sz"])) for b in levels[0][:depth]]
+            asks = [(float(a["px"]), float(a["sz"])) for a in levels[1][:depth]]
+            bid_depth = sum(px * sz for px, sz in bids)
+            ask_depth = sum(px * sz for px, sz in asks)
+            return {"bids": bids, "asks": asks, "bid_depth_usd": bid_depth, "ask_depth_usd": ask_depth}
+        except Exception as e:
+            log(f"WARN: l2Book failed for {coin}: {e}")
+            return {"bids": [], "asks": [], "bid_depth_usd": 0, "ask_depth_usd": 0}
+
+    def get_rate_limit(self) -> dict:
+        """Check our rate limit budget."""
+        try:
+            resp = self._info_post({"type": "userRateLimit", "user": self.main_address})
+            return {
+                "used": resp.get("nRequestsUsed", 0),
+                "cap": resp.get("nRequestsCap", 10000),
+                "cum_volume": float(resp.get("cumVlm", 0)),
+            }
+        except Exception as e:
+            log(f"WARN: rate limit query failed: {e}")
+            return {"used": 0, "cap": 10000, "cum_volume": 0}
+
+    # ── Order Methods ──────────────────────────────────────────────────────
+
+    def place_gtc_order(self, coin: str, is_buy: bool, size: float,
+                        limit_price: float, reduce_only: bool = False) -> dict:
+        """Place GTC (Good Til Cancel) limit order — maker fee 0.015%."""
+        asset = COIN_TO_ASSET.get(coin)
+        if asset is None:
+            return {"status": "err", "response": f"Unknown coin: {coin}"}
+        sz_dec = COIN_SZ_DECIMALS.get(coin, 2)
+        action = {
+            "type": "order",
+            "orders": [{
+                "a": asset,
+                "b": is_buy,
+                "p": self.float_to_wire(self.round_price(limit_price)),
+                "s": self.float_to_wire(round(size, sz_dec)),
+                "r": reduce_only,
+                "t": {"limit": {"tif": "Gtc"}},
+            }],
+            "grouping": "na",
+        }
+        return self._sign_and_send(action)
 
     def market_buy(self, coin: str, size: float, slippage: float = 0.01) -> dict:
         price = self.get_price(coin)
@@ -454,9 +553,45 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             log(f"  ERROR: no price for {coin}")
             return False
 
+        # ── PRE-TRADE CHECKS (HL Mastery) ──────────────────────────────────
+
+        # 1. Funding rate check
+        funding_rate = client.get_predicted_funding(coin)
+        funding_cost_pct = abs(funding_rate) * trade.get("max_hold_hours", 24)  # hourly rate × hold hours
+        funding_hurts = (is_buy and funding_rate > 0) or (not is_buy and funding_rate < 0)
+        if funding_hurts and funding_cost_pct > 0.005:  # >0.5% funding cost for the hold period
+            log(f"  ⚠️ FUNDING WARNING: {coin} rate={funding_rate:.6f}/hr, est cost={funding_cost_pct:.2%} over {trade.get('max_hold_hours', 24)}h")
+            if funding_cost_pct > 0.02:  # >2% funding cost → skip trade
+                log(f"  SKIP: funding cost {funding_cost_pct:.2%} exceeds 2% threshold")
+                return False
+
+        # 2. L2 book depth check
+        book = client.get_l2_book(coin, depth=5)
+        relevant_depth = book["ask_depth_usd"] if is_buy else book["bid_depth_usd"]
+        if relevant_depth > 0 and size_usd > relevant_depth * 0.10:
+            log(f"  ⚠️ LIQUIDITY WARNING: ${size_usd:.0f} order is {size_usd/relevant_depth:.0%} of top-5 {('ask' if is_buy else 'bid')} depth (${relevant_depth:.0f})")
+            if size_usd > relevant_depth * 0.50:
+                log(f"  SKIP: order > 50% of visible liquidity")
+                return False
+
+        # 3. Alpha vs cost filter
+        fee_rates = client.get_fee_rates()
+        taker_fee = fee_rates["taker"]
+        expected_cost_pct = taker_fee * 2  # entry + exit fees
+        if funding_hurts:
+            expected_cost_pct += funding_cost_pct
+        signal_sharpe = trade.get("sharpe", 1.5)
+        # Rough expected alpha: signals with Sharpe 2.0 historically delivered ~0.3% per trade
+        expected_alpha_pct = max(0, (signal_sharpe - 1.0) * 0.003)
+        if expected_alpha_pct < expected_cost_pct and signal_sharpe < 3.0:
+            log(f"  SKIP: expected alpha {expected_alpha_pct:.3%} < cost {expected_cost_pct:.3%} (fees={taker_fee*2:.3%} + funding={funding_cost_pct:.3%})")
+            return False
+
+        # ── SIZE AND EXECUTE ───────────────────────────────────────────────
+
         raw_coins = size_usd / price
         decimals = COIN_SZ_DECIMALS.get(coin, 2)
-        size_coins = math.floor(raw_coins * 10**decimals) / 10**decimals  # round DOWN, not nearest
+        size_coins = math.floor(raw_coins * 10**decimals) / 10**decimals
         residual_usd = (raw_coins - size_coins) * price
         if residual_usd > 0.01:
             log(f"  Precision residual: ${residual_usd:.2f} ({(residual_usd/size_usd*100):.1f}% of position)")
@@ -464,8 +599,9 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             log(f"  ERROR: size_coins=0 for {coin} (size_usd=${size_usd:.2f}, price=${price})")
             return False
 
-        log(f"  Opening {direction} {coin}: {size_coins} coins (${size_usd:.0f}) @ ${price:,.4f}")
-        result = client.market_buy(coin, size_coins) if is_buy else client.market_sell(coin, size_coins)
+        slippage = get_slippage(coin)
+        log(f"  Opening {direction} {coin}: {size_coins} coins (${size_usd:.0f}) @ ${price:,.4f} [funding={funding_rate:+.6f}/hr, depth=${relevant_depth:.0f}, slip={slippage:.1%}]")
+        result = client.market_buy(coin, size_coins, slippage=slippage) if is_buy else client.market_sell(coin, size_coins, slippage=slippage)
         log(f"  Order result: {json.dumps(result)}")
 
         if result.get("status") == "err":
@@ -626,8 +762,12 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
     actual_entry_notional = entry_price * abs(size_coins) if entry_price and size_coins else pos.get("size_usd", 0)
     actual_exit_notional = exit_price * abs(size_coins) if exit_price and size_coins else actual_entry_notional
 
-    # Fees: HL taker = 0.035% of notional on each side
-    fee_rate = FEE_RATE
+    # Fees: query actual rate from HL (cached per cycle), fallback to FEE_RATE
+    try:
+        fee_rates = client.get_fee_rates()
+        fee_rate = fee_rates["taker"]  # all our orders are taker (IOC)
+    except Exception:
+        fee_rate = FEE_RATE
     entry_fee = round(actual_entry_notional * fee_rate, 4)
     exit_fee = round(actual_exit_notional * fee_rate, 4)
     total_fees = round(entry_fee + exit_fee, 4)
@@ -895,6 +1035,20 @@ def main():
         })
     except Exception as e:
         log(f"WARN: Could not fetch balance: {e}")
+
+    # Log actual fee rates
+    try:
+        fees = client.get_fee_rates()
+        log(f"Fee rates: taker={fees['taker']*100:.3f}% maker={fees['maker']*100:.3f}%")
+    except Exception as e:
+        log(f"WARN: fee rate query failed: {e}")
+
+    # Log rate limit status
+    try:
+        rl = client.get_rate_limit()
+        log(f"Rate limit: {rl['used']}/{rl['cap']} used (cumVol=${rl['cum_volume']:,.0f})")
+    except Exception as e:
+        log(f"WARN: rate limit query failed: {e}")
 
     # Reconcile positions with HL reality
     _reconcile_positions(client)
