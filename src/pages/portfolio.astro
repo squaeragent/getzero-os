@@ -812,7 +812,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var bestTrade = null, worstTrade = null;
     for(var i = 0; i < trades.length; i++){
       var t = trades[i];
-      var pnl = t.pnl_dollars || 0;
+      var pnl = t.pnl_usd || t.pnl_dollars || 0;
       var isWin = pnl >= 0;
       if(isWin) wins++;
       totalPnl += pnl;
@@ -1329,10 +1329,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     var allAgents = [
-      'parameter_evolution','regime_transition','genealogy','counterfactual',
-      'observer','correlation','risk','execution','adversary','reflection',
-      'adversary_evolution','perception','hypothesis','signal_evolution',
-      'hl_enrichment','pattern_scanner','taapi_fetcher'
+      'strategy_manager','evaluator','risk_guard','executor'
     ];
     var online = 0;
     var yellow = 0;
@@ -1375,10 +1372,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var pipeline = document.getElementById('agent-pipeline');
     if(!pipeline || !agents || !agents.heartbeat) return;
     var stages = [
-      {label:'PERCEPTION', agents:['perception','observer','correlation','hl_enrichment']},
-      {label:'ANALYSIS', agents:['regime_transition','hypothesis','counterfactual','pattern_scanner']},
-      {label:'SIGNALS', agents:['signal_evolution','parameter_evolution','genealogy','taapi_fetcher']},
-      {label:'ACTION', agents:['risk','execution','adversary','adversary_evolution','reflection']},
+      {label:'STRATEGY', agents:['strategy_manager']},
+      {label:'SIGNALS', agents:['evaluator']},
+      {label:'RISK', agents:['risk_guard']},
+      {label:'EXECUTION', agents:['executor']},
     ];
     var html = '';
     for(var s=0; s<stages.length; s++){
