@@ -172,7 +172,8 @@ def main():
     print()
 
     # ── 2. Get current open orders (stops) ────────────────────────────────
-    orders = info_post({"type": "openOrders", "user": MAIN_ADDRESS})
+    # MUST use frontendOpenOrders — openOrders doesn't return trigger orders properly
+    orders = info_post({"type": "frontendOpenOrders", "user": MAIN_ADDRESS})
     print(f"Current open orders ({len(orders)}):")
     for o in orders:
         oid = o.get("oid")
@@ -217,21 +218,12 @@ def main():
                 print(f"🔧 {coin} {direction}: trigger=${trigger_px} limit=${limit_px} → new limit=${new_limit} (2% offset)")
 
                 if not dry:
-                    # Cancel existing stop
                     asset = COIN_TO_ASSET.get(coin)
                     if asset is None:
                         print(f"  ERROR: unknown asset index for {coin}")
                         continue
 
-                    cancel_action = {
-                        "type": "cancel",
-                        "cancels": [{"a": asset, "o": oid}],
-                    }
-                    cancel_result = sign_and_send(wallet, cancel_action)
-                    print(f"  Cancel result: {json.dumps(cancel_result)}")
-                    time.sleep(0.2)
-
-                    # Place new stop with offset
+                    # PLACE NEW STOP FIRST — position must never be naked
                     sz_dec = COIN_SZ_DECIMALS.get(coin, 2)
                     sz_str = float_to_wire(round(size, sz_dec))
                     trigger_str = float_to_wire(round_price(trigger_px))
@@ -255,8 +247,38 @@ def main():
                         "grouping": "na",
                     }
                     place_result = sign_and_send(wallet, place_action)
-                    print(f"  Place result: {json.dumps(place_result)}")
+                    print(f"  Place new stop: {json.dumps(place_result)}")
+
+                    # Verify new stop was accepted before cancelling old
+                    if place_result.get("status") != "ok":
+                        print(f"  ❌ NEW STOP REJECTED — keeping old stop in place! Not cancelling.")
+                        continue
+
                     time.sleep(0.2)
+
+                    # NOW cancel the old stop (position is protected by the new one)
+                    cancel_action = {
+                        "type": "cancel",
+                        "cancels": [{"a": asset, "o": oid}],
+                    }
+                    cancel_result = sign_and_send(wallet, cancel_action)
+                    print(f"  Cancel old stop: {json.dumps(cancel_result)}")
+                    time.sleep(0.3)
+
+                    # Verify: confirm old stop is gone
+                    verify_orders = info_post({"type": "frontendOpenOrders", "user": MAIN_ADDRESS})
+                    old_still_exists = any(o.get("oid") == oid for o in verify_orders)
+                    new_exists = any(
+                        o.get("coin") == coin and o.get("triggerPx") == str(round_price(trigger_px))
+                        and abs(float(o.get("limitPx", 0)) - new_limit) < 0.01
+                        for o in verify_orders
+                    )
+                    if old_still_exists:
+                        print(f"  ⚠️  Old stop {oid} still exists after cancel — two stops active (safe but messy)")
+                    if new_exists:
+                        print(f"  ✅ New stop verified on HL")
+                    else:
+                        print(f"  ⚠️  New stop not found in verification — check manually!")
             else:
                 offset_pct = abs(trigger_px - limit_px) / trigger_px * 100
                 print(f"✅ {coin}: stop already has offset (trigger=${trigger_px} limit=${limit_px}, {offset_pct:.1f}%)")
