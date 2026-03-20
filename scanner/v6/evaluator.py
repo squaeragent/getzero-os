@@ -224,6 +224,10 @@ SIGNAL_BLACKLIST = {
 # Combined losses: -$2.61 (more than system's entire $2.41 net profit)
 SIGNAL_FAMILY_BLACKLIST = {"SOCIAL", "INFLUENCER", "ICHIMOKU", "ARCH", "CHAOS"}
 
+# P0 intelligence 2026-03-20: Portfolio optimizer shows negative assembled Sharpe.
+# PUMP: -0.96, XPL: -2.39, TRUMP: -0.66. Every trade is negative EV.
+COIN_BLACKLIST = {"PUMP", "XPL", "TRUMP"}
+
 
 def evaluate_tick(flat_indicators: dict[str, dict]):
     """Called on each WS tick. flat_indicators = {COIN: {IND_CODE: value}}."""
@@ -238,6 +242,8 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
     open_coins   = {p["coin"] for p in positions}
 
     for coin in active_coins:
+        if coin in COIN_BLACKLIST:
+            continue  # negative portfolio Sharpe — don't open new positions
         if coin in open_coins:
             continue  # already have a position on this coin
         if coin not in flat_indicators:

@@ -37,6 +37,16 @@ MIN_WIN_RATE  = 55.0
 TOP_SIGNALS   = 10   # send up to 10 signals per coin to assemble
 MAX_CACHE_AGE_HOURS = 4
 
+# P0 intelligence 2026-03-20: Portfolio optimizer shows these coins have negative
+# assembled Sharpe in portfolio context. Every trade on these is negative EV.
+# PUMP: assembled 0.58, portfolio -0.96 | XPL: portfolio -2.39 | TRUMP: portfolio -0.66
+COIN_BLACKLIST = {"PUMP", "XPL", "TRUMP"}
+
+# Assembled strategy Sharpe floor — individual signal Sharpe is the marketing number,
+# assembled Sharpe is the honest number. Don't trade coins where the combined strategy
+# scores below this threshold.
+MIN_ASSEMBLED_SHARPE = 1.5
+
 # ─── FIX 2: Rolling average smoothing ────────────────────────────────────────
 SHARPE_HISTORY_FILE = BUS_DIR / "sharpe_history.json"
 SHARPE_HISTORY_WINDOW = 5  # average over last N runs (10h at 2h refresh)
@@ -321,13 +331,17 @@ def assemble_strategy(coin: str, signals: list[dict], api_key: str) -> list[dict
         }}
         result.append(merged)
 
-    # Strategy-level metrics
+    # Strategy-level metrics — the assembled backtest Sharpe is the HONEST number
     strategy_metrics = data.get("strategy_metrics", data.get("backtest", {}))
     if strategy_metrics:
+        assembled_sharpe = strategy_metrics.get("sharpe", 0)
         log(f"    {coin}: assembled {len(result)} signals — "
-            f"Sharpe={strategy_metrics.get('sharpe', '?')}, "
+            f"Sharpe={assembled_sharpe}, "
             f"WR={strategy_metrics.get('win_rate', '?')}%, "
-            f"Return={strategy_metrics.get('total_return', '?')}%")
+            f"Return={strategy_metrics.get('total_return_pct', strategy_metrics.get('total_return', '?'))}%")
+        # Attach assembled Sharpe to first signal for caller to extract
+        if result:
+            result[0]["_assembled_sharpe"] = float(assembled_sharpe) if assembled_sharpe else 0
 
     return result
 
@@ -490,15 +504,15 @@ def apply_hysteresis(candidate_coins: list[str], smoothed_sharpes: dict) -> list
 
 
 def local_allocation(coins_data: dict) -> dict:
-    """Sharpe-weighted allocation — concentrated on top signals.
+    """Sharpe-weighted allocation — uses ASSEMBLED strategy Sharpe.
     
-    Philosophy: $750 account needs to prove alpha, not minimize risk.
-    Concentrate on highest-Sharpe coins. Sharpe^2 weighting rewards
-    the best signals disproportionately.
+    P0 intelligence 2026-03-20: Individual signal Sharpe is the marketing number.
+    Assembled Sharpe is the honest number. PUMP signal=3.66, assembled=0.58.
+    Selection must use assembled Sharpe, not individual.
     """
-    MIN_SHARPE_THRESHOLD = 2.0   # only trade coins with Sharpe 2.0+
+    MIN_SHARPE_THRESHOLD = 1.5   # assembled Sharpe floor (was 2.0 for signal Sharpe)
     MIN_SIGNALS = 2
-    MAX_ACTIVE = 8               # concentrated: 8 coins max (was 12)
+    MAX_ACTIVE = 8               # concentrated: 8 coins max
 
     qualified = {}
     for coin, data in coins_data.items():
@@ -546,6 +560,10 @@ def run_once(api_key: str):
     coins_with_signals = []
 
     for i, coin in enumerate(ALL_COINS):
+        if coin in COIN_BLACKLIST:
+            log(f"  {coin}: BLACKLISTED (negative portfolio Sharpe)")
+            continue
+
         raw_signals = load_cached_signals(coin)
         if not raw_signals:
             continue
@@ -576,17 +594,31 @@ def run_once(api_key: str):
         scored = coins_data[coin]["scored_signals"]
         assembled = assemble_strategy(coin, scored, api_key)
         if assembled:
-            best_sharpe = max(s.get("sharpe", 0) for s in assembled)
+            best_signal_sharpe = max(s.get("sharpe", 0) for s in assembled)
             avg_wr = sum(s.get("win_rate", 0) for s in assembled) / len(assembled)
+            # The assembled backtest Sharpe is stored by assemble_strategy in the
+            # strategy_metrics log. We also store best_signal_sharpe for reference,
+            # but selection uses assembled_sharpe (the honest number).
+            assembled_sharpe = assembled[0].get("_assembled_sharpe", best_signal_sharpe)
             coins_data[coin] = {
-                "signals":      assembled,
-                "best_sharpe":  best_sharpe,
-                "avg_win_rate": avg_wr,
-                "signal_count": len(assembled),
+                "signals":             assembled,
+                "best_sharpe":         assembled_sharpe,  # USE ASSEMBLED, not individual
+                "best_signal_sharpe":  best_signal_sharpe,  # keep for reference
+                "avg_win_rate":        avg_wr,
+                "signal_count":        len(assembled),
             }
+            # Assembled Sharpe floor — don't trade coins where combined strategy is weak
+            if assembled_sharpe < MIN_ASSEMBLED_SHARPE:
+                log(f"  {coin}: assembled Sharpe {assembled_sharpe:.2f} < {MIN_ASSEMBLED_SHARPE} floor — EXCLUDED (signal Sharpe was {best_signal_sharpe:.2f})")
+                del coins_data[coin]
+                if coin in coins_with_signals:
+                    coins_with_signals.remove(coin)
+            else:
+                log(f"  {coin}: assembled Sharpe {assembled_sharpe:.2f} (signal Sharpe {best_signal_sharpe:.2f}) — INCLUDED")
         else:
             del coins_data[coin]
-            coins_with_signals.remove(coin)
+            if coin in coins_with_signals:
+                coins_with_signals.remove(coin)
         time.sleep(0.5)  # rate limit between coins
 
     log(f"Phase 2 complete: {len(coins_data)} coins with assembled strategies")
