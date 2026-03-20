@@ -35,7 +35,7 @@ from scanner.v6.config import (
     APPROVED_FILE, EXITS_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE,
     ALLOCATION_FILE, TRADES_FILE, BUS_DIR, DATA_DIR,
     MAX_POSITION_USD, MIN_POSITION_USD, STOP_LOSS_PCT, STRATEGY_VERSION,
-    TELEGRAM_CHAT_ID, TELEGRAM_BOT_TOKEN_ENV, get_env,
+    TELEGRAM_CHAT_ID, TELEGRAM_BOT_TOKEN_ENV, get_env, get_stop_pct,
 )
 
 CYCLE_SECONDS = 5
@@ -384,7 +384,16 @@ class HLClient:
 # ─── POSITION SIZING ──────────────────────────────────────────────────────────
 
 def compute_size_usd(trade: dict) -> float:
-    """Compute position size from allocation weight or sharpe-based default."""
+    """Compute position size using half-Kelly criterion.
+    
+    Kelly: f* = (p * b - q) / b where:
+      p = win rate (from ENVY signal)
+      q = 1 - p
+      b = avg win / avg loss ratio (estimated from signal stats)
+    Half-Kelly: f* / 2 (conservative — reduces variance)
+    
+    Size = equity * half_kelly_fraction, clamped to MIN/MAX.
+    """
     allocation  = load_json(ALLOCATION_FILE, {}).get("allocations", {})
     coin        = trade.get("coin", "")
     weight      = allocation.get(coin, 0)
@@ -400,12 +409,30 @@ def compute_size_usd(trade: dict) -> float:
         return 0  # refuse to size with no data
 
     if weight > 0:
+        # Portfolio optimizer gave us a weight — use it
         size_usd = equity * weight
     else:
-        # Scale by sharpe: 1.5 → MIN, 2.5+ → MAX
+        # Half-Kelly sizing from signal stats
+        win_rate = trade.get("win_rate", 50) / 100  # convert to fraction
         sharpe   = trade.get("sharpe", 1.5)
-        frac     = min(1.0, max(0.0, (sharpe - 1.5) / 1.0))
-        size_usd = MIN_POSITION_USD + frac * (MAX_POSITION_USD - MIN_POSITION_USD)
+        
+        # Estimate win/loss ratio from sharpe
+        # Higher sharpe → higher avg_win/avg_loss ratio
+        # Rough approximation: b ≈ 1 + sharpe * 0.3
+        b = max(1.0, 1.0 + sharpe * 0.3)
+        
+        p = max(0.01, min(0.99, win_rate))
+        q = 1 - p
+        
+        # Kelly fraction
+        kelly = (p * b - q) / b if b > 0 else 0
+        half_kelly = max(0, kelly / 2)
+        
+        # Clamp kelly fraction to reasonable bounds (5% - 30% of equity per position)
+        half_kelly = min(0.30, max(0.05, half_kelly))
+        
+        size_usd = equity * half_kelly
+        log(f"  Kelly sizing: p={p:.2f} b={b:.2f} kelly={kelly:.3f} half={half_kelly:.3f} → ${size_usd:.0f}")
 
     return round(max(MIN_POSITION_USD, min(MAX_POSITION_USD, size_usd)), 2)
 
@@ -418,7 +445,8 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
     direction  = trade["direction"]
     is_buy     = direction == "LONG"
     size_usd   = compute_size_usd(trade)
-    stop_pct   = trade.get("stop_loss_pct", STOP_LOSS_PCT)
+    signal_stop = trade.get("stop_loss_pct", 0)
+    stop_pct   = get_stop_pct(coin, signal_stop)
 
     if dry:
         price     = client.get_price(coin)
@@ -430,7 +458,12 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             log(f"  ERROR: no price for {coin}")
             return False
 
-        size_coins = round(size_usd / price, COIN_SZ_DECIMALS.get(coin, 2))
+        raw_coins = size_usd / price
+        decimals = COIN_SZ_DECIMALS.get(coin, 2)
+        size_coins = math.floor(raw_coins * 10**decimals) / 10**decimals  # round DOWN, not nearest
+        residual_usd = (raw_coins - size_coins) * price
+        if residual_usd > 0.01:
+            log(f"  Precision residual: ${residual_usd:.2f} ({(residual_usd/size_usd*100):.1f}% of position)")
         if size_coins <= 0:
             log(f"  ERROR: size_coins=0 for {coin} (size_usd=${size_usd:.2f}, price=${price})")
             return False
@@ -641,10 +674,14 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
     # Append to trades.jsonl
     append_jsonl(TRADES_FILE, trade_record)
 
-    # Update risk.json daily_loss
-    if pnl_usd < 0 and not dry:
+    # Update risk.json daily P&L (net — wins reduce, losses increase)
+    if not dry:
         risk = load_json(RISK_FILE, {})
-        risk["daily_loss_usd"] = round(risk.get("daily_loss_usd", 0) + abs(pnl_usd), 4)
+        # daily_pnl tracks net P&L (positive = winning day, negative = losing day)
+        risk["daily_pnl_usd"] = round(risk.get("daily_pnl_usd", 0) + pnl_usd, 4)
+        # daily_loss_usd tracks gross losses only (for conservative halt check)
+        if pnl_usd < 0:
+            risk["daily_loss_usd"] = round(risk.get("daily_loss_usd", 0) + abs(pnl_usd), 4)
         save_json_atomic(RISK_FILE, {**risk, "updated_at": now_iso()})
 
     # Telegram alert

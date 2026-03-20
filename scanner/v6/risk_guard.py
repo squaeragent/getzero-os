@@ -88,8 +88,9 @@ def load_risk() -> dict:
     risk = load_json(RISK_FILE, default)
     # Reset daily loss at new UTC day
     if risk.get("daily_loss_since", "")[:10] != _today_start()[:10]:
-        log("  Daily loss counter reset (new UTC day)")
+        log("  Daily counters reset (new UTC day)")
         risk["daily_loss_usd"]   = 0.0
+        risk["daily_pnl_usd"]    = 0.0
         risk["daily_loss_since"] = _today_start()
         risk["halted"]           = False
         risk["halt_reason"]      = None

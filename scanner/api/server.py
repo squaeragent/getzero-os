@@ -541,6 +541,16 @@ def v6_heartbeats():
     return result
 
 
+@app.get("/v6/analytics")
+def v6_analytics():
+    """Real performance analytics — Sharpe, per-signal stats, drawdown."""
+    try:
+        from scanner.v6.analytics import full_report
+        return full_report()
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/schemas")
 def schemas():
     """JSON Schema definitions for API types."""

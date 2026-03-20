@@ -40,7 +40,40 @@ MAX_POSITION_USD  = 250.0
 MIN_POSITION_USD  = 50.0
 
 # ─── RISK ─────────────────────────────────────────────────────────────────────
-STOP_LOSS_PCT     = 0.05   # 5% hard stop (override ENVY's 30%)
+STOP_LOSS_PCT     = 0.05   # default fallback — overridden by per-coin volatility stops
+
+# Per-coin stop loss based on typical daily volatility (ATR proxy)
+# Updated: derived from 30d realized vol data
+COIN_STOP_PCT = {
+    "BTC":     0.03,   # ~3% daily vol
+    "ETH":     0.04,   # ~4% daily vol
+    "SOL":     0.06,   # ~6% daily vol
+    "DOGE":    0.08,   # ~8% daily vol
+    "XRP":     0.05,   # ~5% daily vol
+    "ADA":     0.06,   # ~6% daily vol
+    "AVAX":    0.06,   # ~6% daily vol
+    "NEAR":    0.07,   # ~7% daily vol
+    "SUI":     0.08,   # ~8% daily vol
+    "LTC":     0.05,   # ~5% daily vol
+    "LINK":    0.06,   # ~6% daily vol
+    "DOT":     0.06,   # ~6% daily vol
+    "HYPE":    0.10,   # ~10% daily vol (new, volatile)
+    "ZEC":     0.06,   # ~6% daily vol
+    "PAXG":    0.02,   # ~2% daily vol (gold-pegged)
+    "FARTCOIN": 0.12,  # ~12% daily vol (meme)
+    "TRUMP":   0.10,   # ~10% daily vol (meme)
+    "BONK":    0.10,   # ~10% daily vol (meme)
+    "kBONK":   0.10,
+    "PUMP":    0.12,   # ~12% daily vol (meme)
+}
+
+def get_stop_pct(coin: str, signal_stop: float = 0) -> float:
+    """Get stop loss % for a coin. Priority: per-coin vol > signal > default."""
+    vol_stop = COIN_STOP_PCT.get(coin, STOP_LOSS_PCT)
+    # If signal has a stop and it's tighter than vol-based, use signal's
+    if signal_stop > 0 and signal_stop < vol_stop:
+        return signal_stop
+    return vol_stop
 MIN_HOLD_MINUTES  = 15     # minimum hold before evaluating exits
 
 # ─── STRATEGY ─────────────────────────────────────────────────────────────────
