@@ -541,11 +541,13 @@ class HLClient:
         }
         return self._sign_and_send(action)
 
-    def market_buy(self, coin: str, size: float, slippage: float = 0.01) -> dict:
+    def market_buy(self, coin: str, size: float, slippage: float = 0.01,
+                    reduce_only: bool = False) -> dict:
         price = self.get_price(coin)
         if price <= 0:
             return {"status": "err", "response": f"No price for {coin}"}
-        return self.place_ioc_order(coin, True, size, self.round_price(price * (1 + slippage)))
+        return self.place_ioc_order(coin, True, size, self.round_price(price * (1 + slippage)),
+                                    reduce_only=reduce_only)
 
     def market_sell(self, coin: str, size: float, slippage: float = 0.01,
                     reduce_only: bool = False) -> dict:
@@ -655,10 +657,13 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
                 log(f"  SKIP: funding cost {funding_cost_pct:.2%} exceeds 2% threshold")
                 return False
 
-        # 2. L2 book depth check
+        # 2. L2 book depth check — fail-safe: if depth unknown, SKIP (don't trade blind)
         book = client.get_l2_book(coin, depth=5)
         relevant_depth = book["ask_depth_usd"] if is_buy else book["bid_depth_usd"]
-        if relevant_depth > 0 and size_usd > relevant_depth * 0.10:
+        if relevant_depth <= 0:
+            log(f"  SKIP: L2 book depth is 0 for {coin} — API failure or empty book, refusing to trade blind")
+            return False
+        if size_usd > relevant_depth * 0.10:
             log(f"  ⚠️ LIQUIDITY WARNING: ${size_usd:.0f} order is {size_usd/relevant_depth:.0%} of top-5 {('ask' if is_buy else 'bid')} depth (${relevant_depth:.0f})")
             if size_usd > relevant_depth * 0.50:
                 log(f"  SKIP: order > 50% of visible liquidity")
@@ -813,7 +818,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
     else:
         # Cancel stops first
         client.cancel_coin_stops(coin)
-        result = client.market_sell(coin, size_coins, reduce_only=True) if is_long else client.market_buy(coin, size_coins)
+        result = client.market_sell(coin, size_coins, reduce_only=True) if is_long else client.market_buy(coin, size_coins, reduce_only=True)
         log(f"  Close result: {json.dumps(result)}")
 
         fills   = result.get("response", {}).get("data", {}).get("statuses", [{}])
@@ -833,7 +838,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
             send_alert(f"⚠️ PARTIAL FILL on {coin} close: filled {filled_sz}/{abs(size_coins)}")
             # Retry the remainder
             try:
-                retry = client.market_sell(coin, remaining, reduce_only=True) if is_long else client.market_buy(coin, remaining)
+                retry = client.market_sell(coin, remaining, reduce_only=True) if is_long else client.market_buy(coin, remaining, reduce_only=True)
                 retry_fills = retry.get("response", {}).get("data", {}).get("statuses", [{}])
                 retry_filled = retry_fills[0].get("filled", {}) if retry_fills else {}
                 if float(retry_filled.get("totalSz", 0)) > 0:
