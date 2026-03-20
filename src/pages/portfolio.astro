@@ -813,7 +813,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     for(var i = 0; i < trades.length; i++){
       var t = trades[i];
       var pnl = t.pnl_usd || t.pnl_dollars || 0;
-      var isWin = pnl >= 0;
+      var isWin = pnl > 0;
       if(isWin) wins++;
       totalPnl += pnl;
       if(t.direction === 'LONG'){
@@ -948,7 +948,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       var wins = 0;
       for(var k = 0; k < trades.length; k++){
-        if((trades[k].pnl_dollars || 0) >= 0) wins++;
+        if((trades[k].pnl_usd || trades[k].pnl_dollars || 0) > 0) wins++;
       }
 
       return {

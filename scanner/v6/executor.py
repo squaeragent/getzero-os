@@ -580,13 +580,23 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         fill_px = float(filled.get("avgPx", 0))
         exit_price = fill_px if fill_px > 0 else client.get_price(coin)
 
-    # P&L
+    # Estimate fees: HL taker fee = 0.035% of notional on each side
+    fee_rate = 0.00035
+    size_usd = pos.get("size_usd", 0)
+    entry_fee = round(size_usd * fee_rate, 4)
+    exit_notional = exit_price * abs(size_coins) if exit_price and size_coins else size_usd
+    exit_fee = round(exit_notional * fee_rate, 4)
+    total_fees = round(entry_fee + exit_fee, 4)
+
+    # P&L (net of fees)
     if entry_price and exit_price and entry_price > 0:
         raw_pct = (exit_price - entry_price) / entry_price
         pnl_pct = raw_pct if is_long else -raw_pct
-        pnl_usd = round(pos.get("size_usd", 0) * pnl_pct, 4)
+        pnl_usd_gross = round(size_usd * pnl_pct, 4)
+        pnl_usd = round(pnl_usd_gross - total_fees, 4)
     else:
         pnl_pct = 0
+        pnl_usd_gross = 0
         pnl_usd = 0
 
     exit_time = now_iso()
@@ -597,6 +607,8 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         "exit_reason": exit_reason,
         "pnl_pct":     round(pnl_pct, 6),
         "pnl_usd":     pnl_usd,
+        "pnl_usd_gross": pnl_usd_gross,
+        "fees_usd":    total_fees,
         "won":         pnl_usd > 0,
     }
 
