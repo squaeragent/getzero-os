@@ -368,10 +368,15 @@ def optimize_portfolio(coins_with_signals: list[str], api_key: str) -> dict:
 
 
 def local_allocation(coins_data: dict) -> dict:
-    """Sharpe-weighted allocation fallback."""
-    MIN_SHARPE_THRESHOLD = 1.5
+    """Sharpe-weighted allocation — concentrated on top signals.
+    
+    Philosophy: $750 account needs to prove alpha, not minimize risk.
+    Concentrate on highest-Sharpe coins. Sharpe^2 weighting rewards
+    the best signals disproportionately.
+    """
+    MIN_SHARPE_THRESHOLD = 2.0   # only trade coins with Sharpe 2.0+
     MIN_SIGNALS = 2
-    MAX_ACTIVE = 12
+    MAX_ACTIVE = 8               # concentrated: 8 coins max (was 12)
 
     qualified = {}
     for coin, data in coins_data.items():
@@ -381,17 +386,29 @@ def local_allocation(coins_data: dict) -> dict:
             qualified[coin] = sharpe
 
     if not qualified:
+        # Nothing above 2.0 — relax to 1.5
+        for coin, data in coins_data.items():
+            sharpe = data.get("best_sharpe", 0)
+            n_signals = len(data.get("signals", []))
+            if sharpe >= 1.5 and n_signals >= MIN_SIGNALS:
+                qualified[coin] = sharpe
+
+    if not qualified:
         scores = {coin: d.get("best_sharpe", 0) for coin, d in coins_data.items()}
-        top = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:ACTIVE_COINS_COUNT]
+        top = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:MAX_ACTIVE]
         total = sum(s for _, s in top)
         if total == 0:
             return {coin: 1 / len(top) for coin, _ in top}
         return {coin: round(s / total, 4) for coin, s in top}
 
+    # Sharpe^2 weighting — concentrates on the best
     top_coins = sorted(qualified.items(), key=lambda x: x[1], reverse=True)[:MAX_ACTIVE]
-    total = sum(s for _, s in top_coins)
-    log(f"  Local allocation: {len(top_coins)} coins (Sharpe≥{MIN_SHARPE_THRESHOLD})")
-    return {coin: round(s / total, 4) for coin, s in top_coins}
+    total = sum(s ** 2 for _, s in top_coins)
+    log(f"  Concentrated allocation: {len(top_coins)} coins (Sharpe≥{MIN_SHARPE_THRESHOLD}, Sharpe² weighted)")
+    for coin, s in top_coins:
+        w = s ** 2 / total
+        log(f"    {coin}: Sharpe={s:.2f} → weight={w:.1%}")
+    return {coin: round(s ** 2 / total, 4) for coin, s in top_coins}
 
 
 # ─── MAIN CYCLE ───────────────────────────────────────────────────────────────
@@ -452,17 +469,12 @@ def run_once(api_key: str):
 
     log(f"Phase 2 complete: {len(coins_data)} coins with assembled strategies")
 
-    # Phase 3: Portfolio optimization
-    log("Phase 3: Portfolio optimization...")
-    sorted_by_sharpe = sorted(
-        coins_data.keys(),
-        key=lambda c: coins_data[c].get("best_sharpe", 0),
-        reverse=True,
-    )
-
-    allocation = optimize_portfolio(sorted_by_sharpe, api_key)
-    if allocation is None:
-        allocation = local_allocation(coins_data)
+    # Phase 3: Portfolio allocation
+    # Skip ENVY portfolio optimizer — it minimizes correlation (institutional objective)
+    # which compresses Sharpe to ~0.12. We need concentrated alpha on $750.
+    # Use Sharpe-weighted allocation on top coins instead.
+    log("Phase 3: Sharpe-weighted allocation (concentrated mode)...")
+    allocation = local_allocation(coins_data)
 
     # Ensure only coins with signals get allocation
     allocation = {c: w for c, w in allocation.items() if c in coins_data}
