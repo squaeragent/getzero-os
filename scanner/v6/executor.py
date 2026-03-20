@@ -374,12 +374,13 @@ class HLClient:
             return {"status": "err", "response": f"No price for {coin}"}
         return self.place_ioc_order(coin, True, size, self.round_price(price * (1 + slippage)))
 
-    def market_sell(self, coin: str, size: float, slippage: float = 0.01) -> dict:
+    def market_sell(self, coin: str, size: float, slippage: float = 0.01,
+                    reduce_only: bool = False) -> dict:
         price = self.get_price(coin)
         if price <= 0:
             return {"status": "err", "response": f"No price for {coin}"}
         return self.place_ioc_order(coin, False, size, self.round_price(price * (1 - slippage)),
-                                    reduce_only=True)
+                                    reduce_only=reduce_only)
 
 
 # ─── POSITION SIZING ──────────────────────────────────────────────────────────
@@ -585,7 +586,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
     else:
         # Cancel stops first
         client.cancel_coin_stops(coin)
-        result = client.market_sell(coin, size_coins) if is_long else client.market_buy(coin, size_coins)
+        result = client.market_sell(coin, size_coins, reduce_only=True) if is_long else client.market_buy(coin, size_coins)
         log(f"  Close result: {json.dumps(result)}")
 
         fills   = result.get("response", {}).get("data", {}).get("statuses", [{}])
@@ -605,7 +606,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
             send_alert(f"⚠️ PARTIAL FILL on {coin} close: filled {filled_sz}/{abs(size_coins)}")
             # Retry the remainder
             try:
-                retry = client.market_sell(coin, remaining) if is_long else client.market_buy(coin, remaining)
+                retry = client.market_sell(coin, remaining, reduce_only=True) if is_long else client.market_buy(coin, remaining)
                 retry_fills = retry.get("response", {}).get("data", {}).get("statuses", [{}])
                 retry_filled = retry_fills[0].get("filled", {}) if retry_fills else {}
                 if float(retry_filled.get("totalSz", 0)) > 0:

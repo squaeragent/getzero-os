@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-20T04:36:58.073096+00:00",
+  "updated_at": "2026-03-20T04:41:55.528605+00:00",
   "version": 6,
   "source": "envy_api",
   "active_coins": [
@@ -471,25 +471,6 @@
           "priority": 3
         },
         {
-          "name": "DOJI_TRIGGER_MEAN_REVERT_LONG_V2_EX4_Q1",
-          "signal_type": "LONG",
-          "direction": "LONG",
-          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 40 AND BB_POSITION_15M <= 0.25 AND DFA_48H <= 0.48 AND LYAPUNOV_48H < 1.916625620",
-          "exit_expression": "RSI_3H30M >= 52 OR BB_POSITION_15M >= 0.40",
-          "max_hold_hours": 18,
-          "sharpe": 3.6557,
-          "win_rate": 77.5,
-          "trade_count": 40,
-          "composite_score": 18.254,
-          "stop_loss_pct": 0.05,
-          "rarity": "Rare",
-          "signal_id": "fe226521-9404-4fbf-88c8-6e924b511fe5",
-          "max_drawdown": 3.6797,
-          "expectancy": 0.7023,
-          "overfit_score": 27.0,
-          "priority": 4
-        },
-        {
           "name": "SENKOU_DOJI_MOMENTUM_LONG_V1_EX0_Q5_FR8_EX5_FR1",
           "signal_type": "LONG",
           "direction": "LONG",
@@ -506,7 +487,7 @@
           "max_drawdown": 12.9192,
           "expectancy": 0.5148,
           "overfit_score": 41.2,
-          "priority": 5
+          "priority": 4
         },
         {
           "name": "RSI_HIGH_MACD_DFA_SHORT_V2_EX0_MH16",
@@ -525,21 +506,7 @@
           "max_drawdown": 30.0493,
           "expectancy": 0.3836,
           "overfit_score": 33.4,
-          "priority": 6
-        },
-        {
-          "name": "DOJI_L_SHORT_OVERBOUGHT_EX2_Q1",
-          "signal_type": "SHORT",
-          "direction": "SHORT",
-          "expression": "DOJI_SIGNAL_L >= 100 AND DOJI_DISTANCE_L >= 4 AND RSI_3H30M >= 60 AND BB_POSITION_15M >= 0.75 AND ADX_3H30M < 31.612903230",
-          "exit_expression": "RSI_3H30M <= 28 OR BB_POSITION_15M <= 0.3",
-          "max_hold_hours": 0,
-          "sharpe": 3.0259,
-          "win_rate": 80.6452,
-          "trade_count": 31,
-          "composite_score": 16.762,
-          "stop_loss_pct": 0.05,
-          "priority": 7
+          "priority": 5
         },
         {
           "name": "DOJI_LYAP_MOMENTUM_LONG_V3_FR11_EX0",
@@ -558,7 +525,7 @@
           "max_drawdown": 8.5744,
           "expectancy": 1.1002,
           "overfit_score": 31.3,
-          "priority": 8
+          "priority": 6
         },
         {
           "name": "DOJI_L_SHORT_BB_HIGH_V3_EX2_EX4",
@@ -577,7 +544,7 @@
           "max_drawdown": 17.5003,
           "expectancy": 0.7848,
           "overfit_score": 17.4,
-          "priority": 9
+          "priority": 7
         },
         {
           "name": "CLOUD_BELOW_REVERSAL_LONG_EX4_Q0_FR12_EX5_FR19",
@@ -596,12 +563,31 @@
           "max_drawdown": 17.8426,
           "expectancy": 0.7307,
           "overfit_score": 29.7,
-          "priority": 10
+          "priority": 8
+        },
+        {
+          "name": "DOJI_L_SHORT_OVERBOUGHT_EX2_Q1",
+          "signal_type": "SHORT",
+          "direction": "SHORT",
+          "expression": "DOJI_SIGNAL_L >= 100 AND DOJI_DISTANCE_L >= 4 AND RSI_3H30M >= 60 AND BB_POSITION_15M >= 0.75 AND ADX_3H30M < 31.612903230",
+          "exit_expression": "RSI_3H30M <= 28 OR BB_POSITION_15M <= 0.3",
+          "max_hold_hours": 1,
+          "sharpe": 2.1985,
+          "win_rate": 0.7059,
+          "trade_count": 34,
+          "composite_score": 7.457,
+          "stop_loss_pct": 0.05,
+          "rarity": "Common",
+          "signal_id": "5668ef0d-24f5-4cd9-bc44-d068e51237d1",
+          "max_drawdown": 4.6245,
+          "expectancy": 0.6118,
+          "overfit_score": 40.9,
+          "priority": 9
         }
       ],
       "best_sharpe": 4.3722,
-      "avg_win_rate": 76.17242999999999,
-      "signal_count": 10
+      "avg_win_rate": 67.14277777777778,
+      "signal_count": 9
     },
     "PAXG": {
       "signals": [
