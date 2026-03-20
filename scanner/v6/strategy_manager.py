@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """
-V6 Strategy Manager — assembles strategies from ENVY and builds portfolio allocation.
+V6 Strategy Manager — assembles strategies from ENVY paid API.
 
-On startup and every 6h:
-  1. Calls /paid/strategy/assemble for each coin (falls back to signals cache on 402)
-  2. Calls /paid/portfolio/optimize for allocation weights (falls back to sharpe-weighted)
-  3. Selects top ACTIVE_COINS_COUNT coins
-  4. Saves scanner/v6/bus/strategies.json and scanner/v6/bus/allocation.json
+Flow:
+  1. Load signals from cache (signal packs previously fetched)
+  2. Score each signal via POST /paid/signals/check (returns backtest metrics)
+  3. Assemble optimal strategy per coin via POST /paid/strategy/assemble
+  4. Optimize portfolio via GET /paid/portfolio/optimize
+  5. Save strategies.json and allocation.json
+
+Runs on startup and every STRATEGY_REFRESH_HOURS (default 2h).
 
 Usage:
   python3 scanner/v6/strategy_manager.py           # single run
-  python3 scanner/v6/strategy_manager.py --loop    # run every 6h
+  python3 scanner/v6/strategy_manager.py --loop    # run every cycle
 """
 
 import json
@@ -31,12 +34,13 @@ from scanner.v6.config import (
 CYCLE_SECONDS = STRATEGY_REFRESH_HOURS * 3600
 MIN_SHARPE    = 1.5
 MIN_WIN_RATE  = 55.0
-TOP_SIGNALS   = 5   # top signals per coin to store
+TOP_SIGNALS   = 10   # send up to 10 signals per coin to assemble
+MAX_CACHE_AGE_HOURS = 4
 
 
 def log(msg):
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [STRATEGY] {msg}")
+    print(f"[{ts}] [STRATEGY] {msg}", flush=True)
 
 
 def now_iso() -> str:
@@ -69,45 +73,90 @@ def update_heartbeat(component: str):
 
 # ─── ENVY API ─────────────────────────────────────────────────────────────────
 
-def envy_get(path: str, params: dict, api_key: str) -> dict | None:
-    """GET request to ENVY API. Returns None on 402 or error."""
+def envy_get(path: str, params: dict, api_key: str):
+    """GET request to ENVY API. Returns raw response text."""
     url = f"{ENVY_BASE_URL}{path}"
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url += f"?{qs}"
     req = urllib.request.Request(url, headers={"X-API-Key": api_key})
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode())
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.read().decode()
     except urllib.error.HTTPError as e:
-        if e.code == 402:
-            return None  # payment required — caller handles fallback
-        log(f"WARN: {path} HTTP {e.code}: {e.reason}")
+        log(f"  GET {path} → HTTP {e.code}")
         return None
     except Exception as e:
-        log(f"WARN: {path} failed: {e}")
+        log(f"  GET {path} failed: {e}")
         return None
 
 
-# ─── STRATEGY ASSEMBLY ────────────────────────────────────────────────────────
+def envy_post_yaml(path: str, yaml_body: str, api_key: str, params: dict = None):
+    """POST YAML to ENVY API. Returns raw response text."""
+    url = f"{ENVY_BASE_URL}{path}"
+    if params:
+        qs = "&".join(f"{k}={v}" for k, v in params.items())
+        url += f"?{qs}"
+    req = urllib.request.Request(
+        url,
+        data=yaml_body.encode(),
+        headers={
+            "X-API-Key": api_key,
+            "Content-Type": "text/yaml",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            return resp.read().decode()
+    except urllib.error.HTTPError as e:
+        body = ""
+        try:
+            body = e.read().decode()[:200]
+        except Exception:
+            pass
+        log(f"  POST {path} → HTTP {e.code}: {body}")
+        return None
+    except Exception as e:
+        log(f"  POST {path} failed: {e}")
+        return None
 
-MAX_CACHE_AGE_HOURS = 4  # refuse to trade on signals older than this
+
+def parse_yaml_simple(text: str) -> dict:
+    """Minimal YAML parser for ENVY responses. Falls back to JSON."""
+    if not text:
+        return {}
+    text = text.strip()
+    if text.startswith("{"):
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+    # Try PyYAML if available
+    try:
+        import yaml
+        return yaml.safe_load(text) or {}
+    except ImportError:
+        pass
+    except Exception:
+        pass
+    # Last resort: return raw text wrapped
+    return {"_raw": text}
 
 
-def assemble_from_cache(coin: str) -> list[dict]:
-    """Load signals for a coin from V5 signals cache (fallback).
-    REFUSES if cache is older than MAX_CACHE_AGE_HOURS.
-    """
+# ─── LOAD SIGNALS FROM CACHE ──────────────────────────────────────────────────
+
+def load_cached_signals(coin: str) -> list[dict]:
+    """Load signals from pack cache for a coin. Respects staleness."""
     cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
     if not cache_file.exists():
         return []
 
-    # Check cache age
     try:
         mtime = cache_file.stat().st_mtime
         age_hours = (time.time() - mtime) / 3600
         if age_hours > MAX_CACHE_AGE_HOURS:
-            log(f"  STALE CACHE: {coin} cache is {age_hours:.1f}h old (max {MAX_CACHE_AGE_HOURS}h) — refusing")
+            log(f"  {coin}: cache stale ({age_hours:.1f}h > {MAX_CACHE_AGE_HOURS}h)")
             return []
     except OSError:
         pass
@@ -115,7 +164,7 @@ def assemble_from_cache(coin: str) -> list[dict]:
     try:
         with open(cache_file) as f:
             packs = json.load(f)
-    except (json.JSONDecodeError, OSError) as _e:
+    except (json.JSONDecodeError, OSError):
         return []
 
     signals = []
@@ -124,14 +173,22 @@ def assemble_from_cache(coin: str) -> list[dict]:
         direction = "LONG" if "LONG" in sig_type or sig_type == "LONG" else "SHORT"
         sharpe    = float(p.get("sharpe", 0))
         win_rate  = float(p.get("win_rate", 0))
+        expression = p.get("expression", "")
+        exit_expr  = p.get("exit_expression", "")
+        name       = p.get("name", "")
+
+        if not expression or not name:
+            continue
         if sharpe < MIN_SHARPE or win_rate < MIN_WIN_RATE:
             continue
+
         signals.append({
-            "name":            p.get("name", ""),
+            "name":            name,
+            "signal_type":     sig_type if sig_type else direction,
             "direction":       direction,
-            "expression":      p.get("expression", ""),
-            "exit_expression": p.get("exit_expression", ""),
-            "max_hold_hours":  p.get("max_hold_hours", 24),
+            "expression":      expression,
+            "exit_expression": exit_expr,
+            "max_hold_hours":  max(1, int(p.get("max_hold_hours", 24))),  # API requires > 0
             "sharpe":          sharpe,
             "win_rate":        win_rate,
             "trade_count":     p.get("trade_count", 0),
@@ -139,112 +196,179 @@ def assemble_from_cache(coin: str) -> list[dict]:
             "stop_loss_pct":   p.get("stop_loss_pct", 0.05),
         })
 
-    # Sort by composite_score descending, take top N
     signals.sort(key=lambda s: s["composite_score"], reverse=True)
-    for i, s in enumerate(signals):
-        s["priority"] = i + 1
     return signals[:TOP_SIGNALS]
 
 
-def assemble_from_api(coin: str, api_key: str) -> list[dict] | None:
-    """Try /paid/strategy/assemble for a coin. Returns None on 402."""
-    data = envy_get("/paid/strategy/assemble", {"coin": coin}, api_key)
-    if data is None:
-        return None  # 402 or error
+# ─── SCORE SIGNALS VIA API ────────────────────────────────────────────────────
 
-    # Parse API response — expected format: {signals: [...], coin: "BTC"}
-    raw_signals = data.get("signals", [])
-    if not raw_signals:
+def score_signals(coin: str, signals: list[dict], api_key: str) -> list[dict]:
+    """Score signals via POST /paid/signals/check.
+    Updates each signal's metrics with fresh backtest data.
+    Returns only signals that aren't Discarded.
+    """
+    scored = []
+
+    for sig in signals:
+        yaml_body = (
+            f"coin: {coin}\n"
+            f"signals:\n"
+            f"  - name: {sig['name']}\n"
+            f"    signal_type: {sig.get('signal_type', sig['direction'])}\n"
+            f'    expression: "{sig["expression"]}"\n'
+            f'    exit_expression: "{sig.get("exit_expression", "")}"\n'
+            f"    max_hold_hours: {sig.get('max_hold_hours', 24)}\n"
+            f"    source: zero_os\n"
+        )
+
+        resp = envy_post_yaml("/paid/signals/check", yaml_body, api_key)
+        if not resp:
+            # API failed — keep original metrics
+            scored.append(sig)
+            continue
+
+        data = parse_yaml_simple(resp)
+        metrics = data.get("metrics", {})
+        rarity  = metrics.get("rarity", "Unknown")
+
+        if rarity == "Discarded":
+            log(f"    {sig['name'][:40]}: DISCARDED (Sharpe={metrics.get('sharpe', '?')})")
+            continue
+
+        # Update signal with fresh API metrics
+        sig["sharpe"]          = float(metrics.get("sharpe", sig["sharpe"]))
+        sig["win_rate"]        = float(metrics.get("win_rate", sig["win_rate"]))
+        sig["trade_count"]     = int(metrics.get("trade_count", sig.get("trade_count", 0)))
+        sig["composite_score"] = float(metrics.get("composite_score", sig.get("composite_score", 0)))
+        sig["rarity"]          = rarity
+        sig["signal_id"]       = data.get("signal_id", "")
+        sig["max_drawdown"]    = float(metrics.get("max_drawdown", 0))
+        sig["expectancy"]      = float(metrics.get("expectancy", 0))
+        sig["overfit_score"]   = float(metrics.get("overfit_score", 0))
+
+        scored.append(sig)
+        time.sleep(0.3)  # rate limit
+
+    return scored
+
+
+# ─── ASSEMBLE STRATEGY VIA API ────────────────────────────────────────────────
+
+def assemble_strategy(coin: str, signals: list[dict], api_key: str) -> list[dict]:
+    """POST scored signals to /paid/strategy/assemble for tournament optimization.
+    Returns ordered signal list (priority order) with backtest metrics.
+    Falls back to input signals sorted by composite_score if API fails.
+    """
+    if not signals:
         return []
 
-    signals = []
-    for p in raw_signals:
-        sig_type  = p.get("signal_type", p.get("direction", "")).upper()
-        direction = "LONG" if "LONG" in sig_type else "SHORT"
-        sharpe    = float(p.get("sharpe", 0))
-        win_rate  = float(p.get("win_rate", 0))
-        signals.append({
-            "name":            p.get("name", ""),
-            "direction":       direction,
-            "expression":      p.get("expression", ""),
-            "exit_expression": p.get("exit_expression", ""),
-            "max_hold_hours":  p.get("max_hold_hours", 24),
-            "sharpe":          sharpe,
-            "win_rate":        win_rate,
-            "trade_count":     p.get("trade_count", 0),
-            "composite_score": float(p.get("composite_score", sharpe)),
-            "stop_loss_pct":   p.get("stop_loss_pct", 0.05),
-        })
+    # Build YAML body
+    yaml_lines = [f"coin: {coin}", "signals:"]
+    for sig in signals:
+        yaml_lines.append(f"  - name: {sig['name']}")
+        yaml_lines.append(f"    signal_type: {sig.get('signal_type', sig['direction'])}")
+        yaml_lines.append(f'    expression: "{sig["expression"]}"')
+        yaml_lines.append(f'    exit_expression: "{sig.get("exit_expression", "")}"')
+        yaml_lines.append(f"    max_hold_hours: {sig.get('max_hold_hours', 24)}")
+    yaml_body = "\n".join(yaml_lines)
 
-    signals.sort(key=lambda s: s["composite_score"], reverse=True)
-    for i, s in enumerate(signals):
-        s["priority"] = i + 1
-    return signals[:TOP_SIGNALS]
+    resp = envy_post_yaml("/paid/strategy/assemble", yaml_body, api_key, {"mode": "normal"})
+    if not resp:
+        log(f"    {coin}: assemble API failed — using local sort")
+        signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
+        for i, s in enumerate(signals):
+            s["priority"] = i + 1
+        return signals
+
+    data = parse_yaml_simple(resp)
+
+    # Parse assembled strategy
+    assembled_signals = data.get("signals", data.get("strategy", {}).get("signals", []))
+    if not assembled_signals:
+        log(f"    {coin}: assemble returned empty — using local sort")
+        signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
+        for i, s in enumerate(signals):
+            s["priority"] = i + 1
+        return signals
+
+    # Map assembled results back, preserving expressions
+    result = []
+    sig_map = {s["name"]: s for s in signals}
+    for i, a in enumerate(assembled_signals):
+        name = a.get("name", "")
+        base = sig_map.get(name, {})
+        merged = {**base, **{
+            "name":            name,
+            "priority":        i + 1,
+            "sharpe":          float(a.get("sharpe", base.get("sharpe", 0))),
+            "win_rate":        float(a.get("win_rate", base.get("win_rate", 0))),
+            "trade_count":     int(a.get("trade_count", base.get("trade_count", 0))),
+            "composite_score": float(a.get("composite_score", base.get("composite_score", 0))),
+            "direction":       base.get("direction", "LONG"),
+            "expression":      base.get("expression", a.get("expression", "")),
+            "exit_expression": base.get("exit_expression", a.get("exit_expression", "")),
+            "max_hold_hours":  base.get("max_hold_hours", a.get("max_hold_hours", 24)),
+            "stop_loss_pct":   base.get("stop_loss_pct", 0.05),
+        }}
+        result.append(merged)
+
+    # Strategy-level metrics
+    strategy_metrics = data.get("strategy_metrics", data.get("backtest", {}))
+    if strategy_metrics:
+        log(f"    {coin}: assembled {len(result)} signals — "
+            f"Sharpe={strategy_metrics.get('sharpe', '?')}, "
+            f"WR={strategy_metrics.get('win_rate', '?')}%, "
+            f"Return={strategy_metrics.get('total_return', '?')}%")
+
+    return result
 
 
-def assemble_strategies(api_key: str) -> dict:
-    """Assemble strategies for all coins. API first, cache fallback."""
-    log(f"Assembling strategies for {len(ALL_COINS)} coins...")
-    use_api = True
-    coins_data = {}
+# ─── PORTFOLIO OPTIMIZATION VIA API ──────────────────────────────────────────
 
-    for i, coin in enumerate(ALL_COINS):
-        if use_api:
-            signals = assemble_from_api(coin, api_key)
-            if signals is None:
-                log("  /paid/strategy/assemble requires payment — using signals cache")
-                use_api = False
-                signals = assemble_from_cache(coin)
-            elif not signals:
-                signals = assemble_from_cache(coin)
-        else:
-            signals = assemble_from_cache(coin)
+def optimize_portfolio(coins_with_signals: list[str], api_key: str) -> dict:
+    """GET /paid/portfolio/optimize for correlation-based allocation.
+    Falls back to sharpe-weighted allocation if API fails.
+    """
+    if not coins_with_signals:
+        return {}
 
-        if signals:
-            best_sharpe = max(s["sharpe"] for s in signals)
-            avg_wr      = sum(s["win_rate"] for s in signals) / len(signals)
-            coins_data[coin] = {
-                "signals":    signals,
-                "best_sharpe": best_sharpe,
-                "avg_win_rate": avg_wr,
-                "signal_count": len(signals),
-            }
+    # Use top 3 coins by signal quality as "existing", optimize to find best additions
+    existing = ",".join(coins_with_signals[:3])
+    count = min(12, len(coins_with_signals))
 
-        if (i + 1) % 10 == 0:
-            log(f"  {i+1}/{len(ALL_COINS)} coins processed...")
+    resp = envy_get(
+        "/paid/portfolio/optimize",
+        {"existing": existing, "count": str(count), "mode": "normal", "allocation": "weighted"},
+        api_key,
+    )
 
-    log(f"  Assembled {len(coins_data)} coins with valid signals")
-    return coins_data
-
-
-# ─── PORTFOLIO OPTIMIZATION ───────────────────────────────────────────────────
-
-def optimize_from_api(api_key: str) -> dict | None:
-    """Try /paid/portfolio/optimize. Returns None on 402."""
-    data = envy_get("/paid/portfolio/optimize", {}, api_key)
-    if data is None:
+    if not resp:
+        log("  Portfolio API failed — using local allocation")
         return None
 
-    # Expected: {allocations: [{coin, weight}, ...]}
-    allocs = data.get("allocations", data.get("coins", []))
-    if not allocs:
+    data = parse_yaml_simple(resp)
+    coins_list = data.get("coins", [])
+    if not coins_list:
+        log("  Portfolio API returned no coins — using local allocation")
         return None
 
     result = {}
-    for a in allocs:
-        coin   = a.get("coin", "")
-        weight = float(a.get("weight", a.get("allocation", 0)))
-        if coin and weight > 0:
-            result[coin] = weight
+    for c in coins_list:
+        coin = c.get("coin", "")
+        alloc_pct = float(c.get("allocation_pct", 0))
+        if coin and alloc_pct > 0:
+            result[coin] = alloc_pct / 100.0  # convert pct to fraction
+
+    if result:
+        sharpe = data.get("portfolio_stats", {}).get("expected_sharpe", "?")
+        corr   = data.get("portfolio_stats", {}).get("avg_correlation", "?")
+        log(f"  Portfolio optimized: {len(result)} coins, Sharpe={sharpe}, avgCorr={corr}")
+
     return result if result else None
 
 
-def optimize_from_scores(coins_data: dict) -> dict:
-    """Build allocation from signal quality — includes all coins above threshold.
-    
-    Not arbitrary count. Includes any coin with Sharpe >= 1.5 AND >= 2 signals.
-    Caps at 12 coins for concentration.
-    """
+def local_allocation(coins_data: dict) -> dict:
+    """Sharpe-weighted allocation fallback."""
     MIN_SHARPE_THRESHOLD = 1.5
     MIN_SIGNALS = 2
     MAX_ACTIVE = 12
@@ -257,7 +381,6 @@ def optimize_from_scores(coins_data: dict) -> dict:
             qualified[coin] = sharpe
 
     if not qualified:
-        # Fallback: take top ACTIVE_COINS_COUNT by sharpe regardless
         scores = {coin: d.get("best_sharpe", 0) for coin, d in coins_data.items()}
         top = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:ACTIVE_COINS_COUNT]
         total = sum(s for _, s in top)
@@ -265,57 +388,109 @@ def optimize_from_scores(coins_data: dict) -> dict:
             return {coin: 1 / len(top) for coin, _ in top}
         return {coin: round(s / total, 4) for coin, s in top}
 
-    # Cap at MAX_ACTIVE, take highest Sharpe
     top_coins = sorted(qualified.items(), key=lambda x: x[1], reverse=True)[:MAX_ACTIVE]
     total = sum(s for _, s in top_coins)
-    log(f"  Active coins: {len(top_coins)} qualified (Sharpe≥{MIN_SHARPE_THRESHOLD}, signals≥{MIN_SIGNALS})")
+    log(f"  Local allocation: {len(top_coins)} coins (Sharpe≥{MIN_SHARPE_THRESHOLD})")
     return {coin: round(s / total, 4) for coin, s in top_coins}
-
-
-def build_allocation(api_key: str, coins_data: dict) -> dict:
-    """Get allocation weights. API first, scoring fallback."""
-    alloc = optimize_from_api(api_key)
-    if alloc is None:
-        log("  /paid/portfolio/optimize requires payment — using sharpe-weighted allocation")
-        alloc = optimize_from_scores(coins_data)
-    else:
-        log(f"  Got allocation from API: {len(alloc)} coins")
-
-    # Normalize to active coins count
-    sorted_coins = sorted(alloc.items(), key=lambda x: x[1], reverse=True)[:ACTIVE_COINS_COUNT]
-    total = sum(w for _, w in sorted_coins)
-    normalized = {coin: round(w / total, 4) for coin, w in sorted_coins} if total > 0 else {}
-    return normalized
 
 
 # ─── MAIN CYCLE ───────────────────────────────────────────────────────────────
 
 def run_once(api_key: str):
-    """Run one strategy assembly + portfolio optimization cycle."""
+    """Run one full strategy cycle: load → score → assemble → optimize."""
     log("=== Strategy refresh cycle ===")
     t0 = time.time()
 
-    # Assemble strategies
-    coins_data = assemble_strategies(api_key)
+    # Phase 1: Load and score signals for each coin
+    log("Phase 1: Loading and scoring signals...")
+    coins_data = {}
+    coins_with_signals = []
+
+    for i, coin in enumerate(ALL_COINS):
+        raw_signals = load_cached_signals(coin)
+        if not raw_signals:
+            continue
+
+        # Score via API
+        scored = score_signals(coin, raw_signals, api_key)
+        if not scored:
+            log(f"  {coin}: all signals discarded")
+            continue
+
+        log(f"  {coin}: {len(scored)} signals scored (from {len(raw_signals)} cached)")
+        coins_with_signals.append(coin)
+        coins_data[coin] = {"scored_signals": scored}
+
+        if (i + 1) % 10 == 0:
+            log(f"  Progress: {i+1}/{len(ALL_COINS)} coins...")
+
     if not coins_data:
-        log("ERROR: No coins assembled — check signals cache")
+        log("ERROR: No coins with valid signals — check cache freshness")
+        update_heartbeat("strategy_manager")
         return
 
-    # Portfolio allocation
-    allocation = build_allocation(api_key, coins_data)
+    log(f"Phase 1 complete: {len(coins_data)} coins with signals")
+
+    # Phase 2: Assemble optimal strategy per coin
+    log("Phase 2: Assembling strategies...")
+    for coin in list(coins_data.keys()):
+        scored = coins_data[coin]["scored_signals"]
+        assembled = assemble_strategy(coin, scored, api_key)
+        if assembled:
+            best_sharpe = max(s.get("sharpe", 0) for s in assembled)
+            avg_wr = sum(s.get("win_rate", 0) for s in assembled) / len(assembled)
+            coins_data[coin] = {
+                "signals":      assembled,
+                "best_sharpe":  best_sharpe,
+                "avg_win_rate": avg_wr,
+                "signal_count": len(assembled),
+            }
+        else:
+            del coins_data[coin]
+            coins_with_signals.remove(coin)
+        time.sleep(0.5)  # rate limit between coins
+
+    log(f"Phase 2 complete: {len(coins_data)} coins with assembled strategies")
+
+    # Phase 3: Portfolio optimization
+    log("Phase 3: Portfolio optimization...")
+    sorted_by_sharpe = sorted(
+        coins_data.keys(),
+        key=lambda c: coins_data[c].get("best_sharpe", 0),
+        reverse=True,
+    )
+
+    allocation = optimize_portfolio(sorted_by_sharpe, api_key)
+    if allocation is None:
+        allocation = local_allocation(coins_data)
+
+    # Ensure only coins with signals get allocation
+    allocation = {c: w for c, w in allocation.items() if c in coins_data}
+    if not allocation:
+        # If portfolio optimizer returned coins we don't have signals for,
+        # fall back to local
+        allocation = local_allocation(coins_data)
+
+    # Normalize
+    total = sum(allocation.values())
+    if total > 0:
+        allocation = {c: round(w / total, 4) for c, w in allocation.items()}
+
     active_coins = list(allocation.keys())
     log(f"  Active coins ({len(active_coins)}): {active_coins}")
     for coin, w in allocation.items():
-        best = coins_data[coin]["best_sharpe"]
-        nsig = coins_data[coin]["signal_count"]
-        log(f"    {coin}: weight={w:.2%}  best_sharpe={best:.2f}  signals={nsig}")
+        cd = coins_data.get(coin, {})
+        best = cd.get("best_sharpe", 0)
+        nsig = cd.get("signal_count", 0)
+        log(f"    {coin}: weight={w:.2%}  sharpe={best:.2f}  signals={nsig}")
 
-    # Save strategies.json (only active coins with full signal data)
+    # Save strategies.json
     strategies = {
         "updated_at":    now_iso(),
         "version":       STRATEGY_VERSION,
+        "source":        "envy_api",  # vs "cache_only" in old version
         "active_coins":  active_coins,
-        "coins":         {coin: coins_data[coin] for coin in active_coins if coin in coins_data},
+        "coins":         {c: coins_data[c] for c in active_coins if c in coins_data},
     }
     save_json(STRATEGIES_FILE, strategies)
     log(f"  Saved {STRATEGIES_FILE}")
@@ -324,6 +499,7 @@ def run_once(api_key: str):
     alloc_doc = {
         "updated_at":  now_iso(),
         "version":     STRATEGY_VERSION,
+        "source":      "envy_portfolio_optimize",
         "allocations": allocation,
     }
     save_json(ALLOCATION_FILE, alloc_doc)
@@ -331,7 +507,7 @@ def run_once(api_key: str):
 
     update_heartbeat("strategy_manager")
     elapsed = time.time() - t0
-    log(f"=== Done in {elapsed:.1f}s — next refresh in {STRATEGY_REFRESH_HOURS}h ===")
+    log(f"=== Done in {elapsed:.1f}s — {len(active_coins)} active coins, next refresh in {STRATEGY_REFRESH_HOURS}h ===")
 
 
 def main():
