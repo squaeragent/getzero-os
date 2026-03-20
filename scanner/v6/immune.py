@@ -255,6 +255,119 @@ def check_signal_drift(state: dict) -> list[str]:
     return alerts
 
 
+# ─── SHARPE GAP TRACKER ──────────────────────────────────────────────────────
+
+SHARPE_GAP_FILE = BUS_DIR / "sharpe_gap.jsonl"
+
+def track_sharpe_gap(state: dict) -> list[str]:
+    """Track backtested_sharpe vs realized_sharpe daily.
+    
+    This is THE metric for the next two weeks. If the gap is large,
+    our signals look good on paper but fail in production.
+    If the gap is small, the product works.
+    """
+    alerts = []
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    last_sharpe_gap_date = state.get("last_sharpe_gap_date", "")
+    
+    if last_sharpe_gap_date == today:
+        return []  # already recorded today
+    
+    try:
+        from scanner.v6.analytics import per_signal_stats, load_all_trades, compute_sharpe
+        
+        trades = load_all_trades()
+        if len(trades) < 3:
+            return []
+        
+        stats = per_signal_stats(trades)
+        
+        # Aggregate backtested vs realized
+        signals_with_both = []
+        for sig, data in stats.items():
+            if data["count"] >= 2 and data.get("envy_sharpe", 0) > 0 and data.get("our_sharpe") is not None:
+                signals_with_both.append({
+                    "signal":          sig,
+                    "trades":          data["count"],
+                    "backtested_sharpe": data["envy_sharpe"],
+                    "realized_sharpe":  data["our_sharpe"],
+                    "gap":             data["envy_sharpe"] - data["our_sharpe"],
+                    "backtested_wr":   data["envy_wr"],
+                    "realized_wr":     data["our_wr"],
+                })
+        
+        if not signals_with_both:
+            return []
+        
+        # Portfolio-level numbers
+        total_trades = sum(s["trades"] for s in signals_with_both)
+        
+        # Trade-weighted averages
+        w_bt_sharpe = sum(s["backtested_sharpe"] * s["trades"] for s in signals_with_both) / total_trades
+        w_re_sharpe = sum(s["realized_sharpe"] * s["trades"] for s in signals_with_both) / total_trades
+        w_bt_wr = sum(s["backtested_wr"] * s["trades"] for s in signals_with_both) / total_trades
+        w_re_wr = sum(s["realized_wr"] * s["trades"] for s in signals_with_both) / total_trades
+        
+        # Overall realized Sharpe from actual P&L series
+        overall_realized_sharpe = compute_sharpe(trades, annualize=True)
+        
+        gap = w_bt_sharpe - w_re_sharpe
+        gap_pct = (gap / w_bt_sharpe * 100) if w_bt_sharpe > 0 else 0
+        
+        # Record to JSONL
+        record = {
+            "date":                today,
+            "total_trades":        total_trades,
+            "signals_tracked":     len(signals_with_both),
+            "backtested_sharpe":   round(w_bt_sharpe, 3),
+            "realized_sharpe":     round(w_re_sharpe, 3),
+            "overall_realized_sharpe": overall_realized_sharpe,
+            "gap":                 round(gap, 3),
+            "gap_pct":             round(gap_pct, 1),
+            "backtested_wr":       round(w_bt_wr, 1),
+            "realized_wr":         round(w_re_wr, 1),
+            "wr_gap":              round(w_bt_wr - w_re_wr, 1),
+            "per_signal": [
+                {
+                    "signal": s["signal"][:50],
+                    "n":      s["trades"],
+                    "bt_s":   round(s["backtested_sharpe"], 2),
+                    "re_s":   round(s["realized_sharpe"], 2),
+                    "gap":    round(s["gap"], 2),
+                }
+                for s in sorted(signals_with_both, key=lambda x: abs(x["gap"]), reverse=True)
+            ],
+        }
+        
+        with open(SHARPE_GAP_FILE, "a") as f:
+            f.write(json.dumps(record) + "\n")
+        
+        state["last_sharpe_gap_date"] = today
+        log(f"SHARPE GAP: backtested={w_bt_sharpe:.2f} realized={w_re_sharpe:.2f} gap={gap:+.2f} ({gap_pct:+.1f}%) [{total_trades} trades, {len(signals_with_both)} signals]")
+        
+        # Alert if gap is dangerously large (>50% of backtested)
+        if gap_pct > 50 and total_trades >= 10:
+            alerts.append(
+                f"🚨 SHARPE GAP ALERT\n"
+                f"Backtested: {w_bt_sharpe:.2f} → Realized: {w_re_sharpe:.2f}\n"
+                f"Gap: {gap:+.2f} ({gap_pct:+.1f}%)\n"
+                f"WR: {w_bt_wr:.0f}% → {w_re_wr:.0f}% ({w_bt_wr - w_re_wr:+.0f}pp)\n"
+                f"Trades: {total_trades} across {len(signals_with_both)} signals\n"
+                f"⚠️ Signals look good on paper but underperform live"
+            )
+        elif gap_pct < -20 and total_trades >= 10:
+            # We're outperforming backtests — good but suspicious
+            alerts.append(
+                f"📈 OUTPERFORMANCE: Realized {w_re_sharpe:.2f} > Backtested {w_bt_sharpe:.2f}\n"
+                f"({total_trades} trades) — check for survivorship bias"
+            )
+        
+    except Exception as e:
+        log(f"Sharpe gap tracking failed: {e}")
+    
+    return alerts
+
+
 # ─── DAILY SUMMARY ────────────────────────────────────────────────────────────
 
 def should_send_daily_summary(state: dict) -> bool:
@@ -311,6 +424,27 @@ def build_daily_summary() -> str:
         k, v = worst[0]
         worst_line = f"\nWorst signal: {k[:35]} ({v['count']}t, ${v['pnl_total']:+.2f})"
 
+    # Sharpe gap data
+    sharpe_gap_line = ""
+    try:
+        if SHARPE_GAP_FILE.exists():
+            lines = SHARPE_GAP_FILE.read_text().strip().split("\n")
+            if lines:
+                latest = json.loads(lines[-1])
+                bt = latest.get("backtested_sharpe", 0)
+                re = latest.get("realized_sharpe", 0)
+                gap = latest.get("gap", 0)
+                gap_pct = latest.get("gap_pct", 0)
+                wr_gap = latest.get("wr_gap", 0)
+                n_signals = latest.get("signals_tracked", 0)
+                sharpe_gap_line = (
+                    f"\n\n<b>📐 SHARPE GAP</b>\n"
+                    f"Backtested: {bt:.2f} → Realized: {re:.2f} (gap: {gap:+.2f}, {gap_pct:+.1f}%)\n"
+                    f"WR gap: {wr_gap:+.1f}pp across {n_signals} signals"
+                )
+    except Exception:
+        pass
+
     msg = (
         f"📊 <b>DAILY SUMMARY</b> — {today}\n\n"
         f"💰 Equity: ${equity:.2f} (peak: ${peak:.2f})\n"
@@ -321,6 +455,7 @@ def build_daily_summary() -> str:
         f"Max DD: ${report['max_drawdown_usd']} ({report['max_drawdown_pct']}%)\n"
         f"\nOpen positions: {len(positions)}"
         f"{worst_line}"
+        f"{sharpe_gap_line}"
     )
     return msg
 
@@ -347,6 +482,10 @@ def run_once(state: dict) -> dict:
     cycle_count = state.get("cycle_count", 0)
     if cycle_count % 10 == 0:
         all_alerts.extend(check_signal_drift(state))
+    
+    # Sharpe gap tracker (once per day)
+    all_alerts.extend(track_sharpe_gap(state))
+    
     state["cycle_count"] = cycle_count + 1
 
     # Send alerts (max 5 per day to avoid flood)
