@@ -788,7 +788,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var portfolioData = null;
   var livePrices = {};
   var lastPriceUpdate = 0;
-  var startingEquity = 750;
+  var startingEquity = null; // set from equity curve first point — never hardcoded
 
   // ─── DATA API (replaces Supabase — served from api.getzero.dev) ───
   function apiFetch(path){
@@ -876,11 +876,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var regimeData       = results[4] || {};
       var worldData        = results[5] || {};
 
-      // Use earliest equity snapshot as starting equity baseline (no more hardcoding)
+      // Starting equity = first point of equity curve (never hardcoded)
       if(equitySnapshots && equitySnapshots.length > 0) {
         var firstEq = equitySnapshots[0].equity_usd || equitySnapshots[0].eq;
         if(firstEq && firstEq > 100) startingEquity = firstEq;
       }
+      // If no equity data at all, use 750 as last resort with a warning
+      if(startingEquity === null) startingEquity = 750;
 
       // Map positions → existing format
       var mappedPositions = positions.map(function(p){

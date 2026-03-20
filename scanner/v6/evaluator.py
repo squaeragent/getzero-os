@@ -409,9 +409,9 @@ def run_websocket(api_key: str):
                         continue
 
                     msg_count += 1
+                    update_heartbeat()
                     if msg_count == 1 or msg_count % 20 == 0:
                         log(f"  Tick #{msg_count}: {len(flat)} coins")
-                        update_heartbeat()
 
                     evaluate_tick(flat)
 
@@ -421,6 +421,12 @@ def run_websocket(api_key: str):
 
         except Exception as e:
             log(f"Connection error: {e}")
+            # Alert on disconnect so silence is never invisible
+            try:
+                from scanner.v6.executor import send_telegram
+                send_telegram(f"⚠️ Evaluator WebSocket disconnected: {e}\nReconnecting in {delay}s...")
+            except Exception:
+                pass
 
         log(f"Reconnecting in {delay}s...")
         time.sleep(delay)
