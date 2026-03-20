@@ -488,8 +488,20 @@ def check_2_1_leverage_audit():
 
 def check_2_2_capital_floor():
     """2.2 Capital floor — equity, peak, floor at 60%, headroom."""
-    result = hl_post({"type": "clearinghouseState", "user": MAIN_WALLET})
-    account_value = float(result.get("marginSummary", {}).get("accountValue", "0"))
+    # Use spot USDC (real equity), NOT clearinghouseState.accountValue (perp collateral only)
+    spot = hl_post({"type": "spotClearinghouseState", "user": MAIN_WALLET})
+    spot_usdc = 0.0
+    for bal in spot.get("balances", []):
+        if bal.get("coin") == "USDC":
+            spot_usdc = float(bal.get("total", 0))
+            break
+    perp = hl_post({"type": "clearinghouseState", "user": MAIN_WALLET})
+    unrealized_pnl = sum(
+        float(p["position"].get("unrealizedPnl", 0))
+        for p in perp.get("assetPositions", [])
+        if float(p["position"].get("szi", 0)) != 0
+    )
+    account_value = spot_usdc + unrealized_pnl
 
     risk = load_json_file(V6_RISK, {})
     peak_equity = risk.get("peak_equity", 0)
