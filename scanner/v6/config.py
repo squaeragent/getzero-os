@@ -113,7 +113,7 @@ def get_slippage(coin: str) -> float:
     return COIN_SLIPPAGE.get(coin, DEFAULT_SLIPPAGE)
 
 
-MIN_HOLD_MINUTES  = 15     # minimum hold before evaluating exits
+MIN_HOLD_MINUTES  = 120    # 2h minimum hold — P0 data: <1h trades avg $0.012, 4-12h avg $0.557
 
 # ─── LEVERAGE (E2: explicit, not HL defaults) ────────────────────────────────
 COIN_LEVERAGE = {

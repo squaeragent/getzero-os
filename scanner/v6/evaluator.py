@@ -218,8 +218,11 @@ def _minutes_held(pos: dict) -> float:
 SIGNAL_BLACKLIST = {
     "ARCH_CHAOS_REGIME_CONVERGENCE",  # 0% WR over 6 trades
     "ARCH_SOCIAL_EXHAUSTION_LONG",    # social signals unreliable
+    "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT",  # -$0.43, 0% WR
 }
-SIGNAL_FAMILY_BLACKLIST = {"SOCIAL", "INFLUENCER", "ICHIMOKU"}
+# P0 intelligence 2026-03-20: SOCIAL, INFLUENCER, ARCH, CHAOS all 0% WR across 10+ trades
+# Combined losses: -$2.61 (more than system's entire $2.41 net profit)
+SIGNAL_FAMILY_BLACKLIST = {"SOCIAL", "INFLUENCER", "ICHIMOKU", "ARCH", "CHAOS"}
 
 
 def evaluate_tick(flat_indicators: dict[str, dict]):
@@ -303,11 +306,8 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
             })
             continue
 
-        # Minimum hold gate before expression exits
-        if held_mins < MIN_HOLD_MINUTES:
-            continue
-
-        # Stop loss check
+        # Stop loss always evaluates (HL stops are backup, this is primary)
+        # Minimum hold gate only blocks expression exits and signal reversals
         entry_price = pos.get("entry_price", 0)
         stop_pct    = pos.get("stop_loss_pct", STOP_LOSS_PCT)
         cur_price   = ind_values.get("CLOSE_PRICE_15M") or ind_values.get("PRICE")
@@ -326,6 +326,10 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
                     "fired_at":    now_iso(),
                 })
                 continue
+
+        # Minimum hold gate — stops fire above, but expression/reversal exits wait
+        if held_mins < MIN_HOLD_MINUTES:
+            continue
 
         # ── E3: SIGNAL REVERSAL EXIT ──────────────────────────────────────
         # If the best signal for this coin now points OPPOSITE direction, close.

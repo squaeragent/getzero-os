@@ -695,9 +695,54 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             return False
 
         slippage = get_slippage(coin)
-        log(f"  Opening {direction} {coin}: {size_coins} coins (${size_usd:.0f}) @ ${price:,.4f} [funding={funding_rate:+.6f}/hr, depth=${relevant_depth:.0f}, slip={slippage:.1%}]")
-        result = client.market_buy(coin, size_coins, slippage=slippage) if is_buy else client.market_sell(coin, size_coins, slippage=slippage)
-        log(f"  Order result: {json.dumps(result)}")
+
+        # GTC vs IOC: use GTC at mid-spread for non-urgent signals (age > 10min)
+        signal_time = entry.get("signal_time") or entry.get("fired_at", "")
+        signal_age_min = 0
+        if signal_time:
+            try:
+                from datetime import datetime, timezone
+                st = datetime.fromisoformat(signal_time.replace("Z", "+00:00"))
+                signal_age_min = (datetime.now(timezone.utc) - st).total_seconds() / 60
+            except:
+                pass
+
+        use_gtc = signal_age_min > 10  # non-urgent: signal persisted > 10 minutes
+        if use_gtc and book.get("bids") and book.get("asks"):
+            best_bid = book["bids"][0][0] if book["bids"] else price * 0.999
+            best_ask = book["asks"][0][0] if book["asks"] else price * 1.001
+            mid = (best_bid + best_ask) / 2
+            limit_px = mid if is_buy else mid  # at mid for both sides
+            log(f"  Opening {direction} {coin}: {size_coins} coins (${size_usd:.0f}) GTC @ ${limit_px:,.4f} (mid-spread, signal age {signal_age_min:.0f}m) [funding={funding_rate:+.6f}/hr, depth=${relevant_depth:.0f}]")
+            result = client.place_gtc_order(coin, is_buy, size_coins, limit_px)
+            log(f"  GTC order result: {json.dumps(result)}")
+
+            # Wait up to 60s for fill, cancel if not filled
+            if result.get("status") == "ok":
+                statuses = result.get("response", {}).get("data", {}).get("statuses", [])
+                if statuses and "resting" in statuses[0]:
+                    oid = statuses[0]["resting"]["oid"]
+                    log(f"  GTC resting (oid={oid}), waiting 60s for fill...")
+                    import time as _time
+                    _time.sleep(60)
+                    # Check if filled
+                    open_orders = client._info_post({"type": "openOrders", "user": client.main_address})
+                    still_open = any(o.get("oid") == oid for o in open_orders)
+                    if still_open:
+                        # Cancel unfilled GTC, fall back to IOC
+                        asset = COIN_TO_ASSET.get(coin)
+                        cancel = client._sign_and_send({"type": "cancel", "cancels": [{"a": asset, "o": oid}]})
+                        log(f"  GTC unfilled after 60s, cancelled. Falling back to IOC.")
+                        result = client.market_buy(coin, size_coins, slippage=slippage) if is_buy else client.market_sell(coin, size_coins, slippage=slippage)
+                        log(f"  IOC fallback result: {json.dumps(result)}")
+                    else:
+                        log(f"  GTC filled within 60s (maker fee 0.015%)")
+                elif statuses and "filled" in statuses[0]:
+                    log(f"  GTC filled immediately (maker fee 0.015%)")
+        else:
+            log(f"  Opening {direction} {coin}: {size_coins} coins (${size_usd:.0f}) IOC @ ${price:,.4f} [funding={funding_rate:+.6f}/hr, depth=${relevant_depth:.0f}, slip={slippage:.1%}]")
+            result = client.market_buy(coin, size_coins, slippage=slippage) if is_buy else client.market_sell(coin, size_coins, slippage=slippage)
+            log(f"  Order result: {json.dumps(result)}")
 
         if result.get("status") == "err":
             log(f"  ERROR: order failed: {result.get('response')}")
