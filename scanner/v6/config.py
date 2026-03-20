@@ -115,6 +115,58 @@ def get_slippage(coin: str) -> float:
 
 MIN_HOLD_MINUTES  = 15     # minimum hold before evaluating exits
 
+# ─── LEVERAGE (E2: explicit, not HL defaults) ────────────────────────────────
+COIN_LEVERAGE = {
+    "BTC":      5,   # major, deep book
+    "ETH":      5,   # major, deep book
+    "SOL":      3,   # L1, volatile
+    "XRP":      3,
+    "DOGE":     3,
+    "LTC":      3,
+    "LINK":     3,
+    "DOT":      3,
+    "ADA":      3,
+    "AVAX":     3,
+    "NEAR":     3,
+    "SUI":      3,
+    "OP":       3,
+    "UNI":      3,
+    "BNB":      3,
+    "AAVE":     3,
+    "SEI":      3,
+    "TIA":      3,
+    "WLD":      3,
+    "INJ":      3,
+    "ZEC":      3,
+    "BCH":      3,
+    "CRV":      3,
+    "ENA":      3,
+    "LDO":      3,
+    "ONDO":     3,
+    "JUP":      3,
+    "TON":      3,
+    "TRX":      3,
+    "HYPE":     2,   # volatile alt
+    "TRUMP":    2,   # meme
+    "FARTCOIN": 2,   # meme, thin
+    "PUMP":     2,   # meme, thin
+    "XPL":      2,   # thin book
+    "kBONK":    2,
+    "kPEPE":    2,
+    "kSHIB":    2,
+    "PAXG":     3,   # gold, low vol
+}
+DEFAULT_LEVERAGE = 3
+
+def get_leverage(coin: str) -> int:
+    return COIN_LEVERAGE.get(coin, DEFAULT_LEVERAGE)
+
+
+# ─── TRAILING STOP (H2: ATR-based, not flat 0.3%) ────────────────────────────
+def get_trailing_trigger(coin: str) -> float:
+    """Trailing stop trigger = stop_pct * 0.5 (half of stop distance)."""
+    return get_stop_pct(coin) * 0.5
+
 # ─── STRATEGY ─────────────────────────────────────────────────────────────────
 STRATEGY_REFRESH_HOURS = 2  # was 6h — too slow to catch new signals
 ACTIVE_COINS_COUNT     = 8   # top coins from portfolio/optimize (or scoring)

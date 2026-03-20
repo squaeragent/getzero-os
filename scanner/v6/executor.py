@@ -36,7 +36,7 @@ from scanner.v6.config import (
     ALLOCATION_FILE, TRADES_FILE, BUS_DIR, DATA_DIR,
     MAX_POSITION_USD, MIN_POSITION_USD, STOP_LOSS_PCT, STRATEGY_VERSION,
     TELEGRAM_CHAT_ID, TELEGRAM_BOT_TOKEN_ENV, get_env, get_stop_pct,
-    get_dynamic_limits, FEE_RATE, get_slippage,
+    get_dynamic_limits, FEE_RATE, get_slippage, get_leverage,
 )
 
 CYCLE_SECONDS = 5
@@ -552,6 +552,22 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         if price <= 0:
             log(f"  ERROR: no price for {coin}")
             return False
+
+        # ── E2: SET LEVERAGE EXPLICITLY ────────────────────────────────────
+        target_lev = get_leverage(coin)
+        try:
+            asset = COIN_TO_ASSET.get(coin)
+            if asset is not None:
+                lev_action = {
+                    "type": "updateLeverage",
+                    "asset": asset,
+                    "isCross": True,
+                    "leverage": target_lev,
+                }
+                lev_result = client._sign_and_send(lev_action)
+                log(f"  Leverage set: {coin} → {target_lev}x cross")
+        except Exception as e:
+            log(f"  WARN: leverage set failed for {coin}: {e}")
 
         # ── PRE-TRADE CHECKS (HL Mastery) ──────────────────────────────────
 

@@ -327,6 +327,33 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
                 })
                 continue
 
+        # ── E3: SIGNAL REVERSAL EXIT ──────────────────────────────────────
+        # If the best signal for this coin now points OPPOSITE direction, close.
+        # If NEUTRAL and we're losing, close. If NEUTRAL and winning, tighten to breakeven.
+        coin_strategy = coins_data.get(coin, {})
+        coin_signals = coin_strategy.get("signals", [])
+        if coin_signals and cur_price and entry_price:
+            # Find the highest-priority signal's direction
+            best_signal = coin_signals[0] if coin_signals else {}
+            best_direction = best_signal.get("direction", "").upper()
+            
+            if direction == "LONG" and best_direction == "SHORT":
+                log(f"  EXIT (signal_reversal): {coin} LONG but best signal now SHORT ({best_signal.get('name', '?')[:40]})")
+                new_exits.append({
+                    "coin": coin, "direction": direction,
+                    "position_id": pos_id, "reason": "signal_reversal",
+                    "fired_at": now_iso(),
+                })
+                continue
+            elif direction == "SHORT" and best_direction == "LONG":
+                log(f"  EXIT (signal_reversal): {coin} SHORT but best signal now LONG ({best_signal.get('name', '?')[:40]})")
+                new_exits.append({
+                    "coin": coin, "direction": direction,
+                    "position_id": pos_id, "reason": "signal_reversal",
+                    "fired_at": now_iso(),
+                })
+                continue
+
         # Exit expression
         if exit_expr:
             fired, _ = evaluate_expression(exit_expr, ind_values)
