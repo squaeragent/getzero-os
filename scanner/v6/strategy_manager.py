@@ -37,6 +37,15 @@ MIN_WIN_RATE  = 55.0
 TOP_SIGNALS   = 10   # send up to 10 signals per coin to assemble
 MAX_CACHE_AGE_HOURS = 4
 
+# ─── FIX 2: Rolling average smoothing ────────────────────────────────────────
+SHARPE_HISTORY_FILE = BUS_DIR / "sharpe_history.json"
+SHARPE_HISTORY_WINDOW = 5  # average over last N runs (10h at 2h refresh)
+
+# ─── FIX 1: Hysteresis ───────────────────────────────────────────────────────
+COIN_STREAK_FILE = BUS_DIR / "coin_streaks.json"
+MIN_CONSECUTIVE_RUNS = 3   # must appear in top-N for 3 consecutive runs (6h)
+EXIT_SHARPE_THRESHOLD = 2.0  # only remove if Sharpe drops below this (not just rank)
+
 
 def log(msg):
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -367,6 +376,119 @@ def optimize_portfolio(coins_with_signals: list[str], api_key: str) -> dict:
     return result if result else None
 
 
+# ─── FIX 2: ROLLING SHARPE AVERAGE ────────────────────────────────────────────
+
+def update_sharpe_history(coins_data: dict) -> dict:
+    """Record this run's Sharpes and return smoothed averages.
+    
+    Each run's assembled Sharpe per coin gets appended to history.
+    Returns dict of coin → smoothed_sharpe (average over last N runs).
+    This eliminates tournament optimization variance (BTC 4.34 → 1.43).
+    """
+    history = load_json(SHARPE_HISTORY_FILE, {"runs": []})
+    runs = history.get("runs", [])
+    
+    # Record this run
+    this_run = {
+        "ts": now_iso(),
+        "sharpes": {coin: data.get("best_sharpe", 0) for coin, data in coins_data.items()},
+    }
+    runs.append(this_run)
+    
+    # Keep only last N runs
+    runs = runs[-SHARPE_HISTORY_WINDOW:]
+    history["runs"] = runs
+    save_json(SHARPE_HISTORY_FILE, history)
+    
+    # Compute smoothed averages
+    smoothed = {}
+    all_coins = set()
+    for run in runs:
+        all_coins.update(run["sharpes"].keys())
+    
+    for coin in all_coins:
+        values = [run["sharpes"].get(coin, 0) for run in runs if coin in run["sharpes"]]
+        if values:
+            smoothed[coin] = sum(values) / len(values)
+    
+    n_runs = len(runs)
+    log(f"  Sharpe smoothing: {n_runs} runs averaged (window={SHARPE_HISTORY_WINDOW})")
+    
+    return smoothed
+
+
+# ─── FIX 1: HYSTERESIS ───────────────────────────────────────────────────────
+
+def apply_hysteresis(candidate_coins: list[str], smoothed_sharpes: dict) -> list[str]:
+    """Prevent constant portfolio rotation.
+    
+    - A coin must appear in top-N for MIN_CONSECUTIVE_RUNS before entering.
+    - A coin only exits when its smoothed Sharpe drops below EXIT_SHARPE_THRESHOLD.
+    - This creates stability: coins that are consistently good get in,
+      coins that have one bad run don't get kicked.
+    """
+    streaks = load_json(COIN_STREAK_FILE, {})
+    
+    # Update streaks: increment coins that appear, reset coins that don't
+    candidate_set = set(candidate_coins)
+    for coin in candidate_set:
+        streaks[coin] = streaks.get(coin, 0) + 1
+    
+    for coin in list(streaks.keys()):
+        if coin not in candidate_set:
+            # Don't reset immediately — check if Sharpe is still above threshold
+            if smoothed_sharpes.get(coin, 0) >= EXIT_SHARPE_THRESHOLD:
+                # Keep the streak but don't increment — coin is still viable
+                pass
+            else:
+                # Sharpe dropped below threshold — reset streak
+                streaks[coin] = 0
+    
+    # Clean up zeros
+    streaks = {c: s for c, s in streaks.items() if s > 0}
+    save_json(COIN_STREAK_FILE, streaks)
+    
+    # Select: coins with enough consecutive appearances AND above exit threshold
+    stable_coins = []
+    for coin in candidate_coins:
+        streak = streaks.get(coin, 0)
+        sharpe = smoothed_sharpes.get(coin, 0)
+        
+        if streak >= MIN_CONSECUTIVE_RUNS:
+            stable_coins.append(coin)
+        elif streak > 0:
+            log(f"    {coin}: streak={streak}/{MIN_CONSECUTIVE_RUNS} — waiting (Sharpe={sharpe:.2f})")
+    
+    # Also keep currently-held coins if their Sharpe is still above exit threshold
+    # (Fix 3: don't close profitable positions just because rank dropped)
+    prev_alloc = load_json(ALLOCATION_FILE, {}).get("allocations", {})
+    for coin in prev_alloc:
+        if coin not in stable_coins and smoothed_sharpes.get(coin, 0) >= EXIT_SHARPE_THRESHOLD:
+            stable_coins.append(coin)
+            log(f"    {coin}: retained (active position, Sharpe={smoothed_sharpes.get(coin, 0):.2f} ≥ {EXIT_SHARPE_THRESHOLD})")
+    
+    # Deduplicate while preserving order
+    seen = set()
+    result = []
+    for c in stable_coins:
+        if c not in seen:
+            seen.add(c)
+            result.append(c)
+    
+    # Cap at MAX_ACTIVE (8) — sort retained coins by smoothed Sharpe, keep best
+    MAX_ACTIVE = 8
+    if len(result) > MAX_ACTIVE:
+        # Sort by smoothed Sharpe, keep top MAX_ACTIVE
+        result.sort(key=lambda c: smoothed_sharpes.get(c, 0), reverse=True)
+        dropped = result[MAX_ACTIVE:]
+        result = result[:MAX_ACTIVE]
+        for c in dropped:
+            log(f"    {c}: dropped (rank>{MAX_ACTIVE}, Sharpe={smoothed_sharpes.get(c, 0):.2f})")
+    
+    log(f"  Hysteresis: {len(candidate_coins)} candidates → {len(result)} stable (min streak={MIN_CONSECUTIVE_RUNS})")
+    return result
+
+
 def local_allocation(coins_data: dict) -> dict:
     """Sharpe-weighted allocation — concentrated on top signals.
     
@@ -469,12 +591,39 @@ def run_once(api_key: str):
 
     log(f"Phase 2 complete: {len(coins_data)} coins with assembled strategies")
 
-    # Phase 3: Portfolio allocation
-    # Skip ENVY portfolio optimizer — it minimizes correlation (institutional objective)
-    # which compresses Sharpe to ~0.12. We need concentrated alpha on $750.
-    # Use Sharpe-weighted allocation on top coins instead.
-    log("Phase 3: Sharpe-weighted allocation (concentrated mode)...")
-    allocation = local_allocation(coins_data)
+    # Phase 3: Portfolio allocation with stability
+    log("Phase 3: Concentrated allocation with stability filters...")
+    
+    # Fix 2: Record this run and compute smoothed Sharpes
+    smoothed = update_sharpe_history(coins_data)
+    
+    # Override best_sharpe with smoothed values for allocation
+    for coin in coins_data:
+        if coin in smoothed:
+            raw = coins_data[coin].get("best_sharpe", 0)
+            sm = smoothed[coin]
+            if abs(raw - sm) > 0.5:
+                log(f"    {coin}: raw={raw:.2f} → smoothed={sm:.2f} (Δ={raw-sm:+.2f})")
+            coins_data[coin]["best_sharpe"] = sm
+    
+    # Get candidate top coins (before hysteresis)
+    candidates = sorted(
+        [c for c, d in coins_data.items() if d.get("best_sharpe", 0) >= 2.0],
+        key=lambda c: coins_data[c].get("best_sharpe", 0),
+        reverse=True,
+    )[:12]  # wider candidate pool for hysteresis to filter
+    
+    # Fix 1: Apply hysteresis — only trade coins that consistently rank high
+    stable_coins = apply_hysteresis(candidates, smoothed)
+    
+    # Filter coins_data to only stable coins for allocation
+    stable_data = {c: coins_data[c] for c in stable_coins if c in coins_data}
+    
+    if not stable_data:
+        log("  WARNING: No stable coins after hysteresis — using raw candidates")
+        stable_data = {c: coins_data[c] for c in candidates[:8] if c in coins_data}
+    
+    allocation = local_allocation(stable_data)
 
     # Ensure only coins with signals get allocation
     allocation = {c: w for c, w in allocation.items() if c in coins_data}
