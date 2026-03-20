@@ -214,6 +214,14 @@ def _minutes_held(pos: dict) -> float:
 
 # ─── EVALUATION CYCLE ─────────────────────────────────────────────────────────
 
+# Signals proven to lose money (0% WR over 3+ trades, or consistently negative P&L)
+SIGNAL_BLACKLIST = {
+    "ARCH_CHAOS_REGIME_CONVERGENCE",  # 0% WR over 6 trades
+    "ARCH_SOCIAL_EXHAUSTION_LONG",    # social signals unreliable
+}
+SIGNAL_FAMILY_BLACKLIST = {"SOCIAL", "INFLUENCER", "ICHIMOKU"}
+
+
 def evaluate_tick(flat_indicators: dict[str, dict]):
     """Called on each WS tick. flat_indicators = {COIN: {IND_CODE: value}}."""
     new_entries = []
@@ -240,6 +248,11 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
             sig_name  = sig.get("name", "")
             direction = sig.get("direction", "LONG")
             if not expr or not sig_name:
+                continue
+            # Signal blacklist check
+            if sig_name in SIGNAL_BLACKLIST:
+                continue
+            if any(family in sig_name.upper() for family in SIGNAL_FAMILY_BLACKLIST):
                 continue
             if _is_duplicate_entry(coin, sig_name):
                 continue

@@ -117,6 +117,30 @@ def start_evaluator():
         log(f"Failed to start evaluator: {e}")
 
 
+def start_immune():
+    """Start the immune system monitor as a background process."""
+    name = "immune"
+    if name in processes:
+        proc = processes[name]
+        if proc.poll() is None:
+            return
+        else:
+            log(f"immune exited with code {proc.returncode}, restarting")
+
+    log("Starting immune system monitor...")
+    try:
+        proc = subprocess.Popen(
+            [PYTHON, str(V6_DIR / "immune.py"), "--loop"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        processes[name] = proc
+        log(f"immune PID: {proc.pid}")
+    except Exception as e:
+        log(f"Failed to start immune: {e}")
+
+
 def check_evaluator():
     """Check evaluator health and restart if needed."""
     start_evaluator()  # start if not running
@@ -193,7 +217,10 @@ def main():
 
     # Start evaluator (WebSocket loop)
     start_evaluator()
-    time.sleep(3)  # Give it time to connect
+
+    # Start immune system (monitoring loop)
+    start_immune()
+    time.sleep(3)  # Give them time to start
 
     last_strategy_refresh = time.time()
     last_health_check = time.time()
@@ -219,8 +246,9 @@ def main():
             run_once("strategy_manager", V6_DIR / "strategy_manager.py")
             last_strategy_refresh = now
 
-        # Check evaluator health
+        # Check evaluator and immune health
         check_evaluator()
+        start_immune()  # restart if died
 
         # Health check every 5 minutes
         if now - last_health_check >= 300:
