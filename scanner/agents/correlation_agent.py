@@ -393,7 +393,7 @@ def count_group_positions(positions, group):
 
 
 # ─── FILTER CANDIDATES ───
-def filter_candidates(candidates, positions, roc_data, regimes):
+def filter_candidates(candidates, positions, roc_data, regimes, capital=750):
     """Apply correlation and portfolio rules to candidates. Returns (approved, blocked)."""
     approved = []
     blocked = []
@@ -632,7 +632,7 @@ def run_cycle(api_key):
           f"diversification={portfolio_state['diversification_score']}")
 
     # Filter
-    approved, blocked_list = filter_candidates(candidates, positions, roc_data, regimes)
+    approved, blocked_list = filter_candidates(candidates, positions, roc_data, regimes, capital=capital)
 
     # Write outputs
     write_approved(approved, blocked_list, portfolio_state)
