@@ -36,6 +36,7 @@ from scanner.v6.config import (
     ALLOCATION_FILE, TRADES_FILE, BUS_DIR, DATA_DIR,
     MAX_POSITION_USD, MIN_POSITION_USD, STOP_LOSS_PCT, STRATEGY_VERSION,
     TELEGRAM_CHAT_ID, TELEGRAM_BOT_TOKEN_ENV, get_env, get_stop_pct,
+    get_dynamic_limits, FEE_RATE,
 )
 
 CYCLE_SECONDS = 5
@@ -408,33 +409,27 @@ def compute_size_usd(trade: dict) -> float:
         log("WARN: No equity in portfolio.json — skipping trade")
         return 0  # refuse to size with no data
 
+    # Dynamic limits from current equity
+    limits = get_dynamic_limits(equity)
+    min_pos = limits["min_position_usd"]
+    max_pos = limits["max_position_usd"]
+
     if weight > 0:
-        # Portfolio optimizer gave us a weight — use it
         size_usd = equity * weight
     else:
-        # Half-Kelly sizing from signal stats
-        win_rate = trade.get("win_rate", 50) / 100  # convert to fraction
+        # Half-Kelly sizing
+        win_rate = trade.get("win_rate", 50) / 100
         sharpe   = trade.get("sharpe", 1.5)
-        
-        # Estimate win/loss ratio from sharpe
-        # Higher sharpe → higher avg_win/avg_loss ratio
-        # Rough approximation: b ≈ 1 + sharpe * 0.3
         b = max(1.0, 1.0 + sharpe * 0.3)
-        
         p = max(0.01, min(0.99, win_rate))
         q = 1 - p
-        
-        # Kelly fraction
         kelly = (p * b - q) / b if b > 0 else 0
         half_kelly = max(0, kelly / 2)
-        
-        # Clamp kelly fraction to reasonable bounds (5% - 30% of equity per position)
         half_kelly = min(0.30, max(0.05, half_kelly))
-        
         size_usd = equity * half_kelly
-        log(f"  Kelly sizing: p={p:.2f} b={b:.2f} kelly={kelly:.3f} half={half_kelly:.3f} → ${size_usd:.0f}")
+        log(f"  Kelly: p={p:.2f} b={b:.2f} f*={kelly:.3f} f*/2={half_kelly:.3f} → ${size_usd:.0f} (limits ${min_pos:.0f}-${max_pos:.0f})")
 
-    return round(max(MIN_POSITION_USD, min(MAX_POSITION_USD, size_usd)), 2)
+    return round(max(min_pos, min(max_pos, size_usd)), 2)
 
 
 # ─── OPEN TRADE ───────────────────────────────────────────────────────────────
@@ -631,7 +626,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
     actual_exit_notional = exit_price * abs(size_coins) if exit_price and size_coins else actual_entry_notional
 
     # Fees: HL taker = 0.035% of notional on each side
-    fee_rate = 0.00035
+    fee_rate = FEE_RATE
     entry_fee = round(actual_entry_notional * fee_rate, 4)
     exit_fee = round(actual_exit_notional * fee_rate, 4)
     total_fees = round(entry_fee + exit_fee, 4)
@@ -906,9 +901,17 @@ def main():
     run_once(client, dry)
 
     if loop:
+        last_meta_refresh = time.time()
+        META_REFRESH_INTERVAL = 600  # refresh HL metadata every 10 minutes
+
         while True:
             time.sleep(CYCLE_SECONDS)
             try:
+                # Refresh HL metadata periodically (new coins, size changes)
+                if time.time() - last_meta_refresh >= META_REFRESH_INTERVAL:
+                    load_hl_meta()
+                    last_meta_refresh = time.time()
+
                 # Update balance + reconcile every cycle
                 try:
                     equity = client.get_balance()

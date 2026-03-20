@@ -91,11 +91,27 @@ def envy_get(path: str, params: dict, api_key: str) -> dict | None:
 
 # ─── STRATEGY ASSEMBLY ────────────────────────────────────────────────────────
 
+MAX_CACHE_AGE_HOURS = 4  # refuse to trade on signals older than this
+
+
 def assemble_from_cache(coin: str) -> list[dict]:
-    """Load signals for a coin from V5 signals cache (fallback)."""
+    """Load signals for a coin from V5 signals cache (fallback).
+    REFUSES if cache is older than MAX_CACHE_AGE_HOURS.
+    """
     cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
     if not cache_file.exists():
         return []
+
+    # Check cache age
+    try:
+        mtime = cache_file.stat().st_mtime
+        age_hours = (time.time() - mtime) / 3600
+        if age_hours > MAX_CACHE_AGE_HOURS:
+            log(f"  STALE CACHE: {coin} cache is {age_hours:.1f}h old (max {MAX_CACHE_AGE_HOURS}h) — refusing")
+            return []
+    except OSError:
+        pass
+
     try:
         with open(cache_file) as f:
             packs = json.load(f)
@@ -224,13 +240,35 @@ def optimize_from_api(api_key: str) -> dict | None:
 
 
 def optimize_from_scores(coins_data: dict) -> dict:
-    """Build allocation from best_sharpe scores (fallback)."""
-    scores = {coin: d["best_sharpe"] for coin, d in coins_data.items()}
-    # Pick top ACTIVE_COINS_COUNT coins
-    top_coins = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:ACTIVE_COINS_COUNT]
+    """Build allocation from signal quality — includes all coins above threshold.
+    
+    Not arbitrary count. Includes any coin with Sharpe >= 1.5 AND >= 2 signals.
+    Caps at 12 coins for concentration.
+    """
+    MIN_SHARPE_THRESHOLD = 1.5
+    MIN_SIGNALS = 2
+    MAX_ACTIVE = 12
+
+    qualified = {}
+    for coin, data in coins_data.items():
+        sharpe = data.get("best_sharpe", 0)
+        n_signals = len(data.get("signals", []))
+        if sharpe >= MIN_SHARPE_THRESHOLD and n_signals >= MIN_SIGNALS:
+            qualified[coin] = sharpe
+
+    if not qualified:
+        # Fallback: take top ACTIVE_COINS_COUNT by sharpe regardless
+        scores = {coin: d.get("best_sharpe", 0) for coin, d in coins_data.items()}
+        top = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:ACTIVE_COINS_COUNT]
+        total = sum(s for _, s in top)
+        if total == 0:
+            return {coin: 1 / len(top) for coin, _ in top}
+        return {coin: round(s / total, 4) for coin, s in top}
+
+    # Cap at MAX_ACTIVE, take highest Sharpe
+    top_coins = sorted(qualified.items(), key=lambda x: x[1], reverse=True)[:MAX_ACTIVE]
     total = sum(s for _, s in top_coins)
-    if total == 0:
-        return {coin: 1 / len(top_coins) for coin, _ in top_coins}
+    log(f"  Active coins: {len(top_coins)} qualified (Sharpe≥{MIN_SHARPE_THRESHOLD}, signals≥{MIN_SIGNALS})")
     return {coin: round(s / total, 4) for coin, s in top_coins}
 
 

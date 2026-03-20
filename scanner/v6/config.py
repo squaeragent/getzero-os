@@ -28,14 +28,31 @@ TRADES_FILE = DATA_DIR / "trades.jsonl"
 EQUITY_HISTORY_FILE = BUS_DIR / "equity_history.jsonl"
 
 # ─── ACCOUNT ──────────────────────────────────────────────────────────────────
-CAPITAL           = 750.0   # initial deposit — used only for reference
-CAPITAL_FLOOR_PCT = 0.60    # halt trading if equity drops below 60% of peak
-CAPITAL_FLOOR     = CAPITAL * CAPITAL_FLOOR_PCT  # $450 initially, but risk_guard uses dynamic peak
-DAILY_LOSS_LIMIT  = 50.0
+CAPITAL           = 750.0   # initial deposit — reference only
+CAPITAL_FLOOR_PCT = 0.60    # halt if equity < 60% of peak
+CAPITAL_FLOOR     = CAPITAL * CAPITAL_FLOOR_PCT  # static fallback
+DAILY_LOSS_LIMIT_PCT = 0.07  # 7% of equity per day
+DAILY_LOSS_LIMIT  = CAPITAL * DAILY_LOSS_LIMIT_PCT  # static fallback
 
-# ─── POSITION LIMITS ──────────────────────────────────────────────────────────
-MAX_POSITIONS     = 3
+# ─── POSITION LIMITS (% of equity — computed dynamically) ─────────────────────
 MAX_PER_COIN      = 1
+MAX_POSITION_PCT  = 0.33    # 33% of equity max per position
+MIN_POSITION_PCT  = 0.07    # 7% of equity min per position
+FEE_RATE          = 0.00035  # 0.035% HL taker — update if volume tier changes
+
+
+def get_dynamic_limits(equity: float) -> dict:
+    """All position limits from current equity. Nothing hardcoded."""
+    return {
+        "max_positions":    2 if equity < 500 else 3 if equity < 1500 else 4 if equity < 3000 else 5,
+        "max_position_usd": round(equity * MAX_POSITION_PCT, 2),
+        "min_position_usd": round(max(10, equity * MIN_POSITION_PCT), 2),
+        "daily_loss_limit": round(equity * DAILY_LOSS_LIMIT_PCT, 2),
+    }
+
+
+# Legacy constants (fallback when no equity available)
+MAX_POSITIONS     = 3
 MAX_POSITION_USD  = 250.0
 MIN_POSITION_USD  = 50.0
 

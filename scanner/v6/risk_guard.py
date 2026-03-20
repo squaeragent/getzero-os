@@ -30,7 +30,7 @@ from scanner.v6.bus_io import load_json_locked
 from scanner.v6.config import (
     ENTRIES_FILE, APPROVED_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE,
     BUS_DIR, MAX_POSITIONS, MAX_PER_COIN, CAPITAL_FLOOR, CAPITAL_FLOOR_PCT,
-    DAILY_LOSS_LIMIT, CAPITAL,
+    DAILY_LOSS_LIMIT, CAPITAL, get_dynamic_limits,
 )
 
 CYCLE_SECONDS = 5
@@ -178,13 +178,18 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float) -> tu
     if equity < dynamic_floor:
         return False, f"capital_floor: equity=${equity:.0f} < ${dynamic_floor:.0f}"
 
-    # Daily loss limit
-    if risk["daily_loss_usd"] >= DAILY_LOSS_LIMIT:
-        return False, f"daily_loss_limit: ${risk['daily_loss_usd']:.2f} >= ${DAILY_LOSS_LIMIT}"
+    # Dynamic limits from current equity
+    limits = get_dynamic_limits(equity)
+    dyn_daily_loss = limits["daily_loss_limit"]
+    dyn_max_pos = limits["max_positions"]
 
-    # Max positions
-    if len(positions) >= MAX_POSITIONS:
-        return False, f"max_positions: {len(positions)} >= {MAX_POSITIONS}"
+    # Daily loss limit (dynamic: 7% of equity)
+    if risk["daily_loss_usd"] >= dyn_daily_loss:
+        return False, f"daily_loss_limit: ${risk['daily_loss_usd']:.2f} >= ${dyn_daily_loss:.0f} (7% of ${equity:.0f})"
+
+    # Max positions (scales with equity)
+    if len(positions) >= dyn_max_pos:
+        return False, f"max_positions: {len(positions)} >= {dyn_max_pos} (equity=${equity:.0f})"
 
     # Max per coin
     coin_count = sum(1 for p in positions if p.get("coin") == coin)
@@ -282,9 +287,10 @@ def run_once():
         risk["halt_until"]        = None  # permanent until manual reset
         risk["capital_floor_hit"] = True
 
-    # Daily loss limit halt
-    if risk["daily_loss_usd"] >= DAILY_LOSS_LIMIT:
-        log(f"  DAILY LOSS LIMIT: ${risk['daily_loss_usd']:.2f} — halting 24h")
+    # Daily loss limit halt (dynamic: 7% of equity)
+    dyn_daily_loss = get_dynamic_limits(equity)["daily_loss_limit"]
+    if risk["daily_loss_usd"] >= dyn_daily_loss:
+        log(f"  DAILY LOSS LIMIT: ${risk['daily_loss_usd']:.2f} >= ${dyn_daily_loss:.0f} (7% of ${equity:.0f}) — halting 24h")
         from datetime import timedelta
         halt_until = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
         risk["halted"]      = True
