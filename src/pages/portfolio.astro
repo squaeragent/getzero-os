@@ -887,9 +887,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         var stopLoss = null;
         if(p.stop_loss_pct && p.entry_price){
           var isLong = p.direction === 'LONG';
+          // stop_loss_pct is already a fraction (0.05 = 5%), not a percentage
+          var slp = p.stop_loss_pct > 1 ? p.stop_loss_pct / 100 : p.stop_loss_pct;
           stopLoss = isLong
-            ? p.entry_price * (1 - p.stop_loss_pct / 100)
-            : p.entry_price * (1 + p.stop_loss_pct / 100);
+            ? p.entry_price * (1 - slp)
+            : p.entry_price * (1 + slp);
         }
         return {
           coin: p.coin,
@@ -1358,7 +1360,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     if(healthyEl){
       if(failed.length === 0){
-        healthyEl.textContent = 'Pipeline healthy — all 14 agents reporting';
+        healthyEl.textContent = 'Pipeline healthy — all ' + allAgents.length + ' components reporting';
         healthyEl.style.color = '';
       } else {
         healthyEl.textContent = 'Agents offline: ' + failed.join(', ');
