@@ -41,6 +41,10 @@ from scanner.v6.config import (
 
 CYCLE_SECONDS = 5
 
+# V5 mirror: keep scanner/data/live/positions.json in sync for v5 execution_agent
+SCANNER_DIR = Path(__file__).parent.parent
+V5_POSITIONS_FILE = SCANNER_DIR / "data" / "live" / "positions.json"
+
 
 def log(msg):
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -147,6 +151,76 @@ def send_alert(message: str):
 
 
 # (Supabase removed — all data served from local files via Intelligence API)
+
+
+def _mirror_positions_to_v5(positions: list):
+    """Mirror v6 positions to scanner/data/live/positions.json for v5 compatibility.
+
+    Converts v6 format → v5 format (flat list, not wrapped in {positions: [...]}).
+    """
+    try:
+        v5_list = []
+        for p in positions:
+            v5_list.append({
+                "coin":             p.get("coin"),
+                "direction":        p.get("direction"),
+                "signal":           p.get("signal_name", ""),
+                "hypothesis_id":    "",
+                "regime":           "unknown",
+                "adversary_verdict": "UNKNOWN",
+                "survival_score":   0,
+                "entry_price":      p.get("entry_price", 0),
+                "intended_price":   p.get("entry_price", 0),
+                "entry_time":       p.get("entry_time", now_iso()),
+                "entry_time_ms":    int(datetime.fromisoformat(
+                    p.get("entry_time", now_iso()).replace("Z", "+00:00")
+                ).timestamp() * 1000) if p.get("entry_time") else 0,
+                "size_usd":         p.get("size_usd", 0),
+                "size_coins":       p.get("size_coins", 0),
+                "sharpe":           p.get("sharpe", 0),
+                "win_rate":         p.get("win_rate", 0),
+                "max_hold_hours":   24,
+                "exit_expression":  "",
+                "stop_loss":        p.get("stop_loss_price", 0),
+                "stop_loss_pct":    (p.get("stop_loss_pct", 0.05) * 100
+                                     if p.get("stop_loss_pct", 0.05) < 1 else p.get("stop_loss_pct", 5.0)),
+                "stop_type":        "volatility",
+                "peak_pnl_pct":     p.get("peak_pnl_pct", 0.0),
+                "strategy_version": p.get("strategy_version", STRATEGY_VERSION),
+            })
+        V5_POSITIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        save_json_atomic(V5_POSITIONS_FILE, v5_list)
+    except Exception as e:
+        log(f"WARN: v5 mirror failed: {e}")
+
+
+def _safe_save_positions(client: "HLClient", new_positions: list, source: str = ""):
+    """Save positions only if it won't lose track of live HL positions.
+
+    If new state has 0 positions, verify with HL before writing empty.
+    """
+    if len(new_positions) == 0:
+        try:
+            hl_positions = client.get_positions()
+            hl_active = [p for p in hl_positions
+                         if float(p.get("position", {}).get("szi", 0)) != 0]
+            if hl_active:
+                log(f"🚨 DESYNC BLOCKED: {source} tried to write 0 positions but HL has {len(hl_active)}!")
+                send_alert(
+                    f"🚨 DESYNC BLOCKED\n"
+                    f"{source} tried to write 0 positions but HL has {len(hl_active)} open.\n"
+                    f"Auto-reconciling instead of writing empty."
+                )
+                # Trigger reconciliation instead
+                _reconcile_positions(client)
+                return
+        except Exception as e:
+            log(f"WARN: HL check failed during empty-write guard ({source}): {e}")
+            # When in doubt, don't overwrite with empty
+            return
+
+    save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": new_positions})
+    _mirror_positions_to_v5(new_positions)
 
 
 # ─── HYPERLIQUID METADATA ─────────────────────────────────────────────────────
@@ -702,11 +776,12 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         "dry":             dry,
     }
 
-    # Save to positions.json
+    # Save to positions.json + mirror to v5
     pdata = load_json_locked(POSITIONS_FILE, {})
     positions = pdata.get("positions", [])
     positions.append(pos)
     save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
+    _mirror_positions_to_v5(positions)
 
     # Telegram alert
     emoji = "🟢" if is_buy else "🔴"
@@ -874,11 +949,11 @@ def run_once(client: HLClient, dry: bool):
         # Clear exits
         save_json_atomic(EXITS_FILE, {"updated_at": now_iso(), "exits": []})
 
-    # Remove closed positions
+    # Remove closed positions (with desync guard)
     if closed_ids:
         remaining = [p for p in positions if p.get("id") not in closed_ids and p.get("coin") not in closed_ids]
         positions = remaining
-        save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
+        _safe_save_positions(client, positions, source="run_once/close")
 
     # ── Process approved entries ───────────────────────────────────────────────
     if approved:
@@ -977,6 +1052,7 @@ def _reconcile_positions(client: "HLClient"):
         "updated_at": now_iso(),
         "positions": new_positions,
     })
+    _mirror_positions_to_v5(new_positions)
 
     if not changes:
         log(f"  Positions synced: {len(new_positions)} match HL")
@@ -1065,6 +1141,12 @@ def main():
         log(f"Rate limit: {rl['used']}/{rl['cap']} used (cumVol=${rl['cum_volume']:,.0f})")
     except Exception as e:
         log(f"WARN: rate limit query failed: {e}")
+
+    # Startup guard: if local positions.json is empty, reconcile from HL first
+    local_pos = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
+    if not local_pos:
+        log("⚠️  STARTUP: positions.json is empty — reconciling from HL before proceeding")
+        send_alert("⚠️ V6 Executor startup: positions.json was empty. Reconciling from HL.")
 
     # Reconcile positions with HL reality
     _reconcile_positions(client)

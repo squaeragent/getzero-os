@@ -1870,7 +1870,22 @@ def run_cycle(client, cfg, dry, main_address=None):
             log(f"Balance fetch error: {e}")
     update_portfolio(portfolio, positions, balance)
 
-    # Save
+    # Save (with desync guard: never write empty if HL has positions)
+    if len(positions) == 0 and not dry:
+        try:
+            hl_pos = client.get_positions()
+            hl_active = [p for p in hl_pos if float(p.get("position", {}).get("szi", 0)) != 0]
+            if hl_active:
+                log(f"🚨 DESYNC GUARD: refusing to write 0 positions — HL has {len(hl_active)} open")
+                send_trade_alert(
+                    f"🚨 DESYNC GUARD (v5)\n"
+                    f"Tried to write 0 positions but HL has {len(hl_active)} open.\n"
+                    f"Keeping existing positions.json."
+                )
+                update_heartbeat()
+                return
+        except Exception as e:
+            log(f"WARN: HL check failed in desync guard: {e}")
     save_json(POSITIONS_FILE, positions)
     save_json(PORTFOLIO_FILE, portfolio)
     update_heartbeat()
@@ -1908,6 +1923,12 @@ def main():
 
     cfg = load_config()
     client = HLClient(secret, main_addr)
+
+    # Startup guard: if positions.json is empty, warn immediately
+    startup_positions = load_json(POSITIONS_FILE, [])
+    if not startup_positions:
+        log("⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor")
+        send_trade_alert("⚠️ V5 Executor startup: positions.json is empty. V6 reconciliation needed.")
 
     if loop:
         log(f"Looping every {CYCLE_SECONDS}s")
