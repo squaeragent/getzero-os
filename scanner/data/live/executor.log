@@ -7109,3 +7109,74 @@
 [2026-03-20 01:39:59 UTC] [EXEC] Positions: 0 | Throttle: 1.0 | Kill: False
 [2026-03-20 01:39:59 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
 [2026-03-20 01:39:59 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=68
+[2026-03-20 01:40:22 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-20 01:40:22 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-20 01:40:22 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+[2026-03-20 01:40:22 UTC] [EXEC] Looping every 300s
+[2026-03-20 01:40:22 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 01:40:22 UTC] [EXEC] Positions: 0 | Throttle: 1.0 | Kill: False
+[2026-03-20 01:40:22 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-20 01:40:22 UTC] [EXEC] LIVE OPEN SOL SHORT | $250.00 (2.79) @ $89.6525 | sharpe=2.78
+[2026-03-20 01:40:24 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "2.79", "avgPx": "89.652", "oid": 355032378704}}]}}}
+[2026-03-20 01:40:24 UTC] [EXEC]   Filled @ $89.6520
+[2026-03-20 01:40:24 UTC] [EXEC]   Execution: intended=$89.6525 filled=$89.6520 slippage=0.0006% ($0.0014) fill_time=1173ms spread=0.001118
+[2026-03-20 01:40:24 UTC] [EXEC]   SOL ATR-stop: ATR=0.216% → stop=3.00%
+[2026-03-20 01:40:24 UTC] [EXEC]   Stop loss: SOL trigger @ $92.8790 (buy 2.79)
+[2026-03-20 01:40:25 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 355032391988}}]}}}
+[2026-03-20 01:40:25 UTC] [EXEC]   Open fill fee for SOL: $0.112558
+[2026-03-20 01:40:27 UTC] [EXEC] LIVE OPEN ETH SHORT | $214.00 (0.0992) @ $2,157.7500 | sharpe=2.32
+[2026-03-20 01:40:28 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.0992", "avgPx": "2157.7", "oid": 355032410195}}]}}}
+[2026-03-20 01:40:28 UTC] [EXEC]   Filled @ $2,157.7000
+[2026-03-20 01:40:28 UTC] [EXEC]   Execution: intended=$2,157.7500 filled=$2,157.7000 slippage=0.0023% ($0.0050) fill_time=1286ms spread=0.004647
+[2026-03-20 01:40:28 UTC] [EXEC]   ETH ATR-stop: ATR=0.185% → stop=3.00%
+[2026-03-20 01:40:28 UTC] [EXEC]   Stop loss: ETH trigger @ $2,235.4000 (buy 0.0992)
+[2026-03-20 01:40:30 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 355032427526}}]}}}
+[2026-03-20 01:40:30 UTC] [EXEC]   Open fill fee for ETH: $0.096319
+[2026-03-20 01:40:31 UTC] [EXEC]   Skip SOL SHORT: max 1 on SOL
+[2026-03-20 01:40:31 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68
+[2026-03-20 01:45:31 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 01:45:31 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-20 01:45:32 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-20 01:45:32 UTC] [EXEC]   [ws-exit] Got indicators from WS for ['SOL'] (5s old)
+[2026-03-20 01:45:32 UTC] [EXEC] [SOL] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-20 01:45:32 UTC] [EXEC] [ETH] Skipping exit eval — hold 5m < 120m minimum
+[2026-03-20 01:45:32 UTC] [EXEC] LIVE OPEN APT SHORT | $36.00 (37.26) @ $0.9662 | sharpe=2.58
+[2026-03-20 01:45:34 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Order has invalid price."}]}}}
+[2026-03-20 01:45:34 UTC] [EXEC]   Error: Order has invalid price.
+[2026-03-20 01:45:34 UTC] [EXEC]   Not filled, skipping
+[2026-03-20 01:45:34 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68
+[2026-03-20 01:50:34 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 01:50:34 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-20 01:50:34 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-20 01:50:34 UTC] [EXEC]   [ws-exit] Got indicators from WS for ['SOL'] (9s old)
+[2026-03-20 01:50:34 UTC] [EXEC] [SOL] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-20 01:50:34 UTC] [EXEC] [ETH] Skipping exit eval — hold 10m < 120m minimum
+[2026-03-20 01:50:34 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68
+[2026-03-20 01:55:35 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 01:55:35 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-20 01:55:35 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-20 01:55:35 UTC] [EXEC]   [ws-exit] Got indicators from WS for ['SOL'] (12s old)
+[2026-03-20 01:55:35 UTC] [EXEC] [SOL] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-20 01:55:35 UTC] [EXEC] [ETH] Skipping exit eval — hold 15m < 120m minimum
+[2026-03-20 01:55:35 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68
+[2026-03-20 02:00:35 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 02:00:35 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-20 02:00:35 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-20 02:00:35 UTC] [EXEC]   [ws-exit] Got indicators from WS for ['SOL'] (15s old)
+[2026-03-20 02:00:35 UTC] [EXEC] [SOL] Skipping exit eval — hold 20m < 120m minimum
+[2026-03-20 02:00:35 UTC] [EXEC] [ETH] Skipping exit eval — hold 20m < 120m minimum
+[2026-03-20 02:00:36 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68
+[2026-03-20 02:05:36 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 02:05:36 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-20 02:05:36 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-20 02:05:36 UTC] [EXEC]   [ws-exit] Got indicators from WS for ['SOL'] (16s old)
+[2026-03-20 02:05:36 UTC] [EXEC] [SOL] Kill signal 'funding reverses to intensifying long' deferred — hold 25m < 120m (urgency=warning)
+[2026-03-20 02:05:36 UTC] [EXEC] [ETH] Skipping exit eval — hold 25m < 120m minimum
+[2026-03-20 02:05:36 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68
+[2026-03-20 02:10:36 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-20 02:10:36 UTC] [EXEC] Positions: 2 | Throttle: 1.0 | Kill: False
+[2026-03-20 02:10:37 UTC] [EXEC]   Fetching 3 exit indicators for ['SOL']
+[2026-03-20 02:10:37 UTC] [EXEC]   [ws-exit] Got indicators from WS for ['SOL'] (3s old)
+[2026-03-20 02:10:37 UTC] [EXEC] [SOL] Kill signal 'funding reverses to intensifying long' deferred — hold 30m < 120m (urgency=warning)
+[2026-03-20 02:10:37 UTC] [EXEC] [ETH] Skipping exit eval — hold 30m < 120m minimum
+[2026-03-20 02:10:37 UTC] [EXEC] Summary: 2 positions, $464.00 notional, trades=68

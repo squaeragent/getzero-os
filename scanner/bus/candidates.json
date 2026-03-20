@@ -1,325 +1,18 @@
 {
-  "timestamp": "2026-03-20T01:34:06.349876+00:00",
+  "timestamp": "2026-03-20T02:02:21.450400+00:00",
   "candidates": [
     {
-      "coin": "SOL",
-      "direction": "SHORT",
-      "signal": "SIMPLE_XONE_AVGNET_DELTA_SHORT_EX2_Q9_FR5_EX1_FR9",
-      "sharpe": 2.7778,
-      "win_rate": 89.47,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "recent_record": "0W/0L",
-      "composite_score": 9.42,
-      "timeframe_pattern": "CONFIRMATION_SHORT",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 72,
-      "exit_expression": "RSI_3H30M <= 21.28 OR XONE_AVG_NET_DELTA >= 10",
-      "entry_expression": "XONE_AVG_NET_DELTA <= -33 AND RSI_3H30M >= 46.75 AND DOJI_VELOCITY < -3.795498",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260320_013406_SOL_SHORT_001",
-      "thesis": "Hurst 0.75 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "Hurst declining 0.81\u21920.75 \u2014 momentum may be exhausting",
-      "confidence": 0.795,
-      "evidence_for": [
-        "Hurst 0.75 > 0.5 \u2192 trending market",
-        "fast+slow timeframes both bearish (CONFIRMATION_SHORT)",
-        "funding stable (rate 0.000980)",
-        "deep liquidity (score 100)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "Hurst declining 0.81\u21920.75 \u2014 momentum may be exhausting"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold",
-        "timeframe pattern flips to CONFIRMATION_LONG"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "SOL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3",
-          "outcome": "loss",
-          "pnl_pct": -0.06,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-19T06:58:10.373407+00:00"
-        },
-        {
-          "coin": "SOL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_R5V3_EX3",
-          "outcome": "loss",
-          "pnl_pct": -0.32,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-19T20:05:56.602393+00:00"
-        },
-        {
-          "coin": "SOL",
-          "direction": "LONG",
-          "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-          "outcome": "loss",
-          "pnl_pct": -0.27,
-          "exit_reason": "risk_kill",
-          "entry_time": "2026-03-18T06:45:50.866796+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.725,
-        "hurst_24h": 0.7488,
-        "hurst_48h": 0.8085,
-        "funding_rate": 0.00098,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 100,
-        "tradeable": true,
-        "timeframe_pattern": "CONFIRMATION_SHORT",
-        "fast_bias": "bearish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ],
-      "survival_score": 0.6453,
-      "adversary_verdict": "PROCEED",
-      "recommended_size_modifier": 1.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "2 similar trade(s) lost, not enough to penalize",
-          "failures_found": 2,
-          "avg_loss_pct": -0.19
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
-          "conditions_checked": 6,
-          "conditions_near": 2
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "No open positions \u2014 no concentration risk"
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
-          "confidence": 0.795,
-          "evidence_for_count": 5,
-          "evidence_against_count": 1
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT signal (style=neutral) in trending regime",
-          "regime": "trending",
-          "signal_style": "neutral"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT with funding rate 0.000980",
-          "funding_rate": 0.00098,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "OI healthy"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "timeframe aligned"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.1,
-          "weight": 1.44,
-          "detail": "CHOPPY market \u2014 reduced conviction (fear=30.1)"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "ASIA SHORT: 6/10 WR (60%) over 10 trades"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 0.8,
-          "detail": "transition prob 0%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (0 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.4,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: 2 indicators disagree, max delta 87%",
-          "indicators_checked": 3,
-          "indicators_disagreeing": 2,
-          "max_delta_pct": 86.65,
-          "disagreements": [
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.004351,
-              "taapi": -0.011003,
-              "delta_pct": 86.65
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -0.709389,
-              "taapi": -0.842665,
-              "delta_pct": 17.17
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "F&G=11 (Extreme Fear) direction=SHORT",
-          "fear_greed": 11,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.0,
-          "weight": 1.4,
-          "detail": "no macro events detected",
-          "macro_event_imminent": false,
-          "days_to_options_expiry": 7,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium -0.000419 \u2014 within normal range",
-          "premium": -0.00041913
-        },
-        {
-          "attack": "social_sentiment",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "XONE_AVG_NET=-7, XONE_SPREAD=70.0"
-        }
-      ]
-    },
-    {
-      "coin": "PAXG",
-      "direction": "SHORT",
-      "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_FR10_FR2",
-      "sharpe": 2.5307,
-      "win_rate": 93.33,
-      "regime": "trending",
-      "regime_match": false,
-      "regime_match_score": 0.0,
-      "signal_heat": 0.5,
-      "recent_record": "0W/1L",
-      "composite_score": 7.6,
-      "timeframe_pattern": "DIVERGENCE_BULL",
-      "timeframe_confirmation": 0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 60,
-      "exit_expression": "RSI_3H30M <= 30 OR XONE_AVG_NET >= 30",
-      "entry_expression": "RSI_3H30M >= 49.5 AND XONE_AVG_NET <= -15 AND DFA_24H >= 0.30",
-      "source": "signal_pack",
-      "hypothesis_id": "hyp_20260320_013406_PAXG_SHORT_001",
-      "thesis": "Hurst 0.82 + DIVERGENCE_BULL + funding positive (0.00094) + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe",
-      "confidence": 0.413,
-      "evidence_for": [
-        "Hurst 0.82 > 0.5 \u2192 trending market",
-        "deep liquidity (score 100)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "PAXG",
-          "direction": "SHORT",
-          "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_FR10_FR2",
-          "outcome": "loss",
-          "pnl_pct": -1.07,
-          "exit_reason": "time_decay_stop",
-          "entry_time": "2026-03-19T18:22:17.883931+00:00"
-        },
-        {
-          "coin": "PAXG",
-          "direction": "LONG",
-          "signal": "ARCH_SOCIAL_EXHAUSTION_LONG",
-          "outcome": "loss",
-          "pnl_pct": -1.07,
-          "exit_reason": "exit_expression",
-          "entry_time": "2026-03-19T06:58:04.122414+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.835,
-        "hurst_24h": 0.8215,
-        "hurst_48h": 0.7888,
-        "funding_rate": 0.000938,
-        "funding_direction": "intensifying",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 100,
-        "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ],
-      "survival_score": 0.2253,
+      "coin": "ZEC",
+      "direction": "LONG",
+      "signal": "BB_LOWER_SNAP_LONG_FR10",
+      "sharpe": 2.0546,
+      "win_rate": 66.1355,
+      "trade_count": 251,
+      "expression": "BB_LOWER_5H_N >= 0.999 AND BB_POSITION_15M <= 0.08 AND RSI_3H30M <= 23.8",
+      "exit_expression": "BB_POSITION_15M >= 0.45",
+      "source": "realtime_evaluator",
+      "timestamp": "2026-03-20T02:03:29.093674+00:00",
+      "survival_score": 0.2473,
       "adversary_verdict": "WEAK",
       "recommended_size_modifier": 0.4,
       "attacks": [
@@ -327,263 +20,46 @@
           "attack": "similar_failure",
           "severity": 0.0,
           "weight": 1.8,
-          "detail": "1 similar trade(s) lost, not enough to penalize",
-          "failures_found": 1,
-          "avg_loss_pct": -1.07
+          "detail": "No similar losing trades found",
+          "failures_found": 0
         },
         {
           "attack": "kill_condition_proximity",
-          "severity": 0.5,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "funding intensifying \u2014 kill condition 50% met",
-          "conditions_checked": 5,
-          "conditions_near": 3
+          "detail": "No kill conditions defined"
         },
         {
           "attack": "portfolio_stress",
           "severity": 0.0,
           "weight": 0.6,
-          "detail": "No open positions \u2014 no concentration risk"
+          "detail": "adding LONG increases long exposure to $40 (5% of equity), 3% drop = -$1.20",
+          "same_direction_positions": 0,
+          "stress_impact_usd": 1.2,
+          "directional_pct": 5.3
         },
         {
           "attack": "confidence_vs_antithesis",
           "severity": 0.0,
           "weight": 1.0,
-          "detail": "confidence 0.41",
-          "confidence": 0.413,
-          "evidence_for_count": 3,
-          "evidence_against_count": 1
+          "detail": "confidence 0.50",
+          "confidence": 0.5,
+          "evidence_for_count": 0,
+          "evidence_against_count": 0
         },
         {
           "attack": "regime_mismatch",
-          "severity": 0.2,
+          "severity": 0.0,
           "weight": 1.0,
-          "detail": "reversal signal in trending regime \u2014 fighting the trend",
-          "regime": "trending",
+          "detail": "LONG signal (style=reversal) in stable regime",
+          "regime": "stable",
           "signal_style": "reversal"
         },
         {
           "attack": "funding_headwind",
-          "severity": 0.2,
-          "weight": 1.0,
-          "detail": "funding intensifying positively \u2014 LONG bias strengthening",
-          "funding_rate": 0.000938,
-          "funding_velocity": "intensifying",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "OI healthy"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.5,
-          "weight": 1.0,
-          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.1,
-          "weight": 1.44,
-          "detail": "CHOPPY market \u2014 reduced conviction (fear=30.1)"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "ASIA SHORT: 6/10 WR (60%) over 10 trades"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 0.8,
-          "detail": "transition prob 15%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0.6,
-          "weight": 1.3,
-          "detail": "family WR 0% over 44 trades"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "No TAAPI data for PAXG \u2014 skipping cross-source check",
-          "disagreements": []
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "F&G=11 (Extreme Fear) direction=SHORT",
-          "fear_greed": 11,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.0,
-          "weight": 1.4,
-          "detail": "no macro events detected",
-          "macro_event_imminent": false,
-          "days_to_options_expiry": 7,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium -0.000278 \u2014 within normal range",
-          "premium": -0.00027813
-        },
-        {
-          "attack": "social_sentiment",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "XONE_AVG_NET=-60, XONE_SPREAD=50.0"
-        }
-      ]
-    },
-    {
-      "coin": "ETH",
-      "direction": "SHORT",
-      "signal": "TAAPI_SHOOTINGSTAR_1H_SHORT",
-      "sharpe": 2.32,
-      "win_rate": 72.8,
-      "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 0.91,
-      "signal_heat": 0.5,
-      "recent_record": "pattern",
-      "composite_score": 6.37,
-      "timeframe_pattern": "",
-      "timeframe_confirmation": 0.0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 4,
-      "exit_expression": "",
-      "entry_expression": "TAAPI_SHOOTINGSTAR_1H fired",
-      "source": "taapi_pattern",
-      "pattern": "shootingstar",
-      "pattern_interval": "1h",
-      "pattern_confidence": 0.91,
-      "hypothesis_id": "hyp_20260320_013406_ETH_SHORT_001",
-      "thesis": "Hurst 0.78 + DIVERGENCE_BULL + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "bullish divergence building on higher timeframe; Hurst declining 0.84\u21920.78 \u2014 momentum may be exhausting",
-      "confidence": 0.628,
-      "evidence_for": [
-        "Hurst 0.78 > 0.5 \u2192 trending market",
-        "funding stable (rate 0.001250)",
-        "deep liquidity (score 100)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "bullish divergence building on higher timeframe",
-        "Hurst declining 0.84\u21920.78 \u2014 momentum may be exhausting"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "ETH",
-          "direction": "SHORT",
-          "signal": "TAAPI_ENGULFING_4H_SHORT",
-          "outcome": "loss",
-          "pnl_pct": -0.23,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-19T15:35:50.929627+00:00"
-        },
-        {
-          "coin": "ETH",
-          "direction": "LONG",
-          "signal": "ARCH_CHAOS_REGIME_CONVERGENCE",
-          "outcome": "loss",
-          "pnl_pct": -0.02,
-          "exit_reason": "exit_expression",
-          "entry_time": "2026-03-18T09:52:26.986682+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.783,
-        "hurst_24h": 0.7777,
-        "hurst_48h": 0.8352,
-        "funding_rate": 0.00125,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 100,
-        "tradeable": true,
-        "timeframe_pattern": "DIVERGENCE_BULL",
-        "fast_bias": "bullish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ],
-      "survival_score": 0.4787,
-      "adversary_verdict": "PROCEED_WITH_CAUTION",
-      "recommended_size_modifier": 0.7,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "1 similar trade(s) lost, not enough to penalize",
-          "failures_found": 1,
-          "avg_loss_pct": -0.23
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
-          "conditions_checked": 5,
-          "conditions_near": 2
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "No open positions \u2014 no concentration risk"
-        },
-        {
-          "attack": "confidence_vs_antithesis",
           "severity": 0.3,
           "weight": 1.0,
-          "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
-          "confidence": 0.628,
-          "evidence_for_count": 4,
-          "evidence_against_count": 2
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT signal (style=neutral) in trending regime",
-          "regime": "trending",
-          "signal_style": "neutral"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT with funding rate 0.001250",
+          "detail": "LONG with funding rate +0.00125% \u2014 paying ~$0.19/day to hold $50 position",
           "funding_rate": 0.00125,
           "funding_velocity": "stable",
           "funding_reversal": false
@@ -598,7 +74,7 @@
           "attack": "timeframe_alignment",
           "severity": 0.5,
           "weight": 1.0,
-          "detail": "SHORT vs DIVERGENCE_BULL \u2014 timeframe says don't go short"
+          "detail": "LONG vs CONFIRMATION_SHORT \u2014 timeframe says don't go long"
         },
         {
           "attack": "rule_based",
@@ -609,56 +85,40 @@
         },
         {
           "attack": "macro_regime",
-          "severity": 0.1,
+          "severity": 0.2,
           "weight": 1.44,
-          "detail": "CHOPPY market \u2014 reduced conviction (fear=30.1)"
+          "detail": "CHOPPY market \u2014 reduced conviction (fear=32.0); CHOPPY + LONG = coin flip territory (fear=32.0)"
         },
         {
           "attack": "session_risk",
-          "severity": 0.0,
+          "severity": 0,
           "weight": 1.0,
-          "detail": "ASIA SHORT: 6/10 WR (60%) over 10 trades"
+          "detail": "only 0 trades in ASIA+LONG, need 10+"
         },
         {
           "attack": "regime_transition",
           "severity": 0.0,
           "weight": 0.8,
-          "detail": "transition prob 0%, direction: unknown"
+          "detail": "transition prob 15%, direction: unknown"
         },
         {
           "attack": "family_track_record",
           "severity": 0,
           "weight": 1.0,
-          "detail": "family immature (2 instances)"
+          "detail": "family immature (0 instances)"
         },
         {
           "attack": "data_disagreement",
-          "severity": 0.4,
+          "severity": 0.0,
           "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: 2 indicators disagree, max delta 66%",
-          "indicators_checked": 3,
-          "indicators_disagreeing": 2,
-          "max_delta_pct": 66.29,
-          "disagreements": [
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.007853,
-              "taapi": -0.01564,
-              "delta_pct": 66.29
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -1.765954,
-              "taapi": -2.090654,
-              "delta_pct": 16.84
-            }
-          ]
+          "detail": "No TAAPI data for ZEC \u2014 skipping cross-source check",
+          "disagreements": []
         },
         {
           "attack": "fear_greed",
-          "severity": 0.0,
+          "severity": 0.9,
           "weight": 1.3,
-          "detail": "F&G=11 (Extreme Fear) direction=SHORT",
+          "detail": "Extreme Fear (F&G=11) + LONG \u2014 31% WR historically, near-block",
           "fear_greed": 11,
           "fear_greed_class": "Extreme Fear"
         },
@@ -675,261 +135,32 @@
           "attack": "premium_divergence",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "premium -0.000186 \u2014 within normal range",
-          "premium": -0.0001858
+          "detail": "premium -0.000607 \u2014 within normal range",
+          "premium": -0.00060672
         },
         {
           "attack": "social_sentiment",
           "severity": 0.0,
           "weight": 1.2,
-          "detail": "XONE_AVG_NET=-30, XONE_SPREAD=30.0"
+          "detail": "No social data available"
         }
       ]
     },
     {
-      "coin": "SOL",
-      "direction": "SHORT",
-      "signal": "TAAPI_HARAMI_1H_SHORT",
-      "sharpe": 1.8,
-      "win_rate": 66.2,
-      "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 0.65,
-      "signal_heat": 0.5,
-      "recent_record": "pattern",
-      "composite_score": 4.55,
-      "timeframe_pattern": "",
-      "timeframe_confirmation": 0.0,
-      "signal_weight": 1.0,
-      "vwap_bonus": 0.0,
-      "funding_bonus": 0.0,
-      "max_hold_hours": 4,
-      "exit_expression": "",
-      "entry_expression": "TAAPI_HARAMI_1H fired",
-      "source": "taapi_pattern",
-      "pattern": "harami",
-      "pattern_interval": "1h",
-      "pattern_confidence": 0.65,
-      "hypothesis_id": "hyp_20260320_013406_SOL_SHORT_002",
-      "thesis": "Hurst 0.75 + CONFIRMATION_SHORT + funding stable + trending regime + \u2192 momentum continuation SHORT",
-      "anti_thesis": "Hurst declining 0.81\u21920.75 \u2014 momentum may be exhausting",
-      "confidence": 0.562,
-      "evidence_for": [
-        "Hurst 0.75 > 0.5 \u2192 trending market",
-        "fast+slow timeframes both bearish (CONFIRMATION_SHORT)",
-        "funding stable (rate 0.000980)",
-        "deep liquidity (score 100)",
-        "spread normal \u2014 no MM manipulation detected"
-      ],
-      "evidence_against": [
-        "Hurst declining 0.81\u21920.75 \u2014 momentum may be exhausting"
-      ],
-      "kill_conditions": [
-        "regime shifts to chaotic or shift",
-        "Hurst drops below 0.5 (momentum collapses)",
-        "funding reverses to intensifying long",
-        "spread enters MM_SETUP",
-        "liquidity drops below tradeable threshold",
-        "timeframe pattern flips to CONFIRMATION_LONG"
-      ],
-      "similar_past_trades": [
-        {
-          "coin": "SOL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_EX3_EX3",
-          "outcome": "loss",
-          "pnl_pct": -0.06,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-19T06:58:10.373407+00:00"
-        },
-        {
-          "coin": "SOL",
-          "direction": "SHORT",
-          "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_R5V3_EX3",
-          "outcome": "loss",
-          "pnl_pct": -0.32,
-          "exit_reason": "kill_condition",
-          "entry_time": "2026-03-19T20:05:56.602393+00:00"
-        },
-        {
-          "coin": "SOL",
-          "direction": "LONG",
-          "signal": "INFLUENCER_CROWD_BULL_LONG_MH24_Q2",
-          "outcome": "loss",
-          "pnl_pct": -0.27,
-          "exit_reason": "risk_kill",
-          "entry_time": "2026-03-18T06:45:50.866796+00:00"
-        }
-      ],
-      "world_snapshot": {
-        "regime": "trending",
-        "regime_confidence": 0.725,
-        "hurst_24h": 0.7488,
-        "hurst_48h": 0.8085,
-        "funding_rate": 0.00098,
-        "funding_direction": "stable",
-        "funding_reversal": false,
-        "spread_status": "NORMAL",
-        "liquidity_score": 100,
-        "tradeable": true,
-        "timeframe_pattern": "CONFIRMATION_SHORT",
-        "fast_bias": "bearish",
-        "slow_bias": "bearish"
-      },
-      "applied_rules": [
-        "RULE_001"
-      ],
-      "survival_score": 0.6453,
-      "adversary_verdict": "PROCEED",
-      "recommended_size_modifier": 1.0,
-      "attacks": [
-        {
-          "attack": "similar_failure",
-          "severity": 0.0,
-          "weight": 1.8,
-          "detail": "2 similar trade(s) lost, not enough to penalize",
-          "failures_found": 2,
-          "avg_loss_pct": -0.19
-        },
-        {
-          "attack": "kill_condition_proximity",
-          "severity": 0.1,
-          "weight": 1.0,
-          "detail": "kill condition 'regime shifts to chaotic or shift' ~10% met (regime trending, stable)",
-          "conditions_checked": 6,
-          "conditions_near": 2
-        },
-        {
-          "attack": "portfolio_stress",
-          "severity": 0.0,
-          "weight": 0.6,
-          "detail": "No open positions \u2014 no concentration risk"
-        },
-        {
-          "attack": "confidence_vs_antithesis",
-          "severity": 0.3,
-          "weight": 1.0,
-          "detail": "anti_thesis mentions exhaustion; anti_thesis mentions declining",
-          "confidence": 0.562,
-          "evidence_for_count": 5,
-          "evidence_against_count": 1
-        },
-        {
-          "attack": "regime_mismatch",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT signal (style=neutral) in trending regime",
-          "regime": "trending",
-          "signal_style": "neutral"
-        },
-        {
-          "attack": "funding_headwind",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "SHORT with funding rate 0.000980",
-          "funding_rate": 0.00098,
-          "funding_velocity": "stable",
-          "funding_reversal": false
-        },
-        {
-          "attack": "oi_divergence",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "OI healthy"
-        },
-        {
-          "attack": "timeframe_alignment",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "timeframe aligned"
-        },
-        {
-          "attack": "rule_based",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "No matching active rules",
-          "matched_rules": []
-        },
-        {
-          "attack": "macro_regime",
-          "severity": 0.1,
-          "weight": 1.44,
-          "detail": "CHOPPY market \u2014 reduced conviction (fear=30.1)"
-        },
-        {
-          "attack": "session_risk",
-          "severity": 0.0,
-          "weight": 1.0,
-          "detail": "ASIA SHORT: 6/10 WR (60%) over 10 trades"
-        },
-        {
-          "attack": "regime_transition",
-          "severity": 0.0,
-          "weight": 0.8,
-          "detail": "transition prob 0%, direction: unknown"
-        },
-        {
-          "attack": "family_track_record",
-          "severity": 0,
-          "weight": 1.0,
-          "detail": "family immature (4 instances)"
-        },
-        {
-          "attack": "data_disagreement",
-          "severity": 0.4,
-          "weight": 1.3,
-          "detail": "ENVY/TAAPI divergence: 2 indicators disagree, max delta 87%",
-          "indicators_checked": 3,
-          "indicators_disagreeing": 2,
-          "max_delta_pct": 86.65,
-          "disagreements": [
-            {
-              "indicator": "MACD_N_24H",
-              "envy": -0.004351,
-              "taapi": -0.011003,
-              "delta_pct": 86.65
-            },
-            {
-              "indicator": "ROC_24H",
-              "envy": -0.709389,
-              "taapi": -0.842665,
-              "delta_pct": 17.17
-            }
-          ]
-        },
-        {
-          "attack": "fear_greed",
-          "severity": 0.0,
-          "weight": 1.3,
-          "detail": "F&G=11 (Extreme Fear) direction=SHORT",
-          "fear_greed": 11,
-          "fear_greed_class": "Extreme Fear"
-        },
-        {
-          "attack": "macro_event",
-          "severity": 0.0,
-          "weight": 1.4,
-          "detail": "no macro events detected",
-          "macro_event_imminent": false,
-          "days_to_options_expiry": 7,
-          "high_vol": false
-        },
-        {
-          "attack": "premium_divergence",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "premium -0.000419 \u2014 within normal range",
-          "premium": -0.00041913
-        },
-        {
-          "attack": "social_sentiment",
-          "severity": 0.0,
-          "weight": 1.2,
-          "detail": "XONE_AVG_NET=-7, XONE_SPREAD=70.0"
-        }
-      ]
+      "coin": "ETH",
+      "direction": "LONG",
+      "signal": "RSI_OVERSOLD_BOUNCE_LONG_V2_FR3_EX2_Q14_FR2_EX2_MH",
+      "sharpe": 3.0102,
+      "win_rate": 73.913,
+      "trade_count": 46,
+      "expression": "RSI_3H30M <= 23.8 AND MACD_N_48H < 0.0101494850 AND BB_UPPER_5H_N < 1.0132029100",
+      "exit_expression": "RSI_3H30M >= 98.02",
+      "source": "realtime_evaluator",
+      "timestamp": "2026-03-20T02:08:30.503366+00:00"
     }
   ],
-  "adversary_timestamp": "2026-03-20T01:35:00.155393+00:00",
-  "adversary_killed": 3
+  "realtime_entries": 1,
+  "realtime_timestamp": "2026-03-20T02:08:30.504976+00:00",
+  "adversary_timestamp": "2026-03-20T02:07:32.307715+00:00",
+  "adversary_killed": 4
 }

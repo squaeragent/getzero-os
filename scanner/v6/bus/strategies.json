@@ -1,0 +1,592 @@
+{
+  "updated_at": "2026-03-20T02:09:23.571383+00:00",
+  "version": 6,
+  "active_coins": [
+    "PUMP",
+    "ADA",
+    "FARTCOIN",
+    "SUI",
+    "ETH",
+    "ZEC",
+    "LTC",
+    "kBONK"
+  ],
+  "coins": {
+    "PUMP": {
+      "signals": [
+        {
+          "name": "MACD_SIGNAL_FALLING_DFA_SHORT_EX2",
+          "direction": "SHORT",
+          "expression": "MACD_SIGNAL_2H15M_N >= 0.003 AND ROC_3H >= 1.0 AND DFA_48H <= 0.53 AND RSI_3H30M >= 65",
+          "exit_expression": "RSI_3H30M <= 27 OR MACD_SIGNAL_2H15M_N <= -0.001",
+          "max_hold_hours": 20,
+          "sharpe": 4.3722,
+          "win_rate": 74.359,
+          "trade_count": 117,
+          "composite_score": 85.08,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "HIGH_RSI_MACD_BEAR_SHORT_R4B_EX3_EX2",
+          "direction": "SHORT",
+          "expression": "RSI_3H30M >= 68 AND MACD_6H30M_N >= 0.003 AND DFA_48H <= 0.53",
+          "exit_expression": "RSI_3H30M <= 32.13",
+          "max_hold_hours": 24,
+          "sharpe": 3.3717,
+          "win_rate": 71.3235,
+          "trade_count": 136,
+          "composite_score": 61.217,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "DOJI_TRIGGER_MEAN_REVERT_LONG_V2_EX4_Q1",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 40 AND BB_POSITION_15M <= 0.25 AND DFA_48H <= 0.48 AND LYAPUNOV_48H < 1.916625620",
+          "exit_expression": "RSI_3H30M >= 52 OR BB_POSITION_15M >= 0.40",
+          "max_hold_hours": 18,
+          "sharpe": 3.6557,
+          "win_rate": 77.5,
+          "trade_count": 40,
+          "composite_score": 18.254,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "DOJI_TRIGGER_MEAN_REVERT_LONG_V2_EX4_Q1",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 40 AND BB_POSITION_15M <= 0.25 AND DFA_48H <= 0.48 AND LYAPUNOV_48H < 1.916625620",
+          "exit_expression": "RSI_3H30M >= 52 OR BB_POSITION_15M >= 0.40",
+          "max_hold_hours": 18,
+          "sharpe": 3.6557,
+          "win_rate": 77.5,
+          "trade_count": 40,
+          "composite_score": 18.254,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "SENKOU_DOJI_MOMENTUM_LONG_V1_EX0_Q5_FR8_EX5_FR1",
+          "direction": "LONG",
+          "expression": "SENKOU_B_13H_N <= 1.146 AND DOJI_SIGNAL_L >= 100 AND DOJI_VELOCITY_L >= 2.4 AND LYAPUNOV_24H <= 1.80 AND DOJI_DISTANCE >= 12.3447767100",
+          "exit_expression": "BB_POSITION_15M >= 0.8925 OR SENKOU_B_13H_N >= 1.313",
+          "max_hold_hours": 72,
+          "sharpe": 2.53,
+          "win_rate": 76.5306,
+          "trade_count": 98,
+          "composite_score": 18.036,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 4.3722,
+      "avg_win_rate": 75.44262,
+      "signal_count": 5
+    },
+    "ADA": {
+      "signals": [
+        {
+          "name": "BB_HIGH_REVERT_SHORT_FR2_EX2_Q1_EX2_Q1_EX2_Q4",
+          "direction": "SHORT",
+          "expression": "BB_POSITION_15M > 1.03 AND ADX_3H30M >= 15 AND ICHIMOKU_BULL < 0.000000000 AND DOJI_VELOCITY_L >= 0.119984745 AND DFA_24H >= 0.531662730",
+          "exit_expression": "BB_POSITION_15M < -0.30",
+          "max_hold_hours": 36,
+          "sharpe": 3.1313,
+          "win_rate": 68.5185,
+          "trade_count": 54,
+          "composite_score": 40.539,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "CHAOS_TREND_SHORT_DFA48_V1_EX6_Q5",
+          "direction": "SHORT",
+          "expression": "EMA_N_48H <= 0.995 AND DFA_48H > 0.47 AND HURST_48H > 0.69 AND SENKOU_A_6H30M_N >= 1.0045998850",
+          "exit_expression": "EMA_N_48H >= 1.005 OR DFA_48H < 0.32",
+          "max_hold_hours": 96,
+          "sharpe": 1.6745,
+          "win_rate": 63.8554,
+          "trade_count": 83,
+          "composite_score": 34.498,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "BB_CHAOS_OVERSOLD_LONG_C_EX3_Q0_EX3",
+          "direction": "LONG",
+          "expression": "BB_POSITION_15M < 0.30 AND HURST_24H > 0.76 AND LYAPUNOV_24H < 1.78 AND DFA_48H < 0.50 AND ADX_3H30M < 14.8148148100",
+          "exit_expression": "BB_POSITION_15M > 1.08",
+          "max_hold_hours": 48,
+          "sharpe": 3.5773,
+          "win_rate": 84.3137,
+          "trade_count": 51,
+          "composite_score": 34.388,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "DOJI_TRIGGER_OVERSOLD_LONG_V1_FR14_FR4",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M < 45.6 AND BB_POSITION_15M < 0.30 AND DFA_48H < 0.38",
+          "exit_expression": "BB_POSITION_15M > 0.65 OR RSI_3H30M > 55",
+          "max_hold_hours": 48,
+          "sharpe": 2.1801,
+          "win_rate": 94.7368,
+          "trade_count": 19,
+          "composite_score": 16.01,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "ROC_DIP_BB_LOW_MEANREV_LONG_V3_EX5_Q0",
+          "direction": "LONG",
+          "expression": "ROC_3H < -1.3 AND BB_POSITION_15M < 0.30 AND DFA_48H < 0.47 AND HURST_48H < 0.6590614000",
+          "exit_expression": "BB_POSITION_15M > 0.65 OR ROC_3H > 0.60",
+          "max_hold_hours": 36,
+          "sharpe": 1.8804,
+          "win_rate": 74.3363,
+          "trade_count": 113,
+          "composite_score": 13.95,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 3.5773,
+      "avg_win_rate": 77.15214,
+      "signal_count": 5
+    },
+    "FARTCOIN": {
+      "signals": [
+        {
+          "name": "SYNTH_LONG_14",
+          "direction": "LONG",
+          "expression": "EMA_6H30M_N >= 1.02863886 AND HURST_24H >= 0.82180752",
+          "exit_expression": "EMA_6H30M_N < 0.822911 OR HURST_24H < 0.575265",
+          "max_hold_hours": 48,
+          "sharpe": 2.7961,
+          "win_rate": 61.7021,
+          "trade_count": 47,
+          "composite_score": 178.011,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "WEIGHTED_DOJI_BULL_FR2_EX4_Q2_EX3_EX3",
+          "direction": "LONG",
+          "expression": "((DOJI_SIGNAL >= 115) * 4) + ((DOJI_DISTANCE >= 3) * 2) + ((DOJI_VELOCITY >= 3) * 2) + ((RSI_3H30M < 45) * 2) >= 6 AND DFA_24H >= 0.6144760425",
+          "exit_expression": "RSI_3H30M > 79.35 OR BB_POSITION_15M > 0.95",
+          "max_hold_hours": 36,
+          "sharpe": 3.4939,
+          "win_rate": 81.3953,
+          "trade_count": 86,
+          "composite_score": 63.676,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "DOJI_CLOUD_REVERSAL_SHORT_V1_EX1_Q9_EX1_Q1",
+          "direction": "SHORT",
+          "expression": "DOJI_SIGNAL >= 100 AND BB_POSITION_15M > 0.80 AND DOJI_DISTANCE >= 5 AND KIJUN_6H30M_N < 0.9880538550 AND DOJI_VELOCITY_L >= -0.066591965",
+          "exit_expression": "BB_POSITION_15M < 0.00",
+          "max_hold_hours": 36,
+          "sharpe": 2.2421,
+          "win_rate": 77.4648,
+          "trade_count": 71,
+          "composite_score": 49.146,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "DOJI_CMO_REVERSAL_LONG_V1_EX3_EX2",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND DOJI_VELOCITY >= 3 AND DOJI_DISTANCE >= 5 AND CMO_3H30M < -20",
+          "exit_expression": "CMO_3H30M > 37.95 OR DOJI_VELOCITY < -6",
+          "max_hold_hours": 48,
+          "sharpe": 2.518,
+          "win_rate": 71.6216,
+          "trade_count": 74,
+          "composite_score": 37.781,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "CLOUD_BB_MR_LONG_DFA48_V3_FR11_EX0_Q14_FR8_EX1",
+          "direction": "LONG",
+          "expression": "CLOUD_POSITION_15M <= -2 AND BB_POSITION_15M < 0.25 AND DFA_48H < 0.60 AND LYAPUNOV_24H >= 1.8630729500",
+          "exit_expression": "BB_POSITION_15M > 0.95",
+          "max_hold_hours": 36,
+          "sharpe": 1.5272,
+          "win_rate": 67.1569,
+          "trade_count": 204,
+          "composite_score": 33.623,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 3.4939,
+      "avg_win_rate": 71.86814,
+      "signal_count": 5
+    },
+    "SUI": {
+      "signals": [
+        {
+          "name": "KIJUN_DEVIATION_MEAN_REVERT_LONG_FR8_FR4",
+          "direction": "LONG",
+          "expression": "KIJUN_6H30M_N <= 0.994 AND DFA_24H <= 0.65 AND MACD_CROSS_15M_N >= 0.0051",
+          "exit_expression": "KIJUN_6H30M_N >= 1.001 OR MACD_CROSS_15M_N <= -0.0005",
+          "max_hold_hours": 36,
+          "sharpe": 2.3996,
+          "win_rate": 60.0,
+          "trade_count": 40,
+          "composite_score": 22.737,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "MACD_CROSS_BULLISH_LONG_FR7_EX2_Q1_EX4_Q2_Q3",
+          "direction": "LONG",
+          "expression": "MACD_CROSS_15M_N >= 0.0003 AND CMO_3H30M <= -18 AND LYAPUNOV_48H < 1.896003310 AND SENKOU_B_13H_N < 1.0111040425 AND HURST_24H < 0.6817113100",
+          "exit_expression": "MACD_CROSS_15M_N <= -0.0103 OR CMO_3H30M >= 36",
+          "max_hold_hours": 48,
+          "sharpe": 3.2971,
+          "win_rate": 100.0,
+          "trade_count": 10,
+          "composite_score": 11.927,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "BB_SQUEEZE_BREAKOUT_LONG_FR6",
+          "direction": "LONG",
+          "expression": "BB_UPPER_5H_N <= 1.004 AND EMA_CROSS_15M_N >= 0.016 AND ADX_3H30M >= 30 AND DFA_24H >= 0.50",
+          "exit_expression": "EMA_CROSS_15M_N <= -0.001 OR ADX_3H30M <= 15",
+          "max_hold_hours": 36,
+          "sharpe": 1.843,
+          "win_rate": 55.5556,
+          "trade_count": 18,
+          "composite_score": 9.638,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "KIJUN_BOUNCE_DFA_LONG_FR15_Q0_FR14_EX0_FR15",
+          "direction": "LONG",
+          "expression": "KIJUN_6H30M_N >= 0.999 AND KIJUN_6H30M_N <= 1.002 AND EMA_CROSS_15M_N >= 0.001 AND DFA_24H >= 0.55 AND EMA_6H30M_N < 0.9945860400",
+          "exit_expression": "EMA_CROSS_15M_N <= -0.012 OR KIJUN_6H30M_N <= 0.994",
+          "max_hold_hours": 48,
+          "sharpe": 1.7204,
+          "win_rate": 90.9091,
+          "trade_count": 22,
+          "composite_score": 8.747,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "DFA_SHORT_MACD_SIGNAL_EX1_Q2",
+          "direction": "SHORT",
+          "expression": "DFA_24H >= 0.55 AND ROC_3H <= -0.5 AND EMA_3H_N <= 0.9985 AND MACD_SIGNAL_2H15M_N <= -0.002 AND ADX_3H30M >= 51.0368832500",
+          "exit_expression": "ROC_3H >= 0.20 OR EMA_3H_N >= 1.001",
+          "max_hold_hours": 36,
+          "sharpe": 2.2255,
+          "win_rate": 90.9091,
+          "trade_count": 11,
+          "composite_score": 8.214,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 3.2971,
+      "avg_win_rate": 79.47475999999999,
+      "signal_count": 5
+    },
+    "ETH": {
+      "signals": [
+        {
+          "name": "RSI_OVERSOLD_BOUNCE_LONG_V2_FR3_EX2_Q14_FR2_EX2_MH",
+          "direction": "LONG",
+          "expression": "RSI_3H30M <= 23.8 AND MACD_N_48H < 0.0101494850 AND BB_UPPER_5H_N < 1.0132029100",
+          "exit_expression": "RSI_3H30M >= 98.02",
+          "max_hold_hours": 32,
+          "sharpe": 3.0102,
+          "win_rate": 73.913,
+          "trade_count": 46,
+          "composite_score": 27.814,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "DOJI_REVERSAL_LONG_V2_FR6_EX2_Q5_MH24_Q2",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 38.25 AND XONE_SPREAD < 70.0000000000 AND HURST_24H >= 0.7790480400",
+          "exit_expression": "RSI_3H30M >= 75.4",
+          "max_hold_hours": 24,
+          "sharpe": 2.1106,
+          "win_rate": 71.7391,
+          "trade_count": 92,
+          "composite_score": 19.705,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "HURST_STABLE_TREND_LONG_FR10_EX7_Q4_MH60_Q2_MH120",
+          "direction": "LONG",
+          "expression": "HURST_48H >= 0.73 AND LYAPUNOV_48H <= 1.92 AND MACD_N_24H >= -0.007 AND DOJI_DISTANCE_L >= -2.182397900 AND XONE_SPREAD < 70.0000000000",
+          "exit_expression": "MACD_N_24H <= -0.001 OR HURST_48H <= 0.50",
+          "max_hold_hours": 120,
+          "sharpe": 1.9199,
+          "win_rate": 63.6364,
+          "trade_count": 33,
+          "composite_score": 16.913,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "XONE_DELTA_RSI_LONG_V1_EX7_EX7",
+          "direction": "LONG",
+          "expression": "XONE_AVG_NET_DELTA >= 20 AND XONE_A_NET >= 40 AND RSI_3H30M <= 42 AND LYAPUNOV_24H <= 1.78",
+          "exit_expression": "XONE_AVG_NET_DELTA <= -15 OR RSI_3H30M >= 92.575",
+          "max_hold_hours": 48,
+          "sharpe": 1.8269,
+          "win_rate": 60.6061,
+          "trade_count": 33,
+          "composite_score": 14.454,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "SOCIAL_MOMENTUM_BULLISH_CONSENSUS_LONG_V2_FR0_EX2",
+          "direction": "LONG",
+          "expression": "XONE_AVG_NET_DELTA >= 20 AND XONE_A_NET >= 50 AND RSI_3H30M <= 45 AND XONE_U_NET >= 50",
+          "exit_expression": "XONE_AVG_NET_DELTA <= -11 OR RSI_3H30M >= 80",
+          "max_hold_hours": 48,
+          "sharpe": 1.9818,
+          "win_rate": 69.2308,
+          "trade_count": 39,
+          "composite_score": 13.766,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 3.0102,
+      "avg_win_rate": 67.82508,
+      "signal_count": 5
+    },
+    "ZEC": {
+      "signals": [
+        {
+          "name": "DOJI_OVERSOLD_BOUNCE_V1_FR5_EX0_Q2_EX0_EX1",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 27 AND CMO_3H30M <= -25 AND DOJI_VELOCITY < 4.1427353875",
+          "exit_expression": "RSI_3H30M >= 35.76375 OR CMO_3H30M >= 10",
+          "max_hold_hours": 36,
+          "sharpe": 2.9923,
+          "win_rate": 65.9341,
+          "trade_count": 182,
+          "composite_score": 40.251,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "CMO_DEEP_REVERSAL_LONG_V2_FR4_EX2_FR0",
+          "direction": "LONG",
+          "expression": "CMO_3H30M <= -52.5 AND BB_POSITION_15M <= 0.05",
+          "exit_expression": "CMO_3H30M >= 8.8",
+          "max_hold_hours": 36,
+          "sharpe": 2.0431,
+          "win_rate": 65.019,
+          "trade_count": 263,
+          "composite_score": 39.688,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "CMO_EXTREME_REVERT_LONG_FR5_EX5_FR0",
+          "direction": "LONG",
+          "expression": "CMO_3H30M <= -52.5 AND BB_POSITION_15M <= 0.05",
+          "exit_expression": "CMO_3H30M >= 0 OR BB_POSITION_15M >= 0.40",
+          "max_hold_hours": 36,
+          "sharpe": 2.232,
+          "win_rate": 64.5985,
+          "trade_count": 274,
+          "composite_score": 34.616,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "BB_LOWER_SNAP_LONG_FR10",
+          "direction": "LONG",
+          "expression": "BB_LOWER_5H_N >= 0.999 AND BB_POSITION_15M <= 0.08 AND RSI_3H30M <= 23.8",
+          "exit_expression": "BB_POSITION_15M >= 0.45",
+          "max_hold_hours": 24,
+          "sharpe": 2.0546,
+          "win_rate": 66.1355,
+          "trade_count": 251,
+          "composite_score": 33.568,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "DOJI_OVERSOLD_GATED_LONG_FR5_EX2",
+          "direction": "LONG",
+          "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 27 AND CMO_3H30M <= -30 AND BB_POSITION_15M <= 0.20",
+          "exit_expression": "RSI_3H30M >= 60.5 OR BB_POSITION_15M >= 0.60",
+          "max_hold_hours": 48,
+          "sharpe": 1.858,
+          "win_rate": 63.8191,
+          "trade_count": 199,
+          "composite_score": 27.062,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 2.9923,
+      "avg_win_rate": 65.10123999999999,
+      "signal_count": 5
+    },
+    "LTC": {
+      "signals": [
+        {
+          "name": "SENKOU_B_BELOW_RSI_LOW_LONG_EX2_EX7",
+          "direction": "LONG",
+          "expression": "SENKOU_B_13H_N <= 0.9975 AND RSI_3H30M <= 35 AND ICHIMOKU_BULL >= 1",
+          "exit_expression": "RSI_3H30M >= 60.5 OR SENKOU_B_13H_N >= 1.15345",
+          "max_hold_hours": 72,
+          "sharpe": 2.4846,
+          "win_rate": 75.7143,
+          "trade_count": 140,
+          "composite_score": 21.289,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "SENKOU_B_DEEP_RSI_LOW_ICHI_LONG_V3_EX4_Q11_FR7_EX4",
+          "direction": "LONG",
+          "expression": "SENKOU_B_13H_N <= 0.9935 AND RSI_3H30M <= 31.5 AND ICHIMOKU_BULL >= 1 AND EMA_6H30M_N < 1.0042086200",
+          "exit_expression": "SENKOU_B_13H_N >= 1.006 OR RSI_3H30M >= 48.19075",
+          "max_hold_hours": 96,
+          "sharpe": 2.9031,
+          "win_rate": 87.0968,
+          "trade_count": 31,
+          "composite_score": 11.646,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "RSI_HURST_BOUNCE_LONG_V2_FR5_EX3_EX5",
+          "direction": "LONG",
+          "expression": "RSI_3H30M <= 32 AND HURST_24H >= 0.82",
+          "exit_expression": "RSI_3H30M >= 66.7 OR HURST_24H <= 0.68",
+          "max_hold_hours": 48,
+          "sharpe": 1.6018,
+          "win_rate": 64.2105,
+          "trade_count": 95,
+          "composite_score": 9.839,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "BB_ADX_EMA_CROSS_LONG_V3_FR9_EX2_FR2_EX1",
+          "direction": "LONG",
+          "expression": "BB_POSITION_15M >= 0.80 AND ADX_3H30M >= 30 AND EMA_CROSS_15M_N >= 0.0115 AND DOJI_VELOCITY_L <= 2.0",
+          "exit_expression": "ADX_3H30M <= 17.82 OR BB_POSITION_15M <= 0.4",
+          "max_hold_hours": 36,
+          "sharpe": 1.67,
+          "win_rate": 83.3333,
+          "trade_count": 18,
+          "composite_score": 7.066,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "RSI_OVERBOUGHT_DFA_SHORT_FR10_EX1_Q2_EX2",
+          "direction": "SHORT",
+          "expression": "RSI_3H30M >= 72 AND DFA_24H >= 0.55 AND HURST_24H >= 0.85 AND MACD_SIGNAL_2H15M_N >= 0.0019195200",
+          "exit_expression": "RSI_3H30M <= 44.55 OR DFA_24H <= 0.42",
+          "max_hold_hours": 48,
+          "sharpe": 1.5909,
+          "win_rate": 71.4286,
+          "trade_count": 21,
+          "composite_score": 6.394,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 2.9031,
+      "avg_win_rate": 76.3567,
+      "signal_count": 5
+    },
+    "kBONK": {
+      "signals": [
+        {
+          "name": "MOMENTUM_MACD_CROSS_DEEP_LONG_V1_EX0",
+          "direction": "LONG",
+          "expression": "MOMENTUM_2H30M_N < -1.6 AND MACD_CROSS_15M_N >= 0.00025 AND DFA_48H >= 0.45",
+          "exit_expression": "MOMENTUM_2H30M_N > 1.105 OR MACD_CROSS_15M_N < -0.012",
+          "max_hold_hours": 48,
+          "sharpe": 2.8515,
+          "win_rate": 78.3784,
+          "trade_count": 37,
+          "composite_score": 17.251,
+          "stop_loss_pct": 0.05,
+          "priority": 1
+        },
+        {
+          "name": "MACD_DEEP_EMA_CROSS_LONG_V3_EX0_Q1_EX6",
+          "direction": "LONG",
+          "expression": "MACD_6H30M_N < -0.005 AND MACD_CROSS_15M_N >= 0.0002 AND BB_POSITION_15M < 0.30 AND DOJI_VELOCITY_L >= -1.5 AND HURST_24H >= 0.727254310",
+          "exit_expression": "BB_POSITION_15M > 0.90 OR MACD_6H30M_N > 0.011",
+          "max_hold_hours": 72,
+          "sharpe": 1.9259,
+          "win_rate": 76.3636,
+          "trade_count": 55,
+          "composite_score": 13.871,
+          "stop_loss_pct": 0.05,
+          "priority": 2
+        },
+        {
+          "name": "CLOUD_BREAK_LONG_LYAP_FR7_EX4_Q5_EX2",
+          "direction": "LONG",
+          "expression": "CLOUD_POSITION_15M >= 1 AND TENKAN_KIJUN_CROSS_15M_N >= 0.022 AND LYAPUNOV_48H <= 1.94 AND DOJI_DISTANCE_L < 4.2166133050",
+          "exit_expression": "CLOUD_POSITION_15M <= -1.10 OR TENKAN_KIJUN_CROSS_15M_N < 0.012",
+          "max_hold_hours": 48,
+          "sharpe": 1.7115,
+          "win_rate": 56.0976,
+          "trade_count": 41,
+          "composite_score": 13.841,
+          "stop_loss_pct": 0.05,
+          "priority": 3
+        },
+        {
+          "name": "CLOUD_BREAK_LONG_LYAP_FR7_EX4_Q5_EX2",
+          "direction": "LONG",
+          "expression": "CLOUD_POSITION_15M >= 1 AND TENKAN_KIJUN_CROSS_15M_N >= 0.022 AND LYAPUNOV_48H <= 1.94 AND DOJI_DISTANCE_L < 4.2166133050",
+          "exit_expression": "CLOUD_POSITION_15M <= -1.10 OR TENKAN_KIJUN_CROSS_15M_N < 0.012",
+          "max_hold_hours": 48,
+          "sharpe": 1.7115,
+          "win_rate": 56.0976,
+          "trade_count": 41,
+          "composite_score": 13.841,
+          "stop_loss_pct": 0.05,
+          "priority": 4
+        },
+        {
+          "name": "MOMENTUM_REVERSAL_LONG_EX6_EX2_EX3",
+          "direction": "LONG",
+          "expression": "MOMENTUM_2H30M_N < -1.5 AND MACD_CROSS_15M_N >= 0.0002 AND DFA_48H >= 0.46",
+          "exit_expression": "MOMENTUM_2H30M_N > 1.265 OR MACD_CROSS_15M_N < -0.0105",
+          "max_hold_hours": 36,
+          "sharpe": 2.4767,
+          "win_rate": 78.0488,
+          "trade_count": 41,
+          "composite_score": 13.527,
+          "stop_loss_pct": 0.05,
+          "priority": 5
+        }
+      ],
+      "best_sharpe": 2.8515,
+      "avg_win_rate": 68.99719999999999,
+      "signal_count": 5
+    }
+  }
+}
