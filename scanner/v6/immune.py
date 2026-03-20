@@ -460,11 +460,129 @@ def build_daily_summary() -> str:
     return msg
 
 
+# ─── CHECK: POSITION DESYNC WITH HL ──────────────────────────────────────────
+
+def check_position_desync(state: dict) -> list[str]:
+    """CRITICAL: detect when local positions.json disagrees with Hyperliquid.
+
+    If local has 0 positions but HL has >0, this means positions.json
+    was wiped (e.g. by a bug) and we've lost track of live positions.
+    Auto-reconcile by writing HL positions back to local.
+    """
+    import urllib.request
+    from scanner.v6.config import HL_MAIN_ADDRESS, STRATEGY_VERSION
+
+    alerts = []
+    local_positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
+
+    try:
+        req = urllib.request.Request(
+            "https://api.hyperliquid.xyz/info",
+            data=json.dumps({"type": "clearinghouseState", "user": HL_MAIN_ADDRESS}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        result = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        hl_positions = []
+        for p in result.get("assetPositions", []):
+            pos = p.get("position", {})
+            sz = float(pos.get("szi", 0))
+            if sz != 0:
+                hl_positions.append({
+                    "coin":        pos["coin"],
+                    "direction":   "LONG" if sz > 0 else "SHORT",
+                    "size_coins":  abs(sz),
+                    "entry_price": float(pos.get("entryPx", 0)),
+                })
+    except Exception as e:
+        log(f"Desync check: HL query failed: {e}")
+        return alerts
+
+    local_coins = {p.get("coin") for p in local_positions}
+    hl_coins = {p["coin"] for p in hl_positions}
+
+    # CRITICAL: local is empty but HL is not
+    if len(local_positions) == 0 and len(hl_positions) > 0:
+        alert_msg = (
+            f"🚨🚨 CRITICAL DESYNC\n"
+            f"Local positions.json: 0 positions\n"
+            f"Hyperliquid reality: {len(hl_positions)} positions\n"
+            f"Coins on HL: {', '.join(hl_coins)}\n\n"
+            f"AUTO-RECONCILING from HL..."
+        )
+        alerts.append(alert_msg)
+        log(f"CRITICAL DESYNC: 0 local, {len(hl_positions)} on HL — auto-reconciling")
+
+        # Auto-reconcile: rebuild positions from HL
+        from scanner.v6.bus_io import save_json_atomic
+        new_positions = []
+        for hl_pos in hl_positions:
+            new_positions.append({
+                "coin":          hl_pos["coin"],
+                "direction":     hl_pos["direction"],
+                "entry_price":   hl_pos["entry_price"],
+                "size_coins":    hl_pos["size_coins"],
+                "size_usd":      hl_pos["entry_price"] * hl_pos["size_coins"],
+                "entry_time":    datetime.now(timezone.utc).isoformat(),
+                "signal_name":   "reconciled_by_immune_system",
+                "stop_loss_pct": 0.05,
+                "strategy_version": STRATEGY_VERSION,
+                "sharpe":        0,
+                "win_rate":      0,
+            })
+        save_json_atomic(POSITIONS_FILE, {"updated_at": datetime.now(timezone.utc).isoformat(), "positions": new_positions})
+
+        # Also mirror to v5 path
+        try:
+            v5_path = Path(__file__).parent.parent / "data" / "live" / "positions.json"
+            v5_list = []
+            for p in new_positions:
+                v5_list.append({
+                    "coin":             p["coin"],
+                    "direction":        p["direction"],
+                    "signal":           p["signal_name"],
+                    "entry_price":      p["entry_price"],
+                    "entry_time":       p["entry_time"],
+                    "size_usd":         p["size_usd"],
+                    "size_coins":       p["size_coins"],
+                    "stop_loss":        0,
+                    "stop_loss_pct":    5.0,
+                    "peak_pnl_pct":     0.0,
+                    "strategy_version": STRATEGY_VERSION,
+                })
+            save_json_atomic(v5_path, v5_list)
+        except Exception as e:
+            log(f"v5 mirror during immune reconcile failed: {e}")
+
+        return alerts
+
+    # Non-critical: check for orphans or ghosts
+    orphans = hl_coins - local_coins
+    ghosts = local_coins - hl_coins
+
+    if orphans:
+        alerts.append(
+            f"⚠️ POSITION MISMATCH\n"
+            f"HL has positions not tracked locally: {', '.join(orphans)}\n"
+            f"Next executor reconciliation will adopt them."
+        )
+    if ghosts:
+        alerts.append(
+            f"⚠️ GHOST POSITIONS\n"
+            f"Local tracks positions not on HL: {', '.join(ghosts)}\n"
+            f"Next executor reconciliation will remove them."
+        )
+
+    return alerts
+
+
 # ─── MAIN LOOP ────────────────────────────────────────────────────────────────
 
 def run_once(state: dict) -> dict:
     """Run all checks once. Returns updated state."""
     all_alerts = []
+
+    # Position desync with HL (CRITICAL — check every cycle)
+    all_alerts.extend(check_position_desync(state))
 
     # Position age
     all_alerts.extend(check_position_age(state))
