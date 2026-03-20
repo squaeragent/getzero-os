@@ -45,6 +45,9 @@ CYCLE_SECONDS = 5
 SCANNER_DIR = Path(__file__).parent.parent
 V5_POSITIONS_FILE = SCANNER_DIR / "data" / "live" / "positions.json"
 
+# Rejection reason logging — pure telemetry, no trading logic
+REJECTION_LOG_FILE = BUS_DIR / "rejections.jsonl"
+
 
 def log(msg):
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -53,6 +56,18 @@ def log(msg):
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def log_rejection(coin: str, direction: str, reason: str, details: dict = None):
+    """Append rejection event to JSONL log. Pure telemetry."""
+    try:
+        entry = {"ts": now_iso(), "coin": coin, "dir": direction, "reason": reason}
+        if details:
+            entry["details"] = details
+        with open(REJECTION_LOG_FILE, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass  # never fail a trade because logging broke
 
 
 def load_json(path: Path, default=None):
@@ -627,6 +642,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         price = client.get_price(coin)
         if price <= 0:
             log(f"  ERROR: no price for {coin}")
+            log_rejection(coin, direction, "no_price")
             return False
 
         # ── E2: SET LEVERAGE EXPLICITLY ────────────────────────────────────
@@ -655,6 +671,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             log(f"  ⚠️ FUNDING WARNING: {coin} rate={funding_rate:.6f}/hr, est cost={funding_cost_pct:.2%} over {trade.get('max_hold_hours', 24)}h")
             if funding_cost_pct > 0.02:  # >2% funding cost → skip trade
                 log(f"  SKIP: funding cost {funding_cost_pct:.2%} exceeds 2% threshold")
+                log_rejection(coin, direction, "funding_cost", {"rate": funding_rate, "cost_pct": funding_cost_pct})
                 return False
 
         # 2. L2 book depth check — fail-safe: if depth unknown, SKIP (don't trade blind)
@@ -662,11 +679,13 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         relevant_depth = book["ask_depth_usd"] if is_buy else book["bid_depth_usd"]
         if relevant_depth <= 0:
             log(f"  SKIP: L2 book depth is 0 for {coin} — API failure or empty book, refusing to trade blind")
+            log_rejection(coin, direction, "book_depth_zero")
             return False
         if size_usd > relevant_depth * 0.10:
             log(f"  ⚠️ LIQUIDITY WARNING: ${size_usd:.0f} order is {size_usd/relevant_depth:.0%} of top-5 {('ask' if is_buy else 'bid')} depth (${relevant_depth:.0f})")
             if size_usd > relevant_depth * 0.50:
                 log(f"  SKIP: order > 50% of visible liquidity")
+                log_rejection(coin, direction, "liquidity_too_thin", {"size_usd": size_usd, "depth_usd": relevant_depth})
                 return False
 
         # 3. Alpha vs cost filter
@@ -680,6 +699,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         expected_alpha_pct = max(0, (signal_sharpe - 1.0) * 0.003)
         if expected_alpha_pct < expected_cost_pct and signal_sharpe < 3.0:
             log(f"  SKIP: expected alpha {expected_alpha_pct:.3%} < cost {expected_cost_pct:.3%} (fees={taker_fee*2:.3%} + funding={funding_cost_pct:.3%})")
+            log_rejection(coin, direction, "alpha_vs_cost", {"alpha_pct": expected_alpha_pct, "cost_pct": expected_cost_pct, "sharpe": signal_sharpe})
             return False
 
         # ── SIZE AND EXECUTE ───────────────────────────────────────────────
@@ -692,6 +712,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             log(f"  Precision residual: ${residual_usd:.2f} ({(residual_usd/size_usd*100):.1f}% of position)")
         if size_coins <= 0:
             log(f"  ERROR: size_coins=0 for {coin} (size_usd=${size_usd:.2f}, price=${price})")
+            log_rejection(coin, direction, "size_zero", {"size_usd": size_usd, "price": price})
             return False
 
         slippage = get_slippage(coin)
@@ -1012,6 +1033,7 @@ def run_once(client: HLClient, dry: bool):
         for trade in approved:
             if trade["coin"] in open_coins:
                 log(f"  SKIP: already have position on {trade['coin']}")
+                log_rejection(trade["coin"], trade.get("direction", "?"), "already_open")
                 continue
             success = open_trade(client, trade, dry)
             if success:

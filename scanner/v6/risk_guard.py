@@ -35,6 +35,9 @@ from scanner.v6.config import (
 
 CYCLE_SECONDS = 5
 
+# Rejection reason logging — pure telemetry, shared with executor
+REJECTION_LOG_FILE = BUS_DIR / "rejections.jsonl"
+
 
 def log(msg):
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -43,6 +46,18 @@ def log(msg):
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def log_rejection(coin: str, direction: str, reason: str, details: dict = None):
+    """Append rejection event to JSONL log. Pure telemetry."""
+    try:
+        entry = {"ts": now_iso(), "coin": coin, "dir": direction, "reason": reason, "gate": "risk_guard"}
+        if details:
+            entry["details"] = details
+        with open(REJECTION_LOG_FILE, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass
 
 
 def load_json(path: Path, default=None):
@@ -272,11 +287,12 @@ def run_once():
                 "_pending":  True,
             })
         else:
-            rejected.append((entry.get("coin"), entry.get("signal_name"), reason))
+            rejected.append((entry.get("coin"), entry.get("signal_name"), entry.get("direction", "?"), reason))
 
     if rejected:
-        for coin, sig, reason in rejected:
+        for coin, sig, direction, reason in rejected:
             log(f"  REJECTED: {coin} [{sig}] — {reason}")
+            log_rejection(coin, direction, reason, {"signal": sig})
 
     # Capital floor halt (60% of peak equity, not hardcoded)
     dynamic_floor = peak * CAPITAL_FLOOR_PCT
