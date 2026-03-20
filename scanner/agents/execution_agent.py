@@ -264,8 +264,25 @@ def append_jsonl(path, record):
         f.write(json.dumps(record) + "\n")
 
 
+USER_FILLS_FILE = BUS_DIR / "user_fills.json"
+
 def fetch_user_fills(main_address):
-    """Fetch recent fills from Hyperliquid fills endpoint."""
+    """Fetch recent fills — check WS bus file first (H4), fall back to API polling."""
+    # H4: Try WS-sourced fills from bus/user_fills.json first
+    try:
+        if USER_FILLS_FILE.exists():
+            age = time.time() - os.path.getmtime(str(USER_FILLS_FILE))
+            if age < 300:  # trust WS data if < 5 min old
+                with open(USER_FILLS_FILE) as f:
+                    ws_data = json.load(f)
+                fills = ws_data.get("fills", [])
+                if fills:
+                    log(f"  Using WS fills ({len(fills)} cached, {age:.0f}s old)")
+                    return fills
+    except Exception:
+        pass
+
+    # Fallback: API polling
     try:
         req = urllib.request.Request(
             "https://api.hyperliquid.xyz/info",
@@ -641,6 +658,25 @@ class HLClient:
     def close_position(self, coin, is_long, size):
         """Close a position via IOC market order."""
         return self.market_order(coin, not is_long, size)
+
+    # ── H3: Set margin mode + leverage before trade open ──
+    def set_leverage_and_margin(self, coin, leverage, is_cross=True):
+        """Set leverage and margin mode (cross vs isolated) for a coin."""
+        asset_id = COIN_TO_ASSET.get(coin)
+        if asset_id is None:
+            log(f"  WARN: Cannot set margin for unknown coin {coin}")
+            return None
+        action = {
+            "type": "updateLeverage",
+            "asset": asset_id,
+            "isCross": is_cross,
+            "leverage": leverage,
+        }
+        return self._sign_and_send(action)
+
+    def get_l2_book(self, coin):
+        """Fetch L2 order book for mid-spread calculation."""
+        return self.info_post({"type": "l2Book", "coin": coin})
 
 
 # ─── EXECUTION LOGIC ───
@@ -1046,31 +1082,129 @@ def open_trade(client, trade, positions, cfg, throttle, dry, main_address=None):
 
     log(f"{'DRY' if dry else 'LIVE'} OPEN {coin} {direction} | ${size_usd:.2f} ({size_coins}) @ ${price:,.4f} | sharpe={trade.get('sharpe', 0):.2f}")
 
+    # ── H3: Set margin mode (isolated for non-majors) + leverage BEFORE order ──
+    CROSS_MARGIN_COINS = {'BTC', 'ETH'}
+    LEVERAGE_TIERS = {'BTC': 5, 'ETH': 5, 'SOL': 3, 'ZEC': 3, 'HYPE': 3,
+                      'XPL': 2, 'FARTCOIN': 2, 'PUMP': 2, 'NEAR': 3, 'PAXG': 3}
+    DEFAULT_LEVERAGE = 2
+    if not dry:
+        is_cross = coin in CROSS_MARGIN_COINS
+        leverage = LEVERAGE_TIERS.get(coin, DEFAULT_LEVERAGE)
+        try:
+            margin_result = client.set_leverage_and_margin(coin, leverage, is_cross)
+            log(f"  Margin: {'cross' if is_cross else 'isolated'} {leverage}x for {coin} → {margin_result}")
+        except Exception as _me:
+            log(f"  WARN: set_leverage_and_margin failed for {coin}: {_me}")
+
     fill_price = price
     fill_time_ms = None
     if not dry:
-        t_start = time.time()
-        result = client.market_order(coin, is_buy, size_coins)
-        fill_time_ms = round((time.time() - t_start) * 1000)
-        log(f"  Order result: {json.dumps(result)}")
+        # ── H1: Urgency detection — GTC limit for non-urgent, IOC for urgent ──
+        signal_ts = trade.get("signal_timestamp") or trade.get("timestamp") or trade.get("created_at")
+        signal_age_s = 0
+        if signal_ts:
+            try:
+                if isinstance(signal_ts, (int, float)):
+                    signal_age_s = time.time() - signal_ts
+                else:
+                    _sig_dt = datetime.fromisoformat(signal_ts.replace("Z", "+00:00"))
+                    signal_age_s = (datetime.now(timezone.utc) - _sig_dt).total_seconds()
+            except Exception:
+                signal_age_s = 0
+        is_urgent = signal_age_s < 600  # < 10 minutes = urgent (new signal)
 
-        if result.get("status") != "ok":
-            log(f"  Order failed: {result}")
-            return None
+        if not is_urgent:
+            # Non-urgent: GTC limit at mid-spread, 60s timeout
+            log(f"  GTC entry: signal age {signal_age_s:.0f}s (non-urgent)")
+            try:
+                book = client.get_l2_book(coin)
+                levels = book.get("levels", [[], []])
+                best_bid = float(levels[0][0]["px"]) if levels[0] else price * 0.999
+                best_ask = float(levels[1][0]["px"]) if levels[1] else price * 1.001
+                mid_price = client.round_price((best_bid + best_ask) / 2)
+                log(f"  Mid-spread: bid=${best_bid:,.4f} ask=${best_ask:,.4f} mid=${mid_price:,.4f}")
+            except Exception as _bk:
+                log(f"  WARN: L2 book failed ({_bk}), using mid price")
+                mid_price = price
 
-        statuses = result.get("response", {}).get("data", {}).get("statuses", [])
-        filled = False
-        for s in statuses:
-            if "filled" in s:
-                filled = True
-                fill_price = float(s["filled"]["avgPx"])
-                log(f"  Filled @ ${fill_price:,.4f}")
-            elif "error" in s:
-                log(f"  Error: {s['error']}")
+            t_start = time.time()
+            result = client.place_order(coin, is_buy, size_coins, mid_price, order_type="Gtc")
+            log(f"  GTC order result: {json.dumps(result)}")
 
-        if not filled:
-            log(f"  Not filled, skipping")
-            return None
+            if result.get("status") != "ok":
+                log(f"  GTC order failed: {result}")
+                return None
+
+            # Wait up to 60s for fill, then cancel
+            statuses = result.get("response", {}).get("data", {}).get("statuses", [])
+            filled = False
+            order_oid = None
+            for s in statuses:
+                if "resting" in s:
+                    order_oid = s["resting"].get("oid")
+                    log(f"  GTC resting, oid={order_oid} — waiting up to 60s")
+                elif "filled" in s:
+                    filled = True
+                    fill_price = float(s["filled"]["avgPx"])
+                    fill_time_ms = round((time.time() - t_start) * 1000)
+                    log(f"  GTC immediately filled @ ${fill_price:,.4f}")
+
+            if not filled and order_oid:
+                # Poll for fill with 60s timeout
+                deadline = time.time() + 60
+                while time.time() < deadline:
+                    time.sleep(3)
+                    open_orders = client.get_open_orders()
+                    still_open = any(str(o.get("oid")) == str(order_oid) for o in open_orders)
+                    if not still_open:
+                        filled = True
+                        fill_time_ms = round((time.time() - t_start) * 1000)
+                        # Get fill price from recent fills
+                        _fills = fetch_user_fills(main_address)
+                        for _f in reversed(_fills):
+                            if _f.get("coin") == coin and _f.get("time", 0) > int(t_start * 1000):
+                                fill_price = float(_f.get("px", price))
+                                break
+                        log(f"  GTC filled @ ${fill_price:,.4f} in {fill_time_ms}ms")
+                        break
+
+                if not filled:
+                    # Cancel unfilled GTC order
+                    asset = COIN_TO_ASSET.get(coin)
+                    if asset is not None and order_oid:
+                        cancel_action = {"type": "cancel", "cancels": [{"a": asset, "o": order_oid}]}
+                        client._sign_and_send(cancel_action)
+                    log(f"  GTC timeout — cancelled after 60s")
+                    return None
+
+            if not filled:
+                log(f"  GTC not filled, skipping")
+                return None
+        else:
+            # Urgent: keep existing IOC market order behavior
+            log(f"  IOC entry: signal age {signal_age_s:.0f}s (urgent)")
+            t_start = time.time()
+            result = client.market_order(coin, is_buy, size_coins)
+            fill_time_ms = round((time.time() - t_start) * 1000)
+            log(f"  Order result: {json.dumps(result)}")
+
+            if result.get("status") != "ok":
+                log(f"  Order failed: {result}")
+                return None
+
+            statuses = result.get("response", {}).get("data", {}).get("statuses", [])
+            filled = False
+            for s in statuses:
+                if "filled" in s:
+                    filled = True
+                    fill_price = float(s["filled"]["avgPx"])
+                    log(f"  Filled @ ${fill_price:,.4f}")
+                elif "error" in s:
+                    log(f"  Error: {s['error']}")
+
+            if not filled:
+                log(f"  Not filled, skipping")
+                return None
 
     # Log execution quality
     slippage_pct = abs(fill_price - intended_price) / intended_price * 100 if intended_price > 0 else 0
@@ -1360,7 +1494,10 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
     Exit expressions are evaluated first — they match the paper scanner's behavior."""
     if tf_data is None:
         tf_data = {}
-    trailing_trigger = cfg.get("trailing_stop_trigger", 0.003)  # v4: lowered from 2% to 0.3% — lock gains earlier
+    # ── H2: Per-coin trailing stop triggers ──
+    # Lookup chain: trailing_stops.<coin> → trailing_stops.default → flat trailing_stop_trigger
+    _trailing_stops_map = cfg.get("trailing_stops", {})
+    _flat_trailing_trigger = cfg.get("trailing_stop_trigger", 0.003)
     trailing_lock = cfg.get("trailing_stop_lock", 0.50)
     remaining = []
 
@@ -1517,7 +1654,8 @@ def check_exits(client, positions, portfolio, cfg, prices, exit_indicators, dry,
             pos["peak_pnl_pct"] = pnl_pct
             peak = pnl_pct
 
-        # ── TRAILING STOP ──
+        # ── TRAILING STOP (H2: per-coin trigger) ──
+        trailing_trigger = _trailing_stops_map.get(coin, _trailing_stops_map.get("default", _flat_trailing_trigger))
         if peak >= trailing_trigger:
             floor_pct = peak * trailing_lock
             # Compute floor price for on-chain stop update
