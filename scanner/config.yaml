@@ -9,3 +9,19 @@ min_win_rate: 55
 stop_loss_pct: 0.05
 trailing_stop_trigger: 0.003
 trailing_stop_lock: 0.60
+
+# ── H2: Per-coin trailing stop triggers (ATR-calibrated) ──
+# Replaces flat trailing_stop_trigger for per-coin volatility profiles.
+# Fallback chain: trailing_stops.<COIN> → trailing_stops.default → trailing_stop_trigger
+trailing_stops:
+  BTC: 0.015    # 1.5%
+  ETH: 0.020    # 2.0%
+  SOL: 0.025    # 2.5%
+  ZEC: 0.030    # 3.0%
+  FARTCOIN: 0.060  # 6.0%
+  XPL: 0.030    # 3.0%
+  HYPE: 0.050   # 5.0%
+  PUMP: 0.040   # 4.0%
+  NEAR: 0.025   # 2.5%
+  PAXG: 0.010   # 1.0%
+  default: 0.025 # 2.5% fallback
