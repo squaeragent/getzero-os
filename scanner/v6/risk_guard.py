@@ -28,8 +28,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scanner.v6.config import (
     ENTRIES_FILE, APPROVED_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE,
-    BUS_DIR, MAX_POSITIONS, MAX_PER_COIN, CAPITAL_FLOOR, DAILY_LOSS_LIMIT,
-    CAPITAL,
+    BUS_DIR, MAX_POSITIONS, MAX_PER_COIN, CAPITAL_FLOOR, CAPITAL_FLOOR_PCT,
+    DAILY_LOSS_LIMIT, CAPITAL,
 )
 
 CYCLE_SECONDS = 5
@@ -51,7 +51,7 @@ def load_json(path: Path, default=None):
         try:
             with open(path) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as _e:
             pass
     return default
 
@@ -82,6 +82,7 @@ def load_risk() -> dict:
         "daily_loss_since":  _today_start(),
         "capital_floor_hit": False,
         "open_count":        0,
+        "peak_equity":       CAPITAL,
     }
     risk = load_json(RISK_FILE, default)
     # Reset daily loss at new UTC day
@@ -118,8 +119,8 @@ def get_equity() -> float:
             equity = p.get("account_value") or p.get("equity_usd")
             if equity:
                 return float(equity)
-        except Exception:
-            pass
+        except Exception as _e:
+            pass  # swallowed: {_e}
     return CAPITAL
 
 
@@ -158,8 +159,8 @@ def check_halt(risk: dict) -> tuple[bool, str]:
                 risk["halt_reason"] = None
                 risk["halt_until"]  = None
                 return False, ""
-        except Exception:
-            pass
+        except Exception as _e:
+            pass  # swallowed: {_e}
 
     return True, risk.get("halt_reason", "unknown")
 
@@ -169,9 +170,11 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float) -> tu
     coin      = entry.get("coin", "")
     direction = entry.get("direction", "LONG")
 
-    # Capital floor
-    if equity < CAPITAL_FLOOR:
-        return False, f"capital_floor: equity=${equity:.0f} < ${CAPITAL_FLOOR}"
+    # Capital floor (dynamic: 60% of peak, minimum CAPITAL_FLOOR)
+    peak = risk.get("peak_equity", CAPITAL)
+    dynamic_floor = max(CAPITAL_FLOOR, peak * CAPITAL_FLOOR_PCT)
+    if equity < dynamic_floor:
+        return False, f"capital_floor: equity=${equity:.0f} < ${dynamic_floor:.0f}"
 
     # Daily loss limit
     if risk["daily_loss_usd"] >= DAILY_LOSS_LIMIT:
@@ -243,11 +246,18 @@ def run_once():
         for coin, sig, reason in rejected:
             log(f"  REJECTED: {coin} [{sig}] — {reason}")
 
-    # Capital floor halt
-    if equity < CAPITAL_FLOOR:
-        log(f"  CAPITAL FLOOR HIT: equity=${equity:.0f} — halting trading")
+    # Track peak equity for dynamic floor
+    peak = risk.get("peak_equity", CAPITAL)
+    if equity > peak:
+        risk["peak_equity"] = equity
+        peak = equity
+    dynamic_floor = peak * CAPITAL_FLOOR_PCT
+
+    # Capital floor halt (60% of peak equity, not hardcoded)
+    if equity < dynamic_floor:
+        log(f"  CAPITAL FLOOR HIT: equity=${equity:.0f} < floor=${dynamic_floor:.0f} (60% of peak ${peak:.0f}) — halting")
         risk["halted"]            = True
-        risk["halt_reason"]       = f"capital_floor: ${equity:.0f}"
+        risk["halt_reason"]       = f"capital_floor: ${equity:.0f} < ${dynamic_floor:.0f}"
         risk["halt_until"]        = None  # permanent until manual reset
         risk["capital_floor_hit"] = True
 

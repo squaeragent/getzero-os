@@ -28,8 +28,9 @@ TRADES_FILE = DATA_DIR / "trades.jsonl"
 EQUITY_HISTORY_FILE = BUS_DIR / "equity_history.jsonl"
 
 # ─── ACCOUNT ──────────────────────────────────────────────────────────────────
-CAPITAL           = 750.0
-CAPITAL_FLOOR     = 500.0
+CAPITAL           = 750.0   # initial deposit — used only for reference
+CAPITAL_FLOOR_PCT = 0.60    # halt trading if equity drops below 60% of peak
+CAPITAL_FLOOR     = CAPITAL * CAPITAL_FLOOR_PCT  # $450 initially, but risk_guard uses dynamic peak
 DAILY_LOSS_LIMIT  = 50.0
 
 # ─── POSITION LIMITS ──────────────────────────────────────────────────────────
@@ -61,9 +62,6 @@ HL_EXCHANGE_URL  = "https://api.hyperliquid.xyz/exchange"
 TELEGRAM_CHAT_ID        = "133058580"
 TELEGRAM_BOT_TOKEN_ENV  = "TELEGRAM_BOT_TOKEN"
 
-# ─── SUPABASE ─────────────────────────────────────────────────────────────────
-SUPABASE_URL_ENV = "SUPABASE_URL"
-SUPABASE_KEY_ENV = "SUPABASE_SERVICE_KEY"
 
 # ─── COIN UNIVERSE ────────────────────────────────────────────────────────────
 ALL_COINS = [
@@ -112,4 +110,3 @@ if __name__ == "__main__":
     env = load_env()
     print(f"  ENVY_API_KEY:     {'SET' if env.get('ENVY_API_KEY') else 'MISSING'}")
     print(f"  HL_PRIVATE_KEY:   {'SET' if env.get('HL_PRIVATE_KEY') else 'MISSING'}")
-    print(f"  SUPABASE_URL:     {'SET' if env.get('SUPABASE_URL') else 'MISSING'}")

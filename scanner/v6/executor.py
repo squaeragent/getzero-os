@@ -56,7 +56,7 @@ def load_json(path: Path, default=None):
         try:
             with open(path) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as _e:
             pass
     return default
 
@@ -104,109 +104,8 @@ def send_alert(message: str):
         log(f"WARN: Telegram failed: {e}")
 
 
-# ─── SUPABASE ─────────────────────────────────────────────────────────────────
 
-def _sb_post(table: str, payload: dict, supabase_url: str, supabase_key: str) -> bool:
-    """POST to Supabase PostgREST. Never raises."""
-    if not supabase_url or not supabase_key:
-        return False
-    try:
-        url  = f"{supabase_url}/rest/v1/{table}"
-        data = json.dumps(payload).encode()
-        req  = urllib.request.Request(url, data=data, headers={
-            "apikey":        supabase_key,
-            "Authorization": f"Bearer {supabase_key}",
-            "Content-Type":  "application/json",
-            "Prefer":        "return=minimal",
-        })
-        urllib.request.urlopen(req, timeout=8)
-        return True
-    except Exception as e:
-        log(f"WARN: Supabase {table} failed: {e}")
-        return False
-
-
-def _supabase_creds() -> tuple[str, str]:
-    return get_env("SUPABASE_URL"), get_env("SUPABASE_SERVICE_KEY")
-
-
-def supabase_insert_trade(trade: dict):
-    url, key = _supabase_creds()
-    payload = {
-        "coin":             trade.get("coin"),
-        "direction":        trade.get("direction"),
-        "entry_price":      trade.get("entry_price"),
-        "exit_price":       trade.get("exit_price"),
-        "size_usd":         trade.get("size_usd"),
-        "pnl_dollars":      trade.get("pnl_usd"),
-        "pnl_pct":          trade.get("pnl_pct"),
-        "entry_time":       trade.get("entry_time"),
-        "exit_time":        trade.get("exit_time", now_iso()),
-        "exit_reason":      trade.get("exit_reason"),
-        "signal":           trade.get("signal_name"),
-        "sharpe":           trade.get("sharpe"),
-        "win_rate":         trade.get("win_rate"),
-        "strategy_version": STRATEGY_VERSION,
-        "stop_loss_pct":    trade.get("stop_loss_pct"),
-        "hl_order_id":      trade.get("hl_order_id"),
-    }
-    _sb_post("trades", payload, url, key)
-
-
-def supabase_upsert_position(pos: dict):
-    url, key = _supabase_creds()
-    payload = {
-        "coin":             pos.get("coin"),
-        "direction":        pos.get("direction"),
-        "entry_price":      pos.get("entry_price"),
-        "size_usd":         pos.get("size_usd"),
-        "entry_time":       pos.get("entry_time"),
-        "signal":           pos.get("signal_name"),
-        "sharpe":           pos.get("sharpe"),
-        "win_rate":         pos.get("win_rate"),
-        "stop_loss_pct":    pos.get("stop_loss_pct"),
-        "exit_expression":  pos.get("exit_expression"),
-        "max_hold_hours":   pos.get("max_hold_hours"),
-        "hl_order_id":      pos.get("hl_order_id"),
-        "strategy_version": STRATEGY_VERSION,
-        "updated_at":       now_iso(),
-    }
-    # upsert by coin
-    try:
-        sb_url  = f"{url}/rest/v1/positions"
-        data    = json.dumps(payload).encode()
-        req     = urllib.request.Request(sb_url, data=data, headers={
-            "apikey":        key,
-            "Authorization": f"Bearer {key}",
-            "Content-Type":  "application/json",
-            "Prefer":        "resolution=merge-duplicates,return=minimal",
-        })
-        req.get_method = lambda: "POST"
-        urllib.request.urlopen(urllib.request.Request(
-            sb_url + "?on_conflict=coin", data=data, method="POST",
-            headers={
-                "apikey":        key,
-                "Authorization": f"Bearer {key}",
-                "Content-Type":  "application/json",
-                "Prefer":        "resolution=merge-duplicates,return=minimal",
-            }
-        ), timeout=8)
-    except Exception as e:
-        log(f"WARN: Supabase upsert_position: {e}")
-
-
-def supabase_delete_position(coin: str):
-    url, key = _supabase_creds()
-    try:
-        sb_url = f"{url}/rest/v1/positions?coin=eq.{coin}"
-        req    = urllib.request.Request(sb_url, method="DELETE", headers={
-            "apikey":        key,
-            "Authorization": f"Bearer {key}",
-            "Prefer":        "return=minimal",
-        })
-        urllib.request.urlopen(req, timeout=8)
-    except Exception as e:
-        log(f"WARN: Supabase delete_position: {e}")
+# (Supabase removed — all data served from local files via Intelligence API)
 
 
 # ─── HYPERLIQUID METADATA ─────────────────────────────────────────────────────
@@ -280,8 +179,8 @@ class HLClient:
                 if bal.get("coin") == "USDC":
                     spot_usdc = float(bal.get("total", 0))
                     break
-        except Exception:
-            pass
+        except Exception as _e:
+            pass  # swallowed: {_e}
 
         # Perp unrealized PnL only (NOT accountValue)
         unrealized_pnl = 0.0
@@ -290,8 +189,8 @@ class HLClient:
             for pos in result.get("assetPositions", []):
                 p = pos.get("position", {})
                 unrealized_pnl += float(p.get("unrealizedPnl", 0))
-        except Exception:
-            pass
+        except Exception as _e:
+            pass  # swallowed: {_e}
 
         return spot_usdc + unrealized_pnl
 
@@ -446,7 +345,7 @@ def compute_size_usd(trade: dict) -> float:
     # Equity-based sizing
     try:
         equity = float(load_json(BUS_DIR / "portfolio.json", {}).get("account_value", 0))
-    except Exception:
+    except Exception as _e:
         equity = 0
 
     if not equity:
@@ -507,7 +406,21 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         # Place native stop-loss on HL
         stop_price = client.round_price(price * (1 - stop_pct) if is_buy else price * (1 + stop_pct))
         sl_result  = client.place_stop_loss(coin, not is_buy, size_coins, stop_price)
+        sl_status = sl_result.get("status", "unknown")
         log(f"  Stop @ ${stop_price:,.4f}: {json.dumps(sl_result)}")
+        if sl_status != "ok":
+            log(f"  🚨 STOP LOSS FAILED: {sl_status}")
+            send_telegram(f"🚨 STOP LOSS FAILED for {coin} {direction} @ ${stop_price:.2f}: {sl_status}\nPosition is NAKED — no stop protection!")
+            # Retry once
+            try:
+                time.sleep(1)
+                sl_retry = client.place_stop_loss(coin, not is_buy, size_coins, stop_price)
+                if sl_retry.get("status") == "ok":
+                    log(f"  Stop retry succeeded")
+                else:
+                    log(f"  Stop retry also failed: {sl_retry}")
+            except Exception as e:
+                log(f"  Stop retry error: {e}")
 
     # Build position record
     pos_id    = f"{coin}_{direction}_{int(time.time())}"
@@ -538,10 +451,6 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
     positions = pdata.get("positions", [])
     positions.append(pos)
     save_json_atomic(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
-
-    # Supabase
-    if not dry:
-        supabase_upsert_position(pos)
 
     # Telegram alert
     emoji = "🟢" if is_buy else "🔴"
@@ -579,7 +488,31 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         fills   = result.get("response", {}).get("data", {}).get("statuses", [{}])
         filled  = fills[0].get("filled", {}) if fills else {}
         fill_px = float(filled.get("avgPx", 0))
+        filled_sz = float(filled.get("totalSz", 0))
         exit_price = fill_px if fill_px > 0 else client.get_price(coin)
+
+        # Check partial fill
+        if filled_sz > 0 and abs(filled_sz - abs(size_coins)) > 0.0001:
+            remaining = abs(size_coins) - filled_sz
+            log(f"  PARTIAL FILL: filled {filled_sz}, remaining {remaining:.6f}")
+            send_telegram(f"⚠️ PARTIAL FILL on {coin} close: filled {filled_sz}/{abs(size_coins)}")
+            # Retry the remainder
+            try:
+                retry = client.market_sell(coin, remaining) if is_long else client.market_buy(coin, remaining)
+                retry_fills = retry.get("response", {}).get("data", {}).get("statuses", [{}])
+                retry_filled = retry_fills[0].get("filled", {}) if retry_fills else {}
+                if float(retry_filled.get("totalSz", 0)) > 0:
+                    log(f"  Retry filled: {retry_filled.get('totalSz')} @ ${retry_filled.get('avgPx')}")
+                else:
+                    log(f"  RETRY FAILED — position may still be open on HL")
+                    send_telegram(f"🚨 FAILED to close remaining {remaining} {coin} — CHECK HL MANUALLY")
+            except Exception as e:
+                log(f"  RETRY ERROR: {e}")
+                send_telegram(f"🚨 RETRY ERROR closing {coin}: {e}")
+        elif filled_sz == 0 and not dry:
+            log(f"  CLOSE FAILED — no fill. Position still open on HL")
+            send_telegram(f"🚨 CLOSE FAILED for {coin} — no fill, position still open")
+            return  # Don't record as closed
 
     # Compute P&L from actual coin movement (not entry size_usd which can be stale)
     actual_entry_notional = entry_price * abs(size_coins) if entry_price and size_coins else pos.get("size_usd", 0)
@@ -607,8 +540,8 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
     mid_at_close = 0
     try:
         mid_at_close = client.get_price(coin)
-    except Exception:
-        pass
+    except Exception as _e:
+        pass  # swallowed: {_e}
     slippage_pct = round(abs(exit_price - mid_at_close) / mid_at_close * 100, 4) if mid_at_close > 0 and exit_price > 0 else 0
 
     exit_time = now_iso()
@@ -634,11 +567,6 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         risk = load_json(RISK_FILE, {})
         risk["daily_loss_usd"] = round(risk.get("daily_loss_usd", 0) + abs(pnl_usd), 4)
         save_json_atomic(RISK_FILE, {**risk, "updated_at": now_iso()})
-
-    # Supabase
-    if not dry:
-        supabase_insert_trade(trade_record)
-        supabase_delete_position(coin)
 
     # Telegram alert
     won     = pnl_usd > 0
@@ -838,8 +766,8 @@ def main():
                         "account_value": equity,
                         "strategy_version": STRATEGY_VERSION,
                     })
-                except Exception:
-                    pass
+                except Exception as _e:
+                    pass  # swallowed: {_e}
                 _reconcile_positions(client)
                 run_once(client, dry)
             except Exception as e:

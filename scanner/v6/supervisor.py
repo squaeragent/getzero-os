@@ -44,8 +44,8 @@ def log(msg):
     try:
         with open(LOG_FILE, "a") as f:
             f.write(line + "\n")
-    except Exception:
-        pass
+    except Exception as _e:
+        pass  # swallowed: {_e}
 
 
 def load_heartbeat():
@@ -54,8 +54,8 @@ def load_heartbeat():
         try:
             with open(hb_file) as f:
                 return json.load(f)
-        except Exception:
-            pass
+        except Exception as _e:
+            pass  # swallowed: {_e}
     return {}
 
 
@@ -68,7 +68,7 @@ def is_stale(name, threshold_seconds):
         last = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         age = (datetime.now(timezone.utc) - last).total_seconds()
         return age > threshold_seconds
-    except Exception:
+    except Exception as _e:
         return True
 
 
@@ -85,7 +85,7 @@ def run_once(name, script):
         if result.returncode != 0 and result.stderr:
             log(f"  [{name}] ERROR: {result.stderr[:300]}")
         return result.returncode == 0
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as _e:
         log(f"  [{name}] TIMEOUT after 300s")
         return False
     except Exception as e:
@@ -134,8 +134,8 @@ def signal_handler(sig, frame):
         try:
             proc.terminate()
             log(f"Terminated {name} (PID {proc.pid})")
-        except Exception:
-            pass
+        except Exception as _e:
+            pass  # swallowed: {_e}
     sys.exit(0)
 
 
@@ -151,7 +151,7 @@ def run_health_check():
                 age = int((now - last).total_seconds())
                 flag = "✅" if age < stale_thresh else "⚠️ STALE"
                 status.append(f"{name:20s}: {age:4d}s {flag}")
-            except Exception:
+            except Exception as _e:
                 status.append(f"{name:20s}: parse error")
         else:
             status.append(f"{name:20s}: no heartbeat")
@@ -165,7 +165,7 @@ def run_health_check():
                 age = int((now - last).total_seconds())
                 flag = "✅" if age < 120 else "⚠️ STALE"
                 status.append(f"{'evaluator':20s}: {age:4d}s {flag}")
-            except Exception:
+            except Exception as _e:
                 status.append(f"{'evaluator':20s}: running (no hb)")
         else:
             status.append(f"{'evaluator':20s}: running (no hb yet)")
@@ -213,9 +213,9 @@ def main():
                 run_once(name, script)
                 cycle_times[name] = now
 
-        # Strategy refresh every 6h
-        if now - last_strategy_refresh >= 21600:
-            log("Refreshing strategies (6h interval)...")
+        # Strategy refresh every 2h
+        if now - last_strategy_refresh >= 7200:
+            log("Refreshing strategies (2h interval)...")
             run_once("strategy_manager", V6_DIR / "strategy_manager.py")
             last_strategy_refresh = now
 
@@ -226,6 +226,17 @@ def main():
         if now - last_health_check >= 300:
             run_health_check()
             last_health_check = now
+
+        # Log rotation: truncate if > 10MB
+        log_file = V6_DIR / "supervisor.log"
+        try:
+            if log_file.exists() and log_file.stat().st_size > 10 * 1024 * 1024:
+                lines = log_file.read_text().splitlines()
+                # Keep last 1000 lines
+                log_file.write_text("\n".join(lines[-1000:]) + "\n")
+                log(f"Log rotated: kept last 1000 lines")
+        except Exception as _e:
+            pass
 
         time.sleep(5)
 

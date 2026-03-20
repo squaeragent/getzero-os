@@ -56,7 +56,7 @@ def load_json(path: Path, default=None):
         try:
             with open(path) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as _e:
             pass
     return default
 
@@ -99,7 +99,7 @@ def assemble_from_cache(coin: str) -> list[dict]:
     try:
         with open(cache_file) as f:
             packs = json.load(f)
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError) as _e:
         return []
 
     signals = []

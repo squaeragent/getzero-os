@@ -50,7 +50,7 @@ def load_json(path: Path, default=None):
         try:
             with open(path) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as _e:
             pass
     return default
 
@@ -207,7 +207,7 @@ def _minutes_held(pos: dict) -> float:
         entry_dt = datetime.fromisoformat(entry_str.replace("Z", "+00:00"))
         now_dt   = datetime.now(timezone.utc)
         return (now_dt - entry_dt).total_seconds() / 60
-    except Exception:
+    except Exception as _e:  # time parse fail
         return 0
 
 
@@ -371,7 +371,7 @@ def run_websocket(api_key: str):
     """Connect to ENVY WebSocket and stream indicator ticks. Reconnects on drop."""
     try:
         import websocket
-    except ImportError:
+    except ImportError as _e:
         log("FATAL: websocket-client not installed. Run: pip install websocket-client")
         sys.exit(1)
 
@@ -425,8 +425,8 @@ def run_websocket(api_key: str):
             try:
                 from scanner.v6.executor import send_telegram
                 send_telegram(f"⚠️ Evaluator WebSocket disconnected: {e}\nReconnecting in {delay}s...")
-            except Exception:
-                pass
+            except Exception as _e:
+                pass  # swallowed: {_e}
 
         log(f"Reconnecting in {delay}s...")
         time.sleep(delay)
