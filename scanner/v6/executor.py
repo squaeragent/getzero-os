@@ -677,6 +677,89 @@ def run_once(client: HLClient, dry: bool):
     update_heartbeat()
 
 
+def _reconcile_positions(client: "HLClient"):
+    """Sync local positions.json with what HL actually has open.
+    
+    This prevents ghost positions (local thinks open, HL closed)
+    and orphan positions (HL has open, local doesn't know).
+    """
+    try:
+        hl_positions = client.get_positions()
+    except Exception as e:
+        log(f"WARN: reconciliation skipped — HL query failed: {e}")
+        return
+
+    # Build HL reality map: coin → {direction, size, entry_price}
+    hl_map = {}
+    for p in hl_positions:
+        pos = p.get("position", {})
+        sz = float(pos.get("szi", 0))
+        if sz == 0:
+            continue
+        coin = pos["coin"]
+        hl_map[coin] = {
+            "coin":        coin,
+            "direction":   "LONG" if sz > 0 else "SHORT",
+            "size_coins":  abs(sz),
+            "entry_price": float(pos.get("entryPx", 0)),
+            "unrealized_pnl": float(pos.get("unrealizedPnl", 0)),
+        }
+
+    # Load local positions
+    local_data = load_json(POSITIONS_FILE, {})
+    local_positions = local_data.get("positions", [])
+    local_map = {p["coin"]: p for p in local_positions}
+
+    changes = []
+
+    # Check for ghosts (local has it, HL doesn't)
+    for coin in list(local_map.keys()):
+        if coin not in hl_map:
+            changes.append(f"GHOST removed: {coin} {local_map[coin].get('direction')} (closed on HL)")
+
+    # Check for orphans (HL has it, local doesn't)
+    for coin, hl_pos in hl_map.items():
+        if coin not in local_map:
+            changes.append(f"ORPHAN adopted: {coin} {hl_pos['direction']} @ ${hl_pos['entry_price']:.2f}")
+
+    # Check for direction mismatches
+    for coin in set(local_map.keys()) & set(hl_map.keys()):
+        if local_map[coin].get("direction") != hl_map[coin]["direction"]:
+            changes.append(f"DIRECTION FIX: {coin} local={local_map[coin]['direction']} hl={hl_map[coin]['direction']}")
+
+    if changes:
+        log(f"  RECONCILIATION: {len(changes)} fixes")
+        for c in changes:
+            log(f"    {c}")
+
+    # Rebuild positions from HL truth
+    new_positions = []
+    for coin, hl_pos in hl_map.items():
+        # Preserve local metadata if it exists
+        local = local_map.get(coin, {})
+        new_positions.append({
+            "coin":          coin,
+            "direction":     hl_pos["direction"],
+            "entry_price":   hl_pos["entry_price"],
+            "size_coins":    hl_pos["size_coins"],
+            "size_usd":      hl_pos["entry_price"] * hl_pos["size_coins"],
+            "entry_time":    local.get("entry_time", now_iso()),
+            "signal_name":   local.get("signal_name", "reconciled_from_hl"),
+            "stop_loss_pct": local.get("stop_loss_pct", 0.05),
+            "strategy_version": local.get("strategy_version", STRATEGY_VERSION),
+            "sharpe":        local.get("sharpe"),
+            "win_rate":      local.get("win_rate"),
+        })
+
+    save_json_atomic(POSITIONS_FILE, {
+        "updated_at": now_iso(),
+        "positions": new_positions,
+    })
+
+    if not changes:
+        log(f"  Positions synced: {len(new_positions)} match HL")
+
+
 def main():
     dry  = "--dry" in sys.argv
     loop = "--loop" in sys.argv
@@ -712,12 +795,26 @@ def main():
     except Exception as e:
         log(f"WARN: Could not fetch balance: {e}")
 
+    # Reconcile positions with HL reality
+    _reconcile_positions(client)
+
     run_once(client, dry)
 
     if loop:
         while True:
             time.sleep(CYCLE_SECONDS)
             try:
+                # Update balance + reconcile every cycle
+                try:
+                    equity = client.get_balance()
+                    save_json_atomic(BUS_DIR / "portfolio.json", {
+                        "updated_at": now_iso(),
+                        "account_value": equity,
+                        "strategy_version": STRATEGY_VERSION,
+                    })
+                except Exception:
+                    pass
+                _reconcile_positions(client)
                 run_once(client, dry)
             except Exception as e:
                 log(f"ERROR in cycle: {e}")
