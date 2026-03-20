@@ -43,7 +43,7 @@ STOP_LOSS_PCT     = 0.05   # 5% hard stop (override ENVY's 30%)
 MIN_HOLD_MINUTES  = 15     # minimum hold before evaluating exits
 
 # ─── STRATEGY ─────────────────────────────────────────────────────────────────
-STRATEGY_REFRESH_HOURS = 6
+STRATEGY_REFRESH_HOURS = 2  # was 6h — too slow to catch new signals
 ACTIVE_COINS_COUNT     = 8   # top coins from portfolio/optimize (or scoring)
 STRATEGY_VERSION       = 6
 
