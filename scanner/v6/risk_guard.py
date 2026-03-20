@@ -26,6 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from scanner.v6.bus_io import load_json_locked
 from scanner.v6.config import (
     ENTRIES_FILE, APPROVED_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE,
     BUS_DIR, MAX_POSITIONS, MAX_PER_COIN, CAPITAL_FLOOR, CAPITAL_FLOOR_PCT,
@@ -132,7 +133,7 @@ def _record_equity(equity: float):
             "timestamp": now_iso(),
             "account_value": equity,
             "unrealized_pnl": 0.0,
-            "n_positions": len(load_json(POSITIONS_FILE, {}).get("positions", [])),
+            "n_positions": len(load_json_locked(POSITIONS_FILE, {}).get("positions", [])),
         }
         with open(EQUITY_HISTORY_FILE, "a") as f:
             f.write(json.dumps(snapshot) + "\n")
@@ -201,7 +202,7 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float) -> tu
 
 def run_once():
     risk      = load_risk()
-    positions = load_json(POSITIONS_FILE, {}).get("positions", [])
+    positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
     entries   = load_json(ENTRIES_FILE, {}).get("entries", [])
 
     risk["open_count"] = len(positions)
@@ -219,6 +220,31 @@ def run_once():
         save_json_atomic(APPROVED_FILE, {"updated_at": now_iso(), "approved": []})
         update_heartbeat()
         return
+
+    # Track peak equity and drawdown EVERY cycle (not just when entries exist)
+    peak = risk.get("peak_equity", CAPITAL)
+    if equity > peak:
+        risk["peak_equity"] = equity
+        peak = equity
+
+    # Continuous drawdown monitoring
+    if peak > 0:
+        drawdown_pct = (peak - equity) / peak * 100
+        risk["drawdown_pct"] = round(drawdown_pct, 2)
+        last_alert_dd = risk.get("last_drawdown_alert_pct", 0)
+
+        for threshold in [5, 10, 15, 20]:
+            if drawdown_pct >= threshold and last_alert_dd < threshold:
+                log(f"  ⚠️ DRAWDOWN ALERT: {drawdown_pct:.1f}% from peak ${peak:.0f}")
+                try:
+                    from scanner.v6.executor import send_alert
+                    send_alert(f"⚠️ DRAWDOWN {drawdown_pct:.1f}%\nPeak: ${peak:.0f} → Current: ${equity:.0f}\nThreshold: {threshold}%")
+                except Exception as _e:
+                    pass
+                risk["last_drawdown_alert_pct"] = threshold
+
+        if drawdown_pct < last_alert_dd - 2:
+            risk["last_drawdown_alert_pct"] = max(0, int(drawdown_pct / 5) * 5)
 
     if not entries:
         save_risk(risk)
@@ -246,14 +272,8 @@ def run_once():
         for coin, sig, reason in rejected:
             log(f"  REJECTED: {coin} [{sig}] — {reason}")
 
-    # Track peak equity for dynamic floor
-    peak = risk.get("peak_equity", CAPITAL)
-    if equity > peak:
-        risk["peak_equity"] = equity
-        peak = equity
-    dynamic_floor = peak * CAPITAL_FLOOR_PCT
-
     # Capital floor halt (60% of peak equity, not hardcoded)
+    dynamic_floor = peak * CAPITAL_FLOOR_PCT
     if equity < dynamic_floor:
         log(f"  CAPITAL FLOOR HIT: equity=${equity:.0f} < floor=${dynamic_floor:.0f} (60% of peak ${peak:.0f}) — halting")
         risk["halted"]            = True

@@ -20,6 +20,7 @@ Usage:
 
 import json
 import math
+import os
 import re
 import sys
 import time
@@ -62,11 +63,50 @@ def load_json(path: Path, default=None):
 
 
 def save_json_atomic(path: Path, data: dict):
+    import fcntl
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
     with open(tmp, "w") as f:
         json.dump(data, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
     tmp.replace(path)
+
+
+def load_json_locked(path: Path, default=None):
+    """Read JSON with shared lock to prevent partial reads during writes."""
+    import fcntl
+    if default is None:
+        default = {}
+    if not path.exists():
+        return default
+    try:
+        with open(path) as f:
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+            try:
+                return json.load(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+    except (json.JSONDecodeError, OSError) as _e:
+        return default
+
+
+def save_json_locked(path: Path, data: dict):
+    """Write JSON with exclusive lock + fsync."""
+    import fcntl
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lf:
+        fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
+        try:
+            tmp = path.with_suffix(".tmp")
+            with open(tmp, "w") as f:
+                json.dump(data, f, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            tmp.replace(path)
+        finally:
+            fcntl.flock(lf.fileno(), fcntl.LOCK_UN)
 
 
 def append_jsonl(path: Path, record: dict):
@@ -170,29 +210,32 @@ class HLClient:
         HL cross-margin: spot USDC 'hold' IS the perp collateral.
         So real equity = spot total (includes held) + perp uPnL only.
         DO NOT add perp accountValue — that double-counts the held USDC.
+        
+        RAISES on API failure. Zero is never a valid equity.
         """
         # Spot USDC total (includes the portion held as perp collateral)
+        spot = self._info_post({"type": "spotClearinghouseState", "user": self.main_address})
         spot_usdc = 0.0
-        try:
-            spot = self._info_post({"type": "spotClearinghouseState", "user": self.main_address})
-            for bal in spot.get("balances", []):
-                if bal.get("coin") == "USDC":
-                    spot_usdc = float(bal.get("total", 0))
-                    break
-        except Exception as _e:
-            pass  # swallowed: {_e}
+        for bal in spot.get("balances", []):
+            if bal.get("coin") == "USDC":
+                spot_usdc = float(bal.get("total", 0))
+                break
+
+        if spot_usdc <= 0:
+            raise ValueError(f"get_balance: spot USDC is {spot_usdc} — API likely failed or account empty")
 
         # Perp unrealized PnL only (NOT accountValue)
         unrealized_pnl = 0.0
-        try:
-            result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
-            for pos in result.get("assetPositions", []):
-                p = pos.get("position", {})
-                unrealized_pnl += float(p.get("unrealizedPnl", 0))
-        except Exception as _e:
-            pass  # swallowed: {_e}
+        result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
+        for pos in result.get("assetPositions", []):
+            p = pos.get("position", {})
+            unrealized_pnl += float(p.get("unrealizedPnl", 0))
 
-        return spot_usdc + unrealized_pnl
+        equity = spot_usdc + unrealized_pnl
+        if equity <= 0:
+            raise ValueError(f"get_balance: equity is {equity} (spot={spot_usdc}, uPnL={unrealized_pnl}) — refusing to return")
+
+        return equity
 
     def get_positions(self) -> list:
         result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
@@ -202,8 +245,12 @@ class HLClient:
         return self._info_post({"type": "openOrders", "user": self.main_address})
 
     def get_price(self, coin: str) -> float:
+        """Get mid price. RAISES if price is zero or missing."""
         mids = self._info_post({"type": "allMids"})
-        return float(mids.get(coin, 0))
+        price = float(mids.get(coin, 0))
+        if price <= 0:
+            raise ValueError(f"get_price({coin}): returned {price} — API degraded or coin delisted")
+        return price
 
     @staticmethod
     def round_price(price: float) -> float:
@@ -300,14 +347,14 @@ class HLClient:
         return self._sign_and_send(action)
 
     def cancel_coin_stops(self, coin: str):
-        """Cancel all stop orders for a coin."""
+        """Cancel all orders (stops/triggers) for a coin."""
         asset = COIN_TO_ASSET.get(coin)
         if asset is None:
             return
         orders     = self.get_open_orders()
         stop_oids  = [
             o["oid"] for o in orders
-            if o.get("coin") == coin and o.get("orderType", "").startswith("Stop")
+            if o.get("coin") == coin
         ]
         if not stop_oids:
             return
@@ -396,29 +443,56 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
             log(f"  ERROR: order failed: {result.get('response')}")
             return False
 
-        # Extract fill price from response
+        # Extract fill data from response
         fills = result.get("response", {}).get("data", {}).get("statuses", [{}])
         filled = fills[0].get("filled", {}) if fills else {}
-        fill_px = float(filled.get("avgPx", price))
+        fill_px = float(filled.get("avgPx", 0))
+        filled_sz = float(filled.get("totalSz", 0))
         hl_oid  = filled.get("oid", "")
-        price   = fill_px if fill_px > 0 else price
+
+        # GATE: reject if no fill
+        if fill_px <= 0 or filled_sz <= 0:
+            log(f"  🚨 NO FILL on entry for {coin}: fill_px={fill_px}, filled_sz={filled_sz}")
+            send_alert(f"🚨 Entry order for {coin} {direction} got NO FILL. Order may be orphaned on HL.")
+            return False
+
+        # Check partial fill
+        if abs(filled_sz - size_coins) > 0.0001:
+            log(f"  ⚠️ PARTIAL FILL on entry: requested={size_coins}, filled={filled_sz}")
+            send_alert(f"⚠️ PARTIAL FILL: {coin} {direction} requested={size_coins}, filled={filled_sz}")
+            size_coins = filled_sz  # use actual filled size for all downstream calculations
+
+        price = fill_px
+        size_usd = price * filled_sz  # recalculate from actual fill, not requested
 
         # Place native stop-loss on HL
         stop_price = client.round_price(price * (1 - stop_pct) if is_buy else price * (1 + stop_pct))
         sl_result  = client.place_stop_loss(coin, not is_buy, size_coins, stop_price)
         sl_status = sl_result.get("status", "unknown")
-        log(f"  Stop @ ${stop_price:,.4f}: {json.dumps(sl_result)}")
-        if sl_status != "ok":
-            log(f"  🚨 STOP LOSS FAILED: {sl_status}")
-            send_telegram(f"🚨 STOP LOSS FAILED for {coin} {direction} @ ${stop_price:.2f}: {sl_status}\nPosition is NAKED — no stop protection!")
+        # Extract stop order ID
+        sl_fills = sl_result.get("response", {}).get("data", {}).get("statuses", [{}])
+        sl_oid = ""
+        if sl_fills:
+            resting = sl_fills[0].get("resting", {})
+            sl_oid = str(resting.get("oid", ""))
+        log(f"  Stop @ ${stop_price:,.4f} (oid={sl_oid}): {json.dumps(sl_result)}")
+        if sl_status != "ok" or not sl_oid:
+            log(f"  🚨 STOP LOSS FAILED: status={sl_status}, oid={sl_oid}")
+            send_alert(f"🚨 STOP LOSS FAILED for {coin} {direction} @ ${stop_price:.2f}\nPosition is NAKED — no stop protection!")
             # Retry once
             try:
                 time.sleep(1)
                 sl_retry = client.place_stop_loss(coin, not is_buy, size_coins, stop_price)
-                if sl_retry.get("status") == "ok":
-                    log(f"  Stop retry succeeded")
+                sl_retry_status = sl_retry.get("status", "unknown")
+                sl_retry_fills = sl_retry.get("response", {}).get("data", {}).get("statuses", [{}])
+                if sl_retry_fills:
+                    resting = sl_retry_fills[0].get("resting", {})
+                    sl_oid = str(resting.get("oid", ""))
+                if sl_retry_status == "ok" and sl_oid:
+                    log(f"  Stop retry succeeded: oid={sl_oid}")
                 else:
                     log(f"  Stop retry also failed: {sl_retry}")
+                    send_alert(f"🚨🚨 STOP RETRY FAILED for {coin}. NAKED POSITION. CLOSE MANUALLY.")
             except Exception as e:
                 log(f"  Stop retry error: {e}")
 
@@ -443,14 +517,15 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         "win_rate":        trade.get("win_rate", 0),
         "composite_score": trade.get("composite_score", 0),
         "hl_order_id":     hl_oid if not dry else "dry",
+        "sl_order_id":     sl_oid if not dry else "",
         "dry":             dry,
     }
 
     # Save to positions.json
-    pdata = load_json(POSITIONS_FILE, {})
+    pdata = load_json_locked(POSITIONS_FILE, {})
     positions = pdata.get("positions", [])
     positions.append(pos)
-    save_json_atomic(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
+    save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
 
     # Telegram alert
     emoji = "🟢" if is_buy else "🔴"
@@ -489,13 +564,17 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         filled  = fills[0].get("filled", {}) if fills else {}
         fill_px = float(filled.get("avgPx", 0))
         filled_sz = float(filled.get("totalSz", 0))
-        exit_price = fill_px if fill_px > 0 else client.get_price(coin)
+        if fill_px <= 0:
+            log(f"  🚨 NO FILL PRICE from HL for {coin} close — cannot record trade")
+            send_alert(f"🚨 NO FILL PRICE for {coin} close. Position may still be open. CHECK HL.")
+            return  # refuse to record a trade without real fill data
+        exit_price = fill_px
 
         # Check partial fill
         if filled_sz > 0 and abs(filled_sz - abs(size_coins)) > 0.0001:
             remaining = abs(size_coins) - filled_sz
             log(f"  PARTIAL FILL: filled {filled_sz}, remaining {remaining:.6f}")
-            send_telegram(f"⚠️ PARTIAL FILL on {coin} close: filled {filled_sz}/{abs(size_coins)}")
+            send_alert(f"⚠️ PARTIAL FILL on {coin} close: filled {filled_sz}/{abs(size_coins)}")
             # Retry the remainder
             try:
                 retry = client.market_sell(coin, remaining) if is_long else client.market_buy(coin, remaining)
@@ -505,13 +584,13 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
                     log(f"  Retry filled: {retry_filled.get('totalSz')} @ ${retry_filled.get('avgPx')}")
                 else:
                     log(f"  RETRY FAILED — position may still be open on HL")
-                    send_telegram(f"🚨 FAILED to close remaining {remaining} {coin} — CHECK HL MANUALLY")
+                    send_alert(f"🚨 FAILED to close remaining {remaining} {coin} — CHECK HL MANUALLY")
             except Exception as e:
                 log(f"  RETRY ERROR: {e}")
-                send_telegram(f"🚨 RETRY ERROR closing {coin}: {e}")
+                send_alert(f"🚨 RETRY ERROR closing {coin}: {e}")
         elif filled_sz == 0 and not dry:
             log(f"  CLOSE FAILED — no fill. Position still open on HL")
-            send_telegram(f"🚨 CLOSE FAILED for {coin} — no fill, position still open")
+            send_alert(f"🚨 CLOSE FAILED for {coin} — no fill, position still open")
             return  # Don't record as closed
 
     # Compute P&L from actual coin movement (not entry size_usd which can be stale)
@@ -586,7 +665,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
 # ─── MAIN CYCLE ───────────────────────────────────────────────────────────────
 
 def run_once(client: HLClient, dry: bool):
-    positions = load_json(POSITIONS_FILE, {}).get("positions", [])
+    positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
     approved  = load_json(APPROVED_FILE, {}).get("approved", [])
     exits     = load_json(EXITS_FILE,    {}).get("exits",    [])
 
@@ -610,7 +689,7 @@ def run_once(client: HLClient, dry: bool):
     if closed_ids:
         remaining = [p for p in positions if p.get("id") not in closed_ids and p.get("coin") not in closed_ids]
         positions = remaining
-        save_json_atomic(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
+        save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
 
     # ── Process approved entries ───────────────────────────────────────────────
     if approved:
@@ -660,7 +739,7 @@ def _reconcile_positions(client: "HLClient"):
         }
 
     # Load local positions
-    local_data = load_json(POSITIONS_FILE, {})
+    local_data = load_json_locked(POSITIONS_FILE, {})
     local_positions = local_data.get("positions", [])
     local_map = {p["coin"]: p for p in local_positions}
 
@@ -705,13 +784,48 @@ def _reconcile_positions(client: "HLClient"):
             "win_rate":      local.get("win_rate"),
         })
 
-    save_json_atomic(POSITIONS_FILE, {
+    save_json_locked(POSITIONS_FILE, {
         "updated_at": now_iso(),
         "positions": new_positions,
     })
 
     if not changes:
         log(f"  Positions synced: {len(new_positions)} match HL")
+
+    # STOP ORDER VERIFICATION: check every open position has a stop on HL
+    if new_positions:
+        try:
+            open_orders = client.get_open_orders()
+            coins_with_stops = set()
+            for order in open_orders:
+                # HL returns orderType as None for trigger/stop orders
+                # Any order for a coin with an open position is considered a stop
+                coins_with_stops.add(order.get("coin"))
+
+            for pos in new_positions:
+                coin = pos["coin"]
+                if coin not in coins_with_stops:
+                    direction = pos["direction"]
+                    entry = pos.get("entry_price", 0)
+                    stop_pct = pos.get("stop_loss_pct", STOP_LOSS_PCT)
+                    is_long = direction == "LONG"
+                    log(f"  🚨 NAKED POSITION: {coin} {direction} — no stop order on HL!")
+                    send_alert(f"🚨 NAKED POSITION: {coin} {direction} @ ${entry:.2f}\nNo stop loss on HL! Placing emergency stop.")
+                    # Place emergency stop
+                    try:
+                        stop_price = client.round_price(entry * (1 - stop_pct) if is_long else entry * (1 + stop_pct))
+                        size = pos.get("size_coins", 0)
+                        if size > 0:
+                            sl = client.place_stop_loss(coin, not is_long, size, stop_price)
+                            log(f"  Emergency stop placed: {json.dumps(sl)}")
+                        else:
+                            log(f"  Cannot place emergency stop — size=0")
+                            send_alert(f"🚨 Cannot place stop for {coin} — size unknown. CLOSE MANUALLY.")
+                    except Exception as e:
+                        log(f"  Emergency stop FAILED: {e}")
+                        send_alert(f"🚨🚨 EMERGENCY STOP FAILED for {coin}: {e}\nCLOSE MANUALLY NOW.")
+        except Exception as e:
+            log(f"  WARN: stop verification failed: {e}")
 
 
 def main():
@@ -766,8 +880,10 @@ def main():
                         "account_value": equity,
                         "strategy_version": STRATEGY_VERSION,
                     })
-                except Exception as _e:
-                    pass  # swallowed: {_e}
+                except Exception as e:
+                    log(f"🚨 Balance fetch FAILED: {e} — skipping this cycle")
+                    send_alert(f"🚨 HL API DOWN: get_balance failed: {e}\nSkipping trade cycle.")
+                    continue  # skip this cycle entirely — no trading with unknown equity
                 _reconcile_positions(client)
                 run_once(client, dry)
             except Exception as e:

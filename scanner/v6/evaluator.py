@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from scanner.v6.bus_io import load_json_locked
 from scanner.v6.config import (
     ENVY_WS_URL, STRATEGIES_FILE, POSITIONS_FILE, ENTRIES_FILE, EXITS_FILE,
     HEARTBEAT_FILE, BUS_DIR, STOP_LOSS_PCT, MIN_HOLD_MINUTES, get_env,
@@ -222,7 +223,7 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
     strategies = load_json(STRATEGIES_FILE, {})
     active_coins = strategies.get("active_coins", [])
     coins_data   = strategies.get("coins", {})
-    positions    = load_json(POSITIONS_FILE, {}).get("positions", [])
+    positions    = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
     open_coins   = {p["coin"] for p in positions}
 
     for coin in active_coins:
@@ -380,6 +381,37 @@ def run_websocket(api_key: str):
     msg_count = 0
 
     log("=== V6 Evaluator starting WebSocket stream ===")
+
+    # CRASH RECOVERY: check if we have positions that may have missed exits
+    try:
+        positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
+        if positions:
+            log(f"  RECOVERY CHECK: {len(positions)} open positions at startup")
+            for pos in positions:
+                entry_str = pos.get("entry_time", "")
+                max_hold = pos.get("max_hold_hours", 24)
+                if entry_str:
+                    try:
+                        entry_dt = datetime.fromisoformat(entry_str.replace("Z", "+00:00"))
+                        age_hours = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 3600
+                        if age_hours > max_hold:
+                            coin = pos.get("coin", "?")
+                            log(f"  ⚠️ OVERDUE POSITION: {coin} {pos.get('direction')} age={age_hours:.1f}h > max_hold={max_hold}h")
+                            # Write exit signal immediately
+                            exit_entry = {
+                                "coin": coin,
+                                "direction": pos.get("direction"),
+                                "reason": f"crash_recovery_overdue_{age_hours:.0f}h",
+                                "timestamp": now_iso(),
+                            }
+                            existing = load_json(EXITS_FILE, {}).get("exits", [])
+                            existing.append(exit_entry)
+                            save_json_atomic(EXITS_FILE, {"updated_at": now_iso(), "exits": existing})
+                            log(f"  EXIT SIGNAL written for overdue {coin}")
+                    except Exception as _e:
+                        pass
+    except Exception as e:
+        log(f"  Recovery check failed: {e}")
 
     while True:
         try:
