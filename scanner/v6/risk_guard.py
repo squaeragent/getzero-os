@@ -203,6 +203,11 @@ def run_once():
 
     risk["open_count"] = len(positions)
 
+    equity = get_equity()
+
+    # Always record equity, regardless of halt/entries state
+    _record_equity(equity)
+
     # Check global halt
     halted, halt_reason = check_halt(risk)
     if halted:
@@ -216,8 +221,6 @@ def run_once():
         save_risk(risk)
         update_heartbeat()
         return
-
-    equity   = get_equity()
     approved = []
     rejected = []
 
@@ -261,10 +264,6 @@ def run_once():
     save_json_atomic(ENTRIES_FILE, {"updated_at": now_iso(), "entries": []})
     save_json_atomic(APPROVED_FILE, {"updated_at": now_iso(), "approved": approved})
     save_risk(risk)
-
-    # Record equity snapshot for chart
-    _record_equity(equity)
-
     update_heartbeat()
 
 

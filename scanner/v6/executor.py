@@ -266,26 +266,34 @@ class HLClient:
         return json.loads(urllib.request.urlopen(req, timeout=10).read())
 
     def get_balance(self) -> float:
-        """Total equity = spot USDC + perp accountValue."""
-        # Perp margin
-        result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
-        margin = result.get("marginSummary", {})
-        perp_value = float(margin.get("accountValue", 0))
-
-        # Spot USDC balance
+        """Total equity = spot USDC total + perp unrealized PnL.
+        
+        HL cross-margin: spot USDC 'hold' IS the perp collateral.
+        So real equity = spot total (includes held) + perp uPnL only.
+        DO NOT add perp accountValue — that double-counts the held USDC.
+        """
+        # Spot USDC total (includes the portion held as perp collateral)
         spot_usdc = 0.0
         try:
             spot = self._info_post({"type": "spotClearinghouseState", "user": self.main_address})
             for bal in spot.get("balances", []):
-                token = bal.get("coin", "")
-                if token == "USDC":
-                    total = float(bal.get("total", 0))
-                    spot_usdc = total
+                if bal.get("coin") == "USDC":
+                    spot_usdc = float(bal.get("total", 0))
                     break
         except Exception:
             pass
 
-        return spot_usdc + perp_value
+        # Perp unrealized PnL only (NOT accountValue)
+        unrealized_pnl = 0.0
+        try:
+            result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
+            for pos in result.get("assetPositions", []):
+                p = pos.get("position", {})
+                unrealized_pnl += float(p.get("unrealizedPnl", 0))
+        except Exception:
+            pass
+
+        return spot_usdc + unrealized_pnl
 
     def get_positions(self) -> list:
         result = self._info_post({"type": "clearinghouseState", "user": self.main_address})

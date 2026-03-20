@@ -1,94 +1,67 @@
-[02:53:41] SUPERVISOR: ============================================================
-[02:53:41] SUPERVISOR: V6 Supervisor starting
-[02:53:41] SUPERVISOR: Python: /opt/homebrew/opt/python@3.14/bin/python3.14
-[02:53:41] SUPERVISOR: ============================================================
-[02:53:41] SUPERVISOR: Initial strategy refresh...
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY] === V6 Strategy Manager starting ===
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY] === Strategy refresh cycle ===
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY] Assembling strategies for 40 coins...
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY] WARN: /paid/strategy/assemble HTTP 405: Method Not Allowed
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY]   /paid/strategy/assemble requires payment — using signals cache
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY]   10/40 coins processed...
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY]   20/40 coins processed...
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY]   30/40 coins processed...
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY]   40/40 coins processed...
-  [strategy_manager] [2026-03-20 02:53:41 UTC] [STRATEGY]   Assembled 40 coins with valid signals
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY] WARN: /paid/portfolio/optimize HTTP 400: Bad Request
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]   /paid/portfolio/optimize requires payment — using sharpe-weighted allocation
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]   Active coins (8): ['PUMP', 'ADA', 'FARTCOIN', 'SUI', 'ETH', 'ZEC', 'LTC', 'kBONK']
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     PUMP: weight=16.50%  best_sharpe=4.37  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     ADA: weight=13.50%  best_sharpe=3.58  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     FARTCOIN: weight=13.19%  best_sharpe=3.49  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     SUI: weight=12.44%  best_sharpe=3.30  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     ETH: weight=11.36%  best_sharpe=3.01  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     ZEC: weight=11.29%  best_sharpe=2.99  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     LTC: weight=10.96%  best_sharpe=2.90  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]     kBONK: weight=10.76%  best_sharpe=2.85  signals=5
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]   Saved /Users/forge/getzero-os/scanner/v6/bus/strategies.json
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY]   Saved /Users/forge/getzero-os/scanner/v6/bus/allocation.json
-  [strategy_manager] [2026-03-20 02:53:42 UTC] [STRATEGY] === Done in 0.3s — next refresh in 6h ===
-[02:53:42] SUPERVISOR: Starting evaluator (WebSocket loop)...
-[02:53:42] SUPERVISOR: evaluator PID: 80046
-[02:53:45] SUPERVISOR: All components started. Entering main loop.
-  [risk_guard] [2026-03-20 02:53:45 UTC] [RISK] === V6 Risk Guard starting ===
-  [risk_guard] [2026-03-20 02:53:45 UTC] [RISK]   APPROVED: ZEC LONG [CMO_EXTREME_REVERT_LONG_FR5_EX5_FR0]
-  [risk_guard] [2026-03-20 02:53:45 UTC] [RISK]   REJECTED: ZEC [BB_LOWER_SNAP_LONG_FR10] — max_per_coin: already have 1 position(s) on ZEC
-  [executor] [2026-03-20 02:53:45 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:53:45 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:53:45 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:53:45 UTC] [EXEC] Account equity: $935.61
-  [executor] [2026-03-20 02:53:46 UTC] [EXEC]   Opening LONG ZEC: 0.45 coins ($106) @ $235.0800
-  [executor] [2026-03-20 02:53:47 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.45", "avgPx": "235.09", "oid": 355080441841}}]}}}
-  [executor] [2026-03-20 02:53:48 UTC] [EXEC]   Stop @ $223.3400: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 355080449209}}]}}}
-  [executor] [2026-03-20 02:53:49 UTC] [EXEC] WARN: Supabase upsert_position: HTTP Error 400: Bad Request
-  [executor] [2026-03-20 02:53:50 UTC] [EXEC]   Opened LONG ZEC @ $235.0900 (stop=5%)
-  [risk_guard] [2026-03-20 02:53:55 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:53:55 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:53:55 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:53:55 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:53:56 UTC] [EXEC] Account equity: $945.60
-  [risk_guard] [2026-03-20 02:54:01 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:01 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:01 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:01 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:02 UTC] [EXEC] Account equity: $945.59
-  [risk_guard] [2026-03-20 02:54:07 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:07 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:07 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:07 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:08 UTC] [EXEC] Account equity: $945.67
-  [risk_guard] [2026-03-20 02:54:13 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:13 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:13 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:13 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:14 UTC] [EXEC] Account equity: $945.60
-  [risk_guard] [2026-03-20 02:54:19 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:19 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:19 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:19 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:20 UTC] [EXEC] Account equity: $945.60
-  [risk_guard] [2026-03-20 02:54:25 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:25 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:25 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:25 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:26 UTC] [EXEC] Account equity: $945.49
-  [risk_guard] [2026-03-20 02:54:31 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:31 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:31 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:31 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:32 UTC] [EXEC] Account equity: $945.46
-  [risk_guard] [2026-03-20 02:54:37 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:37 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:37 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:37 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:37 UTC] [EXEC] Account equity: $945.46
-  [risk_guard] [2026-03-20 02:54:43 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:43 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:43 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:43 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:43 UTC] [EXEC] Account equity: $945.26
-  [risk_guard] [2026-03-20 02:54:49 UTC] [RISK] === V6 Risk Guard starting ===
-  [executor] [2026-03-20 02:54:49 UTC] [EXEC] === V6 Executor ===
-  [executor] [2026-03-20 02:54:49 UTC] [EXEC] Loaded 229 coins from HL meta
-  [executor] [2026-03-20 02:54:49 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
-  [executor] [2026-03-20 02:54:49 UTC] [EXEC] Account equity: $945.24
+[02:59:38] SUPERVISOR: ============================================================
+[02:59:38] SUPERVISOR: V6 Supervisor starting
+[02:59:38] SUPERVISOR: Python: /opt/homebrew/opt/python@3.14/bin/python3.14
+[02:59:38] SUPERVISOR: ============================================================
+[02:59:38] SUPERVISOR: Initial strategy refresh...
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY] === V6 Strategy Manager starting ===
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY] === Strategy refresh cycle ===
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY] Assembling strategies for 40 coins...
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY] WARN: /paid/strategy/assemble HTTP 405: Method Not Allowed
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   /paid/strategy/assemble requires payment — using signals cache
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   10/40 coins processed...
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   20/40 coins processed...
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   30/40 coins processed...
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   40/40 coins processed...
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   Assembled 40 coins with valid signals
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY] WARN: /paid/portfolio/optimize HTTP 400: Bad Request
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   /paid/portfolio/optimize requires payment — using sharpe-weighted allocation
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   Active coins (8): ['PUMP', 'ADA', 'FARTCOIN', 'SUI', 'ETH', 'ZEC', 'LTC', 'kBONK']
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     PUMP: weight=16.50%  best_sharpe=4.37  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     ADA: weight=13.50%  best_sharpe=3.58  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     FARTCOIN: weight=13.19%  best_sharpe=3.49  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     SUI: weight=12.44%  best_sharpe=3.30  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     ETH: weight=11.36%  best_sharpe=3.01  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     ZEC: weight=11.29%  best_sharpe=2.99  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     LTC: weight=10.96%  best_sharpe=2.90  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]     kBONK: weight=10.76%  best_sharpe=2.85  signals=5
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   Saved /Users/forge/getzero-os/scanner/v6/bus/strategies.json
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY]   Saved /Users/forge/getzero-os/scanner/v6/bus/allocation.json
+  [strategy_manager] [2026-03-20 02:59:38 UTC] [STRATEGY] === Done in 0.3s — next refresh in 6h ===
+[02:59:38] SUPERVISOR: Starting evaluator (WebSocket loop)...
+[02:59:38] SUPERVISOR: evaluator PID: 80334
+[02:59:41] SUPERVISOR: All components started. Entering main loop.
+  [risk_guard] [2026-03-20 02:59:41 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 02:59:41 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 02:59:42 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 02:59:42 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 02:59:42 UTC] [EXEC] Account equity: $749.30
+  [risk_guard] [2026-03-20 02:59:47 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 02:59:47 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 02:59:47 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 02:59:48 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 02:59:48 UTC] [EXEC] Account equity: $749.33
+  [risk_guard] [2026-03-20 02:59:53 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 02:59:53 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 02:59:53 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 02:59:53 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 02:59:54 UTC] [EXEC] Account equity: $749.42
+  [risk_guard] [2026-03-20 02:59:59 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 02:59:59 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 02:59:59 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 02:59:59 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 03:00:00 UTC] [EXEC] Account equity: $749.51
+  [risk_guard] [2026-03-20 03:00:05 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 03:00:05 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 03:00:05 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 03:00:05 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 03:00:06 UTC] [EXEC] Account equity: $749.56
+  [risk_guard] [2026-03-20 03:00:11 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 03:00:11 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 03:00:11 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 03:00:11 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 03:00:12 UTC] [EXEC] Account equity: $749.56
+  [risk_guard] [2026-03-20 03:00:17 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-20 03:00:17 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-20 03:00:17 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-20 03:00:18 UTC] [EXEC] Wallet: 0xC7b52216e7BC13de0cd010aa12CAcb6D774453a2 (main: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884)
+  [executor] [2026-03-20 03:00:18 UTC] [EXEC] Account equity: $749.90
