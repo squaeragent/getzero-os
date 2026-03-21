@@ -718,7 +718,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         slippage = get_slippage(coin)
 
         # GTC vs IOC: use GTC at mid-spread for non-urgent signals (age > 10min)
-        signal_time = entry.get("signal_time") or entry.get("fired_at", "")
+        signal_time = trade.get("signal_time") or trade.get("fired_at", "")
         signal_age_min = 0
         if signal_time:
             try:
