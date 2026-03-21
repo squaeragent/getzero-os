@@ -930,11 +930,13 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         fee_rate = fee_rates["taker"]  # all our orders are taker (IOC)
     except Exception:
         fee_rate = FEE_RATE
-    entry_fee = round(actual_entry_notional * fee_rate, 4)
+    # Only deduct EXIT fee — entry fee was already paid at open and is not
+    # part of closedPnl.  Previous code subtracted entry_fee + exit_fee,
+    # double-counting the entry cost and understating every reported P&L.
     exit_fee = round(actual_exit_notional * fee_rate, 4)
-    total_fees = round(entry_fee + exit_fee, 4)
+    total_fees = exit_fee  # exit-only
 
-    # P&L from actual price difference × actual coins (net of fees)
+    # P&L from actual price difference × actual coins (net of exit fee)
     if entry_price and exit_price and entry_price > 0 and size_coins:
         price_diff = exit_price - entry_price
         pnl_usd_gross = round(price_diff * abs(size_coins), 4) if is_long else round(-price_diff * abs(size_coins), 4)
