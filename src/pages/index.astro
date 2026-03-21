@@ -1,24 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="ZERO OS — ZERO OS — Operating System for Trading Agents" description="Self-improving trading agent for Hyperliquid. Every trade on-chain verifiable. Watch it think in real-time.">
+<BaseLayout title="ZERO OS — Operating System for Trading Agents" description="The operating system for trading agents on Hyperliquid. Your keys, your wallet, infrastructure that audits itself.">
   <div class="page">
 
-    <!-- PHASE 0: Terminal Header (instant) -->
-    <div id="phase0" class="phase0">
-      <span class="p0-logo">⟨◇⟩ ZERO OS</span>
-      <span class="p0-url">getzero.dev</span>
-    </div>
-
-    <!-- PHASE 1: ASCII Logo + Tagline -->
+    <!-- PHASE 1: Tagline (no ASCII art — clean on all screens) -->
     <div id="phase1" class="phase hidden">
-      <pre class="ascii-logo">████████╗███████╗██████╗  ██████╗ 
-╚══███╔═╝██╔════╝██╔══██╗██╔═══██╗
-  ███╔╝  █████╗  ██████╔╝██║   ██║
- ███╔╝   ██╔══╝  ██╔══██╗██║   ██║
-████████╗███████╗██║  ██║╚██████╔╝
-╚═══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝</pre>
+      <div class="hero-mark">⟨◇⟩</div>
+      <div class="hero-title">ZERO OS</div>
       <div class="tagline">The operating system for trading agents.</div>
+      <div class="tagline-sub">Live on Hyperliquid · running since March 2026</div>
     </div>
 
     <!-- PHASE 2: Component Check -->
@@ -46,13 +37,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div id="phase4" class="phase hidden">
       <div class="hook">
         <div class="hook-line1">Most trading bots are closed boxes that repeat the same mistakes.</div>
-        <div class="hook-line2">ZERO OS found 70 flaws in its own design and fixed 40 in one session.</div>
-        <div class="hook-line3">Your agents run on infrastructure that audits itself.</div>
+        <div class="hook-line2">ZERO OS runs a weekly self-audit. In its first audit, it found 70 design flaws — fixed 40, deprioritized 30.</div>
+        <div class="hook-line3">Your agents run on infrastructure that improves itself.</div>
       </div>
       <div class="ctas">
-        <a href="/portfolio" class="cta">→ Watch it trade live</a>
-        <a href="/thesis" class="cta">→ Read how it thinks</a>
-        <a href="https://app.getzero.dev/waitlist" class="cta cta-primary">→ Join the waitlist</a>
+        <a href="https://app.getzero.dev/waitlist" class="cta-waitlist">→ Join the waitlist</a>
+        <div class="ctas-secondary">
+          <a href="/portfolio" class="cta">Watch it trade live</a>
+          <a href="/thesis" class="cta">Read how it thinks</a>
+        </div>
       </div>
     </div>
 
@@ -83,8 +76,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
 
-    <!-- Nav (appears after boot) -->
-    <nav id="main-nav" class="main-nav hidden">
+    <!-- Nav (visible from start) -->
+    <nav class="main-nav">
       <a href="/" class="nav-item">⟨◇⟩ ZERO OS</a>
       <a href="/thesis" class="nav-item">THESIS</a>
       <a href="/portfolio" class="nav-item">PORTFOLIO</a>
@@ -98,23 +91,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .page {
     max-width: 720px;
     margin: 0 auto;
-    padding: 1rem 1.5rem;
+    padding: 2.5rem 1.5rem 1rem;
     min-height: 100vh;
   }
-
-  /* Phase 0 */
-  .phase0 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid rgba(200,255,0,0.15);
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-  }
-  .p0-logo { color: var(--phosphor); }
-  .p0-url { color: var(--text-dim); font-size: 0.6rem; }
 
   /* Boot animation */
   .hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
@@ -123,19 +102,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .boot-line { opacity: 0; transition: opacity 0.3s ease; }
   .boot-line.visible { opacity: 1; }
 
-  /* Phase 1 */
-  .ascii-logo {
+  /* Phase 1 — Hero */
+  .hero-mark {
     font-family: var(--font-head);
-    font-size: clamp(0.32rem, 1.4vw, 0.55rem);
-    line-height: 1.15;
-    color: rgba(200,255,0,0.6);
-    margin: 2rem 0 0.8rem;
-    overflow-x: auto;
+    font-size: 1.5rem;
+    color: var(--phosphor);
+    margin-top: 3rem;
+    margin-bottom: 0.3rem;
+  }
+  .hero-title {
+    font-family: var(--font-head);
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--phosphor);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.6rem;
   }
   .tagline {
     font-family: var(--font-body);
     font-size: 1rem;
     color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .tagline-sub {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
     margin-bottom: 2rem;
   }
 
@@ -220,30 +213,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 500;
   }
   .ctas {
+    margin-bottom: 3rem;
+    margin-top: 1.5rem;
+  }
+  .cta-waitlist {
+    display: inline-block;
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    color: var(--bg);
+    background: var(--phosphor);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    padding: 0.7rem 1.5rem;
+    transition: opacity 0.2s;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+  }
+  .cta-waitlist:hover { opacity: 0.85; }
+  .ctas-secondary {
     display: flex;
     gap: 2rem;
-    flex-wrap: wrap;
-    margin-bottom: 3rem;
-    margin-top: 1rem;
   }
   .cta {
     font-family: var(--font-head);
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: var(--text-dim);
     text-decoration: none;
     letter-spacing: 0.03em;
     transition: color 0.2s;
   }
   .cta:hover { color: var(--phosphor); }
-  .cta-primary { color: var(--phosphor); }
 
   /* Phase 5 */
   .panels {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
   }
   @media (max-width: 700px) {
-    .panels { flex-direction: column; }
+    .panels { flex-direction: column; gap: 0.8rem; }
   }
   .panel {
     flex: 1;
@@ -327,9 +334,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: 0.1em;
     text-transform: uppercase;
     z-index: 100;
-    transition: opacity 0.5s ease;
   }
-  .main-nav.visible { opacity: 1; pointer-events: auto; }
   .nav-item { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
   .nav-item:first-child { color: var(--phosphor); margin-right: auto; }
   .nav-item:hover { color: var(--phosphor); }
@@ -346,7 +351,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   var evalInterval = null;
 
   // Boot sequence timing
-  var TIMING = { p1: 500, p2: 1000, p3: 1500, p4: 2000, p5: 2500, nav: 3000 };
+  var TIMING = { p1: 400, p2: 800, p3: 1200, p4: 1600, p5: 2000 };
 
   function reveal(id) {
     var el = document.getElementById(id);
@@ -370,7 +375,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         setTimeout(function(){ line.classList.add('visible'); }, idx * 150);
       })(lines[i], i);
     }
-    // Status line after all boot lines
     setTimeout(function(){
       var bs = document.getElementById('boot-status');
       if (bs) bs.classList.add('visible');
@@ -385,9 +389,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Phase 5
   setTimeout(function(){ reveal('phase5'); }, TIMING.p5);
-
-  // Nav
-  setTimeout(function(){ reveal('main-nav'); }, TIMING.nav);
 
   // --- API calls (fire in parallel) ---
   function safeJson(url) {
@@ -485,8 +486,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         reason = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
       }
       if (d.type === 'ENTERED') {
-        // Show just the dollar amount, not the signal name
-        reason = reason.replace(/@.*$/, '').trim();
+        reason = ''; // Don't reveal position size
       }
 
       html += '<div class="ds-mini">';
@@ -532,7 +532,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       html += '<div class="sig-cell">';
       html += '<span class="sig-name">' + c.coin + '</span>';
       html += svg;
-      html += '<span class="sig-val">' + (c.current_sharpe != null ? c.current_sharpe.toFixed(1) : '—') + '</span>';
+      /* Sharpe values hidden — show sparkline trend only */
       html += '</div>';
     }
     html += '</div>';
