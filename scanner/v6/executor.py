@@ -689,6 +689,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
 
         # 2. L2 book depth check — fail-safe: if depth unknown, SKIP (don't trade blind)
         book = client.get_l2_book(coin, depth=5)
+        log(f"  L2 book {coin}: bids={len(book.get('bids',[]))}, asks={len(book.get('asks',[]))}, bid_depth=${book.get('bid_depth_usd',0):.0f}, ask_depth=${book.get('ask_depth_usd',0):.0f}")
         relevant_depth = book["ask_depth_usd"] if is_buy else book["bid_depth_usd"]
         if relevant_depth <= 0:
             api_err = book.get("api_error")
@@ -994,6 +995,10 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         "slippage_pct":   slippage_pct,
         "actual_notional": round(actual_exit_notional, 2),
         "won":            pnl_usd > 0,
+        # Explicitly carry entry-signal metadata so Sharpe/WR are never null
+        # in trades.jsonl (pos may be from reconcile path and lack these fields)
+        "sharpe":         pos.get("sharpe") if pos.get("sharpe") is not None else 0,
+        "win_rate":       pos.get("win_rate") if pos.get("win_rate") is not None else 0,
     }
 
     # Append to trades.jsonl

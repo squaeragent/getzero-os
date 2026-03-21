@@ -33,7 +33,7 @@ LOG_FILE = V6_DIR / "supervisor.log"
 
 # Component definitions: (name, script, cycle_seconds, stale_threshold_seconds)
 COMPONENTS = [
-    ("strategy_manager", V6_DIR / "strategy_manager.py", 21600, 900),   # 6h cycle, stale if >15min
+    ("strategy_manager", V6_DIR / "strategy_manager.py", 21600, 23400),  # 6h cycle, stale if >6.5h
     ("risk_guard",       V6_DIR / "risk_guard.py",           5,    60),  # 5s cycle, stale if >60s
     ("executor",         V6_DIR / "executor.py",              5,    60),  # 5s cycle, stale if >60s
     # evaluator runs as a background loop (WebSocket — managed separately)
@@ -91,6 +91,26 @@ def is_stale(name, threshold_seconds):
         return True
 
 
+def write_heartbeat(name: str):
+    """Write a heartbeat entry for a component. Used when supervisor manages the cycle."""
+    hb_file = BUS_DIR / "heartbeat.json"
+    try:
+        hb = {}
+        if hb_file.exists():
+            try:
+                with open(hb_file) as f:
+                    hb = json.load(f)
+            except Exception:
+                pass
+        hb[name] = datetime.now(timezone.utc).isoformat()
+        tmp = hb_file.with_suffix(".tmp")
+        with open(tmp, "w") as f:
+            json.dump(hb, f, indent=2)
+        tmp.replace(hb_file)
+    except Exception as e:
+        log(f"WARN: failed to write heartbeat for {name}: {e}")
+
+
 def run_once(name, script):
     """Run a component once (for strategy_manager and cycle-based agents)."""
     try:
@@ -103,7 +123,13 @@ def run_once(name, script):
                 print(f"  [{name}] {line}", flush=True)
         if result.returncode != 0 and result.stderr:
             log(f"  [{name}] ERROR: {result.stderr[:300]}")
-        return result.returncode == 0
+        success = result.returncode == 0
+        # strategy_manager writes its own heartbeat internally, but also write
+        # a supervisor-side heartbeat so health checks reflect the last run time
+        # (the internal heartbeat may be stale between 6h refresh cycles)
+        if name == "strategy_manager":
+            write_heartbeat("strategy_manager")
+        return success
     except subprocess.TimeoutExpired as _e:
         log(f"  [{name}] TIMEOUT after 300s")
         return False

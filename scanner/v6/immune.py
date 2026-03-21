@@ -110,6 +110,7 @@ def check_position_age(state: dict) -> list[str]:
                 if age_hours >= threshold and last_threshold < threshold:
                     direction = pos.get("direction", "?")
                     entry_price = pos.get("entry_price", 0)
+                    log(f"[MTTR] check_position_age detected_at={now_iso()} type=position_age_exceeded coin={coin} threshold_h={threshold}")
                     alerts.append(
                         f"⏰ POSITION AGE: {coin} {direction} @ ${entry_price:.2f}\n"
                         f"Open for {age_hours:.1f}h (>{threshold}h threshold)\n"
@@ -143,6 +144,7 @@ def check_ws_freshness(state: dict) -> list[str]:
             age_seconds = (datetime.now(timezone.utc) - last_tick).total_seconds()
 
             if age_seconds > 120:  # 2 minutes without a tick
+                log(f"[MTTR] check_ws_freshness detected_at={now_iso()} type=ws_stale age_sec={age_seconds:.0f}")
                 alerts.append(
                     f"📡 WS DATA STALE: evaluator last tick {age_seconds:.0f}s ago\n"
                     f"Expected every 15s. Possible disconnect."
@@ -190,11 +192,59 @@ def check_error_rate(state: dict) -> list[str]:
             variance = sum((c - mean) ** 2 for c in counts) / (len(counts) - 1)
             std = math.sqrt(variance) if variance > 0 else 0
             if std > 0 and errors_this_cycle > mean + 2 * std and errors_this_cycle > 5:
+                log(f"[MTTR] check_error_rate detected_at={now_iso()} type=error_spike count={errors_this_cycle} mean={mean:.1f} std={std:.1f}")
                 alerts.append(
                     f"📊 ERROR SPIKE: {errors_this_cycle} errors this cycle\n"
                     f"Mean: {mean:.1f}, σ: {std:.1f}, threshold: {mean + 2*std:.0f}"
                 )
                 state["last_error_spike_alert"] = time.time()
+
+    return alerts
+
+
+# ─── CHECK: EQUITY SNAPSHOT STALENESS ───────────────────────────────────────
+
+def check_equity_staleness(state: dict) -> list[str]:
+    """Alert if portfolio.json equity snapshot is >30 minutes old.
+    
+    A stale snapshot means the executor has stopped running — agent downtime.
+    This catches the 'silent gap' scenario (e.g. 13-hour equity curve gap).
+    """
+    alerts = []
+    portfolio = load_json(BUS_DIR / "portfolio.json", {})
+    updated_at = portfolio.get("updated_at", "")
+
+    if not updated_at:
+        # No snapshot at all — could be first boot, warn after state marks it seen
+        if state.get("equity_snapshot_missing_warned"):
+            log("[MTTR] check_equity_staleness detected_at=" + now_iso() + " type=no_snapshot")
+            alerts.append(
+                "⚠️ EQUITY SNAPSHOT MISSING\n"
+                "bus/portfolio.json has no updated_at timestamp.\n"
+                "Executor may not be running."
+            )
+        state["equity_snapshot_missing_warned"] = True
+        return alerts
+
+    state["equity_snapshot_missing_warned"] = False
+
+    try:
+        last_dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+        age_minutes = (datetime.now(timezone.utc) - last_dt).total_seconds() / 60
+
+        if age_minutes > 30:
+            log(f"[MTTR] check_equity_staleness detected_at={now_iso()} type=stale_snapshot age_min={age_minutes:.0f}")
+            alerts.append(
+                f"⏱️ EQUITY SNAPSHOT STALE: {age_minutes:.0f} minutes old\n"
+                f"Last update: {updated_at}\n"
+                f"Agent may be down. Expected update every 5s from executor."
+            )
+        elif age_minutes > 5:
+            # Log warning without sending alert (executor might be cycling slowly)
+            log(f"WARN: equity snapshot is {age_minutes:.1f} min old (portfolio.json)")
+
+    except (ValueError, TypeError) as e:
+        log(f"check_equity_staleness: could not parse updated_at '{updated_at}': {e}")
 
     return alerts
 
@@ -231,6 +281,7 @@ def check_equity_anomaly(state: dict) -> list[str]:
         std = math.sqrt(variance) if variance > 0 else 0
         if std > 0 and abs(equity - mean) > 2 * std:
             direction = "above" if equity > mean else "below"
+            log(f"[MTTR] check_equity_anomaly detected_at={now_iso()} type=equity_anomaly equity={equity:.2f} mean={mean:.2f} sigma={abs(equity-mean)/std:.1f}")
             alerts.append(
                 f"📈 EQUITY ANOMALY: ${equity:.2f} is {abs(equity-mean)/std:.1f}σ {direction} mean\n"
                 f"Mean: ${mean:.2f}, σ: ${std:.2f}"
@@ -253,6 +304,7 @@ def check_signal_drift(state: dict) -> list[str]:
             if data["count"] < 5:  # need enough data
                 continue
             if data["wr_drift"] is not None and abs(data["wr_drift"]) > 20:
+                log(f"[MTTR] check_signal_drift detected_at={now_iso()} type=signal_drift signal={sig[:40]} drift={data['wr_drift']:+.0f}pp")
                 alerts.append(
                     f"📉 SIGNAL DRIFT: {sig[:40]}\n"
                     f"Our WR: {data['our_wr']}% vs ENVY: {data['envy_wr']}% "
@@ -356,6 +408,7 @@ def track_sharpe_gap(state: dict) -> list[str]:
         
         # Alert if gap is dangerously large (>50% of backtested)
         if gap_pct > 50 and total_trades >= 10:
+            log(f"[MTTR] track_sharpe_gap detected_at={now_iso()} type=sharpe_gap_alert gap_pct={gap_pct:.1f} trades={total_trades}")
             alerts.append(
                 f"🚨 SHARPE GAP ALERT\n"
                 f"Backtested: {w_bt_sharpe:.2f} → Realized: {w_re_sharpe:.2f}\n"
@@ -519,6 +572,7 @@ def check_position_desync(state: dict) -> list[str]:
             f"AUTO-RECONCILING from HL..."
         )
         alerts.append(alert_msg)
+        log(f"[MTTR] check_position_desync detected_at={now_iso()} type=critical_desync local=0 hl={len(hl_positions)}")
         log(f"CRITICAL DESYNC: 0 local, {len(hl_positions)} on HL — auto-reconciling")
 
         # Auto-reconcile: rebuild positions from HL
@@ -569,12 +623,14 @@ def check_position_desync(state: dict) -> list[str]:
     ghosts = local_coins - hl_coins
 
     if orphans:
+        log(f"[MTTR] check_position_desync detected_at={now_iso()} type=orphan_positions coins={','.join(orphans)}")
         alerts.append(
             f"⚠️ POSITION MISMATCH\n"
             f"HL has positions not tracked locally: {', '.join(orphans)}\n"
             f"Next executor reconciliation will adopt them."
         )
     if ghosts:
+        log(f"[MTTR] check_position_desync detected_at={now_iso()} type=ghost_positions coins={','.join(ghosts)}")
         alerts.append(
             f"⚠️ GHOST POSITIONS\n"
             f"Local tracks positions not on HL: {', '.join(ghosts)}\n"
@@ -592,6 +648,9 @@ def run_once(state: dict) -> dict:
 
     # Position desync with HL (CRITICAL — check every cycle)
     all_alerts.extend(check_position_desync(state))
+
+    # Equity snapshot staleness (catches agent downtime / 13h gap scenarios)
+    all_alerts.extend(check_equity_staleness(state))
 
     # Position age
     all_alerts.extend(check_position_age(state))
@@ -649,6 +708,9 @@ def run_once(state: dict) -> dict:
             log("Running weekly self-audit")
             try:
                 from scanner.v6.self_audit import audit
+                from scanner.v6.analytics import per_signal_stats, load_all_trades
+                from scanner.v6.bus_io import save_json_atomic
+
                 findings = audit()
                 n_red = sum(1 for f in findings if "🔴" in f)
                 n_yellow = sum(1 for f in findings if "🟡" in f)
@@ -657,6 +719,80 @@ def run_once(state: dict) -> dict:
                 body = "\n".join(findings)
                 send_telegram(header + body)
                 state["last_self_audit"] = current_date
+
+                # ── CLOSED-LOOP RECOMMENDATIONS ──────────────────────────
+                # Generate blacklist recommendations for coins with 0% WR
+                # over 5+ trades. Write to bus/recommendations.json.
+                # DO NOT auto-implement — human must review before action.
+                try:
+                    all_trades = load_all_trades()
+                    stats = per_signal_stats(all_trades)
+
+                    # Aggregate per-coin stats
+                    coin_stats: dict = {}
+                    for trade in all_trades:
+                        coin = trade.get("coin", "")
+                        if not coin:
+                            continue
+                        if coin not in coin_stats:
+                            coin_stats[coin] = {"n": 0, "wins": 0, "total_pnl": 0.0}
+                        coin_stats[coin]["n"] += 1
+                        pnl = trade.get("pnl_usd") or trade.get("pnl_dollars") or 0
+                        coin_stats[coin]["total_pnl"] += pnl
+                        if pnl > 0:
+                            coin_stats[coin]["wins"] += 1
+
+                    recommendations = []
+                    for coin, cs in coin_stats.items():
+                        n = cs["n"]
+                        wins = cs["wins"]
+                        total_pnl = cs["total_pnl"]
+                        if n >= 5 and wins == 0:
+                            rec = {
+                                "type":      "blacklist",
+                                "coin":      coin,
+                                "reason":    f"0% WR over {n} trades",
+                                "n_trades":  n,
+                                "total_pnl": round(total_pnl, 2),
+                                "message":   f"RECOMMEND: blacklist {coin} (0% WR, {n} trades, ${total_pnl:.2f} total)",
+                                "generated_at": now_iso(),
+                                "status":    "pending_review",
+                            }
+                            log(rec["message"])
+                            recommendations.append(rec)
+
+                    if recommendations:
+                        # Load existing recs to merge (don't clobber prior pending items)
+                        recs_file = BUS_DIR / "recommendations.json"
+                        existing = []
+                        if recs_file.exists():
+                            try:
+                                existing = json.load(open(recs_file)).get("recommendations", [])
+                            except Exception:
+                                pass
+                        # Deduplicate by (type, coin) — keep most recent
+                        existing_keys = {(r.get("type"), r.get("coin")) for r in existing}
+                        new_recs = [r for r in recommendations if (r["type"], r["coin"]) not in existing_keys]
+                        all_recs = existing + new_recs
+                        save_json_atomic(recs_file, {
+                            "updated_at": now_iso(),
+                            "recommendations": all_recs,
+                        })
+                        log(f"Wrote {len(new_recs)} new recommendation(s) to bus/recommendations.json")
+
+                        # Include in Telegram audit message
+                        rec_lines = "\n".join(r["message"] for r in recommendations)
+                        send_telegram(
+                            f"💡 <b>RECOMMENDATIONS</b> — {current_date}\n"
+                            f"(Pending human review — NOT auto-applied)\n\n"
+                            f"{rec_lines}"
+                        )
+                    else:
+                        log("No new blacklist recommendations generated")
+
+                except Exception as e:
+                    log(f"Recommendations generation failed: {e}")
+
             except Exception as e:
                 log(f"Self-audit failed: {e}")
 
