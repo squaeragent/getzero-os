@@ -157,6 +157,8 @@ def check_error_rate(state: dict) -> list[str]:
     error_counts = state.get("error_counts", [])
 
     # Count errors in last 60 seconds of log
+    # Exclude benign patterns: API rate limits (HTTP 429) are handled gracefully
+    BENIGN_PATTERNS = {"Rate limit exceeded", "HTTP 429", "retryAfterSeconds"}
     errors_this_cycle = 0
     if SUPERVISOR_LOG.exists():
         try:
@@ -164,7 +166,8 @@ def check_error_rate(state: dict) -> list[str]:
             now = time.time()
             for line in lines[-200:]:  # check last 200 lines
                 if "ERROR" in line or "Traceback" in line or "FATAL" in line:
-                    errors_this_cycle += 1
+                    if not any(bp in line for bp in BENIGN_PATTERNS):
+                        errors_this_cycle += 1
         except Exception:
             pass
 
@@ -174,8 +177,10 @@ def check_error_rate(state: dict) -> list[str]:
         error_counts = error_counts[-60:]
     state["error_counts"] = error_counts
 
-    # Alert if error rate spikes (>2σ from mean)
-    if len(error_counts) >= 10:
+    # Alert if error rate spikes (>2σ from mean), with 30-min cooldown
+    last_error_alert = state.get("last_error_spike_alert", 0)
+    cooldown_ok = time.time() - last_error_alert > 1800  # 30 minutes
+    if len(error_counts) >= 10 and cooldown_ok:
         counts = [e["count"] for e in error_counts]
         mean = sum(counts) / len(counts)
         if len(counts) >= 2:
@@ -186,6 +191,7 @@ def check_error_rate(state: dict) -> list[str]:
                     f"📊 ERROR SPIKE: {errors_this_cycle} errors this cycle\n"
                     f"Mean: {mean:.1f}, σ: {std:.1f}, threshold: {mean + 2*std:.0f}"
                 )
+                state["last_error_spike_alert"] = time.time()
 
     return alerts
 
