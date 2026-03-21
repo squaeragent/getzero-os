@@ -990,7 +990,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   function fmtPct(v){
     if(v==null) return '—';
-    return (v>=0?'+':'')+v.toFixed(2)+'%';
+    var p = v * 100;
+    return (p>=0?'+':'')+p.toFixed(2)+'%';
   }
   function pnlClass(v){ return v>=0?'c-pos':'c-neg'; }
 
