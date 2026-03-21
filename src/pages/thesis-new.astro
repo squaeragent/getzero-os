@@ -12,74 +12,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div class="thesis-content">
 
-      <h1 class="thesis-title">HOW ZERO OS WORKS</h1>
+      <h1 class="thesis-title">HOW ZERO OS THINKS</h1>
 
-      <p class="section-head">The OS provides:</p>
+      <p>Most trading systems optimize for one thing: returns.</p>
 
-      <ul class="exec-list">
-        <li>Signal engine (85 indicators, 370+ expressions, 365-day backtests)</li>
-        <li>Execution engine (Hyperliquid, all order types, GTC/IOC)</li>
-        <li>Risk framework (9 pre-trade gates, per-coin stops, leverage limits)</li>
-        <li>Immune system (6 monitors, weekly self-audit, desync detection)</li>
-        <li>Position management (reconciliation, safe writes, stop verification)</li>
-      </ul>
+      <p>ZERO OS optimizes for something harder: not being wrong.</p>
 
-      <p class="section-head">Agents configure:</p>
+      <p>The system evaluates hundreds of signals every cycle. Most get rejected. The few that survive pass through multiple independent risk checks — each designed to catch a different type of mistake.</p>
 
-      <ul class="exec-list">
-        <li>Which coins to trade (universe selection)</li>
-        <li>How many positions (max concurrent)</li>
-        <li>How much risk (leverage, stop percentages)</li>
-        <li>Entry/exit rules (min hold, max hold, signal reversal behavior)</li>
-        <li>Sizing (half-Kelly, fixed, percentage of equity)</li>
-      </ul>
+      <p>The immune system monitors every position, every stop, every state sync — and runs a full self-audit weekly. In its first audit, it found 70 design flaws and fixed 40.</p>
 
-      <p>The OS runs. The agent decides. The immune system watches both.</p>
+      <p>The execution layer uses the full depth of Hyperliquid's order types to minimize costs and maximize fill quality.</p>
 
-      <p>Every 2 hours, the strategy engine assembles the best signal combination per coin using tournament optimization. Coins with assembled Sharpe below 1.5 are excluded. Coins with negative portfolio-context Sharpe are blacklisted.</p>
-
-      <p class="section-head">Every 15 seconds, the evaluator checks each signal against 9 pre-trade gates:</p>
-
-      <ol class="gates">
-        <li>Signal direction and quality</li>
-        <li>Assembled Sharpe ≥ 1.5</li>
-        <li>Position limit (max 3 concurrent)</li>
-        <li>Funding rate &lt; 2% annualized</li>
-        <li>L2 book depth sufficient</li>
-        <li>Expected alpha > total cost</li>
-        <li>Not blacklisted</li>
-        <li>No duplicate position</li>
-        <li>Half-Kelly position sizing within limits</li>
-      </ol>
-
-      <p>If ALL 9 pass → trade executes on Hyperliquid.<br>
-      If ANY fails → signal is rejected with reason logged.</p>
-
-      <p class="section-head">After execution:</p>
-      <ul class="exec-list">
-        <li>Per-coin stop loss (volatility-adjusted, 2% limit offset)</li>
-        <li>Trailing stop (ATR-based per coin)</li>
-        <li>Signal reversal exit (immediate on direction flip)</li>
-        <li>Minimum hold: 2 hours (stops fire immediately)</li>
-        <li>Maximum hold: 24 hours</li>
-      </ul>
-
-      <p class="section-head">The immune system runs 6 monitors every 60 seconds:</p>
-      <ul class="exec-list">
-        <li>Stop verification (every position must have a stop on HL)</li>
-        <li>Position sync (local state matches HL on-chain state)</li>
-        <li>Equity anomaly detection (2σ from 7-day mean)</li>
-        <li>Error rate tracking (2σ spike from rolling window)</li>
-        <li>Signal drift (realized WR vs backtested WR)</li>
-        <li>Sharpe gap (backtested vs realized, daily)</li>
-      </ul>
-
-      <p>Weekly, the system runs a full self-audit and posts findings publicly. In its first audit, it found 70 design flaws and fixed 40 in a single session.</p>
+      <p>Every trade is on-chain. Every loss is visible. The system trades with real money.</p>
 
       <div class="thesis-footer-block">
-        <p>The execution layer will be open source.</p>
-        <p>Every trade is on-chain verifiable.</p>
-        <p>The system trades with real money.</p>
+        <p>The OS runs. The agent decides. The immune system watches both.</p>
       </div>
 
       <div class="wallet-block">
