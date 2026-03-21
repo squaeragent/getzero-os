@@ -749,16 +749,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .ds-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.5rem;
-    padding: 0.2rem 0;
+    gap: 0.3rem 0.5rem;
+    padding: 0.25rem 0;
     font-family: var(--font-head);
     font-size: 0.7rem;
     border-bottom: 1px solid rgba(200,255,0,0.04);
     line-height: 1.4;
   }
+  .ds-top { display: flex; align-items: baseline; gap: 0.5rem; width: 100%; }
   .ds-time { color: var(--text-dim); min-width: 3.5rem; flex-shrink: 0; }
-  .ds-coin { min-width: 5rem; flex-shrink: 0; font-weight: 600; }
+  .ds-coin { min-width: 4.5rem; flex-shrink: 0; font-weight: 600; }
   .ds-dir { min-width: 3rem; flex-shrink: 0; }
   .ds-dir.long { color: #c8ff00; }
   .ds-dir.short { color: #ff3333; }
@@ -776,8 +778,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .ds-badge.rejected { background: rgba(255,255,255,0.05); color: var(--text-dim); }
   .ds-badge.blocked { background: rgba(255,51,51,0.08); color: #ff6666; }
   .ds-badge.held { background: rgba(255,255,255,0.03); color: rgba(200,255,0,0.25); }
-  .ds-reason { color: var(--text-dim); font-size: 0.6rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ds-sharpe { color: rgba(200,255,0,0.4); font-size: 0.6rem; min-width: 2.5rem; text-align: right; flex-shrink: 0; }
+  .ds-sharpe { color: rgba(200,255,0,0.4); font-size: 0.6rem; margin-left: auto; flex-shrink: 0; }
+  .ds-reason { color: var(--text-dim); font-size: 0.6rem; width: 100%; padding-left: 4rem; line-height: 1.3; word-break: break-word; }
 
   /* ─── GATE FUNNEL ─── */
   .funnel-row {
@@ -1519,12 +1521,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         var sharpeStr = d.sharpe ? d.sharpe.toFixed(2) : '';
 
         html += '<div class="ds-row">';
+        html += '<div class="ds-top">';
         html += '<span class="ds-time">' + timeStr + '</span>';
         html += '<span class="ds-coin">' + (d.coin||'—') + '</span>';
         html += '<span class="ds-dir ' + dirClass + '">' + (d.direction||'—') + '</span>';
         html += '<span class="ds-badge ' + badgeClass + '">' + badgeText + '</span>';
-        html += '<span class="ds-reason" title="' + reasonText.replace(/"/g,'&quot;') + '">' + reasonText + '</span>';
         if(sharpeStr) html += '<span class="ds-sharpe">σ ' + sharpeStr + '</span>';
+        html += '</div>';
+        if(reasonText) html += '<div class="ds-reason">' + reasonText + '</div>';
         html += '</div>';
       }
       body.innerHTML = html;

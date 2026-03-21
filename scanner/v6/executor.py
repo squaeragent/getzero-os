@@ -518,7 +518,7 @@ class HLClient:
             return {"bids": bids, "asks": asks, "bid_depth_usd": bid_depth, "ask_depth_usd": ask_depth}
         except Exception as e:
             log(f"WARN: l2Book failed for {coin}: {e}")
-            return {"bids": [], "asks": [], "bid_depth_usd": 0, "ask_depth_usd": 0}
+            return {"bids": [], "asks": [], "bid_depth_usd": 0, "ask_depth_usd": 0, "api_error": str(e)}
 
     def get_rate_limit(self) -> dict:
         """Check our rate limit budget."""
@@ -678,8 +678,13 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         book = client.get_l2_book(coin, depth=5)
         relevant_depth = book["ask_depth_usd"] if is_buy else book["bid_depth_usd"]
         if relevant_depth <= 0:
-            log(f"  SKIP: L2 book depth is 0 for {coin} — API failure or empty book, refusing to trade blind")
-            log_rejection(coin, direction, "book_depth_zero")
+            api_err = book.get("api_error")
+            if api_err:
+                log(f"  SKIP: L2 book query FAILED for {coin} — {api_err}")
+                log_rejection(coin, direction, "book_api_error", {"error": api_err})
+            else:
+                log(f"  SKIP: L2 book depth is genuinely 0 for {coin} — empty book, refusing to trade blind")
+                log_rejection(coin, direction, "book_depth_zero")
             return False
         if size_usd > relevant_depth * 0.10:
             log(f"  ⚠️ LIQUIDITY WARNING: ${size_usd:.0f} order is {size_usd/relevant_depth:.0%} of top-5 {('ask' if is_buy else 'bid')} depth (${relevant_depth:.0f})")
