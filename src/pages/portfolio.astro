@@ -990,8 +990,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   function fmtPct(v){
     if(v==null) return '—';
-    var p = v * 100;
-    return (p>=0?'+':'')+p.toFixed(2)+'%';
+    return (v>=0?'+':'')+v.toFixed(2)+'%';
   }
   function pnlClass(v){ return v>=0?'c-pos':'c-neg'; }
 
@@ -1476,8 +1475,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     right += '<div class="stats-panel-title">Breakdown</div>';
     var best = stats.bestTrade || {};
     var worst = stats.worstTrade || {};
-    right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+(best.coin||'—')+' '+(best.direction||'')+' '+fmtPct(best.pnlPct)+' ('+fmt$(best.pnl)+')</span></div>';
-    right += '<div class="stat-row"><span class="stat-row-label">Worst Trade</span><span class="stat-row-value c-neg">'+(worst.coin||'—')+' '+(worst.direction||'')+' '+fmtPct(worst.pnlPct)+' ('+fmt$(worst.pnl)+')</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Best Trade</span><span class="stat-row-value c-pos">'+(best.coin||'—')+' '+(best.direction||'')+' '+fmtPct(best.pnlPct * 100)+' ('+fmt$(best.pnl)+')</span></div>';
+    right += '<div class="stat-row"><span class="stat-row-label">Worst Trade</span><span class="stat-row-value c-neg">'+(worst.coin||'—')+' '+(worst.direction||'')+' '+fmtPct(worst.pnlPct * 100)+' ('+fmt$(worst.pnl)+')</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Avg Hold</span><span class="stat-row-value">'+fmtHold(stats.avgHoldHours)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Avg P&L</span><span class="stat-row-value '+pnlClass(stats.avgPnl)+'">'+fmt$(stats.avgPnl)+'</span></div>';
     right += '<div class="stat-row"><span class="stat-row-label">Total P&L</span><span class="stat-row-value '+pnlClass(stats.totalPnl)+'">'+fmt$(stats.totalPnl)+'</span></div>';
@@ -1520,7 +1519,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       html += '<span class="cr-dir '+dirCls2+'">'+c.direction+'</span>';
       html += '<span class="cr-prices">'+fmtPrice(c.entry_price)+'→'+fmtPrice(c.exit_price)+'</span>';
       // Use dollar P&L as single source of truth for color on both % and $
-      html += '<span class="cr-pct '+pnlClass(pnlVal)+'">'+fmtPct(c.pnl_pct)+'</span>';
+      html += '<span class="cr-pct '+pnlClass(pnlVal)+'">'+fmtPct(c.pnl_pct * 100)+'</span>';
       html += '<span class="cr-pnl '+pnlClass(pnlVal)+'">'+fmt$(pnlVal)+'</span>';
       html += '<span class="cr-reason">'+(c.exit_reason||'')+'</span>';
       // Show exit age first, then hold duration if available
