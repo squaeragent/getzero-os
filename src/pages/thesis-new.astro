@@ -1,0 +1,222 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="How ZERO Works — ZERO OS" description="ZERO OS architecture: signal evaluation, strategy assembly, 9 pre-trade gates, immune system, and weekly self-audits.">
+  <div class="thesis-page">
+
+    <nav class="thesis-nav">
+      <a href="/" class="tn-item">← ZERO OS</a>
+      <span class="tn-item tn-active">THESIS</span>
+      <a href="/portfolio" class="tn-item">See it trade live →</a>
+    </nav>
+
+    <div class="thesis-content">
+
+      <h1 class="thesis-title">HOW ZERO OS WORKS</h1>
+
+      <p class="section-head">The OS provides:</p>
+
+      <ul class="exec-list">
+        <li>Signal engine (85 indicators, 370+ expressions, 365-day backtests)</li>
+        <li>Execution engine (Hyperliquid, all order types, GTC/IOC)</li>
+        <li>Risk framework (9 pre-trade gates, per-coin stops, leverage limits)</li>
+        <li>Immune system (6 monitors, weekly self-audit, desync detection)</li>
+        <li>Position management (reconciliation, safe writes, stop verification)</li>
+      </ul>
+
+      <p class="section-head">Agents configure:</p>
+
+      <ul class="exec-list">
+        <li>Which coins to trade (universe selection)</li>
+        <li>How many positions (max concurrent)</li>
+        <li>How much risk (leverage, stop percentages)</li>
+        <li>Entry/exit rules (min hold, max hold, signal reversal behavior)</li>
+        <li>Sizing (half-Kelly, fixed, percentage of equity)</li>
+      </ul>
+
+      <p>The OS runs. The agent decides. The immune system watches both.</p>
+
+      <p>Every 2 hours, the strategy engine assembles the best signal combination per coin using tournament optimization. Coins with assembled Sharpe below 1.5 are excluded. Coins with negative portfolio-context Sharpe are blacklisted.</p>
+
+      <p class="section-head">Every 15 seconds, the evaluator checks each signal against 9 pre-trade gates:</p>
+
+      <ol class="gates">
+        <li>Signal direction and quality</li>
+        <li>Assembled Sharpe ≥ 1.5</li>
+        <li>Position limit (max 3 concurrent)</li>
+        <li>Funding rate &lt; 2% annualized</li>
+        <li>L2 book depth sufficient</li>
+        <li>Expected alpha > total cost</li>
+        <li>Not blacklisted</li>
+        <li>No duplicate position</li>
+        <li>Half-Kelly position sizing within limits</li>
+      </ol>
+
+      <p>If ALL 9 pass → trade executes on Hyperliquid.<br>
+      If ANY fails → signal is rejected with reason logged.</p>
+
+      <p class="section-head">After execution:</p>
+      <ul class="exec-list">
+        <li>Per-coin stop loss (volatility-adjusted, 2% limit offset)</li>
+        <li>Trailing stop (ATR-based per coin)</li>
+        <li>Signal reversal exit (immediate on direction flip)</li>
+        <li>Minimum hold: 2 hours (stops fire immediately)</li>
+        <li>Maximum hold: 24 hours</li>
+      </ul>
+
+      <p class="section-head">The immune system runs 6 monitors every 60 seconds:</p>
+      <ul class="exec-list">
+        <li>Stop verification (every position must have a stop on HL)</li>
+        <li>Position sync (local state matches HL on-chain state)</li>
+        <li>Equity anomaly detection (2σ from 7-day mean)</li>
+        <li>Error rate tracking (2σ spike from rolling window)</li>
+        <li>Signal drift (realized WR vs backtested WR)</li>
+        <li>Sharpe gap (backtested vs realized, daily)</li>
+      </ul>
+
+      <p>Weekly, the system runs a full self-audit and posts findings publicly. In its first audit, it found 70 design flaws and fixed 40 in a single session.</p>
+
+      <div class="thesis-footer-block">
+        <p>The execution layer will be open source.</p>
+        <p>Every trade is on-chain verifiable.</p>
+        <p>The system trades with real money.</p>
+      </div>
+
+      <div class="wallet-block">
+        <div class="wallet-addr">Wallet: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884</div>
+        <a class="wallet-verify" href="https://app.hyperliquid.xyz/portfolio/0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884" target="_blank" rel="noopener">verify on Hyperliquid ↗</a>
+      </div>
+
+    </div>
+
+    <div class="thesis-bottom-nav">
+      <a href="/" class="tbn-item">← Back to ZERO OS</a>
+      <a href="/portfolio" class="tbn-item">See it trade live →</a>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .thesis-page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    min-height: 100vh;
+  }
+
+  .thesis-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .tn-item { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .tn-item:hover { color: var(--phosphor); }
+  .tn-active { color: var(--text); }
+
+  .thesis-title {
+    font-family: var(--font-head);
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: var(--phosphor);
+    letter-spacing: 0.12em;
+    margin-bottom: 2rem;
+    font-weight: 600;
+  }
+
+  .thesis-content p {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-head { color: var(--phosphor) !important; }
+
+  .gates {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    line-height: 1.9;
+    color: var(--text);
+    counter-reset: gate;
+  }
+  .gates li {
+    counter-increment: gate;
+    padding-left: 0.5rem;
+  }
+  .gates li::before {
+    content: counter(gate) ". ";
+    color: var(--phosphor);
+    font-family: var(--font-head);
+    font-weight: 600;
+  }
+
+  .exec-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    line-height: 1.9;
+    color: var(--text);
+  }
+  .exec-list li::before {
+    content: "- ";
+    color: var(--text-dim);
+  }
+
+  .thesis-footer-block {
+    margin: 2rem 0;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .thesis-footer-block p {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.6;
+  }
+
+  .wallet-block {
+    margin: 1.5rem 0 3rem;
+  }
+  .wallet-addr {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    word-break: break-all;
+    margin-bottom: 0.3rem;
+  }
+  .wallet-verify {
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    color: var(--phosphor);
+    text-decoration: none;
+  }
+  .wallet-verify:hover { text-decoration: underline; }
+
+  .thesis-bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+  .tbn-item {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .tbn-item:hover { color: var(--phosphor); }
+</style>

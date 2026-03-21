@@ -558,6 +558,64 @@ V6_BUS = V6_DIR / "bus"
 V6_DATA = V6_DIR / "data"
 
 
+@app.get("/v6/status")
+def v6_status():
+    """System status for homepage boot sequence."""
+    heartbeats = _read_json(V6_BUS / "heartbeat.json") or {}
+    strategies = _read_json(V6_BUS / "strategies.json") or {}
+    positions = _read_json(V6_BUS / "positions.json") or {}
+    immune_state = _read_json(V6_BUS / "immune_state.json") or {}
+
+    now = time.time()
+
+    # Active coins
+    raw_active = strategies.get("active_coins", [])
+    active_coins = raw_active if isinstance(raw_active, list) else list(raw_active.keys())
+    blacklist_count = 3  # PUMP, XPL, TRUMP
+
+    # Evaluator heartbeat
+    eval_ts = heartbeats.get("evaluator", "")
+    eval_ago = 0
+    if eval_ts:
+        try:
+            eval_ago = int(now - datetime.fromisoformat(eval_ts.replace("Z", "+00:00")).timestamp())
+        except (ValueError, AttributeError):
+            eval_ago = -1
+
+    # Process count (agents reporting)
+    processes = sum(1 for k, v in heartbeats.items() if v)
+
+    # Uptime from positions file or first equity point
+    equity_history = immune_state.get("equity_history_7d", [])
+    first_ts = ""
+    uptime_hours = 0
+    if equity_history:
+        first_ts = equity_history[0].get("ts", "")
+        try:
+            first_time = datetime.fromisoformat(first_ts.replace("Z", "+00:00")).timestamp()
+            uptime_hours = (now - first_time) / 3600
+        except (ValueError, AttributeError):
+            pass
+
+    # Open positions
+    open_positions = len(positions.get("positions", []))
+
+    return {
+        "indicators": 85,
+        "expressions": 370,
+        "active_coins": len(active_coins),
+        "blacklisted_coins": blacklist_count,
+        "pre_trade_gates": 9,
+        "immune_monitors": 6,
+        "eval_cycle_seconds": 15,
+        "eval_last_run_ago": eval_ago,
+        "processes": processes,
+        "uptime_hours": round(uptime_hours, 1),
+        "open_positions": open_positions,
+        "heartbeats": {k: v for k, v in heartbeats.items()},
+    }
+
+
 @app.get("/v6/decisions")
 def v6_decisions(limit: int = Query(30, ge=1, le=200)):
     """Decision stream: rejections + entries + closes merged chronologically."""

@@ -1,328 +1,202 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
+<BaseLayout title="How ZERO Works — ZERO OS" description="ZERO OS architecture: signal evaluation, strategy assembly, 9 pre-trade gates, immune system, and weekly self-audits.">
+  <div class="thesis-page">
 
-<BaseLayout title="ZERO OS — The Regime Problem" description="Why chaos mathematics changes everything about trading signals. Hurst exponent, DFA, and Lyapunov — the three indicators that tell you whether your other indicators are lying.">
+    <nav class="thesis-nav">
+      <a href="/" class="tn-item">← ZERO OS</a>
+      <span class="tn-item tn-active">THESIS</span>
+      <a href="/portfolio" class="tn-item">See it trade live →</a>
+    </nav>
 
-<div class="page">
-<div class="page-inner">
+    <div class="thesis-content">
 
-  <!-- NAV -->
-  <nav class="thesis-nav">
-    <a href="/" class="nav-back"><span class="p">←</span> ZERO OS</a>
-    <span class="nav-label dim">/thesis</span>
-  </nav>
+      <h1 class="thesis-title">HOW ZERO WORKS</h1>
 
-  <!-- HERO PANE -->
-  <div class="pane pane-hero">
-    <div class="pane-header"><span class="p">■</span> THESIS</div>
-    <div class="pane-body">
-      <h1 class="thesis-title">The Regime Problem</h1>
-      <p class="thesis-subtitle">Why every indicator you use assumes one market. There are many.</p>
+      <p>ZERO evaluates 370+ signal expressions across 85 indicators, backtested over 365 days. Every expression gets a Sharpe ratio, win rate, and overfit detection score.</p>
+
+      <p>Every 2 hours, the strategy engine assembles the best signal combination per coin using tournament optimization. Coins with assembled Sharpe below 1.5 are excluded. Coins with negative portfolio-context Sharpe are blacklisted.</p>
+
+      <p class="section-head">Every 15 seconds, the evaluator checks each signal against 9 pre-trade gates:</p>
+
+      <ol class="gates">
+        <li>Signal direction and quality</li>
+        <li>Assembled Sharpe ≥ 1.5</li>
+        <li>Position limit (max 3 concurrent)</li>
+        <li>Funding rate &lt; 2% annualized</li>
+        <li>L2 book depth sufficient</li>
+        <li>Expected alpha > total cost</li>
+        <li>Not blacklisted</li>
+        <li>No duplicate position</li>
+        <li>Half-Kelly position sizing within limits</li>
+      </ol>
+
+      <p>If ALL 9 pass → trade executes on Hyperliquid.<br>
+      If ANY fails → signal is rejected with reason logged.</p>
+
+      <p class="section-head">After execution:</p>
+      <ul class="exec-list">
+        <li>Per-coin stop loss (volatility-adjusted, 2% limit offset)</li>
+        <li>Trailing stop (ATR-based per coin)</li>
+        <li>Signal reversal exit (immediate on direction flip)</li>
+        <li>Minimum hold: 2 hours (stops fire immediately)</li>
+        <li>Maximum hold: 24 hours</li>
+      </ul>
+
+      <p class="section-head">The immune system runs 6 monitors every 60 seconds:</p>
+      <ul class="exec-list">
+        <li>Stop verification (every position must have a stop on HL)</li>
+        <li>Position sync (local state matches HL on-chain state)</li>
+        <li>Equity anomaly detection (2σ from 7-day mean)</li>
+        <li>Error rate tracking (2σ spike from rolling window)</li>
+        <li>Signal drift (realized WR vs backtested WR)</li>
+        <li>Sharpe gap (backtested vs realized, daily)</li>
+      </ul>
+
+      <p>Weekly, the system runs a full self-audit and posts findings publicly. In its first audit, it found 70 design flaws and fixed 40 in a single session.</p>
+
+      <div class="thesis-footer-block">
+        <p>The execution layer will be open source.</p>
+        <p>Every trade is on-chain verifiable.</p>
+        <p>The system trades with real money.</p>
+      </div>
+
+      <div class="wallet-block">
+        <div class="wallet-addr">Wallet: 0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884</div>
+        <a class="wallet-verify" href="https://app.hyperliquid.xyz/portfolio/0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884" target="_blank" rel="noopener">verify on Hyperliquid ↗</a>
+      </div>
+
     </div>
+
+    <div class="thesis-bottom-nav">
+      <a href="/" class="tbn-item">← Back to ZERO OS</a>
+      <a href="/portfolio" class="tbn-item">See it trade live →</a>
+    </div>
+
   </div>
-
-  <!-- CONTENT: TWO-COLUMN -->
-  <div class="pane-grid">
-
-    <!-- LEFT: The argument -->
-    <div class="pane">
-      <div class="pane-header"><span class="a">■</span> THE ASSUMPTION</div>
-      <div class="pane-body">
-        <p>Every technical indicator in crypto — RSI, MACD, Bollinger Bands, moving average crossovers — contains the same hidden assumption:</p>
-        <p class="highlight">The market behaves the same way tomorrow as it did yesterday.</p>
-        <p>This is false. Markets switch between distinct states: trending, mean-reverting, chaotic, and transitional. An RSI signal that works beautifully in a trending state becomes noise in a mean-reverting one. A mean-reversion strategy that prints money in calm markets gets destroyed when a trend emerges.</p>
-        <p>The question isn't <em>"what does the indicator say?"</em></p>
-        <p class="highlight">It's "does this indicator even apply right now?"</p>
-      </div>
-    </div>
-
-    <!-- RIGHT: The punchline -->
-    <div class="pane">
-      <div class="pane-header"><span class="p">■</span> THE PUNCHLINE</div>
-      <div class="pane-body">
-        <p class="highlight">A MACD crossover in a trending state is meaningful. The same crossover in a mean-reverting state is a trap.</p>
-        <p>Traditional platforms show you the crossover. We show you the state first. Then you decide if the crossover matters.</p>
-        <p>This is the difference between an indicator dashboard and a trading intelligence system.</p>
-        <div class="edge-contrast">
-          <div class="edge-row">
-            <span class="edge-them dim">Indicator dashboard: RSI = 72 → overbought</span>
-            <span class="edge-us p">→ Intelligence: RSI = 72 in a trending state → momentum, not exhaustion</span>
-          </div>
-          <div class="edge-row">
-            <span class="edge-them dim">Indicator dashboard: MACD crossover → buy signal</span>
-            <span class="edge-us p">→ Intelligence: MACD crossover in chaos → noise, ignore it</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- THREE INDICATORS -->
-  <div class="pane-full">
-    <div class="pane">
-      <div class="pane-header"><span class="ice">■</span> THREE CHAOS INDICATORS</div>
-      <div class="pane-body">
-        <div class="indicator-grid">
-          <div class="indicator-card">
-            <h3 class="indicator-name p">Hurst Exponent (H)</h3>
-            <p class="indicator-desc">Measures long-term memory in a time series.</p>
-            <div class="indicator-values">
-              <span class="iv"><span class="p">H &lt; 0.5</span> = mean-reverting (prices snap back)</span>
-              <span class="iv"><span class="a">H &gt; 0.5</span> = trending (momentum is real)</span>
-              <span class="iv"><span class="dim">H ≈ 0.5</span> = random walk (signals are meaningless)</span>
-            </div>
-          </div>
-          <div class="indicator-card">
-            <h3 class="indicator-name p">Detrended Fluctuation Analysis (DFA)</h3>
-            <p class="indicator-desc">A more robust version of Hurst that handles non-stationary data. When Hurst and DFA agree, you have a strong signal. When they diverge, the market is in transition — the most dangerous zone.</p>
-          </div>
-          <div class="indicator-card">
-            <h3 class="indicator-name p">Lyapunov Exponent (λ)</h3>
-            <p class="indicator-desc">Measures sensitivity to initial conditions — literally, chaos level. High λ means tiny input changes cause wildly different outcomes.</p>
-            <p class="indicator-highlight">High Lyapunov = reduce position size. The market is unpredictable even with perfect information.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- REFERENCES + CTA -->
-  <div class="pane-grid">
-    <div class="pane">
-      <div class="pane-header"><span class="dim">■</span> REFERENCES</div>
-      <div class="pane-body">
-        <ul class="ref-list">
-          <li>Mandelbrot, B. (1963). "The Variation of Certain Speculative Prices." <em>Journal of Business</em></li>
-          <li>Hurst, H.E. (1951). "Long-term Storage Capacity of Reservoirs." <em>Trans. ASCE</em></li>
-          <li>Peng, C.-K. et al. (1994). "Mosaic organization of DNA nucleotide sequences." <em>Physical Review E</em> — original DFA paper</li>
-          <li>Rosenstein, M.T. et al. (1993). "A practical method for calculating largest Lyapunov exponents." <em>Physica D</em></li>
-          <li>Di Matteo, T. et al. (2005). "Long-term memories of developed and emerging markets." <em>J. Banking & Finance</em></li>
-        </ul>
-      </div>
-    </div>
-    <div class="pane pane-access">
-      <div class="pane-header"><span class="p">■</span> THE ADVERSARIAL LAYER</div>
-      <div class="pane-body">
-        <p>Regime detection tells you <em>which</em> signals to trust. But even valid signals can be wrong. ZERO OS adds a second layer: every trade hypothesis passes through 13 adversarial attack vectors before execution.</p>
-        <p class="indicator-highlight">The adversary kills 71% of signals correctly. Counterfactual learning validates every kill — tracking what would have happened if the trade had been taken.</p>
-        <p class="dim" style="margin-top:0.75rem">The system doesn't just predict. It attacks its own predictions, then learns from the outcomes.</p>
-        <a href="/" class="btn-primary" style="margin-top:1rem;display:inline-block;">See the system live →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="thesis-footer">
-    <span class="p">◇</span> <span class="dim">ZERO OS</span>
-  </footer>
-
-</div>
-</div>
-
 </BaseLayout>
 
-<style>
-  .page {
-    margin: 0.5rem;
-    border: 1px solid rgba(200,255,0,0.4);
-    min-height: calc(100vh - 1rem);
-    padding: 0;
-    overflow: hidden;
-  }
-  .page-inner {
-    max-width: 1400px;
+<style is:global>
+  .thesis-page {
+    max-width: 680px;
     margin: 0 auto;
-    padding: 0.75rem 2rem 2rem;
+    padding: 1rem 1.5rem;
+    min-height: 100vh;
   }
 
-  /* NAV */
   .thesis-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0 1rem;
+    padding: 0.6rem 0;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 0.5rem;
-  }
-  .nav-back {
     font-family: var(--font-head);
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-decoration: none;
-    color: var(--text-dim);
-    transition: color 0.2s;
-  }
-  .nav-back:hover { color: var(--phosphor); }
-  .nav-label {
-    font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
   }
+  .tn-item { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .tn-item:hover { color: var(--phosphor); }
+  .tn-active { color: var(--text); }
 
-  /* PANE SYSTEM (matches homepage) */
-  .pane-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .pane-full { margin-bottom: 0.5rem; }
-  .pane {
-    border: 1px solid var(--border);
-    background: rgba(0,0,0,0.4);
-  }
-  .pane-header {
-    font-family: var(--font-head);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background: rgba(10,10,10,0.6);
-    color: var(--text-dim);
-  }
-  .pane-body {
-    padding: 1.5rem;
-    overflow: hidden;
-  }
-  .pane-hero { margin-bottom: 0.5rem; }
-
-  /* TYPOGRAPHY */
   .thesis-title {
     font-family: var(--font-head);
-    font-size: clamp(1.6rem, 5vw, 2.8rem);
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.15;
-    margin-bottom: 0.5rem;
-  }
-  .thesis-subtitle {
-    font-size: 1rem;
-    color: var(--text-dim);
-    line-height: 1.6;
-  }
-  p {
-    font-size: 0.95rem;
-    line-height: 1.8;
-    color: var(--text-dim);
-    margin-bottom: 0.75rem;
-  }
-  .highlight {
-    color: var(--text);
-    font-weight: 700;
-    font-size: 1rem;
-  }
-
-  /* INDICATORS */
-  .indicator-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-  }
-  .indicator-card {
-    border: 1px solid var(--border);
-    padding: 1rem;
-    background: rgba(0,0,0,0.3);
-  }
-  .indicator-name {
-    font-family: var(--font-head);
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-  .indicator-desc {
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
-  }
-  .indicator-values {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-  .iv {
-    font-family: var(--font-head);
-    font-size: 0.8rem;
-    line-height: 1.6;
-    color: var(--text-dim);
-  }
-  .indicator-highlight {
-    font-size: 0.85rem;
-    color: var(--text);
-    font-weight: 700;
-    margin-top: 0.5rem;
-  }
-
-  /* EDGE CONTRAST */
-  .edge-contrast { margin-top: 1rem; }
-  .edge-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(26,26,26,0.3);
-  }
-  .edge-row:last-child { border-bottom: none; }
-  .edge-them {
-    font-family: var(--font-head);
-    font-size: 0.8rem;
-    text-decoration: line-through;
-    opacity: 0.5;
-  }
-  .edge-us {
-    font-family: var(--font-head);
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
-  /* REFERENCES */
-  .ref-list {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    line-height: 1.8;
-    padding-left: 1rem;
-  }
-  .ref-list li { margin-bottom: 0.5rem; }
-
-  /* ACCESS */
-  .access-line {
-    font-family: var(--font-head);
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0;
-  }
-  .btn-primary {
-    font-family: var(--font-head);
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-size: clamp(1rem, 3vw, 1.3rem);
     color: var(--phosphor);
-    background: transparent;
-    border: 1px solid var(--phosphor);
-    padding: 0.75rem 1.5rem;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-  .btn-primary:hover {
-    background: rgba(200,255,0,0.08);
-    box-shadow: 0 0 20px rgba(200,255,0,0.1);
+    letter-spacing: 0.12em;
+    margin-bottom: 2rem;
+    font-weight: 600;
   }
 
-  /* FOOTER */
-  .thesis-footer {
-    text-align: center;
-    padding: 1.5rem 0;
+  .thesis-content p {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-head { color: var(--phosphor) !important; }
+
+  .gates {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    line-height: 1.9;
+    color: var(--text);
+    counter-reset: gate;
+  }
+  .gates li {
+    counter-increment: gate;
+    padding-left: 0.5rem;
+  }
+  .gates li::before {
+    content: counter(gate) ". ";
+    color: var(--phosphor);
     font-family: var(--font-head);
-    font-size: 0.7rem;
+    font-weight: 600;
   }
 
-  /* MOBILE */
-  @media (max-width: 900px) {
-    .pane-grid { grid-template-columns: 1fr; }
-    .indicator-grid { grid-template-columns: 1fr; }
-    .page-inner { padding: 0.5rem 1rem 1.25rem; }
+  .exec-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    line-height: 1.9;
+    color: var(--text);
   }
+  .exec-list li::before {
+    content: "- ";
+    color: var(--text-dim);
+  }
+
+  .thesis-footer-block {
+    margin: 2rem 0;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .thesis-footer-block p {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.6;
+  }
+
+  .wallet-block {
+    margin: 1.5rem 0 3rem;
+  }
+  .wallet-addr {
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    word-break: break-all;
+    margin-bottom: 0.3rem;
+  }
+  .wallet-verify {
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    color: var(--phosphor);
+    text-decoration: none;
+  }
+  .wallet-verify:hover { text-decoration: underline; }
+
+  .thesis-bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+  .tbn-item {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .tbn-item:hover { color: var(--phosphor); }
 </style>
