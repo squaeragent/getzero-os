@@ -23,13 +23,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <!-- PHASE 2: Component Check -->
     <div id="phase2" class="phase hidden">
-      <div class="boot-line" data-index="0">▸ loading signal engine <span class="dots">................</span> <span class="bl-val">85 indicators · 370+ expressions</span></div>
-      <div class="boot-line" data-index="1">▸ loading execution engine <span class="dots">.............</span> <span class="bl-val">Hyperliquid · all order types</span></div>
-      <div class="boot-line" data-index="2">▸ loading risk framework <span class="dots">.............</span> <span class="bl-val">9 pre-trade gates · per-coin stops</span></div>
-      <div class="boot-line" data-index="3">▸ loading immune system <span class="dots">...............</span> <span class="bl-val">6 monitors · weekly self-audit</span></div>
+      <div class="boot-line" data-index="0">▸ loading signal engine <span class="dots">................</span> <span class="bl-val">online</span></div>
+      <div class="boot-line" data-index="1">▸ loading execution engine <span class="dots">.............</span> <span class="bl-val">online</span></div>
+      <div class="boot-line" data-index="2">▸ loading risk framework <span class="dots">.............</span> <span class="bl-val">online</span></div>
+      <div class="boot-line" data-index="3">▸ loading immune system <span class="dots">...............</span> <span class="bl-val">online</span></div>
       <div class="boot-line" data-index="4">▸ initializing agents:</div>
-      <div class="boot-line boot-agent" data-index="5">  agent/balanced <span class="dots">..................</span> <span class="bl-val"><span id="b-coins">—</span> coins · max 3 · 2-5x leverage</span></div>
-      <div class="boot-status" id="boot-status">system online · 1 agent active · evaluating every 15s · uptime <span id="b-uptime">—</span></div>
+      <div class="boot-line boot-agent" data-index="5">  agent/balanced <span class="dots">..................</span> <span class="bl-val">active</span></div>
+      <div class="boot-status" id="boot-status">system online · 1 agent active · uptime <span id="b-uptime">—</span></div>
     </div>
 
     <!-- PHASE 3: Live Status -->
@@ -476,9 +476,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       else if (d.type === 'BLOCKED') badgeClass = 'blocked';
 
       var reason = d.reason || '';
+      // Sanitize: strip specific numbers and internals from rejection reasons
+      reason = reason.replace(/:\s*\d+.*$/g, '').replace(/_/g, ' ');
       if (d.type === 'CLOSED') {
         var pnl = d.pnl_usd || 0;
-        reason = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2) + ' ' + (d.reason || '');
+        reason = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
+      }
+      if (d.type === 'ENTERED') {
+        // Show just the dollar amount, not the signal name
+        reason = reason.replace(/@.*$/, '').trim();
       }
 
       html += '<div class="ds-mini">';
@@ -499,7 +505,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (!body) return;
     if (!data || !data.coins) { body.innerHTML = '<div class="muted">No signal data</div>'; return; }
 
-    if (meta) meta.textContent = data.active_count + ' active';
+    if (meta) meta.textContent = 'active';
 
     var active = [];
     for (var i = 0; i < data.coins.length; i++) {
@@ -528,7 +534,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       html += '</div>';
     }
     html += '</div>';
-    html += '<div class="sig-more">+ ' + (data.watching_count || 0) + ' watching · ' + (data.blacklisted_count || 0) + ' blacklisted</div>';
+    html += '<div class="sig-more">+ more watching</div>';
     body.innerHTML = html;
   }
 
@@ -543,9 +549,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     var execPct = (executed / total * 100).toFixed(1);
 
     var html = '';
-    html += '<div class="fn-row"><span class="fn-label">signals evaluated</span><div class="fn-bar-wrap"><div class="fn-bar" style="width:100%"></div></div><span class="fn-count">' + total + '</span></div>';
-    html += '<div class="fn-row"><span class="fn-label">passed all 9 gates</span><div class="fn-bar-wrap"><div class="fn-bar bright" style="width:' + execPct + '%"></div></div><span class="fn-count">' + executed + '</span></div>';
-    html += '<div class="fn-big">' + (data.rejection_rate || 0) + '%</div>';
+    html += '<div class="fn-row"><span class="fn-label">signals evaluated</span><div class="fn-bar-wrap"><div class="fn-bar" style="width:100%"></div></div></div>';
+    html += '<div class="fn-row"><span class="fn-label">passed all checks</span><div class="fn-bar-wrap"><div class="fn-bar bright" style="width:' + execPct + '%"></div></div></div>';
+    html += '<div class="fn-big">' + (data.rejection_rate || 0) + '% rejected</div>';
     html += '<div class="fn-copy">The system\'s intelligence is what it doesn\'t trade.</div>';
     body.innerHTML = html;
   }
