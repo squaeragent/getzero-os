@@ -38,6 +38,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
+      <!-- DECISION STREAM -->
+      <div class="section">
+        <div class="ph">DECISION STREAM <span class="dim" id="ds-count"></span> <span class="ds-live" id="ds-live">● LIVE</span></div>
+        <div class="sb ds-wrap" id="ds-body">
+          <div class="muted">Loading decisions...</div>
+        </div>
+      </div>
+
       <!-- OPEN POSITIONS -->
       <div class="section">
         <div class="ph">OPEN POSITIONS <span class="dim" id="pos-count">(0)</span></div>
@@ -55,6 +63,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <span class="status-ok">Spreads ✓</span>
             <span class="status-ok">Funding ✓</span>
           </div>
+        </div>
+      </div>
+
+      <!-- GATE FUNNEL -->
+      <div class="section" id="funnel-section">
+        <div class="ph">GATE FUNNEL <span class="dim" id="funnel-meta"></span></div>
+        <div class="sb" id="funnel-body">
+          <div class="muted">Loading funnel...</div>
+        </div>
+      </div>
+
+      <!-- SIGNAL LANDSCAPE -->
+      <div class="section" id="landscape-section">
+        <div class="ph">SIGNAL UNIVERSE <span class="dim" id="landscape-meta"></span></div>
+        <div class="sb landscape-grid" id="landscape-body">
+          <div class="muted">Loading signals...</div>
+        </div>
+      </div>
+
+      <!-- IMMUNE HEARTBEAT -->
+      <div class="section" id="immune-section">
+        <div class="ph">IMMUNE SYSTEM <span class="dim" id="immune-meta">(24h)</span></div>
+        <div class="sb" id="immune-body">
+          <div class="muted">Loading health...</div>
         </div>
       </div>
 
@@ -699,6 +731,140 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .footer-link:hover { color: var(--phosphor); }
 
+  /* ─── DECISION STREAM ─── */
+  .ds-wrap {
+    max-height: 280px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200,255,0,0.15) transparent;
+  }
+  .ds-live {
+    color: #c8ff00;
+    font-size: 0.55rem;
+    animation: ds-pulse 2s infinite;
+  }
+  @keyframes ds-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .ds-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    border-bottom: 1px solid rgba(200,255,0,0.04);
+    line-height: 1.4;
+  }
+  .ds-time { color: var(--text-dim); min-width: 3.5rem; flex-shrink: 0; }
+  .ds-coin { min-width: 5rem; flex-shrink: 0; font-weight: 600; }
+  .ds-dir { min-width: 3rem; flex-shrink: 0; }
+  .ds-dir.long { color: #c8ff00; }
+  .ds-dir.short { color: #ff3333; }
+  .ds-badge {
+    padding: 0.05rem 0.3rem;
+    border-radius: 2px;
+    font-size: 0.6rem;
+    min-width: 4.5rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .ds-badge.entered { background: rgba(200,255,0,0.15); color: #c8ff00; }
+  .ds-badge.closed-win { background: rgba(200,255,0,0.1); color: #c8ff00; }
+  .ds-badge.closed-loss { background: rgba(255,51,51,0.1); color: #ff3333; }
+  .ds-badge.rejected { background: rgba(255,255,255,0.05); color: var(--text-dim); }
+  .ds-badge.blocked { background: rgba(255,51,51,0.08); color: #ff6666; }
+  .ds-badge.held { background: rgba(255,255,255,0.03); color: rgba(200,255,0,0.25); }
+  .ds-reason { color: var(--text-dim); font-size: 0.6rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ds-sharpe { color: rgba(200,255,0,0.4); font-size: 0.6rem; min-width: 2.5rem; text-align: right; flex-shrink: 0; }
+
+  /* ─── GATE FUNNEL ─── */
+  .funnel-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.15rem 0;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+  }
+  .funnel-label { min-width: 10rem; color: var(--text-dim); flex-shrink: 0; }
+  .funnel-bar-wrap { flex: 1; height: 14px; background: rgba(200,255,0,0.03); position: relative; }
+  .funnel-bar { height: 100%; background: rgba(200,255,0,0.2); transition: width 0.5s; }
+  .funnel-bar.executed { background: rgba(200,255,0,0.5); }
+  .funnel-count { min-width: 3rem; text-align: right; color: var(--text); font-size: 0.65rem; flex-shrink: 0; }
+  .funnel-pct { min-width: 2.5rem; text-align: right; color: var(--text-dim); font-size: 0.6rem; flex-shrink: 0; }
+  .funnel-headline {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    color: #c8ff00;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ─── SIGNAL LANDSCAPE ─── */
+  .landscape-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.3rem;
+  }
+  .ls-coin {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.4rem;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    border: 1px solid rgba(200,255,0,0.06);
+  }
+  .ls-coin.active { border-color: rgba(200,255,0,0.2); }
+  .ls-coin.blacklisted { border-color: rgba(255,51,51,0.15); opacity: 0.5; }
+  .ls-name { min-width: 3.5rem; font-weight: 600; }
+  .ls-sparkline { flex: 1; height: 16px; }
+  .ls-val { min-width: 2rem; text-align: right; font-size: 0.65rem; }
+  .ls-val.above { color: #c8ff00; }
+  .ls-val.below { color: var(--text-dim); }
+  .ls-val.bl { color: #ff3333; }
+  .ls-divider {
+    grid-column: 1 / -1;
+    border-top: 1px dashed rgba(255,51,51,0.2);
+    padding-top: 0.2rem;
+    font-size: 0.55rem;
+    color: rgba(255,51,51,0.4);
+    font-family: var(--font-head);
+  }
+
+  /* ─── IMMUNE HEARTBEAT ─── */
+  .immune-blocks {
+    display: flex;
+    gap: 1px;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .immune-block {
+    width: 8px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .immune-block.ok { background: rgba(200,255,0,0.35); }
+  .immune-block.warning { background: rgba(255,176,0,0.5); }
+  .immune-block.nodata { background: rgba(255,255,255,0.05); }
+  .immune-checks {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+  }
+  .immune-check { color: var(--text-dim); }
+  .immune-check .ok { color: #c8ff00; }
+  .immune-check .warn { color: #ffb000; }
+  .immune-headline {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    color: rgba(200,255,0,0.6);
+    margin-bottom: 0.3rem;
+  }
+
   /* ─── REGIME SUMMARY ─── */
   .regime-summary {
     font-family: var(--font-head);
@@ -1221,6 +1387,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
+    // Realized equity line (thin, only moves on trade closes)
+    if(tradeEvents && tradeEvents.length > 0 && curve.length >= 2){
+      // Build cumulative realized P&L at each curve point
+      var closeEvents = tradeEvents.filter(function(e){ return e.type === 'close' && e.pnl !== undefined; });
+      closeEvents.sort(function(a,b){ return a.t - b.t; });
+
+      if(closeEvents.length > 0){
+        var realizedVals = [];
+        var cumPnl = 0;
+        var ceIdx = 0;
+        for(var ri=0; ri<curve.length; ri++){
+          while(ceIdx < closeEvents.length && closeEvents[ceIdx].t <= curve[ri].t){
+            cumPnl += closeEvents[ceIdx].pnl;
+            ceIdx++;
+          }
+          realizedVals.push(startingEquity + cumPnl);
+        }
+        // Finish remaining events
+        while(ceIdx < closeEvents.length){ cumPnl += closeEvents[ceIdx].pnl; ceIdx++; }
+
+        // Draw realized line (thin, dimmer)
+        ctx.beginPath();
+        ctx.moveTo(px(0), py(realizedVals[0]));
+        for(var ri=1; ri<realizedVals.length; ri++) ctx.lineTo(px(ri), py(realizedVals[ri]));
+        ctx.strokeStyle = 'rgba(200,255,0,0.25)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Shade between realized and market equity (unrealized band)
+        ctx.beginPath();
+        ctx.moveTo(px(0), py(vals[0]));
+        for(var ri=1; ri<vals.length; ri++) ctx.lineTo(px(ri), py(vals[ri]));
+        for(var ri=realizedVals.length-1; ri>=0; ri--) ctx.lineTo(px(ri), py(realizedVals[ri]));
+        ctx.closePath();
+        // Green if current equity > realized, red if below
+        var lastRealized = realizedVals[realizedVals.length-1];
+        var lastEquity = vals[vals.length-1];
+        ctx.fillStyle = lastEquity >= lastRealized ? 'rgba(200,255,0,0.04)' : 'rgba(255,51,51,0.04)';
+        ctx.fill();
+      }
+    }
+
     // Current value dot
     var lastX = px(vals.length-1);
     var lastY = py(vals[vals.length-1]);
@@ -1273,6 +1483,182 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     var el = document.getElementById('eq-range');
     if(el) el.textContent = curve.length + ' points · $' + (minV+range*0.1).toFixed(2) + ' – $' + (maxV-range*0.1).toFixed(2);
+  }
+
+  // ─── DECISION STREAM ───
+  function renderDecisionStream(){
+    fetch(API_BASE + '/v6/decisions?limit=30').then(function(r){ return r.json(); }).then(function(decisions){
+      var body = document.getElementById('ds-body');
+      var countEl = document.getElementById('ds-count');
+      if(!body) return;
+      if(!decisions || !decisions.length){ body.innerHTML = '<div class="muted">No decisions yet</div>'; return; }
+      if(countEl) countEl.textContent = '(' + decisions.length + ')';
+
+      var html = '';
+      for(var i=0; i<decisions.length; i++){
+        var d = decisions[i];
+        var ts = d.ts ? new Date(d.ts) : null;
+        var timeStr = ts ? ts.toISOString().slice(11,19) : '—';
+        var dirClass = (d.direction||'').toLowerCase() === 'long' ? 'long' : 'short';
+
+        var badgeClass = 'rejected';
+        var badgeText = d.type;
+        if(d.type === 'ENTERED') badgeClass = 'entered';
+        else if(d.type === 'CLOSED' && d.won) { badgeClass = 'closed-win'; badgeText = 'CLOSED'; }
+        else if(d.type === 'CLOSED' && !d.won) { badgeClass = 'closed-loss'; badgeText = 'CLOSED'; }
+        else if(d.type === 'BLOCKED') badgeClass = 'blocked';
+        else if(d.type === 'HELD') badgeClass = 'held';
+
+        var reasonText = d.reason || '';
+        if(d.type === 'CLOSED'){
+          var pnlStr = (d.pnl_usd >= 0 ? '+' : '') + '$' + (d.pnl_usd||0).toFixed(2);
+          var pctStr = (d.pnl_pct >= 0 ? '+' : '') + ((d.pnl_pct||0)*100).toFixed(2) + '%';
+          reasonText = pnlStr + ' (' + pctStr + ') ' + (d.reason||'');
+        }
+
+        var sharpeStr = d.sharpe ? d.sharpe.toFixed(2) : '';
+
+        html += '<div class="ds-row">';
+        html += '<span class="ds-time">' + timeStr + '</span>';
+        html += '<span class="ds-coin">' + (d.coin||'—') + '</span>';
+        html += '<span class="ds-dir ' + dirClass + '">' + (d.direction||'—') + '</span>';
+        html += '<span class="ds-badge ' + badgeClass + '">' + badgeText + '</span>';
+        html += '<span class="ds-reason" title="' + reasonText.replace(/"/g,'&quot;') + '">' + reasonText + '</span>';
+        if(sharpeStr) html += '<span class="ds-sharpe">σ ' + sharpeStr + '</span>';
+        html += '</div>';
+      }
+      body.innerHTML = html;
+    }).catch(function(){ /* silent */ });
+  }
+
+  // ─── GATE FUNNEL ───
+  function renderFunnel(){
+    fetch(API_BASE + '/v6/funnel').then(function(r){ return r.json(); }).then(function(data){
+      var body = document.getElementById('funnel-body');
+      var meta = document.getElementById('funnel-meta');
+      if(!body) return;
+      if(!data || !data.funnel){ body.innerHTML = '<div class="muted">No funnel data</div>'; return; }
+
+      if(meta) meta.textContent = data.rejection_rate + '% rejection rate';
+
+      var html = '<div class="funnel-headline">' + data.total_signals + ' signals → ' + data.total_executed + ' trades (' + data.rejection_rate + '% rejected)</div>';
+
+      var maxCount = data.total_signals || 1;
+      for(var i=0; i<data.funnel.length; i++){
+        var f = data.funnel[i];
+        var count = f.count || f.remaining || 0;
+        var pct = f.pct || 0;
+        var barWidth = (count / maxCount * 100).toFixed(1);
+        var isExec = f.gate === 'EXECUTED';
+        var label = f.gate;
+        if(f.rejected) label += ' (−' + f.rejected + ')';
+
+        html += '<div class="funnel-row">';
+        html += '<span class="funnel-label">' + label + '</span>';
+        html += '<div class="funnel-bar-wrap"><div class="funnel-bar' + (isExec ? ' executed' : '') + '" style="width:' + barWidth + '%"></div></div>';
+        html += '<span class="funnel-count">' + count + '</span>';
+        html += '<span class="funnel-pct">' + pct.toFixed(0) + '%</span>';
+        html += '</div>';
+      }
+      body.innerHTML = html;
+    }).catch(function(){ /* silent */ });
+  }
+
+  // ─── SIGNAL LANDSCAPE ───
+  function renderLandscape(){
+    fetch(API_BASE + '/v6/landscape').then(function(r){ return r.json(); }).then(function(data){
+      var body = document.getElementById('landscape-body');
+      var meta = document.getElementById('landscape-meta');
+      if(!body) return;
+      if(!data || !data.coins || !data.coins.length){ body.innerHTML = '<div class="muted">No signal data</div>'; return; }
+
+      if(meta) meta.textContent = data.active_count + ' active · ' + data.blacklisted_count + ' blacklisted';
+
+      var html = '';
+      var addedDivider = false;
+
+      for(var i=0; i<data.coins.length; i++){
+        var c = data.coins[i];
+
+        // Add divider before blacklisted coins
+        if(c.blacklisted && !addedDivider){
+          html += '<div class="ls-divider">▬▬▬ 1.5 FLOOR ▬▬▬ BLACKLISTED BELOW ▬▬▬</div>';
+          addedDivider = true;
+        }
+        // Add divider before inactive non-blacklisted coins (below floor)
+        if(!c.active && !c.blacklisted && !addedDivider && c.current_sharpe !== null && c.current_sharpe < 1.5){
+          // Don't add divider yet — wait for actual sub-1.5
+        }
+
+        var coinClass = 'ls-coin';
+        if(c.active) coinClass += ' active';
+        if(c.blacklisted) coinClass += ' blacklisted';
+
+        var valClass = 'ls-val';
+        if(c.blacklisted) valClass += ' bl';
+        else if(c.current_sharpe >= 1.5) valClass += ' above';
+        else valClass += ' below';
+
+        // Draw sparkline as inline SVG
+        var spark = c.sparkline || [];
+        var svgPath = '';
+        if(spark.length >= 2){
+          var sMin = Math.min.apply(null, spark);
+          var sMax = Math.max.apply(null, spark);
+          var sRange = sMax - sMin || 1;
+          var pts = [];
+          for(var j=0; j<spark.length; j++){
+            var sx = (j / (spark.length-1)) * 60;
+            var sy = 14 - ((spark[j] - sMin) / sRange) * 12;
+            pts.push(sx.toFixed(1) + ',' + sy.toFixed(1));
+          }
+          var sparkColor = c.blacklisted ? '#ff3333' : (c.current_sharpe >= 1.5 ? '#c8ff00' : 'rgba(200,255,0,0.3)');
+          svgPath = '<svg class="ls-sparkline" viewBox="0 0 60 16" preserveAspectRatio="none"><polyline fill="none" stroke="' + sparkColor + '" stroke-width="1.5" points="' + pts.join(' ') + '"/></svg>';
+        }
+
+        html += '<div class="' + coinClass + '">';
+        html += '<span class="ls-name">' + c.coin + '</span>';
+        html += svgPath;
+        html += '<span class="' + valClass + '">' + (c.current_sharpe !== null ? c.current_sharpe.toFixed(1) : '—') + '</span>';
+        if(c.blacklisted) html += '<span style="color:#ff3333;font-size:0.6rem"> ✕</span>';
+        html += '</div>';
+      }
+      body.innerHTML = html;
+    }).catch(function(){ /* silent */ });
+  }
+
+  // ─── IMMUNE HEARTBEAT ───
+  function renderImmune(){
+    fetch(API_BASE + '/v6/immune').then(function(r){ return r.json(); }).then(function(data){
+      var body = document.getElementById('immune-body');
+      var meta = document.getElementById('immune-meta');
+      if(!body) return;
+      if(!data || !data.windows){ body.innerHTML = '<div class="muted">No immune data</div>'; return; }
+
+      if(meta) meta.textContent = '(24h) ' + data.ok_count + '/' + data.total_windows + ' windows clear';
+
+      var html = '<div class="immune-headline">';
+      html += data.ok_count + '/' + data.total_windows + ' windows clear';
+      if(data.warn_count > 0) html += ' · ' + data.warn_count + ' warnings';
+      if(data.nodata_count > 0) html += ' · ' + data.nodata_count + ' gaps';
+      html += '</div>';
+
+      html += '<div class="immune-blocks">';
+      for(var i=0; i<data.windows.length; i++){
+        var w = data.windows[i];
+        html += '<div class="immune-block ' + w.status + '" title="' + w.start.slice(11,16) + ' UTC: ' + w.status + ' (' + w.points + ' pts)"></div>';
+      }
+      html += '</div>';
+
+      html += '<div class="immune-checks">';
+      for(var k in data.checks){
+        var st = data.checks[k];
+        html += '<span class="immune-check">' + k.replace(/_/g,' ') + ': <span class="' + st + '">✓</span></span>';
+      }
+      html += '</div>';
+
+      body.innerHTML = html;
+    }).catch(function(){ /* silent */ });
   }
 
   // ─── MARKET STATE ───
@@ -1759,6 +2145,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // Market state
     renderMarketState(d);
 
+    // Cognitive dashboard features
+    renderDecisionStream();
+    renderFunnel();
+    renderLandscape();
+    renderImmune();
+
     // Stats
     renderStats(lt.stats);
 
@@ -1949,6 +2341,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       renderSystemStatus(portfolioData.agents);
     }
   }, 5000);
+
+  // Decision stream every 15s
+  setInterval(function(){
+    renderDecisionStream();
+  }, 15000);
+
+  // Funnel + landscape + immune every 60s
+  setInterval(function(){
+    renderFunnel();
+    renderLandscape();
+    renderImmune();
+  }, 60000);
 
   // Prices every 30s
   setInterval(function(){

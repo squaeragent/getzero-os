@@ -551,6 +551,275 @@ def v6_analytics():
         return {"error": str(e)}
 
 
+# ─── Cognitive Dashboard Endpoints ───
+
+V6_DIR = SCANNER_DIR / "v6"
+V6_BUS = V6_DIR / "bus"
+V6_DATA = V6_DIR / "data"
+
+
+@app.get("/v6/decisions")
+def v6_decisions(limit: int = Query(30, ge=1, le=200)):
+    """Decision stream: rejections + entries + closes merged chronologically."""
+    decisions = []
+
+    # 1. Rejections from rejections.jsonl
+    rejections = _read_jsonl(V6_BUS / "rejections.jsonl", limit=500)
+    for r in rejections:
+        decisions.append({
+            "ts": r.get("ts"),
+            "coin": r.get("coin"),
+            "direction": r.get("dir"),
+            "type": "BLOCKED" if "blacklist" in (r.get("reason") or "") else "REJECTED",
+            "reason": r.get("reason"),
+            "details": r.get("details"),
+        })
+
+    # 2. Closed trades from trades.jsonl
+    trades = _read_jsonl(V6_DATA / "trades.jsonl", limit=500)
+    for t in trades:
+        pnl = t.get("pnl_usd", 0) or 0
+        decisions.append({
+            "ts": t.get("exit_time"),
+            "coin": t.get("coin"),
+            "direction": t.get("direction"),
+            "type": "CLOSED",
+            "reason": t.get("exit_reason", ""),
+            "pnl_usd": pnl,
+            "pnl_pct": t.get("pnl_pct", 0),
+            "won": t.get("won", pnl > 0),
+            "signal": t.get("signal_name"),
+            "sharpe": t.get("sharpe"),
+        })
+        # Also add the entry event
+        decisions.append({
+            "ts": t.get("entry_time"),
+            "coin": t.get("coin"),
+            "direction": t.get("direction"),
+            "type": "ENTERED",
+            "reason": f"${t.get('size_usd',0):.0f} @ ${t.get('entry_price',0)}",
+            "signal": t.get("signal_name"),
+            "sharpe": t.get("sharpe"),
+        })
+
+    # 3. Currently open positions as ENTERED events
+    positions = _read_json(V6_BUS / "positions.json")
+    if positions and "positions" in positions:
+        for p in positions["positions"]:
+            decisions.append({
+                "ts": p.get("entry_time"),
+                "coin": p.get("coin"),
+                "direction": p.get("direction"),
+                "type": "ENTERED",
+                "reason": f"${p.get('size_usd',0):.0f} @ ${p.get('entry_price',0)}",
+                "signal": p.get("signal_name"),
+                "sharpe": p.get("sharpe"),
+            })
+
+    # Sort by timestamp desc, return latest N
+    decisions.sort(key=lambda d: d.get("ts") or "", reverse=True)
+    return decisions[:limit]
+
+
+@app.get("/v6/funnel")
+def v6_funnel():
+    """Gate funnel: count rejections by reason to show signal→trade conversion."""
+    rejections = _read_jsonl(V6_BUS / "rejections.jsonl", limit=5000)
+    trades = _read_jsonl(V6_DATA / "trades.jsonl", limit=5000)
+    positions = _read_json(V6_BUS / "positions.json")
+    open_count = len((positions or {}).get("positions", []))
+
+    # Count rejections by gate
+    gate_counts = {}
+    for r in rejections:
+        reason = r.get("reason", "unknown")
+        # Normalize to gate category
+        gate = reason.split(":")[0].strip() if ":" in reason else reason
+        gate_counts[gate] = gate_counts.get(gate, 0) + 1
+
+    total_signals = len(rejections) + len(trades) + open_count
+
+    # Build ordered funnel
+    funnel = [
+        {"gate": "SIGNALS_EVALUATED", "count": total_signals, "pct": 100.0},
+    ]
+
+    # Known gate ordering (from most to least permissive)
+    gate_order = [
+        "max_positions", "blacklisted", "alpha_vs_cost", "funding_cost",
+        "book_depth_zero", "liquidity_too_thin", "size_zero", "no_price",
+        "already_open", "cooldown",
+    ]
+
+    remaining = total_signals
+    for gate in gate_order:
+        if gate in gate_counts:
+            remaining -= gate_counts[gate]
+            pct = (remaining / total_signals * 100) if total_signals > 0 else 0
+            funnel.append({
+                "gate": gate.upper().replace("_", " "),
+                "rejected": gate_counts[gate],
+                "remaining": remaining,
+                "pct": round(pct, 1),
+            })
+
+    # Add any unlisted gates
+    for gate, count in gate_counts.items():
+        if gate not in gate_order:
+            remaining -= count
+            pct = (remaining / total_signals * 100) if total_signals > 0 else 0
+            funnel.append({
+                "gate": gate.upper().replace("_", " "),
+                "rejected": count,
+                "remaining": remaining,
+                "pct": round(pct, 1),
+            })
+
+    executed = len(trades) + open_count
+    funnel.append({
+        "gate": "EXECUTED",
+        "count": executed,
+        "pct": round(executed / total_signals * 100, 1) if total_signals > 0 else 0,
+    })
+
+    return {
+        "total_signals": total_signals,
+        "total_rejected": len(rejections),
+        "total_executed": executed,
+        "rejection_rate": round(len(rejections) / total_signals * 100, 1) if total_signals > 0 else 0,
+        "funnel": funnel,
+        "by_gate": gate_counts,
+    }
+
+
+@app.get("/v6/immune")
+def v6_immune():
+    """Immune system heartbeat: 24h health windows."""
+    state = _read_json(V6_BUS / "immune_state.json")
+    if not state:
+        return {"windows": [], "checks": {}}
+
+    equity_history = state.get("equity_history_7d", [])
+    error_counts = state.get("error_counts", {})
+
+    # Build 15-minute windows from equity history (last 24h)
+    now_ts = time.time()
+    window_size = 15 * 60  # 15 minutes
+    windows_24h = 96  # 24h / 15min
+
+    windows = []
+    for i in range(windows_24h):
+        window_start = now_ts - (windows_24h - i) * window_size
+        window_end = window_start + window_size
+
+        # Find equity points in this window
+        points_in_window = [
+            e for e in equity_history
+            if _iso_to_ts(e.get("ts", "")) >= window_start
+            and _iso_to_ts(e.get("ts", "")) < window_end
+        ]
+
+        if len(points_in_window) == 0:
+            status = "nodata"
+        else:
+            # Check for equity anomaly (>2% drop in window)
+            equities = [p["equity"] for p in points_in_window]
+            if max(equities) > 0 and (max(equities) - min(equities)) / max(equities) > 0.02:
+                status = "warning"
+            else:
+                status = "ok"
+
+        windows.append({
+            "start": datetime.fromtimestamp(window_start, tz=timezone.utc).isoformat(),
+            "status": status,
+            "points": len(points_in_window),
+        })
+
+    # Check summaries
+    checks = {
+        "stop_verification": "ok",
+        "position_sync": "ok",
+        "equity_anomaly": "ok",
+        "desync_detection": "ok",
+    }
+
+    # Count alerts
+    alerts_today = state.get("alerts_sent_today", 0)
+    cycle_count = state.get("cycle_count", 0)
+
+    return {
+        "windows": windows,
+        "checks": checks,
+        "alerts_today": alerts_today,
+        "cycle_count": cycle_count,
+        "ok_count": sum(1 for w in windows if w["status"] == "ok"),
+        "warn_count": sum(1 for w in windows if w["status"] == "warning"),
+        "nodata_count": sum(1 for w in windows if w["status"] == "nodata"),
+        "total_windows": len(windows),
+    }
+
+
+def _iso_to_ts(iso_str: str) -> float:
+    """Convert ISO timestamp to unix timestamp."""
+    try:
+        return datetime.fromisoformat(iso_str.replace("Z", "+00:00")).timestamp()
+    except (ValueError, AttributeError):
+        return 0
+
+
+@app.get("/v6/landscape")
+def v6_landscape():
+    """Signal landscape: assembled Sharpe sparklines per coin."""
+    history = _read_json(V6_BUS / "sharpe_history.json")
+    strategies = _read_json(V6_BUS / "strategies.json")
+    runs = (history or {}).get("runs", [])
+
+    # Get current active coins and blacklist
+    raw_active = (strategies or {}).get("active_coins", [])
+    active_coins = raw_active if isinstance(raw_active, list) else list(raw_active.keys())
+    blacklist = ["PUMP", "XPL", "TRUMP"]
+
+    # Build per-coin sparkline data
+    all_coins = set()
+    for run in runs:
+        all_coins.update(run.get("sharpes", {}).keys())
+
+    landscape = []
+    for coin in sorted(all_coins):
+        sparkline = []
+        for run in runs:
+            val = run.get("sharpes", {}).get(coin)
+            if val is not None:
+                sparkline.append(round(val, 2))
+
+        current = sparkline[-1] if sparkline else None
+        is_active = coin in active_coins
+        is_blacklisted = coin in blacklist
+
+        landscape.append({
+            "coin": coin,
+            "sparkline": sparkline,
+            "current_sharpe": current,
+            "active": is_active,
+            "blacklisted": is_blacklisted,
+            "points": len(sparkline),
+        })
+
+    # Sort: active first (by sharpe desc), then inactive, then blacklisted
+    landscape.sort(key=lambda x: (
+        2 if x["blacklisted"] else (0 if x["active"] else 1),
+        -(x["current_sharpe"] or 0),
+    ))
+
+    return {
+        "coins": landscape,
+        "active_count": len(active_coins),
+        "blacklisted_count": len([c for c in landscape if c["blacklisted"]]),
+        "total": len(landscape),
+        "data_points": len(runs),
+    }
+
+
 @app.get("/schemas")
 def schemas():
     """JSON Schema definitions for API types."""

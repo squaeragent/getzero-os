@@ -1,0 +1,17 @@
+{
+  "start": "2026-03-21T00:00:00+07:00",
+  "end": "2026-04-04T00:00:00+07:00",
+  "starting_equity": 751.47,
+  "starting_trades": 71,
+  "code_freeze": true,
+  "changes_deployed": [
+    "blacklist: SOCIAL, INFLUENCER, ARCH, CHAOS, ICHIMOKU",
+    "min_hold: 120min (was 15min)",
+    "gtc_entries: signal_age > 10min -> GTC at mid-spread",
+    "reduce_only: all close paths",
+    "l2_depth_failsafe: skip on 0 depth",
+    "stop_offsets: 2% limit buffer",
+    "desync_detector: 60s immune check",
+    "safe_write: no empty overwrite"
+  ]
+}
