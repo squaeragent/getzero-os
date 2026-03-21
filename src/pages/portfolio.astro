@@ -19,6 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="equity-hero">
             <div class="eq-number" id="eq-number">$—</div>
             <div class="eq-pnl" id="eq-pnl">—</div>
+            <div class="eq-realized" id="eq-realized">—</div>
             <div class="eq-meta" id="eq-meta">— trades · — uptime</div>
             <div class="eq-badges">
               <span class="risk-badge" id="risk-badge">—</span>
@@ -199,6 +200,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 600;
     font-family: var(--font-head);
     margin-top: 0.25rem;
+  }
+  .eq-realized {
+    font-size: 0.75rem;
+    font-family: var(--font-head);
+    color: var(--text-dim);
+    margin-top: 0.15rem;
+    letter-spacing: 0.02em;
   }
   .eq-meta {
     font-size: 0.7rem;
@@ -1031,7 +1039,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function fmtHold(hours){
     if(!hours && hours !== 0) return '—';
     if(hours < 1) return Math.round(hours * 60) + 'm';
-    return hours.toFixed(1) + 'h';
+    var h = Math.floor(hours);
+    var m = Math.round((hours - h) * 60);
+    if(m === 60){ h++; m = 0; }
+    if(h > 0 && m > 0) return h + 'h ' + m + 'm';
+    if(h > 0) return h + 'h';
+    return m + 'm';
   }
 
   var riskColors = {green:'#c8ff00',yellow:'#ffb000',orange:'#ff8800',red:'#ff3333'};
@@ -1084,7 +1097,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   // ─── EQUITY CURVE ───
-  function drawEquityCurve(curve, currentEquity){
+  function drawEquityCurve(curve, currentEquity, tradeEvents){
     var canvas = document.getElementById('equity-canvas');
     var emptyMsg = document.getElementById('eq-empty');
 
@@ -1215,6 +1228,48 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     ctx.arc(lastX, lastY, 3, 0, Math.PI*2);
     ctx.fillStyle = lineColor;
     ctx.fill();
+
+    // Trade event markers on the curve
+    if(tradeEvents && tradeEvents.length > 0 && curve.length >= 2){
+      var tMin = curve[0].t;
+      var tMax = curve[curve.length-1].t;
+      var tRange = tMax - tMin || 1;
+      for(var ei=0; ei<tradeEvents.length; ei++){
+        var ev = tradeEvents[ei];
+        if(ev.t < tMin || ev.t > tMax) continue;
+        // Find nearest equity point for Y position
+        var evIdx = 0;
+        var bestDist = Infinity;
+        for(var ci=0; ci<curve.length; ci++){
+          var dist = Math.abs(curve[ci].t - ev.t);
+          if(dist < bestDist){ bestDist = dist; evIdx = ci; }
+        }
+        var evX = px(evIdx);
+        var evY = py(vals[evIdx]);
+        // Color: green=profitable close, red=losing close, dim=entry
+        var evColor = ev.type === 'entry' ? 'rgba(255,255,255,0.4)' :
+                      (ev.pnl >= 0 ? '#c8ff00' : '#ff3333');
+        // Draw marker
+        ctx.beginPath();
+        if(ev.type === 'entry'){
+          // Small diamond for entries
+          ctx.moveTo(evX, evY - 3);
+          ctx.lineTo(evX + 3, evY);
+          ctx.lineTo(evX, evY + 3);
+          ctx.lineTo(evX - 3, evY);
+          ctx.closePath();
+        } else {
+          // Circle for closes
+          ctx.arc(evX, evY, 3.5, 0, Math.PI*2);
+        }
+        ctx.fillStyle = evColor;
+        ctx.fill();
+        // Thin border for visibility
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
 
     var el = document.getElementById('eq-range');
     if(el) el.textContent = curve.length + ' points · $' + (minV+range*0.1).toFixed(2) + ' – $' + (maxV-range*0.1).toFixed(2);
@@ -1650,6 +1705,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       pnlEl.style.color = totalPnl >= 0 ? '#c8ff00' : '#ff3333';
     }
 
+    // Realized P&L — only closed trades, only real money
+    var realizedEl = document.getElementById('eq-realized');
+    if(realizedEl){
+      realizedEl.textContent = 'REALIZED P&L: ' + fmt$(totalRealized);
+      realizedEl.style.color = totalRealized >= 0 ? 'rgba(200,255,0,0.6)' : 'rgba(255,51,51,0.6)';
+    }
+
     var metaEl = document.getElementById('eq-meta');
     if(metaEl) metaEl.textContent = trades + ' trades · ' + uptimeStr + ' uptime';
 
@@ -1672,8 +1734,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     document.getElementById('closed-count').textContent = '(' + liveClosed.length + ')';
     document.getElementById('updated').textContent = lastPriceUpdate ? 'Prices: ' + ago(lastPriceUpdate) : 'Loading prices...';
 
+    // Build trade events for chart markers
+    var tradeEvents = [];
+    for(var ti=0; ti<liveClosed.length; ti++){
+      var tc = liveClosed[ti];
+      var exitMs = tc.exit_time ? new Date(tc.exit_time).getTime() : 0;
+      if(exitMs) tradeEvents.push({t: exitMs, type: 'close', pnl: tc.pnl_usd || tc.pnl_dollars || 0, coin: tc.coin});
+    }
+    for(var pi=0; pi<livePos.length; pi++){
+      var pp = livePos[pi];
+      var entryMs = pp.entry_time ? new Date(pp.entry_time).getTime() : 0;
+      if(entryMs) tradeEvents.push({t: entryMs, type: 'entry', coin: pp.coin});
+    }
+
     // Equity curve
-    drawEquityCurve(d.liveEquityCurve, equity);
+    drawEquityCurve(d.liveEquityCurve, equity, tradeEvents);
 
     // System status
     renderSystemStatus(d.agents);
@@ -1904,7 +1979,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
         eq = startingEquity + totalRealized + totalUnrealized;
       }
-      drawEquityCurve(portfolioData.liveEquityCurve, eq);
+      // Rebuild trade events for price-update redraws
+      var evts = [];
+      var lc = lt ? lt.closed || [] : [];
+      for(var j=0; j<lc.length; j++){
+        var xm = lc[j].exit_time ? new Date(lc[j].exit_time).getTime() : 0;
+        if(xm) evts.push({t: xm, type: 'close', pnl: lc[j].pnl_usd || lc[j].pnl_dollars || 0});
+      }
+      var lp = lt ? lt.positions || [] : [];
+      for(var j=0; j<lp.length; j++){
+        var em = lp[j].entry_time ? new Date(lp[j].entry_time).getTime() : 0;
+        if(em) evts.push({t: em, type: 'entry'});
+      }
+      drawEquityCurve(portfolioData.liveEquityCurve, eq, evts);
     }
   });
 })();
