@@ -800,6 +800,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: #c8ff00;
     margin-bottom: 0.5rem;
   }
+  .funnel-big {
+    font-family: var(--font-head);
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: #c8ff00;
+    font-weight: 700;
+    margin: 0.5rem 0 0.2rem;
+  }
+  .funnel-copy {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    font-style: italic;
+  }
 
   /* ─── SIGNAL LANDSCAPE ─── */
   .landscape-grid {
@@ -1544,13 +1557,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         else if(d.type === 'HELD') badgeClass = 'held';
 
         var reasonText = d.reason || '';
+        // Sanitize: strip thresholds and internal names
+        reasonText = reasonText.replace(/:\s*\d+.*$/g, '').replace(/_/g, ' ');
         if(d.type === 'CLOSED'){
           var pnlStr = (d.pnl_usd >= 0 ? '+' : '') + '$' + (d.pnl_usd||0).toFixed(2);
           var pctStr = (d.pnl_pct >= 0 ? '+' : '') + ((d.pnl_pct||0)*100).toFixed(2) + '%';
-          reasonText = pnlStr + ' (' + pctStr + ') ' + (d.reason||'');
+          reasonText = pnlStr + ' (' + pctStr + ')';
         }
-
-        var sharpeStr = d.sharpe ? d.sharpe.toFixed(2) : '';
 
         html += '<div class="ds-row">';
         html += '<span class="ds-time">' + timeStr + '</span>';
@@ -1558,7 +1571,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         html += '<span class="ds-dir ' + dirClass + '">' + (d.direction||'—') + '</span>';
         html += '<span class="ds-badge ' + badgeClass + '">' + badgeText + '</span>';
         html += '<span class="ds-reason" title="' + reasonText.replace(/"/g,'&quot;') + '">' + reasonText + '</span>';
-        if(sharpeStr) html += '<span class="ds-sharpe">σ ' + sharpeStr + '</span>';
         html += '</div>';
       }
       body.innerHTML = html;
@@ -1573,27 +1585,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if(!body) return;
       if(!data || !data.funnel){ body.innerHTML = '<div class="muted">No funnel data</div>'; return; }
 
-      if(meta) meta.textContent = data.rejection_rate + '% rejection rate';
+      if(meta) meta.textContent = data.rejection_rate + '% rejected';
 
-      var html = '<div class="funnel-headline">' + data.total_signals + ' signals → ' + data.total_executed + ' trades (' + data.rejection_rate + '% rejected)</div>';
-
-      var maxCount = data.total_signals || 1;
-      for(var i=0; i<data.funnel.length; i++){
-        var f = data.funnel[i];
-        var count = f.count || f.remaining || 0;
-        var pct = f.pct || 0;
-        var barWidth = (count / maxCount * 100).toFixed(1);
-        var isExec = f.gate === 'EXECUTED';
-        var label = f.gate;
-        if(f.rejected) label += ' (−' + f.rejected + ')';
-
-        html += '<div class="funnel-row">';
-        html += '<span class="funnel-label">' + label + '</span>';
-        html += '<div class="funnel-bar-wrap"><div class="funnel-bar' + (isExec ? ' executed' : '') + '" style="width:' + barWidth + '%"></div></div>';
-        html += '<span class="funnel-count">' + count + '</span>';
-        html += '<span class="funnel-pct">' + pct.toFixed(0) + '%</span>';
-        html += '</div>';
-      }
+      var html = '';
+      html += '<div class="funnel-row">';
+      html += '<span class="funnel-label">signals evaluated</span>';
+      html += '<div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div>';
+      html += '</div>';
+      html += '<div class="funnel-row">';
+      html += '<span class="funnel-label">passed all checks</span>';
+      var execPct = (100 - (data.rejection_rate || 0)).toFixed(1);
+      html += '<div class="funnel-bar-wrap"><div class="funnel-bar executed" style="width:' + execPct + '%"></div></div>';
+      html += '</div>';
+      html += '<div class="funnel-big">' + (data.rejection_rate || 0) + '% rejected</div>';
+      html += '<div class="funnel-copy">The system\'s intelligence is what it doesn\'t trade.</div>';
       body.innerHTML = html;
     }).catch(function(){ /* silent */ });
   }
@@ -1606,7 +1611,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if(!body) return;
       if(!data || !data.coins || !data.coins.length){ body.innerHTML = '<div class="muted">No signal data</div>'; return; }
 
-      if(meta) meta.textContent = data.active_count + ' ACTIVE · ' + (data.watching_count||0) + ' WATCHING · ' + (data.blacklisted_count||0) + ' BLACKLISTED';
+      if(meta) meta.textContent = 'ACTIVE';
 
       var html = '';
       var prevTier = '';
@@ -1620,7 +1625,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           if(tier === 'watching' && prevTier === 'active'){
             html += '<div class="ls-tier-label">WATCHING</div>';
           } else if(tier === 'blacklisted'){
-            html += '<div class="ls-divider">BLACKLISTED — NEGATIVE PORTFOLIO SHARPE</div>';
+            html += '<div class="ls-divider">BLACKLISTED</div>';
           }
           prevTier = tier;
         }
@@ -1666,13 +1671,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if(!body) return;
       if(!data || !data.windows){ body.innerHTML = '<div class="muted">No immune data</div>'; return; }
 
-      if(meta) meta.textContent = '(24h) ' + data.ok_count + '/' + data.total_windows + ' windows clear';
+      var healthPct = data.total_windows > 0 ? Math.round(data.ok_count / data.total_windows * 100) : 0;
+      var healthLabel = healthPct === 100 ? 'healthy' : healthPct + '% healthy';
+      if(meta) meta.textContent = healthLabel;
 
-      var html = '<div class="immune-headline">';
-      html += data.ok_count + '/' + data.total_windows + ' windows clear';
-      if(data.warn_count > 0) html += ' · ' + data.warn_count + ' warnings';
-      if(data.nodata_count > 0) html += ' · ' + data.nodata_count + ' gaps';
-      html += '</div>';
+      var html = '<div class="immune-headline">' + healthLabel + '</div>';
 
       html += '<div class="immune-blocks">';
       for(var i=0; i<data.windows.length; i++){
@@ -1681,12 +1684,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       html += '</div>';
 
-      html += '<div class="immune-checks">';
-      for(var k in data.checks){
-        var st = data.checks[k];
-        html += '<span class="immune-check">' + k.replace(/_/g,' ') + ': <span class="' + st + '">✓</span></span>';
-      }
-      html += '</div>';
+      /* check names are internal — show aggregate status only */
 
       body.innerHTML = html;
     }).catch(function(){ /* silent */ });
@@ -2201,37 +2199,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         var coinRegime = regimes && regimes.coins && regimes.coins[p.coin];
         var regimeStr = coinRegime ? coinRegime.regime : '';
 
-        // Stop loss display
-        var stopDisplay = '—';
-        if(p.stop_loss && p.entry_price){
-          var stopPct = isLong
-            ? ((p.stop_loss - p.entry_price) / p.entry_price * 100)
-            : ((p.entry_price - p.stop_loss) / p.entry_price * 100);
-          stopDisplay = fmt$(p.stop_loss) + ' (' + stopPct.toFixed(1) + '%)';
-        } else if(p.stop_loss){
-          stopDisplay = fmt$(p.stop_loss);
-        }
+        // Stop loss display — price only, no % (reveals stop calculation)
+        var stopDisplay = p.stop_loss ? fmt$(p.stop_loss) : '—';
 
-        // Hold time progress bar
-        var holdPct = 0;
+        // Hold time elapsed (no max hold reveal)
         var holdLabel = '—';
-        var maxHoldH = p.max_hold_hours || 24;
         if(p.entry_time){
           var entryMs = new Date(p.entry_time).getTime();
           var holdMs = Date.now() - entryMs;
           var holdH = holdMs / 3600000;
-          holdPct = Math.min(100, (holdH / maxHoldH) * 100);
-          holdLabel = fmtHold(holdH) + ' / ' + maxHoldH + 'h max';
+          holdLabel = fmtHold(holdH);
         } else if(p.entry_time_ms){
           var holdMs2 = Date.now() - p.entry_time_ms;
           var holdH2 = holdMs2 / 3600000;
-          holdPct = Math.min(100, (holdH2 / maxHoldH) * 100);
-          holdLabel = fmtHold(holdH2) + ' / ' + maxHoldH + 'h max';
+          holdLabel = fmtHold(holdH2);
         }
-
-        // Signal name — humanize from internal identifiers
-        var signalRaw = p.signal_type || p.archetype || p.strategy || '';
-        var signalName = humanizeSignal(signalRaw);
 
         html += '<div class="pos-card'+cardCls+'">';
         html += '<div class="pos-card-top">';
@@ -2248,21 +2230,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         html += '<div class="pos-field"><span class="pos-fl">Now</span><span class="pos-fv">'+(curPrice ? fmt$(curPrice) : '—')+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Size</span><span class="pos-fv">'+fmt$(p.size_usd)+'</span></div>';
         html += '<div class="pos-field"><span class="pos-fl">Stop</span><span class="pos-fv c-neg">'+stopDisplay+'</span></div>';
-        html += '<div class="pos-field"><span class="pos-fl">Sharpe</span><span class="pos-fv">'+(p.sharpe != null ? p.sharpe.toFixed(2) : '—')+'</span></div>';
-        if(signalName) html += '<div class="pos-field"><span class="pos-fl">Signal</span><span class="pos-fv">'+signalName+'</span></div>';
         html += '</div>';
 
-        if(p.exit_expression){
-          var translated = translateExit(p.exit_expression);
-          html += '<div class="pos-exit">Exit: '+translated+'</div>';
-        } else {
-          html += '<div class="pos-exit">Exit: stop loss or max hold</div>';
-        }
+        html += '<div class="pos-exit">Exit: automated</div>';
 
         if(holdLabel !== '—'){
           html += '<div class="pos-hold-bar-wrap">';
-          html += '<div class="pos-hold-track"><div class="pos-hold-fill" style="width:'+holdPct.toFixed(1)+'%"></div></div>';
-          html += '<span class="pos-hold-label">'+holdLabel+'</span>';
+          html += '<span class="pos-hold-label">held: '+holdLabel+'</span>';
           html += '</div>';
         }
 
