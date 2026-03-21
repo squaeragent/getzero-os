@@ -1,0 +1,131 @@
+# NVArena Strategy Assembly
+# Coin: HYPE
+# Mode: normal
+# Signals: 10
+# Generated: 2026-03-21 13:49:42 UTC
+
+coin: HYPE
+mode: normal
+max_leverage: 1
+stop_loss_pct: 30
+max_drawdown_tolerance_pct: 25
+signal_count: 10
+backtest:
+  initial_capital: 10000
+  final_equity: 37699.91
+  total_return_pct: 276.9991
+  total_trades: 290
+  win_count: 205
+  loss_count: 85
+  win_rate: 0.7069
+  avg_win_pct: 1.7240
+  avg_loss_pct: -1.5654
+  avg_hold_hours: 5.39
+  max_drawdown_pct: 20.9222
+  sharpe: 3.9936
+  expectancy: 0.7598
+  time_in_market_pct: 22.12
+  r2: 0.8710
+  total_commission: 5817.8654
+  total_platform_fees: 4433.8435
+signals:
+- priority: 1
+  name: DOJI_SENKOU_BELOW_LONG_EX5_Q4_FR18_EX1
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 10 AND SENKOU_B_13H_N >= 1.010 AND RSI_3H30M < 42 AND DOJI_VELOCITY_L < 0.139599
+  exit_expression: BB_POSITION_15M > 0.945 OR RSI_3H30M > 64.8
+  max_hold_hours: 96
+  rarity: Common
+  composite_score: 10.8150
+  sharpe: 2.4311
+  win_rate: 90.0000
+- priority: 2
+  name: DOJI_VELOCITY_MOMENTUM_LONG_EX2_Q1_EX2
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND DOJI_VELOCITY >= 5 AND RSI_3H30M < 42 AND BB_POSITION_15M < 0.25 AND DFA_24H < 0.539320160
+  exit_expression: BB_POSITION_15M > 1.10 OR RSI_3H30M > 68
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 9.7930
+  sharpe: 1.6927
+  win_rate: 75.0000
+- priority: 3
+  name: DOJI_L_CMO_OVERSOLD_LONG_V1_EX3_Q8_EX7
+  signal_type: LONG
+  expression: DOJI_SIGNAL_L >= 100 AND DOJI_VELOCITY_L < -5 AND CMO_3H30M < -25 AND SENKOU_B_13H_N >= 1.0127203075
+  exit_expression: RSI_3H30M > 63.25 OR CMO_3H30M > 17.25
+  max_hold_hours: 24
+  rarity: Common
+  composite_score: 9.6300
+  sharpe: 2.5737
+  win_rate: 77.7778
+- priority: 4
+  name: RSI_OVERSOLD_HURST_GATED_LONG_V1_FR5_Q8
+  signal_type: LONG
+  expression: RSI_3H30M < 30 AND HURST_24H >= 0.83 AND CMO_3H30M < -24 AND LYAPUNOV_48H >= 2.0380949600
+  exit_expression: RSI_3H30M > 55 OR CMO_3H30M > 10
+  max_hold_hours: 24
+  rarity: Common
+  composite_score: 9.4720
+  sharpe: 2.4922
+  win_rate: 87.5000
+- priority: 5
+  name: CLOUD_BULL_EMA_LONG_V2_EX3
+  signal_type: LONG
+  expression: CLOUD_POSITION_15M >= 1 AND EMA_3H_N > 1.004 AND HURST_48H >= 0.66
+  exit_expression: CLOUD_POSITION_15M <= -1.15 OR EMA_3H_N < 0.996
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 9.2770
+  sharpe: 2.0418
+  win_rate: 74.4681
+- priority: 6
+  name: MOMENTUM_ROC_DFA_MEAN_REVERT_LONG_V1_EX3_EX2_EX1_Q
+  signal_type: LONG
+  expression: ROC_3H < -1.2 AND MOMENTUM_2H30M_N < -0.0003 AND DFA_48H < 0.50 AND CLOUD_POSITION_15M >= 2.0000000000
+  exit_expression: ROC_3H > 0.80 OR MOMENTUM_2H30M_N > 0.0101
+  max_hold_hours: 18
+  rarity: Common
+  composite_score: 8.6340
+  sharpe: 1.7191
+  win_rate: 81.8182
+- priority: 7
+  name: KIJUN_BREAKDOWN_DFA_SHORT_FR0
+  signal_type: SHORT
+  expression: KIJUN_6H30M_N < 0.945 AND TENKAN_2H15M_N < 0.997 AND DFA_24H >= 0.55
+  exit_expression: KIJUN_6H30M_N > 1.003 OR TENKAN_2H15M_N > 1.002
+  max_hold_hours: 60
+  rarity: Common
+  composite_score: 8.0210
+  sharpe: 2.1280
+  win_rate: 100.0000
+- priority: 8
+  name: DOJI_RSI_DEEP_OVERSOLD_LONG_EX1_Q4
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 12 AND RSI_3H30M < 35 AND HURST_48H < 0.699945560
+  exit_expression: BB_POSITION_15M > 0.85 OR RSI_3H30M > 70
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 7.3060
+  sharpe: 1.6921
+  win_rate: 80.0000
+- priority: 9
+  name: DOJI_SIGNAL_LONG_BB_LOW_EX2_MH12_Q8_EX3_Q6
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND BB_POSITION_15M < 0.15 AND DOJI_DISTANCE >= 5 AND ADX_3H30M >= 50.7886435300 AND DOJI_VELOCITY < -4.8604813700
+  exit_expression: BB_POSITION_15M > 1.2075 OR DOJI_DISTANCE < -1
+  max_hold_hours: 12
+  rarity: Common
+  composite_score: 6.1190
+  sharpe: 2.3661
+  win_rate: 75.0000
+- priority: 10
+  name: DOJI_SHORT_BB_HIGH_TIGHT_V1_EX3_EX2_EX6
+  signal_type: SHORT
+  expression: DOJI_SIGNAL >= 100 AND BB_POSITION_15M > 0.88 AND DOJI_DISTANCE >= 3
+  exit_expression: BB_POSITION_15M < -0.15 OR DOJI_DISTANCE < -2.2
+  max_hold_hours: 14
+  rarity: Common
+  composite_score: 5.6950
+  sharpe: 1.6499
+  win_rate: 66.6667

@@ -50,7 +50,10 @@ def now_iso() -> str:
 
 
 def send_telegram(message: str):
-    """Send alert via Telegram."""
+    """Send alert via Telegram. Suppressed in paper mode."""
+    import os as _os
+    if _os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes"):
+        return  # silent in paper mode
     import urllib.request
     token = get_env(TELEGRAM_BOT_TOKEN_ENV)
     if not token:

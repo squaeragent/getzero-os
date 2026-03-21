@@ -15,8 +15,16 @@ import sys
 import time
 import subprocess
 import signal
+import threading
 from pathlib import Path
 from datetime import datetime, timezone
+
+# Supabase bridge — telemetry only
+try:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from supabase_bridge import bridge as _sb
+except Exception:
+    _sb = None
 
 V6_DIR   = Path(__file__).parent
 BUS_DIR  = V6_DIR / "bus"
@@ -32,6 +40,17 @@ COMPONENTS = [
 ]
 
 processes = {}
+
+
+def _drain_output(proc, name):
+    """Drain stdout from a subprocess and log each line. Runs in a thread."""
+    try:
+        for line in proc.stdout:
+            stripped = line.rstrip("\n")
+            if stripped:
+                print(f"  [{name}] {stripped}", flush=True)
+    except (ValueError, OSError):
+        pass  # pipe closed
 
 
 def ts():
@@ -105,13 +124,19 @@ def start_evaluator():
 
     log("Starting evaluator (WebSocket loop)...")
     try:
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
         proc = subprocess.Popen(
             [PYTHON, str(V6_DIR / "evaluator.py"), "--loop"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True
+            text=True,
+            env=env,
         )
         processes[name] = proc
+        # Drain evaluator output in background thread so pipe doesn't block
+        t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
+        t.start()
         log(f"evaluator PID: {proc.pid}")
     except Exception as e:
         log(f"Failed to start evaluator: {e}")
@@ -129,13 +154,18 @@ def start_immune():
 
     log("Starting immune system monitor...")
     try:
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
         proc = subprocess.Popen(
             [PYTHON, str(V6_DIR / "immune.py"), "--loop"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True
+            text=True,
+            env=env,
         )
         processes[name] = proc
+        t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
+        t.start()
         log(f"immune PID: {proc.pid}")
     except Exception as e:
         log(f"Failed to start immune: {e}")
@@ -154,6 +184,9 @@ def check_evaluator():
 
 def signal_handler(sig, frame):
     log("Shutting down...")
+    # Mark agent as stopped in Supabase
+    if _sb:
+        _sb.mark_stopped("signal_shutdown")
     for name, proc in processes.items():
         try:
             proc.terminate()
@@ -202,14 +235,24 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
+    # Paper mode: --paper flag or PAPER_MODE env var
+    paper_mode = "--paper" in sys.argv or os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes")
+    if paper_mode:
+        os.environ["PAPER_MODE"] = "1"
+
     # Ensure directories exist
     BUS_DIR.mkdir(parents=True, exist_ok=True)
     (V6_DIR / "data").mkdir(parents=True, exist_ok=True)
 
+    mode_label = "PAPER" if paper_mode else "LIVE"
     log("=" * 60)
-    log("V6 Supervisor starting")
+    log(f"V6 Supervisor starting [{mode_label}]")
     log(f"Python: {PYTHON}")
     log("=" * 60)
+
+    # Mark agent as running in Supabase
+    if _sb:
+        _sb.mark_running({"preset": "balanced", "version": "v6"})
 
     # Initial strategy refresh
     log("Initial strategy refresh...")
@@ -240,9 +283,9 @@ def main():
                 run_once(name, script)
                 cycle_times[name] = now
 
-        # Strategy refresh every 2h
-        if now - last_strategy_refresh >= 7200:
-            log("Refreshing strategies (2h interval)...")
+        # Strategy refresh every 6h (credit conservation: signal check=$1, assemble=$3)
+        if now - last_strategy_refresh >= 21600:
+            log("Refreshing strategies (6h interval, delta check active)...")
             run_once("strategy_manager", V6_DIR / "strategy_manager.py")
             last_strategy_refresh = now
 

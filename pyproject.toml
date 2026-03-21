@@ -1,0 +1,29 @@
+[project]
+name = "zeroos"
+version = "0.1.0"
+description = "ZERO OS — The operating system for trading agents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "ZERO OS", email = "degenie@getzero.dev"}]
+
+dependencies = [
+    "click>=8.0",
+    "pyyaml>=6.0",
+    "cryptography>=42.0",
+    "eth-account>=0.13",
+    "websocket-client>=1.7",
+]
+
+[project.optional-dependencies]
+x402 = ["web3>=7.0"]
+
+[project.scripts]
+zeroos = "scanner.zeroos_cli.cli:cli"
+
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["scanner*"]

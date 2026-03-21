@@ -1,0 +1,131 @@
+# NVArena Strategy Assembly
+# Coin: OP
+# Mode: normal
+# Signals: 10
+# Generated: 2026-03-21 13:49:46 UTC
+
+coin: OP
+mode: normal
+max_leverage: 1
+stop_loss_pct: 30
+max_drawdown_tolerance_pct: 25
+signal_count: 10
+backtest:
+  initial_capital: 10000
+  final_equity: 21674.07
+  total_return_pct: 116.7407
+  total_trades: 199
+  win_count: 138
+  loss_count: 61
+  win_rate: 0.6935
+  avg_win_pct: 1.3693
+  avg_loss_pct: -0.9579
+  avg_hold_hours: 4.10
+  max_drawdown_pct: 7.9180
+  sharpe: 3.2829
+  expectancy: 0.6560
+  time_in_market_pct: 9.30
+  r2: 0.9189
+  total_commission: 2737.9038
+  total_platform_fees: 1674.3206
+signals:
+- priority: 1
+  name: DFA_LOWCHAOS_MACD_CROSS_LONG_EX2_Q5_FR12_EX3_FR7
+  signal_type: LONG
+  expression: DFA_48H <= 0.46 AND LYAPUNOV_48H <= 2.079 AND MACD_CROSS_15M_N >= 0.0003 AND CMO_3H30M <= -12 AND DFA_24H >= 0.6101072275
+  exit_expression: CMO_3H30M >= 44.85 OR BB_POSITION_15M >= 1.00
+  max_hold_hours: 60
+  rarity: Rare
+  composite_score: 9.9630
+  sharpe: 2.3917
+  win_rate: 85.7143
+- priority: 2
+  name: RSI_CMO_OVERSOLD_DOJI_GATE_LONG_Q5
+  signal_type: LONG
+  expression: RSI_3H30M <= 30 AND CMO_3H30M <= -40 AND EMA_CROSS_15M_N >= 0.0001 AND DOJI_DISTANCE_L >= 0 AND BB_LOWER_5H_N >= 0.9949457475
+  exit_expression: CMO_3H30M >= 22 OR RSI_3H30M >= 68
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 5.5480
+  sharpe: 1.4846
+  win_rate: 67.5676
+- priority: 3
+  name: DOJI_BB_LOW_LONG_EX3_Q0_EX5_Q11
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND BB_POSITION_15M <= 0.25 AND ICHIMOKU_BULL >= 1 AND ADX_3H30M < 15.2777777800 AND DFA_48H >= 0.5747694850
+  exit_expression: BB_POSITION_15M >= 0.70 OR RSI_3H30M >= 85.8
+  max_hold_hours: 12
+  rarity: Common
+  composite_score: 5.4370
+  sharpe: 1.5699
+  win_rate: 86.6667
+- priority: 4
+  name: DOJI_BB_LOW_LONG_V3_Q14
+  signal_type: LONG
+  expression: DOJI_SIGNAL_L >= 100 AND BB_POSITION_15M <= 0.30 AND DOJI_VELOCITY >= 2 AND CLOUD_POSITION_15M >= 0 AND HURST_48H >= 0.7399176275
+  exit_expression: BB_POSITION_15M >= 0.75
+  max_hold_hours: 12
+  rarity: Common
+  composite_score: 5.4220
+  sharpe: 1.4548
+  win_rate: 83.3333
+- priority: 5
+  name: DOJI_MEANREV_DFA_BB_LONG_V3_MH12_Q2
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND DFA_48H <= 0.46 AND BB_POSITION_15M <= 0.20 AND DOJI_DISTANCE >= 5 AND DOJI_DISTANCE_L >= 8.8544381700
+  exit_expression: BB_POSITION_15M >= 0.95
+  max_hold_hours: 12
+  rarity: Common
+  composite_score: 5.0650
+  sharpe: 1.5806
+  win_rate: 81.8182
+- priority: 6
+  name: DFA_TRENDING_MOMENTUM_LONG_V2_FR3_EX4_Q4
+  signal_type: LONG
+  expression: DFA_24H >= 0.76 AND ROC_3H >= 0.5 AND RSI_3H30M >= 55 AND CLOUD_POSITION_15M < 0.000000000
+  exit_expression: ROC_3H <= -0.3 OR RSI_3H30M <= 48.3
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 4.1360
+  sharpe: 2.0523
+  win_rate: 55.5556
+- priority: 7
+  name: EMA_DIV_MOMENTUM_LONG_V2_FR15_EX6_FR12_FR13
+  signal_type: LONG
+  expression: EMA_6H30M_N <= 0.995 AND EMA_3H_N >= 0.999 AND MACD_CROSS_15M_N >= 0.0004 AND ADX_3H30M <= 31.878
+  exit_expression: EMA_3H_N <= 0.996 OR MACD_CROSS_15M_N <= -0.011
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 4.1240
+  sharpe: 1.2405
+  win_rate: 91.6667
+- priority: 8
+  name: CMO_EMA_CROSS_LONG_V2_EX2_Q11_EX3_Q9
+  signal_type: LONG
+  expression: CMO_3H30M <= -40 AND EMA_CROSS_15M_N >= 0.0003 AND MACD_6H30M_N < 0.0028329725 AND BB_POSITION_15M < 0.2284366550
+  exit_expression: CMO_3H30M >= 22.425
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: 3.7400
+  sharpe: 1.2808
+  win_rate: 71.0145
+- priority: 9
+  name: DFA_TRENDING_MOMENTUM_LONG_FR6_EX1_FR11_EX6_Q5_FR2
+  signal_type: LONG
+  expression: DFA_24H >= 0.45 AND MOMENTUM_2H30M_N >= 0.17 AND EMA_CROSS_15M_N >= -0.0045 AND ICHIMOKU_BULL >= 1.0000000000 AND RSI_3H30M >= 60.7142857100
+  exit_expression: MOMENTUM_2H30M_N <= 0.015 OR DFA_24H <= 0.32
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 3.0810
+  sharpe: 1.5344
+  win_rate: 45.4545
+- priority: 10
+  name: DFA_TRENDING_MOMENTUM_LONG_FR6_EX1_FR11_EX6_Q5_FR2
+  signal_type: LONG
+  expression: DFA_24H >= 0.45 AND MOMENTUM_2H30M_N >= 0.17 AND EMA_CROSS_15M_N >= -0.0045 AND ICHIMOKU_BULL >= 1.0000000000 AND MACD_CROSS_15M_N >= 0.0009137600
+  exit_expression: MOMENTUM_2H30M_N <= 0.015 OR DFA_24H <= 0.32
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 2.9470
+  sharpe: 1.3875
+  win_rate: 43.4783

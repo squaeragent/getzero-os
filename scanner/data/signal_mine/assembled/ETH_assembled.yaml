@@ -1,0 +1,131 @@
+# NVArena Strategy Assembly
+# Coin: ETH
+# Mode: normal
+# Signals: 10
+# Generated: 2026-03-21 13:49:40 UTC
+
+coin: ETH
+mode: normal
+max_leverage: 1
+stop_loss_pct: 30
+max_drawdown_tolerance_pct: 25
+signal_count: 10
+backtest:
+  initial_capital: 10000
+  final_equity: 25975.09
+  total_return_pct: 159.7509
+  total_trades: 280
+  win_count: 170
+  loss_count: 110
+  win_rate: 0.6071
+  avg_win_pct: 1.9011
+  avg_loss_pct: -1.3252
+  avg_hold_hours: 11.91
+  max_drawdown_pct: 14.3263
+  sharpe: 2.7649
+  expectancy: 0.6336
+  time_in_market_pct: 38.08
+  r2: 0.9660
+  total_commission: 4647.0184
+  total_platform_fees: 3282.7102
+signals:
+- priority: 1
+  name: XONE_DELTA_RSI_LONG_V1_EX7_EX7
+  signal_type: LONG
+  expression: XONE_AVG_NET_DELTA >= 20 AND XONE_A_NET >= 40 AND RSI_3H30M <= 42 AND LYAPUNOV_24H <= 1.78
+  exit_expression: XONE_AVG_NET_DELTA <= -15 OR RSI_3H30M >= 92.575
+  max_hold_hours: 48
+  rarity: Rare
+  composite_score: 14.4540
+  sharpe: 1.8269
+  win_rate: 60.6061
+- priority: 2
+  name: XONE_DELTA_POSITIVE_BB_LOW_LONG_V2_EX2_Q0
+  signal_type: LONG
+  expression: XONE_AVG_NET_DELTA >= 8 AND BB_POSITION_15M <= 0.30 AND HURST_24H >= 0.65 AND XONE_U_NET >= 30.0000000000
+  exit_expression: BB_POSITION_15M >= 1.10 OR XONE_AVG_NET_DELTA <= -10
+  max_hold_hours: 36
+  rarity: Rare
+  composite_score: 13.6600
+  sharpe: 1.6114
+  win_rate: 64.0523
+- priority: 3
+  name: SOCIAL_MOMENTUM_BULLISH_CONSENSUS_LONG_MH32_MH16
+  signal_type: LONG
+  expression: XONE_AVG_NET_DELTA >= 15 AND XONE_A_NET >= 35 AND RSI_3H30M <= 55 AND XONE_U_NET >= 50
+  exit_expression: XONE_AVG_NET_DELTA <= -8 OR RSI_3H30M >= 78
+  max_hold_hours: 16
+  rarity: Rare
+  composite_score: 11.1520
+  sharpe: 1.6533
+  win_rate: 60.2410
+- priority: 4
+  name: SOCIAL_ANALYST_DIVERGENCE_LONG_EX7_Q10
+  signal_type: LONG
+  expression: XONE_A_U_DIV >= 50 AND XONE_AVG_NET >= 10 AND RSI_3H30M <= 45 AND MACD_CROSS_15M_N >= 0.000001890
+  exit_expression: XONE_A_U_DIV <= 0 OR RSI_3H30M >= 74.75
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 6.6750
+  sharpe: 1.4685
+  win_rate: 80.0000
+- priority: 5
+  name: XONE_SPREAD_VOLATILITY_SHORT_V2_FR1_Q1_FR13_FR3_EX
+  signal_type: SHORT
+  expression: XONE_SPREAD >= 88.825 AND XONE_AVG_NET <= -5 AND BB_POSITION_15M >= 0.65 AND RSI_3H30M >= 46.75 AND ICHIMOKU_BULL < 1.000000000
+  exit_expression: BB_POSITION_15M <= 0.35 OR XONE_AVG_NET >= 15
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 6.5650
+  sharpe: 1.9183
+  win_rate: 68.2927
+- priority: 6
+  name: ICHIMOKU_SOCIAL_TREND_LONG_V3_FR13
+  signal_type: LONG
+  expression: ICHIMOKU_BULL >= 1 AND CLOUD_POSITION_15M >= 1 AND XONE_A_NET >= 30 AND EMA_CROSS_15M_N >= 0.0105
+  exit_expression: CLOUD_POSITION_15M <= -1 OR XONE_A_NET <= -20
+  max_hold_hours: 96
+  rarity: Common
+  composite_score: 5.6660
+  sharpe: 1.9976
+  win_rate: 65.0000
+- priority: 7
+  name: XONE_ANET_KIJUN_LONG_V1_EX0_Q8
+  signal_type: LONG
+  expression: XONE_A_NET >= 50 AND KIJUN_6H30M_N <= 0.999 AND RSI_3H30M <= 38 AND LYAPUNOV_24H <= 1.80 AND DOJI_VELOCITY_L >= 3.4069866700
+  exit_expression: RSI_3H30M >= 79.2 OR XONE_A_NET <= -20
+  max_hold_hours: 24
+  rarity: Common
+  composite_score: 5.3420
+  sharpe: 1.9340
+  win_rate: 85.7143
+- priority: 8
+  name: XONE_SPREAD_VOLATILITY_SHORT_V2_FR1_Q1_FR13
+  signal_type: SHORT
+  expression: XONE_SPREAD >= 93.5 AND XONE_AVG_NET <= -5 AND BB_POSITION_15M >= 0.65 AND RSI_3H30M >= 46.75 AND ICHIMOKU_BULL < 1.000000000
+  exit_expression: BB_POSITION_15M <= 0.25 OR XONE_AVG_NET >= 15
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 5.2150
+  sharpe: 2.3301
+  win_rate: 78.1250
+- priority: 9
+  name: RSI_OVERSOLD_DOJI_SOCIAL_LONG_V2_EX2_Q3_EX5_Q2_FR1
+  signal_type: LONG
+  expression: RSI_3H30M <= 35 AND DOJI_SIGNAL >= 100 AND XONE_A_U_DIV >= 20 AND DFA_24H < 0.513760 AND EMA_3H_N < 1.0022596600
+  exit_expression: RSI_3H30M >= 78 OR BB_POSITION_15M >= 1.375
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: 4.0960
+  sharpe: 1.6124
+  win_rate: 88.8889
+- priority: 10
+  name: RSI_OVERSOLD_DOJI_SOCIAL_LONG_V2_EX2_Q3_EX5_Q2_FR1
+  signal_type: LONG
+  expression: RSI_3H30M <= 35 AND DOJI_SIGNAL >= 100 AND XONE_A_U_DIV >= 20 AND DFA_24H < 0.513760 AND EMA_3H_N < 1.0022596600
+  exit_expression: RSI_3H30M >= 78 OR BB_POSITION_15M >= 1.25
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: 2.6060
+  sharpe: 1.4451
+  win_rate: 88.8889

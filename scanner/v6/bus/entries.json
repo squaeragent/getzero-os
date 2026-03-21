@@ -1,4 +1,47 @@
 {
-  "updated_at": "2026-03-21T08:50:28.616853+00:00",
-  "entries": []
+  "updated_at": "2026-03-21T22:03:22.809282+00:00",
+  "entries": [
+    {
+      "coin": "TIA",
+      "direction": "LONG",
+      "signal_name": "RSI_BB_OVERSOLD_LONG_V1_EX0_Q1_Q3",
+      "expression": "RSI_3H30M <= 30 AND BB_POSITION_15M <= 0.12 AND DFA_48H < 0.45 AND DOJI_VELOCITY_L < -0.148141600 AND DOJI_DISTANCE < -11.8237910300",
+      "exit_expression": "RSI_3H30M >= 60.5 OR BB_POSITION_15M >= 0.60",
+      "max_hold_hours": 36,
+      "sharpe": 2.2262,
+      "win_rate": 86.2069,
+      "composite_score": 12.809,
+      "stop_loss_pct": 0.05,
+      "priority": 3,
+      "fired_at": "2026-03-21T21:32:16.268003+00:00"
+    },
+    {
+      "coin": "APT",
+      "direction": "LONG",
+      "signal_name": "DOJI_REVERSAL_LONG_V1_EX1_Q8_EX1_MH9",
+      "expression": "DOJI_SIGNAL >= 100 AND RSI_3H30M <= 35 AND DOJI_DISTANCE >= 4 AND LYAPUNOV_24H <= 1.80 AND DOJI_DISTANCE_L >= 7.0255094175",
+      "exit_expression": "RSI_3H30M >= 64.8 OR DOJI_DISTANCE <= -15",
+      "max_hold_hours": 9,
+      "sharpe": 1.8027,
+      "win_rate": 76.9231,
+      "composite_score": 9.391,
+      "stop_loss_pct": 0.05,
+      "priority": 5,
+      "fired_at": "2026-03-21T21:38:13.863077+00:00"
+    },
+    {
+      "coin": "TIA",
+      "direction": "SHORT",
+      "signal_name": "DOJI_VELOCITY_NEG_SHORT_V2_EX3_EX0_EX3",
+      "expression": "DOJI_SIGNAL >= 100 AND DOJI_VELOCITY <= -4.5 AND RSI_3H30M > 50 AND LYAPUNOV_48H >= 1.91",
+      "exit_expression": "RSI_3H30M <= 24.7095 OR DOJI_VELOCITY >= 0.5",
+      "max_hold_hours": 48,
+      "sharpe": 2.2844,
+      "win_rate": 71.0843,
+      "composite_score": 27.004,
+      "stop_loss_pct": 0.05,
+      "priority": 1,
+      "fired_at": "2026-03-21T21:45:43.742147+00:00"
+    }
+  ]
 }

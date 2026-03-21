@@ -29,6 +29,12 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Supabase bridge — telemetry only, never blocks trading
+try:
+    from supabase_bridge import bridge as _sb
+except Exception:
+    _sb = None
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scanner.v6.config import (
     HL_MAIN_ADDRESS, HL_INFO_URL, HL_EXCHANGE_URL,
@@ -68,6 +74,10 @@ def log_rejection(coin: str, direction: str, reason: str, details: dict = None):
             f.write(json.dumps(entry) + "\n")
     except Exception:
         pass  # never fail a trade because logging broke
+    # Supabase (rate-limited: 1 per coin per hour inside bridge)
+    if _sb:
+        _sb.log_decision(coin, direction, "rejected", reason,
+                         sharpe=details.get("sharpe") if details else None)
 
 
 def load_json(path: Path, default=None):
@@ -144,7 +154,10 @@ def update_heartbeat():
 # ─── TELEGRAM ─────────────────────────────────────────────────────────────────
 
 def send_alert(message: str):
-    """Send Telegram message. Never raises."""
+    """Send Telegram message. Never raises. Suppressed in paper mode."""
+    if os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes"):
+        log(f"[PAPER] Alert suppressed: {message[:80]}")
+        return
     try:
         token = get_env(TELEGRAM_BOT_TOKEN_ENV)
         if not token:
@@ -869,6 +882,13 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         + ("[DRY RUN]" if dry else "")
     )
     log(f"  Opened {direction} {coin} @ ${price:,.4f} (stop={stop_pct*100:.0f}%)")
+
+    # Supabase telemetry
+    if _sb and not dry:
+        _sb.log_decision(coin, direction, "entered", "passed all checks",
+                         sharpe=trade.get("sharpe"), signal_name=trade.get("signal_name"))
+        _sb.log_trade_open(pos)
+
     return True
 
 
@@ -1001,6 +1021,18 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         + ("  [DRY]" if dry else "")
     )
     log(f"  Closed {direction} {coin}: P&L=${pnl_usd:+.2f} ({pnl_pct*100:+.2f}%) — {exit_reason}")
+
+    # Supabase telemetry
+    if _sb and not dry:
+        _sb.log_decision(coin, direction, "closed", f"P&L=${pnl_usd:+.2f} ({exit_reason})",
+                         sharpe=pos.get("sharpe"))
+        _sb.log_trade_close(
+            coin=coin, direction=direction,
+            entry_price=entry_price, exit_price=exit_price,
+            size_usd=actual_exit_notional, pnl=pnl_usd, fees=total_fees,
+            entry_time=entry_time, exit_reason=exit_reason
+        )
+
     return trade_record
 
 
@@ -1173,8 +1205,28 @@ def _reconcile_positions(client: "HLClient"):
 
 
 def main():
+    global APPROVED_FILE, EXITS_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE, TRADES_FILE, BUS_DIR, DATA_DIR
+
     dry  = "--dry" in sys.argv
     loop = "--loop" in sys.argv
+
+    # Paper mode: PAPER_MODE env var or --paper flag
+    paper_mode = os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes") or "--paper" in sys.argv
+
+    if paper_mode:
+        from scanner.v6.paper_isolation import apply_paper_isolation
+        apply_paper_isolation()
+        # Re-bind module-level refs to patched config paths
+        import scanner.v6.config as _cfg
+        APPROVED_FILE = _cfg.APPROVED_FILE
+        EXITS_FILE = _cfg.EXITS_FILE
+        POSITIONS_FILE = _cfg.POSITIONS_FILE
+        RISK_FILE = _cfg.RISK_FILE
+        HEARTBEAT_FILE = _cfg.HEARTBEAT_FILE
+        TRADES_FILE = _cfg.TRADES_FILE
+        BUS_DIR = _cfg.BUS_DIR
+        DATA_DIR = _cfg.DATA_DIR
+        log("=== PAPER MODE — isolated state at ~/.zeroos/state/bus/ ===")
 
     if dry:
         log("=== V6 Executor (DRY RUN — no real orders) ===")
@@ -1184,16 +1236,21 @@ def main():
     BUS_DIR.mkdir(parents=True, exist_ok=True)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Load HL metadata
+    # Load HL metadata (needed for COIN_SZ_DECIMALS in sizing even in paper mode)
     load_hl_meta()
 
-    # Init HL client
-    hl_key = get_env("HYPERLIQUID_SECRET_KEY") or get_env("HL_PRIVATE_KEY")
-    if not hl_key:
-        log("FATAL: HL_PRIVATE_KEY not set")
-        sys.exit(1)
+    if paper_mode:
+        from scanner.v6.paper_executor import PaperExecutor
+        log("=== PAPER MODE — virtual positions, real prices ===")
+        client = PaperExecutor()
+    else:
+        # Init HL client
+        hl_key = get_env("HYPERLIQUID_SECRET_KEY") or get_env("HL_PRIVATE_KEY")
+        if not hl_key:
+            log("FATAL: HL_PRIVATE_KEY not set")
+            sys.exit(1)
 
-    client = HLClient(hl_key, HL_MAIN_ADDRESS)
+        client = HLClient(hl_key, HL_MAIN_ADDRESS)
 
     # Check balance
     try:
@@ -1223,9 +1280,11 @@ def main():
 
     # Startup guard: if local positions.json is empty, reconcile from HL first
     local_pos = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
-    if not local_pos:
+    startup_flag = BUS_DIR / ".executor_started"
+    if not local_pos and not startup_flag.exists():
         log("⚠️  STARTUP: positions.json is empty — reconciling from HL before proceeding")
         send_alert("⚠️ V6 Executor startup: positions.json was empty. Reconciling from HL.")
+        startup_flag.write_text(now_iso())
 
     # Reconcile positions with HL reality
     _reconcile_positions(client)

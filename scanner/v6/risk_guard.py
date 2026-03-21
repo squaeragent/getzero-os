@@ -33,6 +33,12 @@ from scanner.v6.config import (
     DAILY_LOSS_LIMIT, CAPITAL, get_dynamic_limits,
 )
 
+# Supabase bridge — telemetry only
+try:
+    from supabase_bridge import bridge as _sb
+except Exception:
+    _sb = None
+
 CYCLE_SECONDS = 5
 
 # Rejection reason logging — pure telemetry, shared with executor
@@ -144,17 +150,21 @@ def get_equity() -> float:
 def _record_equity(equity: float):
     """Append equity snapshot to history JSONL for the portfolio chart."""
     from scanner.v6.config import EQUITY_HISTORY_FILE
+    n_positions = len(load_json_locked(POSITIONS_FILE, {}).get("positions", []))
     try:
         snapshot = {
             "timestamp": now_iso(),
             "account_value": equity,
             "unrealized_pnl": 0.0,
-            "n_positions": len(load_json_locked(POSITIONS_FILE, {}).get("positions", [])),
+            "n_positions": n_positions,
         }
         with open(EQUITY_HISTORY_FILE, "a") as f:
             f.write(json.dumps(snapshot) + "\n")
     except Exception as e:
         log(f"  WARN: equity record failed: {e}")
+    # Supabase telemetry (rate-limited to 60s inside bridge)
+    if _sb:
+        _sb.log_equity(equity, unrealized_pnl=0.0, positions_count=n_positions)
 
 
 def check_halt(risk: dict) -> tuple[bool, str]:
@@ -321,6 +331,21 @@ def run_once():
 
 
 def main():
+    global BUS_DIR, ENTRIES_FILE, APPROVED_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE
+
+    # Paper mode isolation
+    from scanner.v6.paper_isolation import is_paper_mode, apply_paper_isolation
+    if is_paper_mode():
+        apply_paper_isolation()
+        import scanner.v6.config as _cfg
+        BUS_DIR = _cfg.BUS_DIR
+        ENTRIES_FILE = _cfg.ENTRIES_FILE
+        APPROVED_FILE = _cfg.APPROVED_FILE
+        POSITIONS_FILE = _cfg.POSITIONS_FILE
+        RISK_FILE = _cfg.RISK_FILE
+        HEARTBEAT_FILE = _cfg.HEARTBEAT_FILE
+        log("=== PAPER MODE — risk guard using isolated bus ===")
+
     loop = "--loop" in sys.argv
     BUS_DIR.mkdir(parents=True, exist_ok=True)
     log("=== V6 Risk Guard starting ===")

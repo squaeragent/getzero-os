@@ -71,7 +71,7 @@ def get_api_key():
 
 def fetch_pack(coin, pack_type, api_key):
     """Fetch a signal pack from the API. Returns list of signal dicts."""
-    url = f"{BASE_URL}/paid/signals/pack?coin={coin}&type={pack_type}"
+    url = f"{BASE_URL}/paid/signals/pack/{pack_type}?coin={coin}"
     req = urllib.request.Request(url, headers={"X-API-Key": api_key})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:

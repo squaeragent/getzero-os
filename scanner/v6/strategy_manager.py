@@ -31,11 +31,22 @@ from scanner.v6.config import (
     BUS_DIR, HEARTBEAT_FILE, get_env,
 )
 
+from scanner.v6.signal_cache import SignalCache
+
+_signal_cache = SignalCache()
+
 CYCLE_SECONDS = STRATEGY_REFRESH_HOURS * 3600
 MIN_SHARPE    = 1.5
 MIN_WIN_RATE  = 55.0
 TOP_SIGNALS   = 10   # send up to 10 signals per coin to assemble
 MAX_CACHE_AGE_HOURS = 4
+
+# ─── CREDIT CONSERVATION ─────────────────────────────────────────────────────
+# API audit 2026-03-22: signal check=$1/credit, assemble=$3/credit.
+# At 47,347 credits, every unnecessary call costs real money.
+# Delta check: skip assembly for coins whose signals haven't changed >10%.
+ASSEMBLY_HASH_FILE = BUS_DIR / "assembly_hashes.json"
+DELTA_THRESHOLD = 0.10  # skip assembly if signal scores changed <10%
 
 # P0 intelligence 2026-03-20: Portfolio optimizer shows these coins have negative
 # assembled Sharpe in portfolio context. Every trade on these is negative EV.
@@ -90,55 +101,103 @@ def update_heartbeat(component: str):
     save_json(HEARTBEAT_FILE, hb)
 
 
+# ─── x402 PAYMENT FALLBACK ────────────────────────────────────────────────────
+
+_x402_client = None
+
+def _get_x402():
+    """Lazy-load x402 client (only when needed)."""
+    global _x402_client
+    if _x402_client is None:
+        try:
+            from scanner.v6.x402 import get_client
+            _x402_client = get_client()
+            log("x402 client initialized — wallet: " + _x402_client.address)
+        except Exception as e:
+            log(f"x402 unavailable: {e}")
+    return _x402_client
+
+
 # ─── ENVY API ─────────────────────────────────────────────────────────────────
 
 def envy_get(path: str, params: dict, api_key: str):
-    """GET request to ENVY API. Returns raw response text."""
+    """GET request to ENVY API. Falls back to x402 on 402 or missing key."""
     url = f"{ENVY_BASE_URL}{path}"
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url += f"?{qs}"
-    req = urllib.request.Request(url, headers={"X-API-Key": api_key})
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return resp.read().decode()
-    except urllib.error.HTTPError as e:
-        log(f"  GET {path} → HTTP {e.code}")
-        return None
-    except Exception as e:
-        log(f"  GET {path} failed: {e}")
-        return None
+
+    if api_key:
+        req = urllib.request.Request(url, headers={"X-API-Key": api_key})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                return resp.read().decode()
+        except urllib.error.HTTPError as e:
+            if e.code == 402:
+                log(f"  GET {path} → 402, trying x402 payment...")
+            else:
+                log(f"  GET {path} → HTTP {e.code}")
+                return None
+        except Exception as e:
+            log(f"  GET {path} failed: {e}")
+            return None
+
+    # x402 fallback
+    client = _get_x402()
+    if client:
+        return client.call_with_x402(ENVY_BASE_URL, path + (f"?{qs}" if params else ""))
+    return None
 
 
 def envy_post_yaml(path: str, yaml_body: str, api_key: str, params: dict = None):
-    """POST YAML to ENVY API. Returns raw response text."""
+    """POST YAML to ENVY API. Falls back to x402 on 402 or missing key."""
     url = f"{ENVY_BASE_URL}{path}"
+    qs = ""
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url += f"?{qs}"
-    req = urllib.request.Request(
-        url,
-        data=yaml_body.encode(),
-        headers={
-            "X-API-Key": api_key,
-            "Content-Type": "text/yaml",
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            return resp.read().decode()
-    except urllib.error.HTTPError as e:
-        body = ""
+
+    if api_key:
+        req = urllib.request.Request(
+            url,
+            data=yaml_body.encode(),
+            headers={
+                "X-API-Key": api_key,
+                "Content-Type": "text/yaml",
+            },
+            method="POST",
+        )
         try:
-            body = e.read().decode()[:200]
-        except Exception:
-            pass
-        log(f"  POST {path} → HTTP {e.code}: {body}")
-        return None
-    except Exception as e:
-        log(f"  POST {path} failed: {e}")
-        return None
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                return resp.read().decode()
+        except urllib.error.HTTPError as e:
+            if e.code == 402:
+                log(f"  POST {path} → 402, trying x402 payment...")
+            else:
+                body = ""
+                try:
+                    body = e.read().decode()[:200]
+                except Exception:
+                    pass
+                log(f"  POST {path} → HTTP {e.code}: {body}")
+                return None
+        except Exception as e:
+            log(f"  POST {path} failed: {e}")
+            return None
+
+    # x402 fallback
+    client = _get_x402()
+    if client:
+        return client.call_with_x402(
+            ENVY_BASE_URL,
+            path + (f"?{qs}" if params else ""),
+            {
+                "method":       "POST",
+                "data":         yaml_body,
+                "content_type": "text/yaml",
+            },
+        )
+    return None
 
 
 def parse_yaml_simple(text: str) -> dict:
@@ -161,6 +220,100 @@ def parse_yaml_simple(text: str) -> dict:
         pass
     # Last resort: return raw text wrapped
     return {"_raw": text}
+
+
+# ─── FETCH SIGNAL PACKS FROM API ─────────────────────────────────────────────
+
+def fetch_signal_packs(coin: str, api_key: str) -> list[dict]:
+    """Fetch common signal pack for a coin from NVArena API (costs 1 credit).
+    
+    Called automatically when local cache is stale/missing.
+    Saves to data/signals/{coin}.json for future use.
+    Returns list of signal dicts.
+    """
+    log(f"  {coin}: fetching common pack from API (1 credit)...")
+    resp = envy_get(f"/api/claw/paid/signals/pack/common?coin={coin}", {}, api_key)
+    if not resp:
+        log(f"  {coin}: pack fetch failed")
+        return []
+
+    # Parse YAML pack response
+    signals_raw = []
+    try:
+        import yaml
+        data = yaml.safe_load(resp)
+        if isinstance(data, dict):
+            signals_raw = data.get("signals", [])
+    except Exception:
+        # Fallback: parse the YAML manually
+        lines = resp.strip().split("\n")
+        current = {}
+        for line in lines:
+            if line.startswith("  - name:"):
+                if current:
+                    signals_raw.append(current)
+                current = {"name": line.split(":", 1)[1].strip()}
+            elif line.startswith("    ") and current and ":" in line:
+                k, v = line.strip().split(":", 1)
+                k, v = k.strip(), v.strip()
+                if k in ("sharpe", "total_return", "win_rate", "max_drawdown", "trade_count", "composite_score"):
+                    try:
+                        current[k] = float(v)
+                    except ValueError:
+                        current[k] = v
+                else:
+                    # Remove surrounding quotes
+                    current[k] = v.strip("\"'")
+        if current:
+            signals_raw.append(current)
+
+    if not signals_raw:
+        log(f"  {coin}: empty pack response")
+        return []
+
+    # Save to cache
+    SIGNALS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
+    try:
+        with open(cache_file, "w") as f:
+            json.dump(signals_raw, f, indent=2)
+        log(f"  {coin}: cached {len(signals_raw)} signals")
+    except Exception as e:
+        log(f"  {coin}: cache write failed: {e}")
+
+    return signals_raw
+
+
+def ensure_signal_packs(coins: list, api_key: str):
+    """Auto-fetch signal packs for coins that have stale/missing cache.
+    
+    Called once at start of run_once() before Phase 1.
+    Only fetches if the cache is missing or older than MAX_CACHE_AGE_HOURS.
+    """
+    missing = []
+    for coin in coins:
+        if coin in COIN_BLACKLIST:
+            continue
+        cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
+        needs_fetch = not cache_file.exists()
+        if not needs_fetch:
+            try:
+                age_hours = (time.time() - cache_file.stat().st_mtime) / 3600
+                needs_fetch = age_hours > MAX_CACHE_AGE_HOURS
+            except OSError:
+                needs_fetch = True
+        if needs_fetch:
+            missing.append(coin)
+
+    if not missing:
+        return
+
+    log(f"  Auto-fetching signal packs for {len(missing)} coins (cache stale/missing)...")
+    for i, coin in enumerate(missing):
+        fetch_signal_packs(coin, api_key)
+        if (i + 1) % 5 == 0:
+            log(f"  Packs: {i+1}/{len(missing)} fetched...")
+        time.sleep(0.3)  # gentle pacing
 
 
 # ─── LOAD SIGNALS FROM CACHE ──────────────────────────────────────────────────
@@ -503,6 +656,71 @@ def apply_hysteresis(candidate_coins: list[str], smoothed_sharpes: dict) -> list
     return result
 
 
+# ─── CREDIT CONSERVATION: DELTA CHECK ─────────────────────────────────────────
+
+def _compute_signal_hash(signals: list[dict]) -> str:
+    """Hash signal names + scores to detect meaningful changes."""
+    import hashlib
+    key_data = sorted(
+        [(s.get("name", ""), round(s.get("sharpe", 0), 1), round(s.get("win_rate", 0), 0))
+         for s in signals]
+    )
+    return hashlib.md5(json.dumps(key_data).encode()).hexdigest()[:12]
+
+
+def _signals_changed(coin: str, scored_signals: list[dict]) -> bool:
+    """Check if scored signals have changed meaningfully since last assembly.
+    
+    Returns True if assembly should proceed (signals changed or no prior hash).
+    Returns False if signals are stable (skip assembly, save 3 credits).
+    """
+    new_hash = _compute_signal_hash(scored_signals)
+    
+    hashes = load_json(ASSEMBLY_HASH_FILE, {})
+    old_entry = hashes.get(coin, {})
+    old_hash = old_entry.get("hash", "")
+    
+    if not old_hash:
+        return True  # no prior data, must assemble
+    
+    if new_hash != old_hash:
+        # Hash changed — check magnitude
+        old_sharpes = old_entry.get("sharpes", {})
+        changed_count = 0
+        total_count = 0
+        for s in scored_signals:
+            name = s.get("name", "")
+            new_sharpe = s.get("sharpe", 0)
+            old_sharpe = old_sharpes.get(name, None)
+            total_count += 1
+            if old_sharpe is None:
+                changed_count += 1  # new signal
+            elif old_sharpe > 0 and abs(new_sharpe - old_sharpe) / old_sharpe > DELTA_THRESHOLD:
+                changed_count += 1  # >10% change
+        
+        change_pct = changed_count / max(1, total_count)
+        if change_pct > 0.1:  # >10% of signals changed meaningfully
+            log(f"  {coin}: {changed_count}/{total_count} signals changed ({change_pct:.0%}) — REASSEMBLE")
+            return True
+        else:
+            log(f"  {coin}: signals stable ({changed_count}/{total_count} changed, {change_pct:.0%}) — SKIP ASSEMBLY (save 3 credits)")
+            return False
+    
+    log(f"  {coin}: signal hash unchanged — SKIP ASSEMBLY (save 3 credits)")
+    return False
+
+
+def _save_signal_hash(coin: str, scored_signals: list[dict]):
+    """Save current signal hash after successful assembly."""
+    hashes = load_json(ASSEMBLY_HASH_FILE, {})
+    hashes[coin] = {
+        "hash": _compute_signal_hash(scored_signals),
+        "sharpes": {s.get("name", ""): s.get("sharpe", 0) for s in scored_signals},
+        "updated_at": now_iso(),
+    }
+    save_json(ASSEMBLY_HASH_FILE, hashes)
+
+
 def local_allocation(coins_data: dict) -> dict:
     """Sharpe-weighted allocation — uses ASSEMBLED strategy Sharpe.
     
@@ -554,6 +772,10 @@ def run_once(api_key: str):
     log("=== Strategy refresh cycle ===")
     t0 = time.time()
 
+    # Phase 0: Auto-fetch missing/stale signal packs from API
+    log("Phase 0: Ensuring signal pack cache is fresh...")
+    ensure_signal_packs(ALL_COINS, api_key)
+
     # Phase 1: Load and score signals for each coin
     log("Phase 1: Loading and scoring signals...")
     coins_data = {}
@@ -578,6 +800,12 @@ def run_once(api_key: str):
         coins_with_signals.append(coin)
         coins_data[coin] = {"scored_signals": scored}
 
+        # Cache scored signals for self-protection fallback
+        try:
+            _signal_cache.save_signals(coin, {"coin": coin, "signals": scored, "source": "nvprotocol"})
+        except Exception:
+            pass
+
         if (i + 1) % 10 == 0:
             log(f"  Progress: {i+1}/{len(ALL_COINS)} coins...")
 
@@ -588,10 +816,24 @@ def run_once(api_key: str):
 
     log(f"Phase 1 complete: {len(coins_data)} coins with signals")
 
-    # Phase 2: Assemble optimal strategy per coin
-    log("Phase 2: Assembling strategies...")
+    # Phase 2: Assemble optimal strategy per coin (with delta check to save credits)
+    log("Phase 2: Assembling strategies (delta check active — skipping unchanged coins)...")
+    credits_saved = 0
     for coin in list(coins_data.keys()):
         scored = coins_data[coin]["scored_signals"]
+        
+        # Delta check: skip assembly if signals haven't changed meaningfully
+        if not _signals_changed(coin, scored):
+            # Load previous assembly from cache instead
+            try:
+                cached = _signal_cache.load_strategy(coin)
+                if cached and cached.get("signals"):
+                    coins_data[coin] = cached
+                    credits_saved += 3
+                    continue
+            except Exception:
+                pass  # cache miss — must assemble
+        
         assembled = assemble_strategy(coin, scored, api_key)
         if assembled:
             best_signal_sharpe = max(s.get("sharpe", 0) for s in assembled)
@@ -607,6 +849,11 @@ def run_once(api_key: str):
                 "avg_win_rate":        avg_wr,
                 "signal_count":        len(assembled),
             }
+            # Cache assembled strategy for self-protection fallback
+            try:
+                _signal_cache.save_strategy(coin, coins_data[coin])
+            except Exception:
+                pass
             # Assembled Sharpe floor — don't trade coins where combined strategy is weak
             if assembled_sharpe < MIN_ASSEMBLED_SHARPE:
                 log(f"  {coin}: assembled Sharpe {assembled_sharpe:.2f} < {MIN_ASSEMBLED_SHARPE} floor — EXCLUDED (signal Sharpe was {best_signal_sharpe:.2f})")
@@ -615,13 +862,14 @@ def run_once(api_key: str):
                     coins_with_signals.remove(coin)
             else:
                 log(f"  {coin}: assembled Sharpe {assembled_sharpe:.2f} (signal Sharpe {best_signal_sharpe:.2f}) — INCLUDED")
+                _save_signal_hash(coin, scored)  # save hash for next delta check
         else:
             del coins_data[coin]
             if coin in coins_with_signals:
                 coins_with_signals.remove(coin)
         time.sleep(0.5)  # rate limit between coins
 
-    log(f"Phase 2 complete: {len(coins_data)} coins with assembled strategies")
+    log(f"Phase 2 complete: {len(coins_data)} coins with assembled strategies (saved {credits_saved} credits via delta check)")
 
     # Phase 3: Portfolio allocation with stability
     log("Phase 3: Concentrated allocation with stability filters...")
@@ -698,6 +946,13 @@ def run_once(api_key: str):
     save_json(ALLOCATION_FILE, alloc_doc)
     log(f"  Saved {ALLOCATION_FILE}")
 
+    # Cache allocation for self-protection fallback
+    try:
+        _signal_cache.save_portfolio({"allocations": allocation, "source": "nvprotocol"})
+        _signal_cache.save_metadata()
+    except Exception:
+        pass
+
     update_heartbeat("strategy_manager")
     elapsed = time.time() - t0
     log(f"=== Done in {elapsed:.1f}s — {len(active_coins)} active coins, next refresh in {STRATEGY_REFRESH_HOURS}h ===")
@@ -707,8 +962,10 @@ def main():
     loop = "--loop" in sys.argv
     api_key = get_env("ENVY_API_KEY")
     if not api_key:
-        log("FATAL: ENVY_API_KEY not set")
-        sys.exit(1)
+        log("ENVY_API_KEY not set — will use x402 payment fallback")
+        if not _get_x402():
+            log("FATAL: no API key and x402 unavailable (install eth_account)")
+            sys.exit(1)
 
     log("=== V6 Strategy Manager starting ===")
     BUS_DIR.mkdir(parents=True, exist_ok=True)

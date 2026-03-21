@@ -1,0 +1,131 @@
+# NVArena Strategy Assembly
+# Coin: BTC
+# Mode: normal
+# Signals: 10
+# Generated: 2026-03-21 13:49:38 UTC
+
+coin: BTC
+mode: normal
+max_leverage: 1
+stop_loss_pct: 30
+max_drawdown_tolerance_pct: 25
+signal_count: 10
+backtest:
+  initial_capital: 10000
+  final_equity: 18156.78
+  total_return_pct: 81.5678
+  total_trades: 203
+  win_count: 121
+  loss_count: 82
+  win_rate: 0.5961
+  avg_win_pct: 1.6838
+  avg_loss_pct: -1.0979
+  avg_hold_hours: 26.36
+  max_drawdown_pct: 14.8264
+  sharpe: 2.1397
+  expectancy: 0.5601
+  time_in_market_pct: 61.08
+  r2: 0.7168
+  total_commission: 2646.5269
+  total_platform_fees: 1671.3347
+signals:
+- priority: 1
+  name: XONE_LONG_01
+  signal_type: LONG
+  expression: (XONE_SPREAD < 50 OR XONE_U_NET < 30) AND XONE_A_U_DIV >= -45 AND XONE_AVG_NET_DELTA >= 15
+  exit_expression: (XONE_SPREAD >= 100 AND XONE_U_NET >= 55) OR XONE_A_U_DIV < -70 OR XONE_AVG_NET_DELTA < -45
+  max_hold_hours: 196
+  rarity: Rare
+  composite_score: 10.5320
+  sharpe: 1.9080
+  win_rate: 56.4103
+- priority: 2
+  name: XONE_AUDIV_CONTRARIAN_SHORT_R6V2_FR17_EX4_FR8_EX6_
+  signal_type: SHORT
+  expression: XONE_A_U_DIV <= -30 AND XONE_AVG_NET <= -15 AND RSI_3H30M >= 38 AND LYAPUNOV_24H <= 1.97 AND DFA_48H < 0.72
+  exit_expression: XONE_A_U_DIV >= 15 OR RSI_3H30M <= 31.05
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 1.0900
+  sharpe: 2.6407
+  win_rate: 74.0741
+- priority: 3
+  name: XONE_AUDIV_CONTRARIAN_SHORT_R6V2_FR17_EX4_FR8_EX6
+  signal_type: SHORT
+  expression: XONE_A_U_DIV <= -30 AND XONE_AVG_NET <= -15 AND RSI_3H30M >= 40 AND LYAPUNOV_24H <= 1.97 AND DFA_48H < 0.72
+  exit_expression: XONE_A_U_DIV >= 15 OR RSI_3H30M <= 31.05
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 0.9250
+  sharpe: 2.5965
+  win_rate: 74.0741
+- priority: 4
+  name: XONE_AUDIV_CONTRARIAN_SHORT_R6V2_FR17_EX4_FR8
+  signal_type: SHORT
+  expression: XONE_A_U_DIV <= -30 AND XONE_AVG_NET <= -15 AND RSI_3H30M >= 40 AND LYAPUNOV_24H <= 1.97 AND DFA_48H < 0.72
+  exit_expression: XONE_A_U_DIV >= 15 OR RSI_3H30M <= 34.5
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 0.2520
+  sharpe: 2.4590
+  win_rate: 67.5676
+- priority: 5
+  name: DOJI_SOCIAL_DELTA_LONG_EX3_Q2_EX2_Q12
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND XONE_AVG_NET_DELTA >= 15 AND RSI_3H30M <= 40 AND DFA_24H >= 0.6028496975 AND XONE_SPREAD >= 35.0000000000
+  exit_expression: RSI_3H30M >= 75.9 OR XONE_AVG_NET_DELTA <= -10
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: -1.6780
+  sharpe: 1.3978
+  win_rate: 66.6667
+- priority: 6
+  name: DOJI_OVERBOUGHT_SHORT_V2_EX1_Q6_EX2_Q13
+  signal_type: SHORT
+  expression: DOJI_SIGNAL >= 100 AND RSI_3H30M >= 65 AND XONE_AVG_NET <= -5 AND XONE_U_NET < 0.0000000000 AND ADX_3H30M >= 31.569957555
+  exit_expression: RSI_3H30M <= 23.52
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: -5.4030
+  sharpe: 1.3011
+  win_rate: 72.4138
+- priority: 7
+  name: DOJI_OVERBOUGHT_SHORT_V2_EX1_Q6_EX2_Q12
+  signal_type: SHORT
+  expression: DOJI_SIGNAL >= 100 AND RSI_3H30M >= 65 AND XONE_AVG_NET <= -5 AND XONE_U_NET < 0.0000000000 AND ADX_3H30M >= 15.2001081150
+  exit_expression: RSI_3H30M <= 23.52
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: -5.6430
+  sharpe: 1.1930
+  win_rate: 67.7419
+- priority: 8
+  name: SENKOU_EMA_DFA_SOCIAL_TIGHT_LONG_V3_EX2_EX6
+  signal_type: LONG
+  expression: SENKOU_A_6H30M_N >= 1.002 AND EMA_6H30M_N >= 1.002 AND DFA_24H >= 0.70 AND XONE_AVG_NET >= 5 AND XONE_SPREAD <= 50
+  exit_expression: EMA_6H30M_N <= 0.699 OR DFA_24H <= 0.35
+  max_hold_hours: 30
+  rarity: Common
+  composite_score: -5.9370
+  sharpe: 1.7286
+  win_rate: 58.6957
+- priority: 9
+  name: DOJI_SOCIAL_DELTA_LONG_EX3_Q2_EX2_Q13
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND XONE_AVG_NET_DELTA >= 15 AND RSI_3H30M <= 40 AND DFA_24H >= 0.6028496975 AND XONE_SPREAD >= 60.000000000
+  exit_expression: RSI_3H30M >= 75.9 OR XONE_AVG_NET_DELTA <= -10
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: -6.9760
+  sharpe: 1.7891
+  win_rate: 68.4211
+- priority: 10
+  name: SENKOU_EMA_DFA_SOCIAL_LONG_V2_EX2
+  signal_type: LONG
+  expression: SENKOU_A_6H30M_N >= 1.003 AND EMA_6H30M_N >= 1.003 AND DFA_24H >= 0.65 AND XONE_AVG_NET >= 5 AND XONE_SPREAD <= 60
+  exit_expression: EMA_6H30M_N <= 0.698 OR XONE_AVG_NET <= -15
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: -9.3100
+  sharpe: 1.3459
+  win_rate: 65.7895

@@ -1,0 +1,131 @@
+# NVArena Strategy Assembly
+# Coin: SEI
+# Mode: normal
+# Signals: 10
+# Generated: 2026-03-21 13:49:47 UTC
+
+coin: SEI
+mode: normal
+max_leverage: 1
+stop_loss_pct: 30
+max_drawdown_tolerance_pct: 25
+signal_count: 10
+backtest:
+  initial_capital: 10000
+  final_equity: 36479.77
+  total_return_pct: 264.7977
+  total_trades: 147
+  win_count: 88
+  loss_count: 59
+  win_rate: 0.5986
+  avg_win_pct: 3.8695
+  avg_loss_pct: -2.1880
+  avg_hold_hours: 13.81
+  max_drawdown_pct: 21.6454
+  sharpe: 2.4849
+  expectancy: 1.4383
+  time_in_market_pct: 23.18
+  r2: 0.9014
+  total_commission: 3265.9399
+  total_platform_fees: 4159.1674
+signals:
+- priority: 1
+  name: SEI_RSI6H_OVERSOLD_DFA_LONG_V2_MH16_FR9
+  signal_type: LONG
+  expression: RSI_6H <= 44 AND BB_POS_6H <= 0.25 AND DFA_48H <= 0.35
+  exit_expression: RSI_6H >= 56 OR BB_POS_6H >= 0.75
+  max_hold_hours: 16
+  rarity: Rare
+  composite_score: 20.8100
+  sharpe: 1.6034
+  win_rate: 62.8571
+- priority: 2
+  name: HURST_MACD_TREND_LONG_V1_FR9_EX2_EX6_Q3
+  signal_type: LONG
+  expression: HURST_24H >= 0.65 AND ROC_3H >= 0.15 AND MACD_6H30M_N >= 0.011 AND DFA_48H >= 0.4780573200
+  exit_expression: HURST_24H <= 0.45 OR MACD_6H30M_N <= -0.012
+  max_hold_hours: 48
+  rarity: Rare
+  composite_score: 11.4450
+  sharpe: 1.7100
+  win_rate: 50.0000
+- priority: 3
+  name: BB_LOWER_REVERSAL_LONG_FR3_EX5_FR7_EX0_Q2
+  signal_type: LONG
+  expression: BB_POSITION_15M <= -0.12 AND MOMENTUM_2H30M_N <= -0.25 AND LYAPUNOV_48H < 2.0509163500
+  exit_expression: BB_POSITION_15M >= 0.45 OR MOMENTUM_2H30M_N >= 0.33
+  max_hold_hours: 36
+  rarity: Rare
+  composite_score: 7.6390
+  sharpe: 1.6777
+  win_rate: 67.5676
+- priority: 4
+  name: SEI_BB_POS_ROC_BREAKOUT_LONG_FR14_EX3_Q4_FR2
+  signal_type: LONG
+  expression: BB_POSITION_15M >= 0.80 AND ROC_3H >= 0.73 AND ADX_3H30M >= 48 AND HURST_24H >= 0.868 AND DOJI_VELOCITY < -0.216986875
+  exit_expression: BB_POSITION_15M <= 0.35 OR ROC_3H <= -0.3
+  max_hold_hours: 24
+  rarity: Common
+  composite_score: 4.3740
+  sharpe: 1.5324
+  win_rate: 53.8462
+- priority: 5
+  name: SEI_DOJI_VELOCITY_RSI_SHORT_V2_EX4_Q1_Q1_FR11
+  signal_type: SHORT
+  expression: DOJI_SIGNAL >= 100 AND DOJI_VELOCITY >= 6.0 AND RSI_3H30M >= 61.75 AND HURST_24H >= 0.731272930 AND TENKAN_2H15M_N >= 1.000249130
+  exit_expression: RSI_3H30M <= 42 OR BB_POSITION_15M <= 0.00
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 4.3590
+  sharpe: 1.1473
+  win_rate: 66.6667
+- priority: 6
+  name: HURST_MACD_TREND_LONG_V2_FR9_EX2_EX6_Q3
+  signal_type: LONG
+  expression: HURST_24H >= 0.72 AND ROC_3H >= 0.20 AND MACD_6H30M_N >= 0.012 AND TENKAN_2H15M_N < 0.9958801500
+  exit_expression: HURST_24H <= 0.50 OR MACD_6H30M_N <= -0.011
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 3.6320
+  sharpe: 1.4254
+  win_rate: 47.8261
+- priority: 7
+  name: HURST_TREND_LONG_FR10
+  signal_type: LONG
+  expression: HURST_24H >= 0.78 AND ROC_3H >= 0.23 AND MACD_6H30M_N >= 0.0155
+  exit_expression: ROC_3H <= -0.3 OR HURST_24H <= 0.65
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 2.9060
+  sharpe: 1.3151
+  win_rate: 57.1429
+- priority: 8
+  name: SEI_DOJI_VELOCITY_RSI_SHORT_V2_EX4_Q1_Q1
+  signal_type: SHORT
+  expression: DOJI_SIGNAL >= 100 AND DOJI_VELOCITY >= 6.0 AND RSI_3H30M >= 65 AND HURST_24H >= 0.731272930 AND TENKAN_2H15M_N >= 1.000249130
+  exit_expression: RSI_3H30M <= 42 OR BB_POSITION_15M <= 0.00
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 2.7910
+  sharpe: 1.3092
+  win_rate: 71.4286
+- priority: 9
+  name: SEI_RSI6H_OVERSOLD_DFA_LONG_V3_EX4_Q5_Q1
+  signal_type: LONG
+  expression: RSI_6H <= 40 AND BB_POS_6H <= 0.18 AND DFA_48H <= 0.40 AND CLOUD_POSITION_15M >= 2.0000000000 AND DOJI_DISTANCE_L < -4.990181640
+  exit_expression: RSI_6H >= 55 OR BB_POS_6H >= 0.50
+  max_hold_hours: 12
+  rarity: Common
+  composite_score: 1.6000
+  sharpe: 1.3888
+  win_rate: 61.2903
+- priority: 10
+  name: SEI_DOJI_KIJUN_REVERSAL_LONG_FR11_EX1
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND KIJUN_6H30M_N <= 0.997 AND RSI_3H30M <= 36.75
+  exit_expression: RSI_3H30M >= 52.2 OR KIJUN_6H30M_N >= 1.004
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 0.6240
+  sharpe: 1.1191
+  win_rate: 54.5455

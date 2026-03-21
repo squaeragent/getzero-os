@@ -27,6 +27,14 @@ HEARTBEAT_FILE  = BUS_DIR / "heartbeat.json"
 TRADES_FILE = DATA_DIR / "trades.jsonl"
 EQUITY_HISTORY_FILE = BUS_DIR / "equity_history.jsonl"
 
+# Paper trading state
+PAPER_STATE_DIR = Path('~/.zeroos/state').expanduser()
+PAPER_STATE_FILE = PAPER_STATE_DIR / 'paper_state.json'
+
+# Paper mode uses isolated bus/data directories to avoid contaminating live state
+PAPER_BUS_DIR  = PAPER_STATE_DIR / "bus"
+PAPER_DATA_DIR = PAPER_STATE_DIR / "data"
+
 # ─── ACCOUNT ──────────────────────────────────────────────────────────────────
 CAPITAL           = 750.0   # initial deposit — reference only
 CAPITAL_FLOOR_PCT = 0.60    # halt if equity < 60% of peak
@@ -168,7 +176,9 @@ def get_trailing_trigger(coin: str) -> float:
     return get_stop_pct(coin) * 0.5
 
 # ─── STRATEGY ─────────────────────────────────────────────────────────────────
-STRATEGY_REFRESH_HOURS = 2  # was 6h — too slow to catch new signals
+STRATEGY_REFRESH_HOURS = 6  # 6h refresh — 365d backtests don't change hourly. Saves ~2/3 credits.
+                             # API audit 2026-03-22: signal check=$1, assemble=$3. At 2h: 864 credits/day (55 days).
+                             # At 6h: 288 credits/day (164 days). WebSocket evaluator runs continuously regardless.
 ACTIVE_COINS_COUNT     = 8   # top coins from portfolio/optimize (or scoring)
 STRATEGY_VERSION       = 6
 

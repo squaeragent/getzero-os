@@ -516,6 +516,20 @@ def run_websocket(api_key: str):
 
 
 def main():
+    global BUS_DIR, ENTRIES_FILE, EXITS_FILE, POSITIONS_FILE, HEARTBEAT_FILE
+
+    # Paper mode isolation — redirect bus paths before any file I/O
+    from scanner.v6.paper_isolation import is_paper_mode, apply_paper_isolation
+    if is_paper_mode():
+        apply_paper_isolation()
+        import scanner.v6.config as _cfg
+        BUS_DIR = _cfg.BUS_DIR
+        ENTRIES_FILE = _cfg.ENTRIES_FILE
+        EXITS_FILE = _cfg.EXITS_FILE
+        POSITIONS_FILE = _cfg.POSITIONS_FILE
+        HEARTBEAT_FILE = _cfg.HEARTBEAT_FILE
+        log("=== PAPER MODE — evaluator writing to isolated bus ===")
+
     api_key = get_env("ENVY_API_KEY")
     if not api_key:
         log("FATAL: ENVY_API_KEY not set")

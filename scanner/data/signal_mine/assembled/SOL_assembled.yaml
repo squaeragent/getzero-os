@@ -1,0 +1,131 @@
+# NVArena Strategy Assembly
+# Coin: SOL
+# Mode: normal
+# Signals: 10
+# Generated: 2026-03-21 13:49:49 UTC
+
+coin: SOL
+mode: normal
+max_leverage: 1
+stop_loss_pct: 30
+max_drawdown_tolerance_pct: 25
+signal_count: 10
+backtest:
+  initial_capital: 10000
+  final_equity: 27742.18
+  total_return_pct: 177.4218
+  total_trades: 269
+  win_count: 194
+  loss_count: 75
+  win_rate: 0.7212
+  avg_win_pct: 1.7882
+  avg_loss_pct: -2.1684
+  avg_hold_hours: 13.25
+  max_drawdown_pct: 23.4485
+  sharpe: 2.6093
+  expectancy: 0.6850
+  time_in_market_pct: 40.67
+  r2: 0.9584
+  total_commission: 4956.6563
+  total_platform_fees: 3937.3779
+signals:
+- priority: 1
+  name: CONSENSUS_SPREAD_LONG_V1_EX3_Q0
+  signal_type: LONG
+  expression: XONE_SPREAD <= 25 AND XONE_AVG_NET >= 36 AND RSI_3H30M <= 42 AND DOJI_VELOCITY_L >= -3.5229511925
+  exit_expression: XONE_AVG_NET <= 3 OR RSI_3H30M >= 74.8
+  max_hold_hours: 72
+  rarity: Rare
+  composite_score: 11.0230
+  sharpe: 1.4906
+  win_rate: 78.9474
+- priority: 2
+  name: SOCIAL_DELTA_TREND_SHORT_V3_EX7_FR0
+  signal_type: SHORT
+  expression: XONE_AVG_NET_DELTA <= -20 AND RSI_3H30M >= 50 AND HURST_48H >= 0.63 AND DOJI_VELOCITY < 1.0
+  exit_expression: XONE_AVG_NET_DELTA >= 15 OR RSI_3H30M <= 23.8
+  max_hold_hours: 60
+  rarity: Rare
+  composite_score: 10.6200
+  sharpe: 1.7678
+  win_rate: 70.6897
+- priority: 3
+  name: SOCIAL_INFLUENCER_LONG_DOJI_V1_EX6
+  signal_type: LONG
+  expression: XONE_I_NET >= 50 AND XONE_U_NET >= 30 AND RSI_3H30M <= 50 AND DOJI_DISTANCE_L < -3.0
+  exit_expression: XONE_I_NET < 10 OR RSI_3H30M > 77
+  max_hold_hours: 24
+  rarity: Rare
+  composite_score: 10.4950
+  sharpe: 1.7931
+  win_rate: 70.1493
+- priority: 4
+  name: SOCIAL_INFLUENCER_BULL_LONG_EX4_Q5
+  signal_type: LONG
+  expression: XONE_I_NET >= 50 AND XONE_U_NET >= 40 AND RSI_3H30M <= 55 AND DOJI_DISTANCE < 10.1142605075
+  exit_expression: XONE_I_NET <= 10 OR RSI_3H30M >= 84
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 9.1370
+  sharpe: 1.4926
+  win_rate: 67.4419
+- priority: 5
+  name: LOW_LYAP_DOJI_BB_LONG_V1_EX3_Q0_EX2
+  signal_type: LONG
+  expression: LYAPUNOV_48H <= 1.78 AND DOJI_SIGNAL >= 100 AND BB_POSITION_15M <= 0.23 AND XONE_AVG_NET >= 6.67 AND DOJI_DISTANCE < -12.9987620275
+  exit_expression: LYAPUNOV_48H >= 2.035 OR BB_POSITION_15M >= 1.00
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: 8.8820
+  sharpe: 1.8867
+  win_rate: 89.4737
+- priority: 6
+  name: DFA_MR_BB_LOW_LONG_V1_EX1_Q5
+  signal_type: LONG
+  expression: DFA_24H <= 0.46 AND BB_POSITION_15M <= 0.15 AND RSI_3H30M <= 32 AND LYAPUNOV_48H <= 1.88 AND XONE_SPREAD >= 80.0000000000
+  exit_expression: BB_POSITION_15M >= 0.80 OR RSI_3H30M >= 60
+  max_hold_hours: 48
+  rarity: Common
+  composite_score: 5.3110
+  sharpe: 1.8402
+  win_rate: 76.0000
+- priority: 7
+  name: SENTIMENT_SHIFT_BEAR_SHORT_V3_FR0_Q5_FR0_EX0_FR1
+  signal_type: SHORT
+  expression: XONE_AVG_NET_DELTA <= -16.32 AND XONE_AVG_NET <= 5 AND CMO_3H30M >= 10 AND CLOUD_POSITION_15M <= 0 AND ICHIMOKU_BULL < 1.0000000000
+  exit_expression: CMO_3H30M <= -25.5 OR XONE_AVG_NET_DELTA >= 10
+  max_hold_hours: 24
+  rarity: Common
+  composite_score: 4.3430
+  sharpe: 1.2587
+  win_rate: 73.3333
+- priority: 8
+  name: HURST_LOW_EMA_CROSS_SHORT_EX4_Q0_Q7
+  signal_type: SHORT
+  expression: HURST_48H <= 0.68 AND EMA_CROSS_15M_N <= -0.002 AND RSI_3H30M >= 55 AND EMA_3H_N >= 0.9969846500 AND HURST_24H >= 0.737151030
+  exit_expression: EMA_CROSS_15M_N >= 0.001 OR RSI_3H30M <= 40.25
+  max_hold_hours: 36
+  rarity: Common
+  composite_score: 4.2260
+  sharpe: 1.5150
+  win_rate: 75.0000
+- priority: 9
+  name: DOJI_CMO_MACD_LONG_R5V1_Q2
+  signal_type: LONG
+  expression: DOJI_SIGNAL >= 100 AND DOJI_DISTANCE >= 2.0 AND CMO_3H30M <= -24 AND LYAPUNOV_48H <= 1.88 AND DOJI_VELOCITY_L >= 3.6296101300
+  exit_expression: CMO_3H30M >= 40 OR RSI_3H30M >= 70
+  max_hold_hours: 10
+  rarity: Common
+  composite_score: 2.0950
+  sharpe: 1.3892
+  win_rate: 75.0000
+- priority: 10
+  name: CONSENSUS_SPREAD_LONG_V2_EX6_Q5_EX3_Q4
+  signal_type: LONG
+  expression: XONE_SPREAD <= 30 AND XONE_AVG_NET >= 33 AND RSI_3H30M <= 48 AND XONE_I_NET >= 60.0000000000 AND DOJI_DISTANCE < -3.392782955
+  exit_expression: XONE_AVG_NET <= 4.25 OR RSI_3H30M >= 72.6
+  max_hold_hours: 72
+  rarity: Common
+  composite_score: 0.9370
+  sharpe: 1.3679
+  win_rate: 74.1935
