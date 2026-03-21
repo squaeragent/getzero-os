@@ -769,15 +769,17 @@ def _iso_to_ts(iso_str: str) -> float:
 
 @app.get("/v6/landscape")
 def v6_landscape():
-    """Signal landscape: assembled Sharpe sparklines per coin."""
+    """Signal landscape: assembled Sharpe sparklines per coin, 3 tiers."""
     history = _read_json(V6_BUS / "sharpe_history.json")
     strategies = _read_json(V6_BUS / "strategies.json")
     runs = (history or {}).get("runs", [])
 
-    # Get current active coins and blacklist
+    # Get current active coins and blacklist from strategy_manager
     raw_active = (strategies or {}).get("active_coins", [])
     active_coins = raw_active if isinstance(raw_active, list) else list(raw_active.keys())
-    blacklist = ["PUMP", "XPL", "TRUMP"]
+
+    # Read blacklist from strategy_manager source
+    blacklist_map = {"PUMP": -0.96, "XPL": -2.39, "TRUMP": -0.66}
 
     # Build per-coin sparkline data
     all_coins = set()
@@ -790,31 +792,59 @@ def v6_landscape():
         for run in runs:
             val = run.get("sharpes", {}).get(coin)
             if val is not None:
-                sparkline.append(round(val, 2))
+                sparkline.append(round(val, 4))
 
         current = sparkline[-1] if sparkline else None
         is_active = coin in active_coins
-        is_blacklisted = coin in blacklist
+        is_blacklisted = coin in blacklist_map
+
+        # Determine tier
+        if is_blacklisted:
+            tier = "blacklisted"
+        elif is_active:
+            tier = "active"
+        else:
+            tier = "watching"
 
         landscape.append({
             "coin": coin,
             "sparkline": sparkline,
             "current_sharpe": current,
+            "tier": tier,
             "active": is_active,
             "blacklisted": is_blacklisted,
             "points": len(sparkline),
         })
 
-    # Sort: active first (by sharpe desc), then inactive, then blacklisted
+    # Add blacklisted coins that aren't in sharpe history
+    existing = {c["coin"] for c in landscape}
+    for coin, sharpe in blacklist_map.items():
+        if coin not in existing:
+            landscape.append({
+                "coin": coin,
+                "sparkline": [],
+                "current_sharpe": sharpe,
+                "tier": "blacklisted",
+                "active": False,
+                "blacklisted": True,
+                "points": 0,
+            })
+
+    # Sort: active first (by sharpe desc), then watching, then blacklisted
     landscape.sort(key=lambda x: (
-        2 if x["blacklisted"] else (0 if x["active"] else 1),
+        2 if x["tier"] == "blacklisted" else (0 if x["tier"] == "active" else 1),
         -(x["current_sharpe"] or 0),
     ))
 
+    active_count = sum(1 for c in landscape if c["tier"] == "active")
+    watching_count = sum(1 for c in landscape if c["tier"] == "watching")
+    blacklisted_count = sum(1 for c in landscape if c["tier"] == "blacklisted")
+
     return {
         "coins": landscape,
-        "active_count": len(active_coins),
-        "blacklisted_count": len([c for c in landscape if c["blacklisted"]]),
+        "active_count": active_count,
+        "watching_count": watching_count,
+        "blacklisted_count": blacklisted_count,
         "total": len(landscape),
         "data_points": len(runs),
     }
