@@ -15,7 +15,7 @@ from pathlib import Path
 from scanner.v6.config import BUS_DIR, get_env
 from scanner.v6.signal_cache import SignalCache, freshness
 from scanner.v6.signal_provider import (
-    SignalMode, NVProtocolProvider, CachedProvider, BasicProvider,
+    SignalMode, SignalAPIProvider, CachedProvider, BasicProvider,
 )
 
 SIGNAL_MODE_FILE = BUS_DIR / "signal_mode.json"
@@ -63,7 +63,7 @@ class SignalManager:
         """Lazy-init providers."""
         if mode not in self._providers:
             if mode == SignalMode.FULL:
-                self._providers[mode] = NVProtocolProvider(self._api_key)
+                self._providers[mode] = SignalAPIProvider(self._api_key)
             elif mode == SignalMode.CACHED:
                 self._providers[mode] = CachedProvider()
             elif mode == SignalMode.BASIC:

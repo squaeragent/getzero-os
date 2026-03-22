@@ -16,7 +16,7 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-from scanner.v6.config import get_env, ENVY_BASE_URL
+from scanner.v6.config import get_env
 
 
 # ─── STATE ───────────────────────────────────────────────────────────────────
@@ -104,6 +104,10 @@ class PaperExecutor:
 
     def _save(self):
         _save_state(self.state)
+
+    def load_state(self) -> dict:
+        """Return a copy of the current paper state (balance, positions, stops, trade_log)."""
+        return dict(self.state)
 
     def _next_oid(self) -> int:
         return int(time.time() * 1000) + (hash(uuid.uuid4()) % 10000)
