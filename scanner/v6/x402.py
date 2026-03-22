@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+DEPRECATED — x402 payment flow removed from ZERO OS.
+Users pay via Stripe subscription. This file retained for reference only.
+Kept for potential future use. Do not import in production code.
+"""
+"""
 x402 USDC Payment Client — ported from NVProtocol claw.js.
 
 Implements HTTP 402 payment flow on Arbitrum:

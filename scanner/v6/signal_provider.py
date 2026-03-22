@@ -44,10 +44,10 @@ class SignalProvider(ABC):
         """Optimize portfolio allocation across coins."""
 
 
-class NVProtocolProvider(SignalProvider):
-    """Full API provider — uses strategy_manager.py ENVY functions.
+class SignalAPIProvider(SignalProvider):
+    """Full API provider — uses strategy_manager.py signal API functions.
 
-    Wraps existing envy_get/envy_post_yaml with automatic cache saves.
+    Wraps signal_api_get/signal_api_post_yaml with automatic cache saves.
     """
 
     def __init__(self, api_key: str):
@@ -57,13 +57,13 @@ class NVProtocolProvider(SignalProvider):
 
     def _import_api_funcs(self):
         from scanner.v6.strategy_manager import (
-            envy_get, envy_post_yaml, parse_yaml_simple,
+            signal_api_get, signal_api_post_yaml, parse_yaml_simple,
             score_signals, assemble_strategy as sm_assemble,
             optimize_portfolio as sm_optimize,
             load_cached_signals,
         )
-        self._envy_get = envy_get
-        self._envy_post_yaml = envy_post_yaml
+        self._signal_api_get = signal_api_get
+        self._signal_api_post_yaml = signal_api_post_yaml
         self._parse_yaml = parse_yaml_simple
         self._score_signals = score_signals
         self._sm_assemble = sm_assemble
@@ -71,13 +71,13 @@ class NVProtocolProvider(SignalProvider):
         self._load_cached_signals = load_cached_signals
 
     def check_signals(self, coin: str, expressions: list = None) -> dict:
-        """Score signals via API and cache the result."""
+        """Score signals via upstream signal API and cache the result."""
         raw_signals = self._load_cached_signals(coin)
         if not raw_signals:
             return {"coin": coin, "signals": [], "error": "no_cache"}
 
         scored = self._score_signals(coin, raw_signals, self.api_key)
-        result = {"coin": coin, "signals": scored, "source": "nvprotocol"}
+        result = {"coin": coin, "signals": scored, "source": "signal_api"}
 
         # Cache every response
         self.cache.save_signals(coin, result)
@@ -85,7 +85,7 @@ class NVProtocolProvider(SignalProvider):
         return result
 
     def assemble_strategy(self, coin: str) -> dict:
-        """Assemble strategy via API and cache."""
+        """Assemble strategy via upstream signal API and cache."""
         check = self.check_signals(coin)
         signals = check.get("signals", [])
         if not signals:
@@ -97,7 +97,7 @@ class NVProtocolProvider(SignalProvider):
             "signals": assembled,
             "best_sharpe": max((s.get("sharpe", 0) for s in assembled), default=0),
             "signal_count": len(assembled),
-            "source": "nvprotocol",
+            "source": "signal_api",
         }
 
         self.cache.save_strategy(coin, result)
@@ -105,10 +105,10 @@ class NVProtocolProvider(SignalProvider):
         return result
 
     def optimize_portfolio(self, coins: list[str]) -> dict:
-        """Optimize portfolio via API and cache."""
+        """Optimize portfolio via upstream signal API and cache."""
         result = self._sm_optimize(coins, self.api_key)
         if result:
-            self.cache.save_portfolio({"allocations": result, "source": "nvprotocol"})
+            self.cache.save_portfolio({"allocations": result, "source": "signal_api"})
             self.cache.save_metadata()
         return result or {}
 

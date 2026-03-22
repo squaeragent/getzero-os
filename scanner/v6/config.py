@@ -242,5 +242,5 @@ if __name__ == "__main__":
     print(f"  STOP_LOSS_PCT:    {STOP_LOSS_PCT*100:.0f}%")
     print(f"  MIN_HOLD_MINUTES: {MIN_HOLD_MINUTES}")
     env = load_env()
-    print(f"  ENVY_API_KEY:     {'SET' if env.get('ENVY_API_KEY') else 'MISSING'}")
+    print(f"  NVARENA_API_KEY:  {'SET' if env.get('NVARENA_API_KEY') or env.get('ENVY_API_KEY') else 'MISSING'}")
     print(f"  HL_PRIVATE_KEY:   {'SET' if env.get('HL_PRIVATE_KEY') else 'MISSING'}")

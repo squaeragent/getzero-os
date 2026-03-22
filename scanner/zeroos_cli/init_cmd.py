@@ -25,7 +25,6 @@ DEFAULT_CONFIG = {
     },
     "signals": {
         "api": "https://arena.nvprotocol.com/api/claw",
-        "x402_wallet": None,
         "cache_hours": 4,
         "refresh_seconds": 15,
     },
@@ -166,19 +165,11 @@ def init_cmd():
     # --- STEP 3: Signal API ---
     click.echo("  STEP 3: Signal API")
     click.echo()
-    click.echo("  ZERO OS fetches signals from the NVProtocol API.")
-    click.echo("  Payment: x402 micropayments (on-chain, per API call).")
+    click.echo("  ZERO OS fetches signals from the upstream signal API (server-side).")
+    click.echo("  Signals are cached and served via /api/signals — no per-call payments.")
+    click.echo("  Your ZERO OS subscription covers all signal access.")
     click.echo()
-
-    x402 = click.prompt("  Enter your x402 wallet address (or press Enter to skip)", default="", show_default=False)
-    click.echo()
-
-    if x402.strip():
-        cfg["signals"]["x402_wallet"] = x402.strip()
-        click.echo("  ✓ x402 wallet configured. Full signals enabled.")
-    else:
-        click.echo("  ⚠ No x402 wallet configured. Agent will use basic signals only.")
-        click.echo("    Run `zeroos config --x402 <wallet>` to enable full signals.")
+    click.echo("  ✓ Signal API configured (included in subscription).")
     click.echo()
 
     # --- STEP 4: Paper Mode ---
@@ -203,13 +194,12 @@ def init_cmd():
     click.echo()
 
     # --- Ready banner ---
-    signals_status = "full (x402 active)" if x402.strip() else "basic (upgrade with x402)"
     click.echo("  ┌─ READY ────────────────────────────────────────────┐")
     click.echo("  │                                                     │")
     click.echo(f"  │  Agent:    agent/{preset_name:<37s}│")
     click.echo("  │  Mode:     PAPER (simulated)                       │")
     click.echo(f"  │  Wallet:   {wallet:<40s}│")
-    click.echo(f"  │  Signals:  {signals_status:<40s}│")
+    click.echo("  │  Signals:  full (subscription)                     │")
     click.echo("  │                                                     │")
     click.echo("  │  Start:    zeroos start                            │")
     click.echo("  │  Status:   zeroos status                           │")

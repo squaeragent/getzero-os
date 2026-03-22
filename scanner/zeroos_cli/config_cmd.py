@@ -73,16 +73,15 @@ def _check_paper_eligibility() -> tuple[bool, str]:
 @click.option("--live", "go_live", is_flag=True, help="Switch to live trading mode.")
 @click.option("--paper", "go_paper", is_flag=True, help="Switch to paper trading mode.")
 @click.option("--preset", "preset_name", type=click.Choice(VALID_PRESETS), help="Change agent preset.")
-@click.option("--x402", "x402_wallet", type=str, help="Set x402 payment wallet address.")
-def config(go_live, go_paper, preset_name, x402_wallet):
+def config(go_live, go_paper, preset_name):
     """Manage ZERO OS agent configuration."""
-    if not any([go_live, go_paper, preset_name, x402_wallet]):
+    if not any([go_live, go_paper, preset_name]):
         cfg = _load_config()
         click.echo()
         click.echo("  Current configuration:")
         click.echo(f"  Mode:     {cfg.get('agent', {}).get('mode', '?')}")
         click.echo(f"  Preset:   {cfg.get('agent', {}).get('preset', '?')}")
-        click.echo(f"  x402:     {cfg.get('signals', {}).get('x402_wallet') or 'not set'}")
+        click.echo(f"  Signals:  subscription (via ZERO OS)")
         click.echo(f"  Network:  {cfg.get('hyperliquid', {}).get('network', '?')}")
         click.echo()
         return
@@ -113,8 +112,3 @@ def config(go_live, go_paper, preset_name, x402_wallet):
         cfg["execution"]["max_positions"] = PRESET_MAX_POSITIONS.get(preset_name, 3)
         _save_config(cfg)
         click.echo(f"  ✓ Preset changed to: {preset_name}")
-
-    if x402_wallet:
-        cfg["signals"]["x402_wallet"] = x402_wallet
-        _save_config(cfg)
-        click.echo(f"  ✓ x402 wallet set: {x402_wallet}")

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+DEPRECATED — x402 balance monitoring removed from ZERO OS.
+Users pay via Stripe subscription; no USDC wallet balance to monitor.
+This file retained for reference only. Do not import in production code.
+"""
+"""
 x402 Balance Monitor — tracks API cost and estimates days remaining.
 
 Monitors the x402 USDC wallet balance and daily spend rate.

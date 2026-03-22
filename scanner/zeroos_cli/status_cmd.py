@@ -153,8 +153,7 @@ def status():
         else:
             click.echo("  SIGNALS:    full")
     else:
-        x402 = cfg.get("signals", {}).get("x402_wallet")
-        click.echo(f"  SIGNALS:    {'full (x402)' if x402 else 'starting...'}")
+        click.echo(f"  SIGNALS:    starting...")
 
     # Dashboard
     token = cfg.get("telemetry", {}).get("token")

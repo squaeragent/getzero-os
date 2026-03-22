@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-V6 Strategy Manager — assembles strategies from ENVY paid API.
+V6 Strategy Manager — assembles strategies from upstream signal API.
 
 Flow:
   1. Load signals from cache (signal packs previously fetched)
@@ -9,7 +9,7 @@ Flow:
   4. Optimize portfolio via GET /paid/portfolio/optimize
   5. Save strategies.json and allocation.json
 
-Runs on startup and every STRATEGY_REFRESH_HOURS (default 2h).
+Runs on startup and every STRATEGY_REFRESH_HOURS (default 6h).
 
 Usage:
   python3 scanner/v6/strategy_manager.py           # single run
@@ -145,103 +145,72 @@ def update_heartbeat(component: str):
     save_json(HEARTBEAT_FILE, hb)
 
 
-# ─── x402 PAYMENT FALLBACK ────────────────────────────────────────────────────
+# ─── UPSTREAM SIGNAL API ──────────────────────────────────────────────────────
 
-_x402_client = None
-
-def _get_x402():
-    """Lazy-load x402 client (only when needed)."""
-    global _x402_client
-    if _x402_client is None:
-        try:
-            from scanner.v6.x402 import get_client
-            _x402_client = get_client()
-            log("x402 client initialized — wallet: " + _x402_client.address)
-        except Exception as e:
-            log(f"x402 unavailable: {e}")
-    return _x402_client
-
-
-# ─── ENVY API ─────────────────────────────────────────────────────────────────
-
-def envy_get(path: str, params: dict, api_key: str):
-    """GET request to ENVY API. Falls back to x402 on 402 or missing key."""
-    url = f"{ENVY_BASE_URL}{path}"
-    if params:
-        qs = "&".join(f"{k}={v}" for k, v in params.items())
-        url += f"?{qs}"
-
-    if api_key:
-        req = urllib.request.Request(url, headers={"X-API-Key": api_key})
-        try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                return resp.read().decode()
-        except urllib.error.HTTPError as e:
-            if e.code == 402:
-                log(f"  GET {path} → 402, trying x402 payment...")
-            else:
-                log(f"  GET {path} → HTTP {e.code}")
-                return None
-        except Exception as e:
-            log(f"  GET {path} failed: {e}")
-            return None
-
-    # x402 fallback
-    client = _get_x402()
-    if client:
-        return client.call_with_x402(ENVY_BASE_URL, path + (f"?{qs}" if params else ""))
-    return None
-
-
-def envy_post_yaml(path: str, yaml_body: str, api_key: str, params: dict = None):
-    """POST YAML to ENVY API. Falls back to x402 on 402 or missing key."""
+def signal_api_get(path: str, params: dict, api_key: str):
+    """GET request to upstream signal API with API key auth."""
     url = f"{ENVY_BASE_URL}{path}"
     qs = ""
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url += f"?{qs}"
 
-    if api_key:
-        req = urllib.request.Request(
-            url,
-            data=yaml_body.encode(),
-            headers={
-                "X-API-Key": api_key,
-                "Content-Type": "text/yaml",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                return resp.read().decode()
-        except urllib.error.HTTPError as e:
-            if e.code == 402:
-                log(f"  POST {path} → 402, trying x402 payment...")
-            else:
-                body = ""
-                try:
-                    body = e.read().decode()[:200]
-                except Exception:
-                    pass
-                log(f"  POST {path} → HTTP {e.code}: {body}")
-                return None
-        except Exception as e:
-            log(f"  POST {path} failed: {e}")
-            return None
+    if not api_key:
+        log(f"  GET {path} → no API key configured")
+        return None
 
-    # x402 fallback
-    client = _get_x402()
-    if client:
-        return client.call_with_x402(
-            ENVY_BASE_URL,
-            path + (f"?{qs}" if params else ""),
-            {
-                "method":       "POST",
-                "data":         yaml_body,
-                "content_type": "text/yaml",
-            },
-        )
-    return None
+    req = urllib.request.Request(url, headers={"X-API-Key": api_key})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.read().decode()
+    except urllib.error.HTTPError as e:
+        log(f"  GET {path} → HTTP {e.code}")
+        return None
+    except Exception as e:
+        log(f"  GET {path} failed: {e}")
+        return None
+
+
+def signal_api_post_yaml(path: str, yaml_body: str, api_key: str, params: dict = None):
+    """POST YAML to upstream signal API with API key auth."""
+    url = f"{ENVY_BASE_URL}{path}"
+    qs = ""
+    if params:
+        qs = "&".join(f"{k}={v}" for k, v in params.items())
+        url += f"?{qs}"
+
+    if not api_key:
+        log(f"  POST {path} → no API key configured")
+        return None
+
+    req = urllib.request.Request(
+        url,
+        data=yaml_body.encode(),
+        headers={
+            "X-API-Key": api_key,
+            "Content-Type": "text/yaml",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            return resp.read().decode()
+    except urllib.error.HTTPError as e:
+        body = ""
+        try:
+            body = e.read().decode()[:200]
+        except Exception:
+            pass
+        log(f"  POST {path} → HTTP {e.code}: {body}")
+        return None
+    except Exception as e:
+        log(f"  POST {path} failed: {e}")
+        return None
+
+
+# Backwards-compatible aliases (used by SignalAPIProvider internals)
+envy_get = signal_api_get
+envy_post_yaml = signal_api_post_yaml
 
 
 def parse_yaml_simple(text: str) -> dict:
@@ -275,8 +244,8 @@ def fetch_signal_packs(coin: str, api_key: str) -> list[dict]:
     Saves to data/signals/{coin}.json for future use.
     Returns list of signal dicts.
     """
-    log(f"  {coin}: fetching common pack from API (1 credit)...")
-    resp = envy_get(f"/api/claw/paid/signals/pack/common?coin={coin}", {}, api_key)
+    log(f"  {coin}: fetching common pack from signal API (1 credit)...")
+    resp = signal_api_get(f"/api/claw/paid/signals/pack/common?coin={coin}", {}, api_key)
     if not resp:
         log(f"  {coin}: pack fetch failed")
         return []
@@ -443,7 +412,7 @@ def score_signals(coin: str, signals: list[dict], api_key: str) -> list[dict]:
             f"    source: zero_os\n"
         )
 
-        resp = envy_post_yaml("/paid/signals/check", yaml_body, api_key)
+        resp = signal_api_post_yaml("/paid/signals/check", yaml_body, api_key)
         if not resp:
             # API failed — keep original metrics
             scored.append(sig)
@@ -494,7 +463,7 @@ def assemble_strategy(coin: str, signals: list[dict], api_key: str) -> list[dict
         yaml_lines.append(f"    max_hold_hours: {sig.get('max_hold_hours', 24)}")
     yaml_body = "\n".join(yaml_lines)
 
-    resp = envy_post_yaml("/paid/strategy/assemble", yaml_body, api_key, {"mode": "normal"})
+    resp = signal_api_post_yaml("/paid/strategy/assemble", yaml_body, api_key, {"mode": "normal"})
     if not resp:
         log(f"    {coin}: assemble API failed — using local sort")
         signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
@@ -562,7 +531,7 @@ def optimize_portfolio(coins_with_signals: list[str], api_key: str) -> dict:
     existing = ",".join(coins_with_signals[:3])
     count = min(12, len(coins_with_signals))
 
-    resp = envy_get(
+    resp = signal_api_get(
         "/paid/portfolio/optimize",
         {"existing": existing, "count": str(count), "mode": "normal", "allocation": "weighted"},
         api_key,
@@ -864,7 +833,7 @@ def run_once(api_key: str):
 
         # Cache scored signals for self-protection fallback
         try:
-            _signal_cache.save_signals(coin, {"coin": coin, "signals": scored, "source": "nvprotocol"})
+            _signal_cache.save_signals(coin, {"coin": coin, "signals": scored, "source": "signal_api"})
         except Exception:
             pass
 
@@ -991,7 +960,7 @@ def run_once(api_key: str):
     strategies = {
         "updated_at":    now_iso(),
         "version":       STRATEGY_VERSION,
-        "source":        "envy_api",  # vs "cache_only" in old version
+        "source":        "signal_api",  # vs "cache_only" in old version
         "active_coins":  active_coins,
         "coins":         {c: coins_data[c] for c in active_coins if c in coins_data},
     }
@@ -1002,7 +971,7 @@ def run_once(api_key: str):
     alloc_doc = {
         "updated_at":  now_iso(),
         "version":     STRATEGY_VERSION,
-        "source":      "envy_portfolio_optimize",
+        "source":      "signal_api_portfolio_optimize",
         "allocations": allocation,
     }
     save_json(ALLOCATION_FILE, alloc_doc)
@@ -1010,7 +979,7 @@ def run_once(api_key: str):
 
     # Cache allocation for self-protection fallback
     try:
-        _signal_cache.save_portfolio({"allocations": allocation, "source": "nvprotocol"})
+        _signal_cache.save_portfolio({"allocations": allocation, "source": "signal_api"})
         _signal_cache.save_metadata()
     except Exception:
         pass
@@ -1022,12 +991,10 @@ def run_once(api_key: str):
 
 def main():
     loop = "--loop" in sys.argv
-    api_key = get_env("ENVY_API_KEY")
+    api_key = get_env("NVARENA_API_KEY") or get_env("ENVY_API_KEY")
     if not api_key:
-        log("ENVY_API_KEY not set — will use x402 payment fallback")
-        if not _get_x402():
-            log("FATAL: no API key and x402 unavailable (install eth_account)")
-            sys.exit(1)
+        log("FATAL: NVARENA_API_KEY not set — cannot call upstream signal API")
+        sys.exit(1)
 
     log("=== V6 Strategy Manager starting ===")
     BUS_DIR.mkdir(parents=True, exist_ok=True)
