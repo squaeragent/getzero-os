@@ -308,12 +308,18 @@ def ensure_signal_packs(coins: list, api_key: str):
     if not missing:
         return
 
+    # Cap at 10 fetches per cycle to avoid rate limiting the signal API
+    MAX_PACK_FETCHES = 10
+    if len(missing) > MAX_PACK_FETCHES:
+        log(f"  Capping pack fetches at {MAX_PACK_FETCHES} (had {len(missing)} stale)")
+        missing = missing[:MAX_PACK_FETCHES]
+
     log(f"  Auto-fetching signal packs for {len(missing)} coins (cache stale/missing)...")
     for i, coin in enumerate(missing):
         fetch_signal_packs(coin, api_key)
         if (i + 1) % 5 == 0:
             log(f"  Packs: {i+1}/{len(missing)} fetched...")
-        time.sleep(0.3)  # gentle pacing
+        time.sleep(1.0)  # 1s between calls to avoid rate limits
 
 
 # ─── LOAD SIGNALS FROM CACHE ──────────────────────────────────────────────────
@@ -773,8 +779,9 @@ def run_once(api_key: str):
     t0 = time.time()
 
     # Phase 0: Auto-fetch missing/stale signal packs from API
+    # Only fetch for ACTIVE_COINS_COUNT top coins, not all 40 — avoids rate limiting the signal API
     log("Phase 0: Ensuring signal pack cache is fresh...")
-    ensure_signal_packs(ALL_COINS, api_key)
+    ensure_signal_packs(ALL_COINS[:ACTIVE_COINS_COUNT], api_key)
 
     # Phase 1: Load and score signals for each coin
     log("Phase 1: Loading and scoring signals...")

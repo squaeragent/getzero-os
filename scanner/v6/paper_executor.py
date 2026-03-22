@@ -67,27 +67,9 @@ _price_cache: dict[str, float] = {}
 
 
 def _fetch_price(coin: str) -> float:
-    """Fetch real price from NVArena snapshot API, fallback to HL REST API."""
-    api_key = get_env("ENVY_API_KEY")
-    
-    # Try NVArena first (same API the evaluator uses)
-    if api_key:
-        try:
-            url = f"https://arena.nvprotocol.com/api/claw/paid/indicators/snapshot?coins={coin}&indicators=CLOSE_PRICE_15M"
-            req = urllib.request.Request(url, headers={"X-API-KEY": api_key})
-            resp = json.loads(urllib.request.urlopen(req, timeout=10).read())
-            # Response: {success, snapshot: {COIN: [{indicatorCode, value}]}}
-            indicators = resp.get("snapshot", {}).get(coin, [])
-            for ind in indicators:
-                if ind.get("indicatorCode") == "CLOSE_PRICE_15M":
-                    price = float(ind.get("value", 0))
-                    if price > 0:
-                        _price_cache[coin] = price
-                        return price
-        except Exception as e:
-            _log(f"WARN: NVArena price fetch failed for {coin}: {e}")
-
-    # Fallback to Hyperliquid REST API (free, no key needed)
+    """Fetch real price from Hyperliquid REST API (free, no rate limits)."""
+    # Use HL allMids — free, fast, no API key needed
+    # Do NOT call NVArena snapshot for prices — wastes credits and triggers rate limits
     try:
         hl_url = "https://api.hyperliquid.xyz/info"
         data = json.dumps({"type": "allMids"}).encode()
