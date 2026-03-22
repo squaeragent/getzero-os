@@ -293,6 +293,7 @@ def main():
 
     last_strategy_refresh = time.time()
     last_health_check = time.time()
+    last_portfolio_export = 0  # export immediately on first cycle
     cycle_times = {name: 0 for name, _, _, _ in COMPONENTS}
     cycle_times["strategy_manager"] = time.time()  # already ran
 
@@ -318,6 +319,21 @@ def main():
         # Check evaluator and immune health
         check_evaluator()
         start_immune()  # restart if died
+
+        # Export portfolio.json for the website every 2 minutes
+        if now - last_portfolio_export >= 120:
+            try:
+                result = subprocess.run(
+                    [PYTHON, "-m", "scanner.export_portfolio"],
+                    capture_output=True, text=True, timeout=30,
+                    cwd=str(V6_DIR.parent.parent)  # repo root
+                )
+                if result.returncode == 0:
+                    last_portfolio_export = now
+                else:
+                    log(f"  [export_portfolio] failed: {(result.stderr or '')[:200]}")
+            except Exception as e:
+                log(f"  [export_portfolio] error: {e}")
 
         # Health check every 5 minutes
         if now - last_health_check >= 300:
