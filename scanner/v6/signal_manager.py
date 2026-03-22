@@ -142,6 +142,20 @@ class SignalManager:
             except Exception:
                 pass
 
+        # Check NVArena credit balance from bus file (written by strategy_manager)
+        try:
+            from scanner.v6.config import BUS_DIR
+            credit_file = BUS_DIR / "credit_status.json"
+            if credit_file.exists():
+                import json
+                cdata = json.loads(credit_file.read_text())
+                if cdata.get("is_revoked"):
+                    self._set_mode(SignalMode.BASIC, "subscription_revoked")
+                elif cdata.get("credits", 999999) <= 1000:
+                    self._set_mode(SignalMode.CACHED, "credits_critical")
+        except Exception:
+            pass
+
         # Try FULL (API)
         if self._api_key or self._mode == SignalMode.FULL:
             provider = self._get_provider(SignalMode.FULL)

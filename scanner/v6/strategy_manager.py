@@ -41,6 +41,50 @@ MIN_WIN_RATE  = 55.0
 TOP_SIGNALS   = 10   # send up to 10 signals per coin to assemble
 MAX_CACHE_AGE_HOURS = 4
 
+# ─── CREDIT MONITORING ────────────────────────────────────────────────────────
+# Correct endpoint: /api/claw/subscription/status (NOT /paid/subscription)
+# Returns: {success, isActive, expiresAt, credits, payerAddress, isRevoked}
+CREDIT_STATUS_FILE = BUS_DIR / "credit_status.json"
+CREDIT_LOW_THRESHOLD = 5000     # alert when credits drop below this
+CREDIT_CRITICAL_THRESHOLD = 1000  # halt paid API calls below this
+
+def check_credits(api_key: str) -> dict:
+    """Check NVArena credit balance. Returns {credits, is_active, expires_at} or empty on failure."""
+    if not api_key:
+        return {}
+    try:
+        url = "https://arena.nvprotocol.com/api/claw/subscription/status"
+        req = urllib.request.Request(url, headers={"X-API-KEY": api_key})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+        if not data.get("success"):
+            return {}
+        result = {
+            "credits": data.get("credits", 0),
+            "is_active": data.get("isActive", False),
+            "expires_at": data.get("expiresAt", ""),
+            "is_revoked": data.get("isRevoked", False),
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+        }
+        # Save to bus for other components to read
+        try:
+            CREDIT_STATUS_FILE.write_text(json.dumps(result, indent=2))
+        except Exception:
+            pass
+        # Alerts
+        credits = result["credits"]
+        if credits <= CREDIT_CRITICAL_THRESHOLD:
+            log(f"  ⚠️ CRITICAL: Only {credits:.0f} credits remaining — halting paid API calls")
+        elif credits <= CREDIT_LOW_THRESHOLD:
+            log(f"  ⚠️ LOW CREDITS: {credits:.0f} remaining")
+        else:
+            log(f"  Credits: {credits:.0f} | Active: {result['is_active']}")
+        return result
+    except Exception as e:
+        log(f"  Credit check failed: {e}")
+        return {}
+
+
 # ─── CREDIT CONSERVATION ─────────────────────────────────────────────────────
 # API audit 2026-03-22: signal check=$1/credit, assemble=$3/credit.
 # At 47,347 credits, every unnecessary call costs real money.
@@ -778,9 +822,20 @@ def run_once(api_key: str):
     log("=== Strategy refresh cycle ===")
     t0 = time.time()
 
-    # Phase 0: Auto-fetch missing/stale signal packs from API
+    # Phase 0a: Check credit balance
+    log("Phase 0a: Checking NVArena credit balance...")
+    credit_info = check_credits(api_key)
+    if credit_info.get("credits", 999999) <= CREDIT_CRITICAL_THRESHOLD:
+        log("  HALTED — credits too low for paid API calls. Skipping strategy refresh.")
+        log("  Agent will continue trading on cached strategies.")
+        return
+    if credit_info.get("is_revoked"):
+        log("  HALTED — subscription revoked. Skipping strategy refresh.")
+        return
+
+    # Phase 0b: Auto-fetch missing/stale signal packs from API
     # Only fetch for ACTIVE_COINS_COUNT top coins, not all 40 — avoids rate limiting the signal API
-    log("Phase 0: Ensuring signal pack cache is fresh...")
+    log("Phase 0b: Ensuring signal pack cache is fresh...")
     ensure_signal_packs(ALL_COINS[:ACTIVE_COINS_COUNT], api_key)
 
     # Phase 1: Load and score signals for each coin

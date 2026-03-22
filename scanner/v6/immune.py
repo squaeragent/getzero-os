@@ -664,8 +664,24 @@ def run_once(state: dict) -> dict:
     # Equity anomaly
     all_alerts.extend(check_equity_anomaly(state))
 
-    # Signal drift (check every 10 minutes, not every minute)
+    # NVArena credit health (check every 10 cycles)
     cycle_count = state.get("cycle_count", 0)
+    if cycle_count % 10 == 0:
+        try:
+            credit_file = BUS_DIR / "credit_status.json"
+            if credit_file.exists():
+                cdata = json.loads(credit_file.read_text())
+                credits = cdata.get("credits", -1)
+                if cdata.get("is_revoked"):
+                    all_alerts.append("🚨 NVArena subscription REVOKED — signal API disabled")
+                elif credits >= 0 and credits <= 1000:
+                    all_alerts.append(f"🚨 NVArena credits CRITICAL: {credits:.0f} remaining — will halt paid API calls")
+                elif credits >= 0 and credits <= 5000:
+                    all_alerts.append(f"⚠️ NVArena credits LOW: {credits:.0f} remaining")
+        except Exception:
+            pass
+
+    # Signal drift (check every 10 minutes, not every minute)
     if cycle_count % 10 == 0:
         all_alerts.extend(check_signal_drift(state))
     
