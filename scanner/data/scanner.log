@@ -18330,3 +18330,777 @@ Traceback (most recent call last):
     ...<2 lines>...
             stderr=b''.join(stderr_seq) if stderr_seq else None)
 subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 09:22:47 UTC] ============================================================
+[2026-03-23 09:22:47 UTC] Perception Agent cycle — 2026-03-23 09:22 UTC
+[2026-03-23 09:22:47 UTC] ============================================================
+[2026-03-23 09:22:47 UTC]   [ws] stale (285086s), falling back to API
+[2026-03-23 09:22:47 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 09:22:49 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 09:22:51 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 09:22:53 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 09:22:54 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 09:22:56 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 09:22:58 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 09:22:58 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 09:22:58 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 09:22:58 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 09:22:59 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 09:22:59 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 09:23:16 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 09:23:29 UTC]   [world_state] written (40 coins, 41669ms)
+[2026-03-23 09:23:29 UTC]   [regimes] written
+[2026-03-23 09:23:29 UTC]   [liquidity] written
+[2026-03-23 09:23:29 UTC]   [timeframe_signals] written
+[2026-03-23 09:23:29 UTC]   [funding] written (2 extreme, 0 reversals)
+[2026-03-23 09:23:29 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 09:23:29 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 09:23:29 UTC]   Tradeable: 39/40
+[2026-03-23 09:23:29 UTC]   Elevated spreads: 8 | Funding intensifying: 0
+[2026-03-23 09:23:29 UTC]   Macro: CHOPPY | Fear: 29/100 | Session: EUROPE
+[2026-03-23 09:23:29 UTC]   Cycle: 41669ms
+[2026-03-23 09:23:29 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 09:39:29 UTC] ============================================================
+[2026-03-23 09:39:29 UTC] Perception Agent cycle — 2026-03-23 09:39 UTC
+[2026-03-23 09:39:29 UTC] ============================================================
+[2026-03-23 09:39:29 UTC]   [ws] stale (286088s), falling back to API
+[2026-03-23 09:39:29 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 09:39:31 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 09:39:33 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 09:39:35 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 09:39:37 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 09:39:39 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 09:39:40 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 09:39:40 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 09:39:40 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 09:39:40 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 09:39:41 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 09:39:41 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 09:39:57 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 09:40:09 UTC]   [world_state] written (40 coins, 39217ms)
+[2026-03-23 09:40:09 UTC]   [regimes] written
+[2026-03-23 09:40:09 UTC]   [liquidity] written
+[2026-03-23 09:40:09 UTC]   [timeframe_signals] written
+[2026-03-23 09:40:09 UTC]   [funding] written (2 extreme, 0 reversals)
+[2026-03-23 09:40:09 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 09:40:09 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 09:40:09 UTC]   Tradeable: 36/40
+[2026-03-23 09:40:09 UTC]   Elevated spreads: 12 | Funding intensifying: 0
+[2026-03-23 09:40:09 UTC]   Macro: CHOPPY | Fear: 23/100 | Session: EUROPE
+[2026-03-23 09:40:09 UTC]   Cycle: 39217ms
+[2026-03-23 09:40:09 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 09:56:09 UTC] ============================================================
+[2026-03-23 09:56:09 UTC] Perception Agent cycle — 2026-03-23 09:56 UTC
+[2026-03-23 09:56:09 UTC] ============================================================
+[2026-03-23 09:56:09 UTC]   [ws] stale (287088s), falling back to API
+[2026-03-23 09:56:09 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 09:56:11 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 09:56:13 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 09:56:14 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 09:56:16 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 09:56:18 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 09:56:20 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 09:56:20 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 09:56:20 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 09:56:20 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 09:56:20 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 09:56:20 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 09:56:38 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 09:56:51 UTC]   [world_state] written (40 coins, 41988ms)
+[2026-03-23 09:56:51 UTC]   [regimes] written
+[2026-03-23 09:56:51 UTC]   [liquidity] written
+[2026-03-23 09:56:51 UTC]   [timeframe_signals] written
+[2026-03-23 09:56:51 UTC]   [funding] written (2 extreme, 0 reversals)
+[2026-03-23 09:56:51 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 09:56:51 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 09:56:51 UTC]   Tradeable: 39/40
+[2026-03-23 09:56:51 UTC]   Elevated spreads: 14 | Funding intensifying: 0
+[2026-03-23 09:56:51 UTC]   Macro: CHOPPY | Fear: 18/100 | Session: EUROPE
+[2026-03-23 09:56:51 UTC]   Cycle: 41988ms
+[2026-03-23 09:56:51 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/perception.py']' timed out after 60 seconds
+
+--- perception ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/perception.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 10:44:51 UTC] ============================================================
+[2026-03-23 10:44:51 UTC] Perception Agent cycle — 2026-03-23 10:44 UTC
+[2026-03-23 10:44:51 UTC] ============================================================
+[2026-03-23 10:44:51 UTC]   [ws] stale (290010s), falling back to API
+[2026-03-23 10:44:51 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 10:44:54 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 10:44:55 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 10:44:57 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 10:44:59 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 10:45:01 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 10:45:03 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 10:45:03 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 10:45:03 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 10:45:03 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 10:45:03 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 10:45:03 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 10:45:20 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 10:45:33 UTC]   [world_state] written (40 coins, 41089ms)
+[2026-03-23 10:45:33 UTC]   [regimes] written
+[2026-03-23 10:45:33 UTC]   [liquidity] written
+[2026-03-23 10:45:33 UTC]   [timeframe_signals] written
+[2026-03-23 10:45:33 UTC]   [funding] written (2 extreme, 0 reversals)
+[2026-03-23 10:45:33 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 10:45:33 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 10:45:33 UTC]   Tradeable: 34/40
+[2026-03-23 10:45:33 UTC]   Elevated spreads: 6 | Funding intensifying: 0
+[2026-03-23 10:45:33 UTC]   Macro: CHOPPY | Fear: 36/100 | Session: EUROPE
+[2026-03-23 10:45:33 UTC]   Cycle: 41089ms
+[2026-03-23 10:45:33 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 11:01:33 UTC] ============================================================
+[2026-03-23 11:01:33 UTC] Perception Agent cycle — 2026-03-23 11:01 UTC
+[2026-03-23 11:01:33 UTC] ============================================================
+[2026-03-23 11:01:33 UTC]   [ws] stale (291012s), falling back to API
+[2026-03-23 11:01:33 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 11:01:35 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 11:01:36 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 11:01:38 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 11:01:40 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 11:01:42 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 11:01:44 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 11:01:44 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 11:01:44 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 11:01:44 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 11:01:45 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 11:01:45 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 11:02:02 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 11:02:14 UTC]   [world_state] written (40 coins, 41374ms)
+[2026-03-23 11:02:14 UTC]   [regimes] written
+[2026-03-23 11:02:14 UTC]   [liquidity] written
+[2026-03-23 11:02:14 UTC]   [timeframe_signals] written
+[2026-03-23 11:02:14 UTC]   [funding] written (2 extreme, 0 reversals)
+[2026-03-23 11:02:14 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 11:02:14 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 11:02:14 UTC]   Tradeable: 38/40
+[2026-03-23 11:02:14 UTC]   Elevated spreads: 6 | Funding intensifying: 0
+[2026-03-23 11:02:14 UTC]   Macro: CHOPPY | Fear: 35/100 | Session: EUROPE
+[2026-03-23 11:02:14 UTC]   Cycle: 41374ms
+[2026-03-23 11:02:14 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/perception.py']' timed out after 60 seconds
+
+--- perception ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/perception.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 11:50:15 UTC] ============================================================
+[2026-03-23 11:50:15 UTC] Perception Agent cycle — 2026-03-23 11:50 UTC
+[2026-03-23 11:50:15 UTC] ============================================================
+[2026-03-23 11:50:15 UTC]   [ws] stale (293934s), falling back to API
+[2026-03-23 11:50:15 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 11:50:17 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 11:50:19 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 11:50:20 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 11:50:22 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 11:50:24 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 11:50:26 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 11:50:26 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 11:50:26 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 11:50:26 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 11:50:26 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 11:50:26 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 11:50:43 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 11:50:55 UTC]   [world_state] written (40 coins, 40218ms)
+[2026-03-23 11:50:55 UTC]   [regimes] written
+[2026-03-23 11:50:55 UTC]   [liquidity] written
+[2026-03-23 11:50:55 UTC]   [timeframe_signals] written
+[2026-03-23 11:50:55 UTC]   [funding] written (0 extreme, 0 reversals)
+[2026-03-23 11:50:55 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 11:50:55 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 11:50:55 UTC]   Tradeable: 32/40
+[2026-03-23 11:50:55 UTC]   Elevated spreads: 6 | Funding intensifying: 0
+[2026-03-23 11:50:55 UTC]   Macro: CHOPPY | Fear: 43/100 | Session: EUROPE
+[2026-03-23 11:50:55 UTC]   Cycle: 40218ms
+[2026-03-23 11:50:55 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 12:06:55 UTC] ============================================================
+[2026-03-23 12:06:55 UTC] Perception Agent cycle — 2026-03-23 12:06 UTC
+[2026-03-23 12:06:55 UTC] ============================================================
+[2026-03-23 12:06:55 UTC]   [ws] stale (294934s), falling back to API
+[2026-03-23 12:06:55 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 12:06:57 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 12:06:59 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 12:07:01 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 12:07:03 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 12:07:05 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 12:07:06 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 12:07:06 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 12:07:06 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 12:07:06 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 12:07:07 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 12:07:07 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 12:07:24 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 12:07:37 UTC]   [world_state] written (40 coins, 41764ms)
+[2026-03-23 12:07:37 UTC]   [regimes] written
+[2026-03-23 12:07:37 UTC]   [liquidity] written
+[2026-03-23 12:07:37 UTC]   [timeframe_signals] written
+[2026-03-23 12:07:37 UTC]   [funding] written (0 extreme, 0 reversals)
+[2026-03-23 12:07:37 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 12:07:37 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 12:07:37 UTC]   Tradeable: 27/40
+[2026-03-23 12:07:37 UTC]   Elevated spreads: 11 | Funding intensifying: 0
+[2026-03-23 12:07:37 UTC]   Macro: CHOPPY | Fear: 29/100 | Session: EUROPE
+[2026-03-23 12:07:37 UTC]   Cycle: 41764ms
+[2026-03-23 12:07:37 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 12:23:38 UTC] ============================================================
+[2026-03-23 12:23:38 UTC] Perception Agent cycle — 2026-03-23 12:23 UTC
+[2026-03-23 12:23:38 UTC] ============================================================
+[2026-03-23 12:23:38 UTC]   [ws] stale (295936s), falling back to API
+[2026-03-23 12:23:38 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 12:23:39 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 12:23:41 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 12:23:43 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 12:23:45 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 12:23:47 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 12:23:49 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 12:23:49 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 12:23:49 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 12:23:49 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 12:23:49 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 12:23:49 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 12:24:06 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 12:24:19 UTC]   [world_state] written (40 coins, 41239ms)
+[2026-03-23 12:24:19 UTC]   [regimes] written
+[2026-03-23 12:24:19 UTC]   [liquidity] written
+[2026-03-23 12:24:19 UTC]   [timeframe_signals] written
+[2026-03-23 12:24:19 UTC]   [funding] written (1 extreme, 0 reversals)
+[2026-03-23 12:24:19 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 12:24:19 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 12:24:19 UTC]   Tradeable: 35/40
+[2026-03-23 12:24:19 UTC]   Elevated spreads: 6 | Funding intensifying: 0
+[2026-03-23 12:24:19 UTC]   Macro: CHOPPY | Fear: 41/100 | Session: EUROPE
+[2026-03-23 12:24:19 UTC]   Cycle: 41239ms
+[2026-03-23 12:24:19 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 12:40:19 UTC] ============================================================
+[2026-03-23 12:40:19 UTC] Perception Agent cycle — 2026-03-23 12:40 UTC
+[2026-03-23 12:40:19 UTC] ============================================================
+[2026-03-23 12:40:19 UTC]   [ws] stale (296938s), falling back to API
+[2026-03-23 12:40:19 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 12:40:21 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 12:40:23 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 12:40:25 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 12:40:28 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 12:40:30 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 12:40:32 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 12:40:32 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 12:40:32 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 12:40:32 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 12:40:32 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 12:40:32 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 12:40:50 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 12:41:04 UTC]   [world_state] written (40 coins, 44535ms)
+[2026-03-23 12:41:04 UTC]   [regimes] written
+[2026-03-23 12:41:04 UTC]   [liquidity] written
+[2026-03-23 12:41:04 UTC]   [timeframe_signals] written
+[2026-03-23 12:41:04 UTC]   [funding] written (3 extreme, 0 reversals)
+[2026-03-23 12:41:04 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 12:41:04 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 12:41:04 UTC]   Tradeable: 35/40
+[2026-03-23 12:41:04 UTC]   Elevated spreads: 6 | Funding intensifying: 0
+[2026-03-23 12:41:04 UTC]   Macro: CHOPPY | Fear: 41/100 | Session: EUROPE
+[2026-03-23 12:41:04 UTC]   Cycle: 44535ms
+[2026-03-23 12:41:04 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/perception.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 13:13:04 UTC] ============================================================
+[2026-03-23 13:13:04 UTC] Perception Agent cycle — 2026-03-23 13:13 UTC
+[2026-03-23 13:13:04 UTC] ============================================================
+[2026-03-23 13:13:04 UTC]   [ws] stale (298903s), falling back to API
+[2026-03-23 13:13:04 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 13:13:06 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 13:13:08 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 13:13:10 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 13:13:12 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 13:13:13 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 13:13:15 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 13:13:15 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 13:13:15 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 13:13:15 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 13:13:16 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 13:13:16 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 13:13:33 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 13:13:45 UTC]   [world_state] written (40 coins, 40666ms)
+[2026-03-23 13:13:45 UTC]   [regimes] written
+[2026-03-23 13:13:45 UTC]   [liquidity] written
+[2026-03-23 13:13:45 UTC]   [timeframe_signals] written
+[2026-03-23 13:13:45 UTC]   [funding] written (3 extreme, 0 reversals)
+[2026-03-23 13:13:45 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 13:13:45 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 13:13:45 UTC]   Tradeable: 36/40
+[2026-03-23 13:13:45 UTC]   Elevated spreads: 7 | Funding intensifying: 0
+[2026-03-23 13:13:45 UTC]   Macro: CHOPPY | Fear: 40/100 | Session: US
+[2026-03-23 13:13:45 UTC]   Cycle: 40666ms
+[2026-03-23 13:13:45 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
+
+--- perception ---
+[2026-03-23 13:29:45 UTC] ============================================================
+[2026-03-23 13:29:45 UTC] Perception Agent cycle — 2026-03-23 13:29 UTC
+[2026-03-23 13:29:45 UTC] ============================================================
+[2026-03-23 13:29:45 UTC]   [ws] stale (299904s), falling back to API
+[2026-03-23 13:29:45 UTC]   [envy] fetching ALL 81 indicators in 6 batches x 40 coins...
+[2026-03-23 13:29:47 UTC]   [envy] batch 1/6 done (13 indicators)
+[2026-03-23 13:29:49 UTC]   [envy] batch 2/6 done (16 indicators)
+[2026-03-23 13:29:51 UTC]   [envy] batch 3/6 done (16 indicators)
+[2026-03-23 13:29:53 UTC]   [envy] batch 4/6 done (16 indicators)
+[2026-03-23 13:29:55 UTC]   [envy] batch 5/6 done (16 indicators)
+[2026-03-23 13:29:57 UTC]   [envy] batch 6/6 done (4 indicators)
+[2026-03-23 13:29:57 UTC]   [envy] all done: 40 coins, ~81 indicators each
+[2026-03-23 13:29:57 UTC]   [ws] overlaid 3158 fresher values
+[2026-03-23 13:29:57 UTC]   [envy] refresh done: 43 coins with indicators
+[2026-03-23 13:29:57 UTC]   [hl] metadata fetched: 229 coins
+[2026-03-23 13:29:57 UTC]   [hl] fetching L2 books for 40 coins...
+[2026-03-23 13:30:15 UTC]   [hl] L2 books done: 40 coins
+[2026-03-23 13:30:28 UTC]   [world_state] written (40 coins, 42610ms)
+[2026-03-23 13:30:28 UTC]   [regimes] written
+[2026-03-23 13:30:28 UTC]   [liquidity] written
+[2026-03-23 13:30:28 UTC]   [timeframe_signals] written
+[2026-03-23 13:30:28 UTC]   [funding] written (4 extreme, 0 reversals)
+[2026-03-23 13:30:28 UTC]   [spread] written (0 MM_SETUP, 0 UNWIND)
+[2026-03-23 13:30:28 UTC] 
+  Regimes: {'chaotic': 2, 'shift': 2, 'stable': 24, 'trending': 12}
+[2026-03-23 13:30:28 UTC]   Tradeable: 30/40
+[2026-03-23 13:30:28 UTC]   Elevated spreads: 9 | Funding intensifying: 0
+[2026-03-23 13:30:28 UTC]   Macro: CHOPPY | Fear: 36/100 | Session: US
+[2026-03-23 13:30:28 UTC]   Cycle: 42610ms
+[2026-03-23 13:30:28 UTC] ============================================================
+
+
+
+--- hypothesis ---
+Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 215, in main
+    run_once(name, script)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/forge/getzero-os/scanner/run_agents.py", line 120, in run_once
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/Users/forge/getzero-os/scanner/agents/hypothesis_generator.py']' timed out after 60 seconds
