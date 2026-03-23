@@ -11,6 +11,7 @@ from scanner.zeroos_cli.config_cmd import config
 from scanner.zeroos_cli.dashboard_cmd import dashboard
 from scanner.zeroos_cli.logs_cmd import logs
 from scanner.zeroos_cli.emergency_cmd import emergency_close
+from scanner.zeroos_cli.score_cmd import score
 
 
 @click.group()
@@ -28,6 +29,7 @@ cli.add_command(config)
 cli.add_command(dashboard)
 cli.add_command(logs)
 cli.add_command(emergency_close, "emergency-close")
+cli.add_command(score)
 
 
 if __name__ == "__main__":

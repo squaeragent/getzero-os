@@ -650,3 +650,160 @@ if __name__ == "__main__":
     print("Calculating ZERO Score from database...")
     result = score_from_db()
     print(format_terminal(result))
+
+
+# ─── Score History (Supabase) ─────────────────────────────────
+
+def save_snapshot(result: dict, agent_id: str = "4802c6f8-f862-42f1-b248-45679e1517e7") -> bool:
+    """Save score snapshot to Supabase for history tracking."""
+    if result.get("score") is None:
+        return False
+    env_file = Path.home() / ".config" / "openclaw" / ".env"
+    url = key = None
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if line.startswith("SUPABASE_URL="):
+            url = line.split("=", 1)[1].strip().strip('"').strip("'")
+        elif line.startswith("SUPABASE_SERVICE_KEY="):
+            key = line.split("=", 1)[1].strip().strip('"').strip("'")
+    if not url or not key:
+        return False
+    comp = result["components"]
+    payload = json.dumps({
+        "agent_id": agent_id,
+        "score": result["score"],
+        "effective_score": result["effective_score"],
+        "performance": comp["performance"],
+        "discipline": comp["discipline"],
+        "resilience": comp["resilience"],
+        "consistency_": comp["consistency"],
+        "confidence": result["confidence"],
+        "trade_count": result["trade_count"],
+        "days_active": result["days_active"],
+        "decay_state": result["decay_state"],
+        "rank_label": result["rank_label"],
+        "weakest": result["weakest"],
+    }).encode()
+    try:
+        req = urllib.request.Request(
+            f"{url}/rest/v1/score_snapshots",
+            data=payload,
+            headers={"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json", "Prefer": "return=minimal"},
+            method="POST",
+        )
+        urllib.request.urlopen(req, timeout=10)
+        return True
+    except Exception:
+        return False
+
+
+def get_history(agent_id: str = "4802c6f8-f862-42f1-b248-45679e1517e7", days: int = 90) -> list[dict]:
+    """Fetch score history for chart."""
+    return _rest_fetch(
+        "score_snapshots",
+        f"agent_id=eq.{agent_id}&select=score,effective_score,performance,discipline,resilience,consistency_,confidence,trade_count,created_at&order=created_at.asc&limit=500"
+    )
+
+
+# ─── Achievements ────────────────────────────────────────────
+
+MILESTONES = {
+    "five":        {"threshold": 5.0, "desc": "reach zero score 5.0 — you exist"},
+    "six":         {"threshold": 6.0, "desc": "reach zero score 6.0 — you're decent"},
+    "seven":       {"threshold": 7.0, "desc": "reach zero score 7.0 — you're good"},
+    "eight":       {"threshold": 8.0, "desc": "reach zero score 8.0 — you're exceptional"},
+    "nine":        {"threshold": 9.0, "desc": "reach zero score 9.0 — you're legendary"},
+}
+
+STREAK_ACHIEVEMENTS = {
+    "the_machine":  {"threshold": 8.0, "days": 30, "desc": "maintain 8.0+ for 30 consecutive days"},
+    "unbreakable":  {"threshold": 7.0, "days": 90, "desc": "maintain 7.0+ for 90 consecutive days"},
+    "elite_killer": {"threshold": 8.5, "days": 30, "desc": "beat the elite benchmark for 30 days"},
+}
+
+
+def check_achievements(history: list[dict], current_score: float) -> list[dict]:
+    """Check which achievements have been earned."""
+    earned = []
+
+    # Score milestones — check if current or any historical score hit threshold
+    all_scores = [h.get("effective_score") or h.get("score", 0) for h in history]
+    all_scores.append(current_score)
+    peak = max(all_scores) if all_scores else 0
+
+    for name, info in MILESTONES.items():
+        if peak >= info["threshold"]:
+            earned.append({"name": name, "desc": info["desc"], "type": "milestone"})
+
+    # Streak achievements — check consecutive days above threshold
+    if history:
+        for name, info in STREAK_ACHIEVEMENTS.items():
+            consecutive = 0
+            max_consecutive = 0
+            for h in history:
+                s = h.get("effective_score") or h.get("score", 0)
+                if s >= info["threshold"]:
+                    consecutive += 1
+                    max_consecutive = max(max_consecutive, consecutive)
+                else:
+                    consecutive = 0
+            if max_consecutive >= info["days"]:
+                earned.append({"name": name, "desc": info["desc"], "type": "streak"})
+
+    return earned
+
+
+# ─── Insight Generator ───────────────────────────────────────
+
+def generate_insight(result: dict, trades: list[dict] = None) -> str:
+    """Generate actionable insight based on weakest component."""
+    if result.get("score") is None:
+        return ""
+
+    weakest = result["weakest"]
+    comp = result["components"]
+    trades = trades or []
+    closed = [t for t in trades if t.get("status") == "closed"]
+
+    if weakest == "performance":
+        pnls = [t.get("pnl", 0) for t in closed]
+        wins = len([p for p in pnls if p > 0])
+        wr = wins / len(pnls) * 100 if pnls else 0
+        return f"win rate is {wr:.0f}%. focus on signal quality — SmartProvider regime detection will filter low-confidence entries."
+
+    elif weakest == "discipline":
+        sizes = [t.get("size_usd", 0) for t in closed if t.get("size_usd")]
+        if sizes:
+            import math
+            mean = sum(sizes) / len(sizes)
+            std = math.sqrt(sum((s - mean) ** 2 for s in sizes) / len(sizes))
+            cv = std / (mean + 1e-10)
+            if cv > 0.5:
+                return f"position sizing varies too much (CV={cv:.1f}). standardize to fixed % of equity."
+        return "reduce manual overrides. trust the machine."
+
+    elif weakest == "resilience":
+        # Check losing streaks
+        streak = 0
+        max_streak = 0
+        for t in closed:
+            if t.get("pnl", 0) < 0:
+                streak += 1
+                max_streak = max(max_streak, streak)
+            else:
+                streak = 0
+        if max_streak >= 5:
+            return f"max losing streak is {max_streak} trades. consider tightening stops during regime uncertainty."
+        return "drawdown recovery is slow. smaller positions during volatile periods would help."
+
+    elif weakest == "consistency":
+        daily = {}
+        for t in closed:
+            d = (t.get("exit_time") or t.get("entry_time") or "")[:10]
+            if d:
+                daily[d] = daily.get(d, 0) + t.get("pnl", 0)
+        pos = sum(1 for v in daily.values() if v > 0)
+        total = len(daily)
+        return f"only {pos}/{total} positive days. more consistent sizing and tighter risk management will smooth daily returns."
+
+    return ""
