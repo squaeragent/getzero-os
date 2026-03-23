@@ -35,6 +35,18 @@ try:
 except Exception:
     _sb = None
 
+# Enriched data intelligence pipeline
+try:
+    from enrichment import (
+        record_enriched_decision,
+        record_enriched_trade_open,
+        record_enriched_trade_close,
+        create_tracker, get_tracker, remove_tracker,
+    )
+    _enrichment = True
+except Exception:
+    _enrichment = False
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scanner.v6.config import (
     HL_MAIN_ADDRESS, HL_INFO_URL, HL_EXCHANGE_URL,
@@ -78,6 +90,35 @@ def log_rejection(coin: str, direction: str, reason: str, details: dict = None):
     if _sb:
         _sb.log_decision(coin, direction, "rejected", reason,
                          sharpe=details.get("sharpe") if details else None)
+    # Enriched decision recording
+    if _enrichment and details:
+        try:
+            record_enriched_decision(
+                coin=coin, direction=direction, decision="rejected", reason=reason,
+                signal_data={
+                    "regime": details.get("regime"),
+                    "assembled_sharpe": details.get("sharpe"),
+                    "signal_sharpe": details.get("signal_sharpe"),
+                    "quality_tier": details.get("quality"),
+                },
+                market_data={
+                    "price": details.get("price"),
+                    "funding_rate": details.get("funding_rate"),
+                    "book_depth": details.get("book_depth"),
+                },
+                portfolio_state={
+                    "equity": details.get("equity"),
+                    "position_count": details.get("position_count"),
+                    "open_coins": details.get("open_coins"),
+                },
+                gate_results={
+                    "rejected_by": details.get("gate"),
+                    "passed": details.get("gates_passed", []),
+                    "failed": details.get("gates_failed", []),
+                },
+            )
+        except Exception:
+            pass
 
 
 def load_json(path: Path, default=None):
@@ -890,6 +931,43 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
                          sharpe=trade.get("sharpe"), signal_name=trade.get("signal_name"))
         _sb.log_trade_open(pos)
 
+    # Enriched telemetry
+    if _enrichment and not dry:
+        try:
+            record_enriched_decision(
+                coin=coin, direction=direction, decision="entered", reason="passed all checks",
+                signal_data={
+                    "regime": trade.get("regime"),
+                    "assembled_sharpe": trade.get("sharpe"),
+                    "signal_sharpe": trade.get("signal_sharpe"),
+                    "quality_tier": trade.get("quality"),
+                    "direction": direction,
+                },
+                market_data={
+                    "price": price,
+                    "funding_rate": trade.get("funding_rate"),
+                    "book_depth": trade.get("book_depth"),
+                },
+                portfolio_state={
+                    "equity": trade.get("equity"),
+                    "position_count": len(positions),
+                },
+            )
+            record_enriched_trade_open(
+                coin=coin, direction=direction, entry_price=price,
+                size_usd=size_usd, leverage=trade.get("leverage", 1.0),
+                stop_price=pos.get("stop_loss_price"),
+                stop_distance_pct=stop_pct,
+                signal_data={
+                    "regime": trade.get("regime"),
+                    "assembled_sharpe": trade.get("sharpe"),
+                },
+                market_data={"funding_rate": trade.get("funding_rate")},
+                portfolio_state={"equity": trade.get("equity"), "position_count": len(positions)},
+            )
+        except Exception:
+            pass
+
     return True
 
 
@@ -1037,6 +1115,20 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
             size_usd=actual_exit_notional, pnl=pnl_usd, fees=total_fees,
             entry_time=entry_time, exit_reason=exit_reason
         )
+
+    # Enriched telemetry
+    if _enrichment and not dry:
+        try:
+            record_enriched_trade_close(
+                coin=coin, direction=direction,
+                entry_price=entry_price, exit_price=exit_price,
+                pnl=pnl_usd, pnl_pct=pnl_pct, fees=total_fees,
+                entry_time=entry_time, exit_reason=exit_reason,
+                signal_data={"regime": pos.get("regime")},
+                portfolio_state={"equity": pos.get("equity")},
+            )
+        except Exception:
+            pass
 
     return trade_record
 

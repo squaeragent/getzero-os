@@ -662,6 +662,17 @@ def run_once(state: dict) -> dict:
     """Run all checks once. Returns updated state."""
     all_alerts = []
 
+    # Update enrichment position trackers (MAE/MFE/immune checks)
+    try:
+        from enrichment import get_tracker
+        positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
+        for pos in positions:
+            tracker = get_tracker(pos.get("coin", ""))
+            if tracker:
+                tracker.record_immune_check(had_alert=False)  # Updated below if alerts
+    except Exception:
+        pass
+
     # Position desync with HL (CRITICAL — check every cycle)
     all_alerts.extend(check_position_desync(state))
 
