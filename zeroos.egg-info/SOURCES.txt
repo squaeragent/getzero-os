@@ -3,6 +3,7 @@ DESIGN_SPEC.md
 ENVY_INTEGRATION_SPEC.md
 MANIFEST.in
 README.md
+SKILL.md
 SPEC.md
 STRATEGY_FIX_SPEC.md
 V6_SPEC.md
@@ -15,6 +16,12 @@ vercel.json
 .vscode/extensions.json
 .vscode/launch.json
 api/waitlist.js
+docs/ARCHITECTURE_CONSISTENCY_AUDIT.md
+docs/DOCUMENT_INDEX.md
+docs/FIX_REGRESSION_VERIFICATION.md
+docs/MONETIZATION_RED_TEAM.pdf
+docs/SELF_PROTECTION_SPEC.pdf
+docs/ZERO_OS_SYSTEM_SPEC_V3.md
 intel/COMPETITIVE_INTEL.md
 public/favicon.ico
 public/favicon.svg
@@ -34,6 +41,7 @@ scanner/export_portfolio.py
 scanner/fetch_history.py
 scanner/generate_signals.py
 scanner/hyperliquid_executor.py
+scanner/install.sh
 scanner/run_agents.py
 scanner/run_cycle.sh
 scanner/signal_scanner.py
@@ -168,6 +176,7 @@ scanner/data/signal_mine/assembled/NEAR_assembled.yaml
 scanner/data/signal_mine/assembled/OP_assembled.yaml
 scanner/data/signal_mine/assembled/SEI_assembled.yaml
 scanner/data/signal_mine/assembled/SOL_assembled.yaml
+scanner/data/signal_mine/reports/mining_report_20260321_134953.txt
 scanner/data/signal_mine/signals/APT_common_30sigs.json
 scanner/data/signal_mine/signals/BTC_common_30sigs.json
 scanner/data/signal_mine/signals/ETH_common_30sigs.json
@@ -3878,10 +3887,12 @@ scanner/v6/analytics.py
 scanner/v6/basic_signals.py
 scanner/v6/bus_io.py
 scanner/v6/config.py
+scanner/v6/correlation.py
 scanner/v6/evaluator.py
 scanner/v6/executor.py
 scanner/v6/immune.py
 scanner/v6/paper_executor.py
+scanner/v6/paper_isolation.py
 scanner/v6/risk_guard.py
 scanner/v6/self_audit.py
 scanner/v6/signal_cache.py
@@ -3896,7 +3907,9 @@ scanner/v6/x402.py
 scanner/v6/x402_monitor.py
 scanner/v6/bus/allocation.json
 scanner/v6/bus/approved.json
+scanner/v6/bus/assembly_hashes.json
 scanner/v6/bus/coin_streaks.json
+scanner/v6/bus/credit_status.json
 scanner/v6/bus/entries.json
 scanner/v6/bus/equity_history.jsonl
 scanner/v6/bus/exits.json
@@ -3923,6 +3936,9 @@ scanner/zeroos_cli/start_cmd.py
 scanner/zeroos_cli/status_cmd.py
 scanner/zeroos_cli/stop_cmd.py
 scripts/gen-og.html
+skills/zeroos-agent/SKILL.md
+skills/zeroos-dashboard/SKILL.md
+skills/zeroos-immune/SKILL.md
 specs/ARENA_BUILD_SPEC.pdf
 specs/COGNITIVE_DASHBOARD_SPEC.pdf
 specs/GETZERO_HOMEPAGE_V2.pdf

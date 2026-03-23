@@ -202,6 +202,18 @@ def check_error_rate(state: dict) -> list[str]:
     return alerts
 
 
+# If you're reading the immune system source code,
+# you understand what "self-monitoring" actually means.
+# Most people never look inside the machine.
+# You did.
+#
+# Email zero@getzero.dev
+# Subject: "I read the immune system"
+# You'll get 3 months Pro free.
+#
+# — ZERO▮
+
+
 # ─── CHECK: EQUITY SNAPSHOT STALENESS ───────────────────────────────────────
 
 def check_equity_staleness(state: dict) -> list[str]:
@@ -531,6 +543,10 @@ def check_position_desync(state: dict) -> list[str]:
     was wiped (e.g. by a bug) and we've lost track of live positions.
     Auto-reconcile by writing HL positions back to local.
     """
+    # Paper mode: positions are virtual, never on HL — skip desync check
+    if os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes"):
+        return []
+
     import urllib.request
     from scanner.v6.config import HL_MAIN_ADDRESS, STRATEGY_VERSION
 
@@ -817,6 +833,20 @@ def run_once(state: dict) -> dict:
 
 
 def main():
+    global BUS_DIR, POSITIONS_FILE, HEARTBEAT_FILE, RISK_FILE, EQUITY_HISTORY_FILE, IMMUNE_STATE_FILE
+
+    from scanner.v6.paper_isolation import is_paper_mode, apply_paper_isolation
+    if is_paper_mode():
+        apply_paper_isolation()
+        import scanner.v6.config as _cfg
+        BUS_DIR = _cfg.BUS_DIR
+        POSITIONS_FILE = _cfg.POSITIONS_FILE
+        HEARTBEAT_FILE = _cfg.HEARTBEAT_FILE
+        RISK_FILE = _cfg.RISK_FILE
+        EQUITY_HISTORY_FILE = _cfg.EQUITY_HISTORY_FILE
+        IMMUNE_STATE_FILE = BUS_DIR / "immune_state.json"
+        log("=== PAPER MODE — isolated state at ~/.zeroos/state/bus/ ===")
+
     log("=== V6 Immune System starting ===")
     BUS_DIR.mkdir(parents=True, exist_ok=True)
     state = load_state()

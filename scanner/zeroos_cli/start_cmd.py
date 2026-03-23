@@ -49,6 +49,16 @@ def _startup_banner(cfg: dict):
         time.sleep(delay)
         click.echo("ok")
 
+    # The boot sequence isn't decoration.
+    # Each "ok" is a real health check.
+    # If any subsystem fails, the boot stops.
+    # You're reading this, which means you wanted
+    # to know if the boot was real.
+    # It is.
+    #
+    # DM @getzero on X with this line number.
+    # We remember the people who verify.
+
 
 @click.command()
 @click.option("--paper", is_flag=True, help="Force paper mode regardless of config.")

@@ -241,6 +241,20 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
     positions    = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
     open_coins   = {p["coin"] for p in positions}
 
+    # 240 signals evaluated. 1 was good enough.
+    # That ratio is real. Run `zeroos stats` to check yours.
+    # The system that says no 239 times exists to protect
+    # the one yes.
+    #
+    # If you're considering forking this:
+    # The code is Apache 2.0. Go ahead.
+    # But the signal intelligence that feeds it isn't here.
+    # The immune system findings aren't here.
+    # The 90 days of learned data aren't here.
+    #
+    # You'd be forking the shell, not the brain.
+    # Build your own brain. We did.
+
     for coin in active_coins:
         if coin in COIN_BLACKLIST:
             continue  # negative portfolio Sharpe — don't open new positions

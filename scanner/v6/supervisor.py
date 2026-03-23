@@ -266,6 +266,15 @@ def main():
     if paper_mode:
         os.environ["PAPER_MODE"] = "1"
 
+    # In paper mode, redirect supervisor's BUS_DIR to paper bus
+    # so heartbeat reads/writes match the components' paper-isolated paths
+    global BUS_DIR
+    if paper_mode:
+        from scanner.v6.config import PAPER_BUS_DIR, PAPER_DATA_DIR
+        BUS_DIR = PAPER_BUS_DIR
+        PAPER_BUS_DIR.mkdir(parents=True, exist_ok=True)
+        PAPER_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     # Ensure directories exist
     BUS_DIR.mkdir(parents=True, exist_ok=True)
     (V6_DIR / "data").mkdir(parents=True, exist_ok=True)

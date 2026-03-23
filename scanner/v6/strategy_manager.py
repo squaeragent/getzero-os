@@ -245,7 +245,7 @@ def fetch_signal_packs(coin: str, api_key: str) -> list[dict]:
     Returns list of signal dicts.
     """
     log(f"  {coin}: fetching common pack from signal API (1 credit)...")
-    resp = signal_api_get(f"/api/claw/paid/signals/pack/common?coin={coin}", {}, api_key)
+    resp = signal_api_get(f"/paid/signals/pack/common?coin={coin}", {}, api_key)
     if not resp:
         log(f"  {coin}: pack fetch failed")
         return []
