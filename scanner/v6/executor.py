@@ -630,15 +630,13 @@ class HLClient:
 # ─── POSITION SIZING ──────────────────────────────────────────────────────────
 
 def compute_size_usd(trade: dict) -> float:
-    """Compute position size using half-Kelly criterion.
+    """Compute position size: fixed equity percentage with quality tilt.
     
-    Kelly: f* = (p * b - q) / b where:
-      p = win rate (from ENVY signal)
-      q = 1 - p
-      b = avg win / avg loss ratio (estimated from signal stats)
-    Half-Kelly: f* / 2 (conservative — reduces variance)
+    Base: 15% of equity per trade (consistent sizing).
+    Tilt: ±5% based on signal quality (high confidence = 20%, low = 10%).
+    This keeps sizing CV < 0.3 while still rewarding conviction.
     
-    Size = equity * half_kelly_fraction, clamped to MIN/MAX.
+    Old approach (half-Kelly) produced CV of 1.81 — too wild for discipline score.
     """
     allocation  = load_json(ALLOCATION_FILE, {}).get("allocations", {})
     coin        = trade.get("coin", "")
@@ -659,20 +657,18 @@ def compute_size_usd(trade: dict) -> float:
     min_pos = limits["min_position_usd"]
     max_pos = limits["max_position_usd"]
 
+    BASE_PCT = 0.15  # 15% of equity — the anchor
+
     if weight > 0:
-        size_usd = equity * weight
+        # Allocation-based: use weight but clamp to ±5% of base
+        size_usd = equity * max(BASE_PCT - 0.05, min(BASE_PCT + 0.05, weight))
     else:
-        # Half-Kelly sizing
-        win_rate = trade.get("win_rate", 50) / 100
-        sharpe   = trade.get("sharpe", 1.5)
-        b = max(1.0, 1.0 + sharpe * 0.3)
-        p = max(0.01, min(0.99, win_rate))
-        q = 1 - p
-        kelly = (p * b - q) / b if b > 0 else 0
-        half_kelly = max(0, kelly / 2)
-        half_kelly = min(0.30, max(0.05, half_kelly))
-        size_usd = equity * half_kelly
-        log(f"  Kelly: p={p:.2f} b={b:.2f} f*={kelly:.3f} f*/2={half_kelly:.3f} → ${size_usd:.0f} (limits ${min_pos:.0f}-${max_pos:.0f})")
+        # Quality tilt: signal quality 0-10 maps to 10%-20% of equity
+        quality = trade.get("quality", 5)
+        quality_pct = BASE_PCT + (quality - 5) * 0.01  # ±5% from base
+        quality_pct = max(0.10, min(0.20, quality_pct))
+        size_usd = equity * quality_pct
+        log(f"  Size: {quality_pct:.0%} of ${equity:.0f} = ${size_usd:.0f} (quality={quality}, limits ${min_pos:.0f}-${max_pos:.0f})")
 
     return round(max(min_pos, min(max_pos, size_usd)), 2)
 

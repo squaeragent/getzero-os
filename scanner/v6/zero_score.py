@@ -192,10 +192,16 @@ def calculate_discipline(
         rej_score = 5.0
 
     # 2. Stop compliance (15%) — table stakes
+    # All systematic exit reasons (agent-driven, not human override)
+    SYSTEMATIC_EXITS = {
+        "signal_reversal", "stop_loss", "trailing_stop", "take_profit",
+        "max_hold", "immune", "kill_condition", "alignment_exit",
+        "alignment_exit_trap", "exit_expression", "risk_kill",
+        "time_decay_stop", "unknown",  # pre-tracking era = system exits
+    }
+    MANUAL_EXITS = {"manual", "emergency", "override", "manual_close_v6_migration"}
     if closed:
-        stops_hit = len([t for t in closed if t.get("exit_reason") in ("stop_loss", "trailing_stop")])
-        manual_closes = len([t for t in closed if t.get("exit_reason") in ("manual", "emergency", "override")])
-        # High stop compliance = exits are systematic
+        manual_closes = len([t for t in closed if t.get("exit_reason") in MANUAL_EXITS])
         systematic = len(closed) - manual_closes
         stop_score = _clamp((systematic / len(closed)) * 10) if closed else 5.0
     else:
@@ -229,8 +235,8 @@ def calculate_discipline(
 
     # 6. Hold time compliance (15%) — NEW
     if closed:
-        compliant_reasons = {"signal_reversal", "stop_loss", "trailing_stop", "take_profit", "max_hold", "immune"}
-        compliant = len([t for t in closed if t.get("exit_reason") in compliant_reasons])
+        # Same systematic set — any agent-driven exit = compliant
+        compliant = len([t for t in closed if t.get("exit_reason") not in MANUAL_EXITS])
         compliance_rate = compliant / len(closed)
         hold_score = compliance_rate * 10
     else:
