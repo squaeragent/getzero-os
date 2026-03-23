@@ -403,13 +403,101 @@ def calculate_consistency(trades: list[dict] = None, equity_snapshots: list[dict
     return round(_clamp(score), 2)
 
 
+# ─── Immune Component ────────────────────────────────────────
+
+def calculate_immune(
+    immune_logs: list[dict] = None,
+    uptime_data: dict = None,
+) -> float:
+    """
+    The immune system dimension.
+    Measures: does the machine protect itself?
+    4 sub-metrics: stop verification, self-audit, saves, uptime.
+    """
+    immune_logs = immune_logs or []
+    uptime_data = uptime_data or {}
+
+    # 1. STOP VERIFICATION RATE (30%)
+    total_checks = sum(log.get("stop_checks", 0) for log in immune_logs)
+    passed_checks = sum(log.get("stops_verified", 0) for log in immune_logs)
+    if total_checks > 0:
+        stop_rate = passed_checks / total_checks
+        # sigmoid scale: 100% → 10, 99% → 8, 95% → 5, <90% → 0
+        x = (stop_rate - 0.99) * 100
+        stop_score = 10 / (1 + math.exp(-x * 2))
+    else:
+        stop_score = 7.0  # no checks = not proven
+
+    # 2. SELF-AUDIT COMPLIANCE (25%)
+    weeks_active = max(uptime_data.get("weeks_active", 1), 1)
+    audits_completed = uptime_data.get("audits_completed", weeks_active)
+    audits_passed = uptime_data.get("audits_passed", audits_completed)
+    completion_rate = min(audits_completed / weeks_active, 1.0)
+    pass_rate = audits_passed / max(audits_completed, 1)
+    audit_score = (completion_rate * 5) + (pass_rate * 5)
+
+    # 3. IMMUNE SAVES (25%)
+    saves = sum(1 for log in immune_logs if log.get("action_taken"))
+    if saves == 0:
+        save_score = 7.0   # no problems to catch — good but not proven
+    elif saves <= 5:
+        save_score = 10.0  # caught and fixed a few — excellent
+    elif saves <= 20:
+        save_score = 8.0   # catching issues regularly — system works
+    else:
+        save_score = 5.0   # too many issues — something wrong underneath
+
+    # 4. CONTINUOUS UPTIME (20%)
+    days_since_restart = uptime_data.get("days_since_last_restart", 30)
+    # 30+ days = 10, 7 days = 7, 1 day = 3, <1 = 0
+    uptime_score = _clamp(days_since_restart / 3)
+
+    score = (stop_score * 0.30 + audit_score * 0.25 +
+             save_score * 0.25 + uptime_score * 0.20)
+    return round(_clamp(score), 2)
+
+
+# ─── Operator Score ──────────────────────────────────────────
+
+def calculate_operator_score(agents: list[dict]) -> float | None:
+    """
+    Operator score across ALL active agents.
+    weighted_average(agent_scores) × diversity_bonus × uptime_factor
+    """
+    active = [a for a in agents if a.get("status") == "active" and a.get("score") is not None]
+    if not active:
+        return None
+
+    total_trades = sum(a.get("trade_count", 0) for a in active)
+    if total_trades == 0:
+        return None
+
+    # Weighted average by trade count
+    weighted = sum(
+        a["score"] * (a.get("trade_count", 1) / total_trades)
+        for a in active
+    )
+
+    # Diversity bonus: unique presets
+    unique_presets = len(set(a.get("preset", "balanced") for a in active))
+    diversity = 1.0 + (min(unique_presets, 3) - 1) * 0.075  # 1.0, 1.075, 1.15
+
+    # Uptime factor: average uptime across agents
+    uptimes = [a.get("uptime_pct", 0.95) for a in active]
+    avg_uptime = sum(uptimes) / len(uptimes)
+    uptime_factor = 0.5 + (avg_uptime * 0.5)  # 50% → 0.75, 99% → 0.995
+
+    return round(_clamp(weighted * diversity * uptime_factor), 2)
+
+
 # ─── Main Score Calculator ───────────────────────────────────
 
 WEIGHTS = {
-    "performance": 0.25,
-    "discipline": 0.30,
-    "resilience": 0.25,
+    "immune": 0.25,
+    "discipline": 0.25,
+    "performance": 0.20,
     "consistency": 0.20,
+    "resilience": 0.10,
 }
 
 
@@ -445,18 +533,20 @@ def calculate_zero_score(
                 "min_days": 7,
             }
 
-    # Calculate components
-    perf = calculate_performance(closed, equity_snapshots)
+    # Calculate components (5 dimensions, immune first)
+    imm = calculate_immune(immune_logs)
     disc = calculate_discipline(decisions, trades, operator_events)
-    res = calculate_resilience(trades, equity_snapshots, immune_logs)
+    perf = calculate_performance(closed, equity_snapshots)
     cons = calculate_consistency(trades, equity_snapshots)
+    res = calculate_resilience(trades, equity_snapshots, immune_logs)
 
     # Raw composite
     raw = (
-        perf * WEIGHTS["performance"]
+        imm * WEIGHTS["immune"]
         + disc * WEIGHTS["discipline"]
-        + res * WEIGHTS["resilience"]
+        + perf * WEIGHTS["performance"]
         + cons * WEIGHTS["consistency"]
+        + res * WEIGHTS["resilience"]
     )
     raw = _clamp(raw)
 
@@ -485,10 +575,11 @@ def calculate_zero_score(
 
     # Weakest component
     components = {
-        "performance": perf,
+        "immune": imm,
         "discipline": disc,
-        "resilience": res,
+        "performance": perf,
         "consistency": cons,
+        "resilience": res,
     }
     weakest = min(components, key=components.get)
 
