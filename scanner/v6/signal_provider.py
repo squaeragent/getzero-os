@@ -18,14 +18,19 @@ from scanner.v6.signal_cache import SignalCache
 
 
 class SignalMode:
+    SMART = "smart"
     FULL = "full"
+    ENHANCED = "enhanced"
     CACHED = "cached"
     BASIC = "basic"
     PROTECTION = "protection"
 
     @staticmethod
     def quality(mode: str) -> int:
-        return {"full": 10, "cached": 7, "basic": 5, "protection": 0}.get(mode, 0)
+        return {
+            "smart": 7, "enhanced": 9, "full": 10,
+            "cached": 7, "basic": 3, "protection": 0,
+        }.get(mode, 0)
 
 
 class SignalProvider(ABC):

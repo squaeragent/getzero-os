@@ -53,14 +53,25 @@ class SignalManager:
 
     def __init__(self):
         self.cache = SignalCache()
-        self._mode = SignalMode.FULL
+        self._mode = SignalMode.SMART  # SmartProvider is default
         self._last_mode_change = time.time()
         self._api_key = get_env("ENVY_API_KEY")
         self._providers = {}
         self._x402_monitor = None
+        self._smart_provider = None
 
     def _get_provider(self, mode: str):
         """Lazy-init providers."""
+        if mode == SignalMode.SMART or mode == SignalMode.ENHANCED:
+            if self._smart_provider is None:
+                try:
+                    from scanner.v6.smart_provider import SmartProvider
+                    self._smart_provider = SmartProvider()
+                    _log("SmartProvider initialized")
+                except Exception as e:
+                    _log(f"SmartProvider init failed: {e}")
+                    return None
+            return self._smart_provider
         if mode not in self._providers:
             if mode == SignalMode.FULL:
                 self._providers[mode] = SignalAPIProvider(self._api_key)
@@ -156,8 +167,23 @@ class SignalManager:
         except Exception:
             pass
 
-        # Try FULL (API)
-        if self._api_key or self._mode == SignalMode.FULL:
+        # Try SMART (ZERO's own signal engine — default)
+        smart = self._get_provider(SignalMode.SMART)
+        if smart:
+            try:
+                for coin in coins:
+                    result = smart.check_signals(coin)
+                    if result.get("signal") != "NEUTRAL" or result.get("quality", 0) > 0:
+                        results[coin] = result
+                if results:
+                    self._set_mode(SignalMode.SMART, "smart_provider")
+                    return results
+            except Exception as e:
+                _log(f"SMART provider failed: {e}")
+                results = {}
+
+        # Try FULL (ENVY API — optional enhancement)
+        if self._api_key:
             provider = self._get_provider(SignalMode.FULL)
             if provider:
                 try:
