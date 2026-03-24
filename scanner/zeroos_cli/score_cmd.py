@@ -31,13 +31,25 @@ def score(share: bool, as_json: bool, save: bool):
     click.echo("")
     click.echo(format_terminal(result))
 
-    # Insight
+    # Insight (Upgrade 7: Skill Decomposition)
     aid = "agent_id=eq.4802c6f8-f862-42f1-b248-45679e1517e7"
     trades = _rest_fetch("trades", f"{aid}&status=eq.closed&select=coin,pnl,size_usd,exit_reason,entry_time,exit_time,status&order=entry_time.desc&limit=500")
-    from scanner.v6.zero_score import generate_insight
-    insight = generate_insight(result, trades)
-    if insight:
-        click.echo(f"\n  ▮ weakest: {result['weakest']} — {insight}")
+    try:
+        from compounding_upgrades import decompose_score
+        components = result.get("components", {})
+        insights = decompose_score(components, trades or [])
+        for ins in insights:
+            if ins.get("impact") != "low":
+                click.echo(f"\n  INSIGHT: {ins['component']} ({ins.get('score', '?')})")
+                click.echo(f"  {'─' * 40}")
+                click.echo(f"  {ins['finding']}")
+                click.echo(f"  fix: {ins['action']}")
+    except Exception:
+        # Fallback to old insight
+        from scanner.v6.zero_score import generate_insight
+        insight = generate_insight(result, trades)
+        if insight:
+            click.echo(f"\n  ▮ weakest: {result['weakest']} — {insight}")
 
     # Achievements
     history = get_history()

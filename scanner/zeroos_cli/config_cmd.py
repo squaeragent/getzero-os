@@ -96,10 +96,39 @@ def config(go_live, go_paper, preset_name):
         if not eligible:
             click.echo(f"  ✗ Cannot switch to live yet. {reason}")
             raise SystemExit(1)
+
+        # Performance fee consent
+        click.echo()
+        click.echo("  ⚠ live mode trades with real money.")
+        click.echo()
+        click.echo("  live mode includes pro features:")
+        click.echo("  ▸ full reasoning engine (11 indicators, regime detection)")
+        click.echo("  ▸ collective intelligence (learned from the network)")
+        click.echo("  ▸ arena + zero score")
+        click.echo("  ▸ up to 3 agents")
+        click.echo()
+        click.echo("  performance fee: 10% of net profit per trade.")
+        click.echo("  how it works:")
+        click.echo("  ▸ your agent closes a profitable trade")
+        click.echo("  ▸ 10% of the profit transfers to zero's wallet")
+        click.echo("  ▸ on losses: zero receives nothing")
+        click.echo("  ▸ high-water mark: you only pay on new highs")
+        click.echo("  ▸ every fee is on-chain and verifiable")
+        click.echo()
+
+        confirm = click.prompt("  type CONFIRM to go live", type=str)
+        if confirm != "CONFIRM":
+            click.echo("  cancelled.")
+            return
+
         cfg["agent"]["mode"] = "live"
+        cfg.setdefault("subscription", {})["plan"] = "pro"
+        cfg["subscription"]["status"] = "active"
+        cfg["subscription"]["fee_consent"] = datetime.now(timezone.utc).isoformat()
         _save_config(cfg)
+        click.echo()
         click.echo(f"  ✓ Switched to LIVE mode. ({reason})")
-        click.echo("  ⚠ Real money will be used on next start. Be careful.")
+        click.echo("  performance fee active. zero earns nothing on losses.")
 
     if go_paper:
         cfg["agent"]["mode"] = "paper"

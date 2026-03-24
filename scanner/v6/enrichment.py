@@ -1,249 +1,275 @@
-#!/usr/bin/env python3
 """
-Data Intelligence Enrichment Pipeline
+enrichment.py — Data Intelligence Pipeline
 
-Captures FULL CONTEXT at the moment of every event.
-Writes to decisions_enriched, trades_enriched, system_snapshots, journal_intelligence.
+Captures full context at the moment of every decision, trade entry, and trade close.
+Writes to Supabase decisions_enriched and trades_enriched tables.
+Also maintains in-memory MAE/MFE trackers for open positions.
 
-This module is TELEMETRY ONLY — never affects trading decisions.
-If Supabase is down, the agent trades normally.
+Never blocks trading — all writes are fire-and-forget with exception handling.
 """
 
 import json
-import logging
 import os
 import time
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.request import Request, urlopen
+from urllib.error import URLError
 
-log = logging.getLogger("enrichment")
+# ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-AGENT_UUID = "4802c6f8-f862-42f1-b248-45679e1517e7"
+AGENT_UUID = os.environ.get("AGENT_UUID", "4802c6f8-f862-42f1-b248-45679e1517e7")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", os.environ.get("NEXT_PUBLIC_SUPABASE_URL", ""))
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+SCANNER_DIR = Path(__file__).parent
 
-# ─── Supabase Client ──────────────────────────────────────────
+# Load from .env if not in environment
+_env_file = Path.home() / ".config" / "openclaw" / ".env"
+if (not SUPABASE_URL or not SUPABASE_KEY) and _env_file.exists():
+    for line in _env_file.read_text().splitlines():
+        line = line.strip()
+        if line.startswith("#") or "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        k = k.strip()
+        v = v.strip().strip('"').strip("'")
+        if k == "SUPABASE_URL" and not SUPABASE_URL:
+            SUPABASE_URL = v
+        elif k == "NEXT_PUBLIC_SUPABASE_URL" and not SUPABASE_URL:
+            SUPABASE_URL = v
+        elif k == "SUPABASE_SERVICE_KEY" and not SUPABASE_KEY:
+            SUPABASE_KEY = v
 
-_client = None
 
-def _get_client():
-    global _client
-    if _client is not None:
-        return _client
+def _log(msg: str):
+    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
+    print(f"  [enrichment] [{ts}] {msg}", flush=True)
+
+
+# ─── SUPABASE WRITE ──────────────────────────────────────────────────────────
+
+def _supabase_insert(table: str, data: dict) -> bool:
+    """Insert a row into Supabase. Returns True on success."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return False
+    url = f"{SUPABASE_URL}/rest/v1/{table}"
+    body = json.dumps(data).encode("utf-8")
+    req = Request(url, data=body, method="POST")
+    req.add_header("apikey", SUPABASE_KEY)
+    req.add_header("Authorization", f"Bearer {SUPABASE_KEY}")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Prefer", "return=minimal")
     try:
-        from supabase import create_client
-        env_file = Path.home() / ".config" / "openclaw" / ".env"
-        url = os.environ.get("SUPABASE_URL")
-        key = os.environ.get("SUPABASE_SERVICE_KEY")
-        if not url or not key:
-            if env_file.exists():
-                for line in env_file.read_text().splitlines():
-                    line = line.strip()
-                    if line.startswith("#") or "=" not in line:
-                        continue
-                    k, v = line.split("=", 1)
-                    k = k.strip()
-                    v = v.strip().strip('"').strip("'")
-                    if k == "SUPABASE_URL": url = v
-                    elif k == "SUPABASE_SERVICE_KEY": key = v
-        if url and key:
-            _client = create_client(url, key)
-        return _client
+        with urlopen(req, timeout=10) as resp:
+            return resp.status in (200, 201, 204)
     except Exception as e:
-        log.warning(f"Enrichment: Supabase unavailable: {e}")
-        return None
+        _log(f"write failed ({table}): {e}")
+        return False
 
 
-def _safe_write(table: str, data: dict):
-    """Write to Supabase, silently fail on error."""
+def _supabase_update(table: str, filters: dict, data: dict) -> bool:
+    """Update rows in Supabase matching filters."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return False
+    query = "&".join(f"{k}=eq.{v}" for k, v in filters.items())
+    url = f"{SUPABASE_URL}/rest/v1/{table}?{query}"
+    body = json.dumps(data).encode("utf-8")
+    req = Request(url, data=body, method="PATCH")
+    req.add_header("apikey", SUPABASE_KEY)
+    req.add_header("Authorization", f"Bearer {SUPABASE_KEY}")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Prefer", "return=minimal")
     try:
-        client = _get_client()
-        if client:
-            client.table(table).insert(data).execute()
+        with urlopen(req, timeout=10) as resp:
+            return resp.status in (200, 204)
     except Exception as e:
-        log.warning(f"Enrichment write failed ({table}): {e}")
+        _log(f"update failed ({table}): {e}")
+        return False
 
 
-def _safe_update(table: str, match: dict, data: dict):
-    """Update a row in Supabase, silently fail on error."""
-    try:
-        client = _get_client()
-        if client:
-            q = client.table(table).update(data)
-            for k, v in match.items():
-                q = q.eq(k, v)
-            q.execute()
-    except Exception as e:
-        log.warning(f"Enrichment update failed ({table}): {e}")
+def _async_write(table: str, data: dict):
+    """Fire-and-forget insert on a background thread."""
+    threading.Thread(target=_supabase_insert, args=(table, data), daemon=True).start()
 
 
-def _now_iso():
+def _async_update(table: str, filters: dict, data: dict):
+    """Fire-and-forget update on a background thread."""
+    threading.Thread(target=_supabase_update, args=(table, filters, data), daemon=True).start()
+
+
+def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-# ─── Position Tracker (MAE/MFE during hold) ──────────────────
+# ─── MAE/MFE TRACKER ─────────────────────────────────────────────────────────
+# Track worst and best unrealized P&L during each position's lifetime.
+# Called by the executor on every cycle.
 
 class PositionTracker:
-    """Tracks max adverse and favorable excursion during a trade's life."""
+    """Tracks MAE/MFE and regime changes for an open position."""
+    __slots__ = (
+        "coin", "direction", "entry_price", "entry_time",
+        "mae", "mfe", "mae_pct", "mfe_pct",
+        "regime_changes", "last_regime",
+        "immune_checks", "immune_alerts",
+        "stop_moved", "entry_regime",
+    )
 
-    def __init__(self, entry_price: float, direction: str, coin: str):
-        self.entry_price = entry_price
-        self.direction = direction.upper()
+    def __init__(self, coin: str, direction: str, entry_price: float,
+                 entry_time: str, entry_regime: str = ""):
         self.coin = coin
-        self.mae = 0.0        # max adverse excursion (worst point, in USD per unit)
-        self.mfe = 0.0        # max favorable excursion (best point)
+        self.direction = direction
+        self.entry_price = entry_price
+        self.entry_time = entry_time
+        self.mae = 0.0          # worst unrealized loss (negative)
+        self.mfe = 0.0          # best unrealized profit (positive)
         self.mae_pct = 0.0
         self.mfe_pct = 0.0
-        self.regime_change_count = 0
-        self.last_regime = None
-        self.immune_check_count = 0
-        self.immune_alert_count = 0
-        self.accumulated_funding = 0.0
-        self.stop_was_moved = False
-        self._original_stop = None
+        self.regime_changes = 0
+        self.last_regime = entry_regime
+        self.entry_regime = entry_regime
+        self.immune_checks = 0
+        self.immune_alerts = 0
+        self.stop_moved = False
 
-    def update(self, current_price: float, current_regime: str = None,
-               funding_payment: float = 0.0):
-        """Called every evaluation cycle while position is open."""
-        if self.direction == 'LONG':
-            unrealized = current_price - self.entry_price
+    def update(self, current_price: float, current_regime: str = ""):
+        """Update MAE/MFE with current price."""
+        if self.entry_price <= 0:
+            return
+        if self.direction == "LONG":
+            pnl_pct = (current_price - self.entry_price) / self.entry_price
         else:
-            unrealized = self.entry_price - current_price
+            pnl_pct = (self.entry_price - current_price) / self.entry_price
 
-        unrealized_pct = (unrealized / self.entry_price) * 100 if self.entry_price else 0
-
-        # Track extremes
-        if unrealized < self.mae:
-            self.mae = unrealized
-            self.mae_pct = unrealized_pct
-        if unrealized > self.mfe:
-            self.mfe = unrealized
-            self.mfe_pct = unrealized_pct
+        if pnl_pct < self.mae_pct:
+            self.mae_pct = pnl_pct
+        if pnl_pct > self.mfe_pct:
+            self.mfe_pct = pnl_pct
 
         # Track regime changes
-        if current_regime and current_regime != self.last_regime and self.last_regime is not None:
-            self.regime_change_count += 1
-        if current_regime:
+        if current_regime and current_regime != self.last_regime:
+            self.regime_changes += 1
             self.last_regime = current_regime
 
-        # Track funding
-        self.accumulated_funding += funding_payment
-
     def record_immune_check(self, had_alert: bool = False):
-        """Called when the immune system checks this position."""
-        self.immune_check_count += 1
+        self.immune_checks += 1
         if had_alert:
-            self.immune_alert_count += 1
+            self.immune_alerts += 1
 
-    def set_stop(self, stop_price: float):
-        """Track if stop was moved."""
-        if self._original_stop is None:
-            self._original_stop = stop_price
-        elif abs(stop_price - self._original_stop) > 0.0001:
-            self.stop_was_moved = True
+    def record_stop_moved(self):
+        self.stop_moved = True
 
 
 # Global tracker registry
-_position_trackers: dict[str, PositionTracker] = {}
+_trackers: dict[str, PositionTracker] = {}
+_tracker_lock = threading.Lock()
 
 
-def get_tracker(coin: str) -> PositionTracker | None:
-    """Get the position tracker for a coin."""
-    return _position_trackers.get(coin)
-
-
-def create_tracker(coin: str, entry_price: float, direction: str) -> PositionTracker:
-    """Create a new position tracker when opening a trade."""
-    tracker = PositionTracker(entry_price, direction, coin)
-    _position_trackers[coin] = tracker
+def create_tracker(coin: str, direction: str, entry_price: float,
+                   entry_time: str, entry_regime: str = "") -> PositionTracker:
+    """Create a new position tracker."""
+    key = f"{coin}_{direction}"
+    tracker = PositionTracker(coin, direction, entry_price, entry_time, entry_regime)
+    with _tracker_lock:
+        _trackers[key] = tracker
     return tracker
 
 
-def remove_tracker(coin: str) -> PositionTracker | None:
-    """Remove and return tracker when closing a trade."""
-    return _position_trackers.pop(coin, None)
+def get_tracker(coin: str, direction: str = "") -> PositionTracker | None:
+    """Get tracker for a position. If direction unknown, try both."""
+    with _tracker_lock:
+        if direction:
+            return _trackers.get(f"{coin}_{direction}")
+        return _trackers.get(f"{coin}_LONG") or _trackers.get(f"{coin}_SHORT")
 
 
-# ─── Enriched Decision Recording ─────────────────────────────
+def remove_tracker(coin: str, direction: str = "") -> PositionTracker | None:
+    """Remove and return tracker for a closed position."""
+    with _tracker_lock:
+        if direction:
+            return _trackers.pop(f"{coin}_{direction}", None)
+        return _trackers.pop(f"{coin}_LONG", None) or _trackers.pop(f"{coin}_SHORT", None)
+
+
+def update_all_trackers(prices: dict[str, float], regime_map: dict[str, str] | None = None):
+    """Update all trackers with current prices. Called every executor cycle."""
+    with _tracker_lock:
+        for key, tracker in _trackers.items():
+            price = prices.get(tracker.coin)
+            if price:
+                regime = (regime_map or {}).get(tracker.coin, "")
+                tracker.update(price, regime)
+
+
+# ─── ENRICHED DECISION ───────────────────────────────────────────────────────
 
 def record_enriched_decision(
     coin: str,
     direction: str,
-    decision: str,         # 'entered' | 'rejected' | 'closed' | 'held'
+    decision: str,
     reason: str,
-    signal_data: dict = None,
-    market_data: dict = None,
-    portfolio_state: dict = None,
-    gate_results: dict = None,
-    eval_duration_ms: int = None,
-    signal_mode: str = None,
+    signal_data: dict | None = None,
+    market_data: dict | None = None,
+    portfolio_state: dict | None = None,
+    gate_results: dict | None = None,
+    eval_duration_ms: int | None = None,
 ):
-    """Record a fully enriched decision to Supabase.
-    
-    Called from the evaluator after every decision.
-    All context is captured NOW — can't be reconstructed later.
-    """
-    signal_data = signal_data or {}
-    market_data = market_data or {}
-    portfolio_state = portfolio_state or {}
-    gate_results = gate_results or {}
+    """Record a fully enriched decision to Supabase."""
+    sd = signal_data or {}
+    md = market_data or {}
+    ps = portfolio_state or {}
+    gr = gate_results or {}
 
-    data = {
+    row = {
         "agent_id": AGENT_UUID,
         "timestamp": _now_iso(),
         "coin": coin,
         "direction": direction.lower(),
-        "decision": decision.lower(),
-        "reason": _sanitize_reason(reason),
-        "reason_raw": reason[:500] if reason else None,
+        "decision": decision,
+        "reason": reason,
 
         # Signal context
-        "regime": signal_data.get("regime"),
-        "regime_code": signal_data.get("regime_code"),
-        "hurst": signal_data.get("hurst"),
-        "lyapunov": signal_data.get("lyapunov"),
-        "dfa": signal_data.get("dfa"),
-        "signal_quality": signal_data.get("quality_tier"),
-        "signal_sharpe": signal_data.get("signal_sharpe"),
-        "assembled_sharpe": signal_data.get("assembled_sharpe"),
-        "signal_direction": signal_data.get("direction"),
-        "signal_age_seconds": signal_data.get("signal_age"),
+        "regime": sd.get("regime"),
+        "hurst": sd.get("hurst"),
+        "dfa": sd.get("dfa"),
+        "signal_quality": sd.get("quality_tier"),
+        "signal_sharpe": sd.get("signal_sharpe"),
+        "assembled_sharpe": sd.get("assembled_sharpe"),
+        "signal_direction": sd.get("direction"),
 
         # Market context
-        "price": market_data.get("price"),
-        "funding_rate": market_data.get("funding_rate"),
-        "funding_annualized": market_data.get("funding_annualized"),
-        "book_depth_usd": market_data.get("book_depth"),
-        "spread_bps": market_data.get("spread_bps"),
-        "volume_24h": market_data.get("volume_24h"),
+        "price": md.get("price"),
+        "funding_rate": md.get("funding_rate"),
+        "book_depth_usd": md.get("book_depth"),
+        "volume_24h": md.get("volume_24h"),
 
         # Portfolio context
-        "equity": portfolio_state.get("equity"),
-        "position_count": portfolio_state.get("position_count"),
-        "positions_coins": portfolio_state.get("open_coins", []),
-        "max_positions": portfolio_state.get("max_positions"),
-        "available_capital": portfolio_state.get("available_capital"),
+        "equity": ps.get("equity"),
+        "position_count": ps.get("position_count"),
+        "positions_coins": ps.get("open_coins"),
+        "available_capital": ps.get("available_capital"),
 
         # Gate results
-        "gates_passed": gate_results.get("passed", []),
-        "gates_failed": gate_results.get("failed", []),
-        "gate_that_rejected": gate_results.get("rejected_by"),
+        "gates_passed": gr.get("passed"),
+        "gates_failed": gr.get("failed"),
+        "gate_that_rejected": gr.get("rejected_by"),
+
+        # Evaluation timing
         "evaluation_duration_ms": eval_duration_ms,
 
         # Signal mode
-        "signal_mode": signal_mode,
+        "signal_mode": sd.get("signal_mode"),
     }
 
-    # Remove None values to keep payload small
-    data = {k: v for k, v in data.items() if v is not None}
+    # Strip None values to avoid Supabase column type issues
+    row = {k: v for k, v in row.items() if v is not None}
 
-    threading.Thread(
-        target=_safe_write,
-        args=("decisions_enriched", data),
-        daemon=True,
-    ).start()
+    _async_write("decisions_enriched", row)
+    _log(f"decision: {coin} {direction} {decision} (regime={sd.get('regime', '?')})")
 
 
-# ─── Enriched Trade Recording ────────────────────────────────
+# ─── ENRICHED TRADE OPEN ─────────────────────────────────────────────────────
 
 def record_enriched_trade_open(
     coin: str,
@@ -251,59 +277,59 @@ def record_enriched_trade_open(
     entry_price: float,
     size_usd: float,
     leverage: float = 1.0,
-    stop_price: float = None,
-    stop_distance_pct: float = None,
-    signal_data: dict = None,
-    market_data: dict = None,
-    portfolio_state: dict = None,
-    signal_mode: str = None,
+    stop_price: float | None = None,
+    stop_distance_pct: float | None = None,
+    signal_data: dict | None = None,
+    market_data: dict | None = None,
+    portfolio_state: dict | None = None,
 ):
-    """Record enriched trade entry to Supabase. Creates PositionTracker."""
-    signal_data = signal_data or {}
-    market_data = market_data or {}
-    portfolio_state = portfolio_state or {}
+    """Record trade entry to trades_enriched and create MAE/MFE tracker."""
+    sd = signal_data or {}
+    md = market_data or {}
+    ps = portfolio_state or {}
 
-    now = datetime.now(timezone.utc)
+    now = _now_iso()
+    entry_dt = datetime.now(timezone.utc)
 
-    data = {
+    row = {
         "agent_id": AGENT_UUID,
         "coin": coin,
         "direction": direction.lower(),
         "status": "open",
+
+        # Entry context
         "entry_price": entry_price,
-        "entry_time": now.isoformat(),
-        "entry_regime": signal_data.get("regime"),
-        "entry_regime_code": signal_data.get("regime_code"),
-        "entry_hurst": signal_data.get("hurst"),
-        "entry_lyapunov": signal_data.get("lyapunov"),
-        "entry_signal_sharpe": signal_data.get("signal_sharpe"),
-        "entry_assembled_sharpe": signal_data.get("assembled_sharpe"),
-        "entry_funding_rate": market_data.get("funding_rate"),
-        "entry_book_depth_usd": market_data.get("book_depth"),
-        "entry_equity": portfolio_state.get("equity"),
-        "entry_position_count": portfolio_state.get("position_count"),
-        "entry_utc_hour": now.hour,
-        "entry_day_of_week": now.weekday(),
-        "entry_signal_mode": signal_mode,
+        "entry_time": now,
+        "entry_regime": sd.get("regime"),
+        "entry_hurst": sd.get("hurst"),
+        "entry_signal_sharpe": sd.get("signal_sharpe"),
+        "entry_assembled_sharpe": sd.get("assembled_sharpe"),
+        "entry_funding_rate": md.get("funding_rate"),
+        "entry_book_depth_usd": md.get("book_depth"),
+        "entry_equity": ps.get("equity"),
+        "entry_position_count": ps.get("position_count"),
+        "entry_utc_hour": entry_dt.hour,
+        "entry_day_of_week": entry_dt.weekday(),
+        "entry_signal_mode": sd.get("signal_mode"),
+
+        # Position parameters
         "size_usd": size_usd,
         "leverage": leverage,
         "stop_price": stop_price,
         "stop_distance_pct": stop_distance_pct,
     }
 
-    data = {k: v for k, v in data.items() if v is not None}
+    row = {k: v for k, v in row.items() if v is not None}
 
-    # Create position tracker
-    tracker = create_tracker(coin, entry_price, direction)
-    if stop_price:
-        tracker.set_stop(stop_price)
+    _async_write("trades_enriched", row)
 
-    threading.Thread(
-        target=_safe_write,
-        args=("trades_enriched", data),
-        daemon=True,
-    ).start()
+    # Create MAE/MFE tracker
+    create_tracker(coin, direction, entry_price, now, sd.get("regime", ""))
 
+    _log(f"trade open: {coin} {direction} @ ${entry_price:.4f} (regime={sd.get('regime', '?')})")
+
+
+# ─── ENRICHED TRADE CLOSE ────────────────────────────────────────────────────
 
 def record_enriched_trade_close(
     coin: str,
@@ -311,215 +337,150 @@ def record_enriched_trade_close(
     entry_price: float,
     exit_price: float,
     pnl: float,
-    pnl_pct: float = None,
-    fees: float = 0,
-    entry_time: str = None,
-    exit_reason: str = None,
-    signal_data: dict = None,
-    portfolio_state: dict = None,
-    signal_mode: str = None,
+    pnl_pct: float | None = None,
+    fees: float = 0.0,
+    entry_time: str | None = None,
+    exit_reason: str = "unknown",
+    signal_data: dict | None = None,
+    portfolio_state: dict | None = None,
 ):
-    """Record enriched trade exit. Uses PositionTracker for during-hold data."""
-    signal_data = signal_data or {}
-    portfolio_state = portfolio_state or {}
+    """Update trades_enriched with exit data + tracker metrics."""
+    sd = signal_data or {}
+    ps = portfolio_state or {}
 
-    tracker = remove_tracker(coin)
-    now = datetime.now(timezone.utc)
+    # Get tracker data
+    tracker = remove_tracker(coin, direction)
 
-    # Compute hold duration
+    now = _now_iso()
+
+    # Calculate hold duration
     hold_seconds = None
     if entry_time:
         try:
             entry_dt = datetime.fromisoformat(entry_time.replace("Z", "+00:00"))
-            hold_seconds = int((now - entry_dt).total_seconds())
-        except (ValueError, TypeError):
+            hold_seconds = int((datetime.now(timezone.utc) - entry_dt).total_seconds())
+        except Exception:
             pass
 
-    # Compute efficiency and risk/reward
-    mfe = tracker.mfe if tracker else 0
-    mae = tracker.mae if tracker else 0
-    risk_reward = abs(mfe / mae) if mae and abs(mae) > 0.001 else None
-    efficiency = (pnl / mfe) if mfe and mfe > 0.001 else None
+    # Calculate pnl_pct if not provided
+    if pnl_pct is None and entry_price > 0:
+        if direction.upper() == "LONG":
+            pnl_pct = (exit_price - entry_price) / entry_price
+        else:
+            pnl_pct = (entry_price - exit_price) / entry_price
 
-    data = {
+    # Efficiency: how much of MFE we captured
+    efficiency = None
+    if tracker and tracker.mfe_pct > 0 and pnl_pct is not None:
+        efficiency = pnl_pct / tracker.mfe_pct
+
+    # Risk/reward: MFE / abs(MAE)
+    risk_reward = None
+    if tracker and tracker.mae_pct < 0 and tracker.mfe_pct > 0:
+        risk_reward = tracker.mfe_pct / abs(tracker.mae_pct)
+
+    # Build update data — match on agent_id + coin + direction + status=open
+    update_data = {
+        "status": "closed",
+        "exit_price": exit_price,
+        "exit_time": now,
+        "exit_regime": sd.get("regime"),
+        "exit_hurst": sd.get("hurst"),
+        "exit_reason": exit_reason,
+        "exit_equity": ps.get("equity"),
+        "exit_signal_mode": sd.get("signal_mode"),
+        "hold_duration_seconds": hold_seconds,
+        "pnl": pnl,
+        "pnl_pct": round(pnl_pct, 6) if pnl_pct is not None else None,
+        "fees": fees,
+        "was_profitable": pnl > 0,
+        "updated_at": now,
+    }
+
+    # Add tracker data if available
+    if tracker:
+        update_data.update({
+            "max_adverse_excursion_pct": round(tracker.mae_pct, 6),
+            "max_favorable_excursion_pct": round(tracker.mfe_pct, 6),
+            "regime_changes_during_hold": tracker.regime_changes,
+            "immune_checks_during_hold": tracker.immune_checks,
+            "immune_alerts_during_hold": tracker.immune_alerts,
+            "stop_was_moved": tracker.stop_moved,
+            "efficiency": round(efficiency, 4) if efficiency is not None else None,
+            "risk_reward_ratio": round(risk_reward, 4) if risk_reward is not None else None,
+        })
+
+    update_data = {k: v for k, v in update_data.items() if v is not None}
+
+    # Update the open trade record
+    _async_update("trades_enriched", {
         "agent_id": AGENT_UUID,
         "coin": coin,
         "direction": direction.lower(),
-        "status": "closed",
-        "entry_price": entry_price,
-        "entry_time": entry_time,
+        "status": "open",
+    }, update_data)
 
-        # Exit context
-        "exit_price": exit_price,
-        "exit_time": now.isoformat(),
-        "exit_regime": signal_data.get("regime"),
-        "exit_regime_code": signal_data.get("regime_code"),
-        "exit_hurst": signal_data.get("hurst"),
-        "exit_lyapunov": signal_data.get("lyapunov"),
-        "exit_reason": exit_reason,
-        "exit_equity": portfolio_state.get("equity"),
-        "exit_signal_mode": signal_mode,
+    mae_str = f"MAE={tracker.mae_pct*100:.1f}%" if tracker else "?"
+    mfe_str = f"MFE={tracker.mfe_pct*100:.1f}%" if tracker else "?"
+    _log(f"trade close: {coin} {direction} pnl=${pnl:.2f} ({exit_reason}) {mae_str} {mfe_str}")
 
-        # During hold
-        "hold_duration_seconds": hold_seconds,
-        "pnl": round(pnl, 6) if pnl else 0,
-        "pnl_pct": round(pnl_pct, 4) if pnl_pct else None,
-        "fees": round(fees, 6) if fees else 0,
-        "was_profitable": pnl > 0 if pnl else False,
-    }
+    # Report to collective learning network (anonymized, fire-and-forget)
+    try:
+        from collective import report_trade
+        report_trade(
+            coin=coin,
+            direction=direction,
+            regime=sd.get("regime"),
+            pnl_pct=round(pnl_pct, 6) if pnl_pct is not None else None,
+            hold_seconds=hold_seconds,
+            mae_pct=round(tracker.mae_pct, 6) if tracker else None,
+            mfe_pct=round(tracker.mfe_pct, 6) if tracker else None,
+            exit_reason=exit_reason,
+            hurst=sd.get("hurst"),
+            efficiency=round(efficiency, 4) if efficiency is not None else None,
+        )
+    except Exception:
+        pass  # never block trading for collective reporting
 
-    if tracker:
-        data.update({
-            "funding_cost": round(tracker.accumulated_funding, 6),
-            "max_adverse_excursion": round(tracker.mae, 6),
-            "max_favorable_excursion": round(tracker.mfe, 6),
-            "max_adverse_excursion_pct": round(tracker.mae_pct, 4),
-            "max_favorable_excursion_pct": round(tracker.mfe_pct, 4),
-            "regime_changes_during_hold": tracker.regime_change_count,
-            "immune_checks_during_hold": tracker.immune_check_count,
-            "immune_alerts_during_hold": tracker.immune_alert_count,
-            "stop_was_moved": tracker.stop_was_moved,
-            "risk_reward_ratio": round(risk_reward, 4) if risk_reward else None,
-            "efficiency": round(efficiency, 4) if efficiency else None,
-        })
-
-    data = {k: v for k, v in data.items() if v is not None}
-
-    threading.Thread(
-        target=_safe_write,
-        args=("trades_enriched", data),
-        daemon=True,
-    ).start()
+    # UPGRADE 9: Report regime shift to alert system
+    try:
+        from compounding_upgrades import report_regime_shift
+        entry_regime = sd.get("regime", "")
+        exit_regime = ps.get("exit_regime", ps.get("regime", ""))
+        if entry_regime and exit_regime and entry_regime != exit_regime:
+            report_regime_shift(coin, exit_regime, entry_regime)
+    except Exception:
+        pass
 
 
-# ─── System Snapshot ──────────────────────────────────────────
+# ─── SYSTEM SNAPSHOT ──────────────────────────────────────────────────────────
 
 def record_system_snapshot(
     equity: float,
-    positions: list = None,
-    signal_mode: str = None,
-    universe_coins: list = None,
-    regimes: dict = None,
-    immune_status: str = None,
-    stops_verified: int = None,
-    stops_missing: int = None,
-    error_count_1h: int = None,
-    btc_price: float = None,
-    btc_regime: str = None,
-    api_latency: dict = None,
-    waitlist_count: int = None,
+    positions: list,
+    signal_mode: str = "full",
+    immune_status: str = "healthy",
+    regimes: dict | None = None,
+    btc_price: float | None = None,
 ):
-    """Record full system state snapshot. Called every 5 minutes."""
-    positions_data = None
-    total_unrealized = 0
-    if positions:
-        positions_data = []
-        for p in positions:
-            unrealized = p.get("unrealized_pnl", 0)
-            total_unrealized += unrealized
-            positions_data.append({
-                "coin": p.get("coin"),
-                "direction": p.get("direction"),
-                "pnl": unrealized,
-                "hold_seconds": p.get("hold_seconds"),
-            })
-
-    data = {
+    """Record a system state snapshot every 5 minutes."""
+    row = {
         "timestamp": _now_iso(),
         "total_equity": equity,
-        "total_positions": len(positions) if positions else 0,
-        "total_unrealized_pnl": round(total_unrealized, 4),
-        "positions": json.dumps(positions_data) if positions_data else None,
+        "total_positions": len(positions),
+        "total_unrealized_pnl": sum(float(p.get("unrealizedPnl", 0)) for p in positions),
+        "positions": json.dumps([{
+            "coin": p.get("coin"),
+            "direction": p.get("direction"),
+            "pnl_pct": p.get("pnl_pct", 0),
+        } for p in positions]),
         "signal_mode": signal_mode,
-        "universe_coins": universe_coins,
-        "universe_count": len(universe_coins) if universe_coins else None,
-        "regimes": json.dumps(regimes) if regimes else None,
         "immune_status": immune_status,
-        "stops_verified": stops_verified,
-        "stops_missing": stops_missing,
-        "error_count_1h": error_count_1h,
         "btc_price": btc_price,
-        "btc_regime": btc_regime,
-        "api_latency_ms": json.dumps(api_latency) if api_latency else None,
-        "waitlist_count": waitlist_count,
     }
 
-    data = {k: v for k, v in data.items() if v is not None}
+    if regimes:
+        row["regimes"] = json.dumps(regimes)
 
-    threading.Thread(
-        target=_safe_write,
-        args=("system_snapshots", data),
-        daemon=True,
-    ).start()
-
-
-# ─── Journal Intelligence ────────────────────────────────────
-
-def record_intelligence(
-    dimension: str,       # 'trading' | 'ux' | 'infra' | 'security' | 'cost'
-    pattern: str,
-    evidence: dict,
-    confidence: str,      # 'low' | 'medium' | 'high'
-    impact: str,          # 'low' | 'medium' | 'high' | 'critical'
-    proposal: str = None,
-):
-    """Record a pattern detection finding to the intelligence journal."""
-    data = {
-        "timestamp": _now_iso(),
-        "dimension": dimension,
-        "pattern": pattern,
-        "evidence": json.dumps(evidence),
-        "confidence": confidence,
-        "impact": impact,
-        "proposal": proposal,
-        "proposal_status": "pending" if proposal else None,
-    }
-
-    data = {k: v for k, v in data.items() if v is not None}
-
-    threading.Thread(
-        target=_safe_write,
-        args=("journal_intelligence", data),
-        daemon=True,
-    ).start()
-
-
-# ─── Reason Sanitizer (TIER 0 → TIER 4) ─────────────────────
-
-def _sanitize_reason(reason: str) -> str:
-    """Sanitize internal reason for public display.
-    
-    TIER 0 (internal): "sharpe_floor=0.8, actual=0.42, gate=alpha_vs_cost"
-    TIER 4 (public):   "expected return too low"
-    """
-    if not reason:
-        return None
-    r = reason.lower()
-
-    # Map internal gate names to human-readable reasons
-    if "capital_floor" in r or "capital floor" in r or "equity" in r:
-        return "capital too low"
-    if "alpha_vs_cost" in r or "alpha vs cost" in r or "sharpe" in r:
-        return "expected return too low"
-    if "max_positions" in r or "max positions" in r:
-        return "position limit reached"
-    if "book_depth" in r or "book depth" in r or "liquidity" in r:
-        return "insufficient liquidity"
-    if "funding" in r:
-        return "funding rate unfavorable"
-    if "spread" in r:
-        return "spread too wide"
-    if "correlation" in r:
-        return "correlated with existing position"
-    if "regime" in r and ("chaotic" in r or "unstable" in r):
-        return "regime too chaotic"
-    if "cooldown" in r:
-        return "coin on cooldown"
-    if "blacklist" in r:
-        return "coin excluded"
-
-    # Default: return first 100 chars, stripped of numbers that look like thresholds
-    import re
-    sanitized = re.sub(r'=[\d.]+', '', reason)
-    sanitized = re.sub(r'[\d.]+%', '', sanitized)
-    return sanitized[:100].strip()
+    row = {k: v for k, v in row.items() if v is not None}
+    _async_write("system_snapshots", row)

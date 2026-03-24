@@ -347,6 +347,48 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
                 })
                 continue
 
+        # ── UPGRADE 2: EXIT INTELLIGENCE ─────────────────────────────────
+        # Trailing stop tightening + regime exit + profit target
+        try:
+            from reasoning_upgrades import check_exit as _check_exit_intel, get_trailing_stop
+            atr_val = ind_values.get("ATR_14_15M") or ind_values.get("ATR") or 0
+            current_regime = pos.get("regime", "")
+            hurst_val = ind_values.get("HURST") or pos.get("hurst", 0.5)
+            hist_mfe = pos.get("historical_mfe_pct")
+
+            if cur_price and atr_val:
+                exit_pos = {
+                    "entry_price": entry_price,
+                    "direction": direction,
+                    "current_stop": pos.get("stop_loss_price", 0),
+                    "entry_regime": pos.get("entry_regime", ""),
+                    "regime_change_count": pos.get("regime_change_count", 0),
+                }
+                exit_sig = _check_exit_intel(
+                    exit_pos, float(cur_price), float(atr_val),
+                    current_regime, float(hurst_val), hist_mfe
+                )
+                if exit_sig:
+                    reason = exit_sig.get("reason", "exit_intelligence")
+                    detail = exit_sig.get("detail", "")
+                    log(f"  EXIT ({reason}): {coin} {direction} — {detail}")
+                    new_exits.append({
+                        "coin": coin, "direction": direction,
+                        "position_id": pos_id, "reason": reason,
+                        "detail": detail, "fired_at": now_iso(),
+                    })
+                    continue
+
+                # Update trailing stop in position (tighten only)
+                new_stop = exit_pos.get("_new_stop")
+                if new_stop and new_stop != pos.get("stop_loss_price", 0):
+                    pos["stop_loss_price"] = new_stop
+                    pos["regime_change_count"] = exit_pos.get("regime_change_count", 0)
+        except ImportError:
+            pass
+        except Exception:
+            pass
+
         # Minimum hold gate — stops fire above, but expression/reversal exits wait
         if held_mins < MIN_HOLD_MINUTES:
             continue

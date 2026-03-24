@@ -139,21 +139,35 @@ def status():
 
     # Signals mode
     heartbeat = _load_json(os.path.join(PAPER_BUS_DIR, "heartbeat.json"))
+    # Signal provider: read from config or risk bus
+    subscription_plan = cfg.get("subscription", {}).get("plan", "free")
+    subscription_status = cfg.get("subscription", {}).get("status", "active")
+    if subscription_status != "active":
+        subscription_plan = "free"
+
+    if subscription_plan == "pro":
+        provider_label = "SmartProvider (11 indicators)"
+    else:
+        provider_label = "BasicProvider (RSI, EMA, MACD)"
+
     if heartbeat:
-        # Show heartbeat freshness
         eval_hb = heartbeat.get("evaluator", "")
         if eval_hb:
             try:
                 hb_dt = datetime.fromisoformat(eval_hb.replace("Z", "+00:00"))
                 age_s = int((datetime.now(timezone.utc) - hb_dt).total_seconds())
-                ws_status = f"connected ({age_s}s ago)" if age_s < 60 else f"⚠ stale ({age_s}s)"
-                click.echo(f"  SIGNALS:    full | WS {ws_status}")
+                ws_status = f"({age_s}s ago)" if age_s < 60 else f"⚠ stale ({age_s}s)"
+                click.echo(f"  SIGNALS:    {provider_label} | {ws_status}")
             except Exception:
-                click.echo("  SIGNALS:    full")
+                click.echo(f"  SIGNALS:    {provider_label}")
         else:
-            click.echo("  SIGNALS:    full")
+            click.echo(f"  SIGNALS:    {provider_label}")
     else:
-        click.echo(f"  SIGNALS:    starting...")
+        click.echo(f"  SIGNALS:    {provider_label} | starting...")
+
+    if subscription_plan == "free" and mode == "LIVE":
+        click.echo("  ⚠ LIVE MODE requires Pro subscription ($49/mo).")
+        click.echo("    Run: zeroos upgrade  to unlock full reasoning engine.")
 
     # Dashboard
     token = cfg.get("telemetry", {}).get("token")

@@ -44,7 +44,7 @@ def load_env():
 
 HL_INFO_URL = "https://api.hyperliquid.xyz/info"
 HL_EXCHANGE_URL = "https://api.hyperliquid.xyz/exchange"
-MAIN_ADDRESS = "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"
+MAIN_ADDRESS = "0x3fb367a8e25a19299ae3fab887b47ab69774b010"
 
 COIN_TO_ASSET = {}
 COIN_SZ_DECIMALS = {}

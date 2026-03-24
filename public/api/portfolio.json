@@ -1,6 +1,6 @@
 {
   "live": true,
-  "updated": "2026-03-23T14:36:43.036973+00:00",
+  "updated": "2026-03-24T06:01:59.735443+00:00",
   "liveTrading": {
     "enabled": true,
     "capital": 115,
@@ -25,6 +25,54 @@
         "exit_expression": "",
         "stop_loss": 0,
         "stop_loss_pct": 5.0,
+        "stop_type": "volatility",
+        "peak_pnl_pct": 0.0,
+        "strategy_version": 6
+      },
+      {
+        "coin": "ADA",
+        "direction": "LONG",
+        "signal": "DOJI_TRIGGER_OVERSOLD_LONG_V2_FR11_EX4_FR11_EX0_Q6",
+        "hypothesis_id": "",
+        "regime": "unknown",
+        "adversary_verdict": "UNKNOWN",
+        "survival_score": 0,
+        "entry_price": 0.2612,
+        "intended_price": 0.2612,
+        "entry_time": "2026-03-23T18:08:27.337387+00:00",
+        "entry_time_ms": 1774289307337,
+        "size_usd": 1998.9635999999998,
+        "size_coins": 7653.0,
+        "sharpe": 1.763,
+        "win_rate": 88.8889,
+        "max_hold_hours": 24,
+        "exit_expression": "",
+        "stop_loss": 0,
+        "stop_loss_pct": 5.0,
+        "stop_type": "volatility",
+        "peak_pnl_pct": 0.0,
+        "strategy_version": 6
+      },
+      {
+        "coin": "BTC",
+        "direction": "SHORT",
+        "signal": "XONE_AUDIV_CONTRARIAN_SHORT_R6V2_FR17_EX4_FR8",
+        "hypothesis_id": "",
+        "regime": "unknown",
+        "adversary_verdict": "UNKNOWN",
+        "survival_score": 0,
+        "entry_price": 70237.0,
+        "intended_price": 70237.0,
+        "entry_time": "2026-03-24T05:51:49.542244+00:00",
+        "entry_time_ms": 1774331509542,
+        "size_usd": 1069.7095100000001,
+        "size_coins": 0.01523,
+        "sharpe": 2.459,
+        "win_rate": 67.5676,
+        "max_hold_hours": 24,
+        "exit_expression": "",
+        "stop_loss": 0,
+        "stop_loss_pct": 3.0,
         "stop_type": "volatility",
         "peak_pnl_pct": 0.0,
         "strategy_version": 6
@@ -1727,7 +1775,7 @@
       "execution": "2026-03-21T14:37:21.359316+00:00",
       "hypothesis": "2026-03-21T14:37:09.923425+00:00",
       "pattern_scanner": "2026-03-20T02:11:19.057600+00:00",
-      "perception": "2026-03-23T14:20:39.144107+00:00",
+      "perception": "2026-03-24T05:55:16.530988+00:00",
       "taapi_fetcher": "2026-03-20T02:11:34.784108+00:00",
       "pack_refresher": "2026-03-21T13:55:08.027360+00:00",
       "parameter_evolution": "2026-03-21T14:37:20.329969+00:00",
@@ -1976,7 +2024,7 @@
           "transition": true
         }
       },
-      "updated": "2026-03-23T14:19:58.282092+00:00"
+      "updated": "2026-03-24T05:54:32.999200+00:00"
     },
     "candidates": 4,
     "approved": 3,
@@ -2002,7 +2050,7 @@
           "anomaly": false
         },
         "APT": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2032,7 +2080,7 @@
           "anomaly": false
         },
         "CRV": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2047,7 +2095,7 @@
           "anomaly": false
         },
         "ENA": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2067,7 +2115,7 @@
           "anomaly": false
         },
         "INJ": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2117,7 +2165,7 @@
           "anomaly": false
         },
         "SEI": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2132,7 +2180,7 @@
           "anomaly": false
         },
         "TIA": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2142,7 +2190,7 @@
           "anomaly": false
         },
         "TRUMP": {
-          "status": "ELEVATED",
+          "status": "NORMAL",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2177,7 +2225,7 @@
           "anomaly": false
         },
         "kBONK": {
-          "status": "NORMAL",
+          "status": "ELEVATED",
           "spread_bps": null,
           "anomaly": false
         },
@@ -2197,19 +2245,19 @@
       "coins": {
         "AAVE": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000426
+          "funding_pct": 0.00125
         },
         "ADA": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": 0.001093
         },
         "APT": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000939
+          "funding_pct": -0.00426
         },
         "ARB": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000464
+          "funding_pct": -0.001308
         },
         "AVAX": {
           "velocity_direction": "stable",
@@ -2217,35 +2265,35 @@
         },
         "BCH": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000743
+          "funding_pct": 0.001167
         },
         "BNB": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": 0.000469
         },
         "BTC": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000633
+          "funding_pct": -2.4e-05
         },
         "CRV": {
           "velocity_direction": "stable",
-          "funding_pct": -0.002209
+          "funding_pct": -0.002535
         },
         "DOGE": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00048
+          "funding_pct": -0.000712
         },
         "DOT": {
           "velocity_direction": "stable",
-          "funding_pct": -0.00567
+          "funding_pct": -0.005011
         },
         "ENA": {
           "velocity_direction": "stable",
-          "funding_pct": -0.009097
+          "funding_pct": -0.00142
         },
         "ETH": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000499
+          "funding_pct": 3e-06
         },
         "FARTCOIN": {
           "velocity_direction": "stable",
@@ -2257,7 +2305,7 @@
         },
         "INJ": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": -0.00176
         },
         "JUP": {
           "velocity_direction": "stable",
@@ -2265,7 +2313,7 @@
         },
         "LDO": {
           "velocity_direction": "stable",
-          "funding_pct": 0.001197
+          "funding_pct": 0.00125
         },
         "LINK": {
           "velocity_direction": "stable",
@@ -2273,7 +2321,7 @@
         },
         "LTC": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000696
+          "funding_pct": 2e-05
         },
         "NEAR": {
           "velocity_direction": "stable",
@@ -2281,35 +2329,35 @@
         },
         "ONDO": {
           "velocity_direction": "stable",
-          "funding_pct": -0.005804
+          "funding_pct": -0.000697
         },
         "OP": {
           "velocity_direction": "stable",
-          "funding_pct": -0.005085
+          "funding_pct": -0.01672
         },
         "PAXG": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": -0.001241
         },
         "PUMP": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001879
+          "funding_pct": -0.00499
         },
         "SEI": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000636
+          "funding_pct": -0.000895
         },
         "SOL": {
           "velocity_direction": "stable",
-          "funding_pct": 0.001167
+          "funding_pct": -0.001425
         },
         "SUI": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000637
+          "funding_pct": 0.000148
         },
         "TIA": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001934
+          "funding_pct": -0.00425
         },
         "TON": {
           "velocity_direction": "stable",
@@ -2317,7 +2365,7 @@
         },
         "TRUMP": {
           "velocity_direction": "stable",
-          "funding_pct": -0.007627
+          "funding_pct": -0.004455
         },
         "TRX": {
           "velocity_direction": "stable",
@@ -2337,23 +2385,23 @@
         },
         "XRP": {
           "velocity_direction": "stable",
-          "funding_pct": -0.000976
+          "funding_pct": -0.000589
         },
         "ZEC": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00084
+          "funding_pct": -0.000826
         },
         "kBONK": {
           "velocity_direction": "stable",
-          "funding_pct": 0.000175
+          "funding_pct": -0.00793
         },
         "kPEPE": {
           "velocity_direction": "stable",
-          "funding_pct": -0.001458
+          "funding_pct": 0.00125
         },
         "kSHIB": {
           "velocity_direction": "stable",
-          "funding_pct": 0.00125
+          "funding_pct": 0.000617
         }
       }
     },

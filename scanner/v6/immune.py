@@ -691,6 +691,34 @@ def run_once(state: dict) -> dict:
     # Equity anomaly
     all_alerts.extend(check_equity_anomaly(state))
 
+    # DRAWDOWN CIRCUIT BREAKER (Dimension 1: Demo agent protection)
+    # If equity drops 30% from peak, pause agent and alert
+    try:
+        risk = load_json(BUS_DIR / "risk.json", {})
+        peak_eq = risk.get("peak_equity", 0)
+        curr_eq = risk.get("equity", 0) or load_json(BUS_DIR / "portfolio.json", {}).get("account_value", 0)
+        max_dd_pct = float(os.environ.get("ZEROOS_MAX_DRAWDOWN_PCT", "30"))
+        if peak_eq > 0 and curr_eq > 0:
+            dd_pct = (peak_eq - curr_eq) / peak_eq * 100
+            if dd_pct >= max_dd_pct:
+                all_alerts.append(
+                    f"🚨 DRAWDOWN CIRCUIT BREAKER\n"
+                    f"Equity ${curr_eq:.2f} is {dd_pct:.1f}% below peak ${peak_eq:.2f}\n"
+                    f"Threshold: {max_dd_pct}%\n"
+                    f"Action: PAUSING ALL AGENTS"
+                )
+                # Write pause flag — executor checks this
+                pause_file = BUS_DIR / "circuit_breaker.json"
+                save_json_atomic(pause_file, {
+                    "paused": True,
+                    "reason": f"drawdown {dd_pct:.1f}% >= {max_dd_pct}% threshold",
+                    "peak_equity": peak_eq,
+                    "current_equity": curr_eq,
+                    "triggered_at": now_iso(),
+                })
+    except Exception:
+        pass
+
     # NVArena credit health (check every 10 cycles)
     cycle_count = state.get("cycle_count", 0)
     if cycle_count % 10 == 0:
@@ -707,6 +735,41 @@ def run_once(state: dict) -> dict:
                     all_alerts.append(f"⚠️ NVArena credits LOW: {credits:.0f} remaining")
         except Exception:
             pass
+
+    # UPGRADE 6: Predictive immune — act BEFORE damage
+    try:
+        from compounding_upgrades import predictive_immune_scan
+        positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
+        # Build minimal market dict from bus data
+        market_data = {}
+        for pos in positions:
+            coin = pos.get("coin", "")
+            if coin:
+                market_data[coin] = {
+                    "funding_rate": pos.get("funding_rate", 0),
+                    "funding_history": pos.get("funding_history", [0, 0, 0]),
+                    "atr": pos.get("atr", 0),
+                    "atr_history": pos.get("atr_history", []),
+                    "book_depth_1pct": pos.get("book_depth_1pct", 999999),
+                    "size_usd": pos.get("size_usd", 0),
+                }
+        if positions and market_data:
+            pred_actions = predictive_immune_scan(positions, market_data)
+            for action in pred_actions:
+                severity = action.get("severity", "info")
+                icon = "🚨" if severity == "critical" else "⚠️" if severity == "warning" else "ℹ️"
+                all_alerts.append(f"{icon} PREDICTIVE: {action.get('reason', '')}")
+                # Tighten stops or emergency close
+                if action.get("type") == "emergency_close":
+                    coin = action.get("coin", "")
+                    exits_file = BUS_DIR / "exits.json"
+                    existing = load_json(exits_file, {}).get("exits", [])
+                    existing.append({"coin": coin, "reason": f"predictive_immune: {action.get('reason','')}", "fired_at": now_iso()})
+                    save_json_atomic(exits_file, {"updated_at": now_iso(), "exits": existing})
+    except ImportError:
+        pass
+    except Exception as _pred_err:
+        pass
 
     # Signal drift (check every 10 minutes, not every minute)
     if cycle_count % 10 == 0:

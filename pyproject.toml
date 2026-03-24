@@ -27,3 +27,17 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["scanner*"]
+exclude = [
+    "scanner.bus*",
+    "scanner.memory*",
+    "scanner.data*",
+    "scanner.indicators*",
+    "scanner.v6.bus*",
+    "scanner.v6.cache*",
+]
+
+[tool.setuptools.package-data]
+scanner = ["zeroos_cli/*.py", "v6/*.py"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.jsonl", "*.log", "*.csv", "drift_log*", "regime_history*", "supervisor.log"]

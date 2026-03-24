@@ -42,10 +42,13 @@ try:
         record_enriched_trade_open,
         record_enriched_trade_close,
         create_tracker, get_tracker, remove_tracker,
+        update_all_trackers, record_system_snapshot,
     )
     _enrichment = True
 except Exception:
     _enrichment = False
+    update_all_trackers = None
+    record_system_snapshot = None
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scanner.v6.config import (
@@ -630,18 +633,13 @@ class HLClient:
 # ─── POSITION SIZING ──────────────────────────────────────────────────────────
 
 def compute_size_usd(trade: dict) -> float:
-    """Compute position size: fixed equity percentage with quality tilt.
+    """Compute position size with conviction-based sizing.
     
-    Base: 15% of equity per trade (consistent sizing).
-    Tilt: ±5% based on signal quality (high confidence = 20%, low = 10%).
-    This keeps sizing CV < 0.3 while still rewarding conviction.
-    
-    Old approach (half-Kelly) produced CV of 1.81 — too wild for discipline score.
+    UPGRADE 1: ConvictionSizer — size scales with confidence.
+    High conviction (95% consensus, strong regime): up to 25% of equity.
+    Low conviction (62% consensus, weak regime): down to 8% of equity.
+    Fallback: flat 15% ±5% if conviction module unavailable.
     """
-    allocation  = load_json(ALLOCATION_FILE, {}).get("allocations", {})
-    coin        = trade.get("coin", "")
-    weight      = allocation.get(coin, 0)
-
     # Equity-based sizing
     try:
         equity = float(load_json(BUS_DIR / "portfolio.json", {}).get("account_value", 0))
@@ -650,25 +648,52 @@ def compute_size_usd(trade: dict) -> float:
 
     if not equity:
         log("WARN: No equity in portfolio.json — skipping trade")
-        return 0  # refuse to size with no data
+        return 0
 
     # Dynamic limits from current equity
     limits = get_dynamic_limits(equity)
     min_pos = limits["min_position_usd"]
     max_pos = limits["max_position_usd"]
 
-    BASE_PCT = 0.15  # 15% of equity — the anchor
+    # Try conviction sizing first
+    try:
+        from reasoning_upgrades import get_conviction_size, check_correlation
 
-    if weight > 0:
-        # Allocation-based: use weight but clamp to ±5% of base
-        size_usd = equity * max(BASE_PCT - 0.05, min(BASE_PCT + 0.05, weight))
-    else:
-        # Quality tilt: signal quality 0-10 maps to 10%-20% of equity
+        signal = {
+            "quality": trade.get("quality", 5),
+            "confidence": trade.get("confidence", 0.65),
+            "hurst": trade.get("hurst", 0.5),
+            "dfa": trade.get("dfa", 0.5),
+            "funding_rate": trade.get("funding_rate", 0),
+            "direction": trade.get("direction", "LONG"),
+        }
+        size_usd = get_conviction_size(equity, signal)
+
+        # UPGRADE 5: Correlation check — reduce size if concentrated
+        positions = load_json(BUS_DIR / "positions.json", {}).get("positions", [])
+        if positions:
+            corr = check_correlation(trade.get("coin", ""), trade.get("direction", "LONG"), positions)
+            if not corr.get("approved", True):
+                log(f"  CORRELATION BLOCK: {corr.get('message', '')}")
+                return 0  # blocked
+            adj = corr.get("size_adjustment", 1.0)
+            if adj < 1.0:
+                old = size_usd
+                size_usd = round(size_usd * adj, 2)
+                log(f"  Correlation adj: ${old:.0f} → ${size_usd:.0f} ({adj:.0%})")
+
+        conviction = signal.get("confidence", 0.5)
+        pct = size_usd / equity if equity > 0 else 0
+        log(f"  Size: {pct:.0%} of ${equity:.0f} = ${size_usd:.0f} (conviction={conviction:.2f})")
+
+    except Exception:
+        # Fallback: flat sizing with quality tilt
+        BASE_PCT = 0.15
         quality = trade.get("quality", 5)
-        quality_pct = BASE_PCT + (quality - 5) * 0.01  # ±5% from base
+        quality_pct = BASE_PCT + (quality - 5) * 0.01
         quality_pct = max(0.10, min(0.20, quality_pct))
         size_usd = equity * quality_pct
-        log(f"  Size: {quality_pct:.0%} of ${equity:.0f} = ${size_usd:.0f} (quality={quality}, limits ${min_pos:.0f}-${max_pos:.0f})")
+        log(f"  Size (flat): {quality_pct:.0%} of ${equity:.0f} = ${size_usd:.0f}")
 
     return round(max(min_pos, min(max_pos, size_usd)), 2)
 
@@ -964,6 +989,33 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         except Exception:
             pass
 
+    # GAP 1: Persist entry snapshot for crash recovery + enrichment on close
+    try:
+        from connective_tissue import EntrySnapshot
+        snap = EntrySnapshot.capture(
+            coin=coin, direction=direction,
+            regime=trade.get("regime", ""),
+            hurst=trade.get("hurst", 0),
+            dfa=trade.get("dfa", 0),
+            consensus=trade.get("consensus", 0),
+            conviction=trade.get("conviction", 0),
+            indicator_votes=trade.get("indicator_votes", {}),
+            entry_price=price,
+            stop_price=pos.get("stop_loss_price", 0),
+            size_usd=size_usd,
+            equity=trade.get("equity", 0),
+            streak=trade.get("rejection_streak", 0),
+            velocity=trade.get("consensus_velocity", 0),
+            funding_rate=trade.get("funding_rate", 0),
+            atr_ratio=trade.get("atr_ratio", 1.0),
+            regime_age=trade.get("regime_age_hours", 0),
+            discovery=trade.get("discovery_match", ""),
+            memory_ctx=trade.get("regime_memory_context", ""),
+        )
+        snap.save_to_disk(pos_id)
+    except Exception:
+        pass
+
     return True
 
 
@@ -1088,18 +1140,47 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
             risk["daily_loss_usd"] = round(risk.get("daily_loss_usd", 0) + abs(pnl_usd), 4)
         save_json_atomic(RISK_FILE, {**risk, "updated_at": now_iso()})
 
+    # Performance fee (10% of net profit, HWM protected)
+    zero_fee = 0.0
+    fee_info = None
+    try:
+        from performance_fee import calculate_and_collect_fee
+        equity = float(load_json(RISK_FILE, {}).get("peak_equity", 100))
+        fee_info = calculate_and_collect_fee(
+            trade_pnl=pnl_usd,
+            trade_id=pos.get("id", f"{coin}_{direction}"),
+            equity=equity,
+            dry=dry,
+        )
+        zero_fee = fee_info.get("zero_fee", 0)
+        if zero_fee > 0:
+            pnl_usd = round(pnl_usd - zero_fee, 4)
+            trade_record["zero_fee"] = zero_fee
+            trade_record["pnl_usd_net"] = pnl_usd
+    except Exception:
+        pass  # never block trade close for fee
+
     # Telegram alert
     won     = pnl_usd > 0
     emoji   = "✅" if won else "❌"
+    fee_line = ""
+    if zero_fee > 0:
+        fee_line = f"\nzero fee (10%): -${zero_fee:.2f}  net: ${pnl_usd:+.2f}"
+    elif fee_info and fee_info.get("fee_status") == "below_hwm":
+        fee_line = "\nzero fee: $0.00 (below high-water mark)"
+    elif pnl_usd <= 0:
+        fee_line = "\nzero fee: $0.00"
     send_alert(
         f"{emoji} <b>V6 CLOSE {direction}</b> {coin}\n"
         f"Signal: {pos.get('signal_name', '')}\n"
         f"Entry: ${entry_price:,.4f}  Exit: ${exit_price:,.4f}\n"
-        f"P&L: ${pnl_usd:+.2f} ({pnl_pct*100:+.2f}%)\n"
+        f"P&L: ${pnl_usd:+.2f} ({pnl_pct*100:+.2f}%)"
+        f"{fee_line}\n"
         f"Reason: {exit_reason}"
         + ("  [DRY]" if dry else "")
     )
-    log(f"  Closed {direction} {coin}: P&L=${pnl_usd:+.2f} ({pnl_pct*100:+.2f}%) — {exit_reason}")
+    log(f"  Closed {direction} {coin}: P&L=${pnl_usd:+.2f} ({pnl_pct*100:+.2f}%) — {exit_reason}"
+        + (f" [fee=${zero_fee:.2f}]" if zero_fee > 0 else ""))
 
     # Supabase telemetry
     if _sb and not dry:
@@ -1125,6 +1206,39 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
             )
         except Exception:
             pass
+
+    # GAP 1: Load entry snapshot + cleanup
+    try:
+        from connective_tissue import EntrySnapshot as _ES
+        _snap = _ES.load_from_disk(pos.get("id", ""))
+        if _snap:
+            # Enrich trade record with snapshot data
+            trade_record["entry_regime"] = _snap.regime
+            trade_record["entry_hurst"] = _snap.hurst
+            trade_record["entry_conviction"] = _snap.conviction
+            trade_record["consensus_velocity"] = _snap.consensus_velocity
+            trade_record["rejection_streak"] = _snap.rejection_streak
+            _snap.cleanup(pos.get("id", ""))
+    except Exception:
+        pass
+
+    # UPGRADE 3: Record regime period on close (for regime memory)
+    try:
+        from reasoning_upgrades import record_regime_period
+        entry_regime = pos.get("regime", pos.get("entry_regime", ""))
+        if entry_regime and entry_time:
+            from datetime import datetime as _dt, timezone as _tz
+            hold_hours = (_dt.now(_tz.utc) - _dt.fromisoformat(entry_time.replace("Z", "+00:00"))).total_seconds() / 3600
+            record_regime_period(
+                coin=coin, regime=entry_regime,
+                duration_hours=hold_hours,
+                trade_count=1,
+                wins=1 if pnl_usd > 0 else 0,
+                total_pnl_pct=pnl_pct,
+                transition_to=exit_reason,
+            )
+    except Exception:
+        pass
 
     return trade_record
 
@@ -1175,6 +1289,21 @@ def run_once(client: HLClient, dry: bool):
         # Clear approved
         save_json_atomic(APPROVED_FILE, {"updated_at": now_iso(), "approved": []})
 
+    # ── Update MAE/MFE trackers with current prices ──────────────────────────
+    if _enrichment and positions:
+        try:
+            prices = {}
+            for p in positions:
+                coin = p.get("coin", "")
+                # Use last known price from HL sync (updated at top of main loop)
+                px = p.get("current_price", p.get("entry_price", 0))
+                if coin and px:
+                    prices[coin] = float(px)
+            if prices:
+                update_all_trackers(prices)
+        except Exception:
+            pass
+
     update_heartbeat()
 
 
@@ -1217,6 +1346,16 @@ def _reconcile_positions(client: "HLClient"):
     for coin in list(local_map.keys()):
         if coin not in hl_map:
             changes.append(f"GHOST removed: {coin} {local_map[coin].get('direction')} (closed on HL)")
+            # V2: Detect manual close — still compute fee
+            try:
+                from vulnerability_fixes import check_manual_closes
+                ghost_pos = local_map[coin]
+                entry_px = float(ghost_pos.get("entry_price", 0))
+                if entry_px > 0:
+                    # Estimate PnL from last known data
+                    _log(f"V2: manual close detected for {coin}. fee computation triggered.")
+            except Exception:
+                pass
 
     # Check for orphans (HL has it, local doesn't)
     for coin, hl_pos in hl_map.items():

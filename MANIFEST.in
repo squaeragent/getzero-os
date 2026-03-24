@@ -1,4 +1,17 @@
 include LICENSE
 include README.md
-recursive-include scanner *.json *.yaml *.yml *.toml
-recursive-include scanner/v6/bus *.json
+recursive-include scanner/zeroos_cli *.py
+recursive-include scanner/v6 *.py
+recursive-exclude scanner/bus *
+recursive-exclude scanner/memory *
+recursive-exclude scanner/data *
+recursive-exclude scanner/indicators *
+recursive-exclude scanner/v6/bus *
+recursive-exclude scanner/v6/cache *
+recursive-exclude scanner/v6/supervisor.log *
+prune scanner/bus
+prune scanner/memory
+prune scanner/data
+prune scanner/indicators
+prune scanner/v6/bus
+prune scanner/v6/cache

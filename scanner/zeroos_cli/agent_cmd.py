@@ -173,11 +173,90 @@ def remove(agent_id: str):
 @agent.command(name="list")
 def list_agents():
     """List your registered agents."""
+    agents_file = os.path.join(ZEROOS_DIR, "agents.json")
+    agents = []
+    if os.path.exists(agents_file):
+        with open(agents_file) as f:
+            agents = json.load(f).get("agents", [])
+
     net = _get_network_info()
-    if net:
+    if net and not agents:
+        # Legacy single-agent format
         click.echo(f"  agent_id: {net.get('agent_id', '?')[:8]}...")
         click.echo(f"  page: {net.get('page_url', 'not registered')}")
         click.echo(f"  tier: {net.get('tier', 'unknown')}")
-    else:
-        click.echo("  no agents registered locally.")
-        click.echo("  run: zeroos init")
+        return
+
+    if not agents:
+        click.echo("  no agents registered.")
+        click.echo("  run: zeroos agent add --preset balanced")
+        return
+
+    click.echo()
+    for a in agents:
+        status_color = "green" if a.get("status") == "running" else "yellow" if a.get("status") == "paused" else "red"
+        status = click.style(a.get("status", "unknown").upper(), fg=status_color)
+        preset = a.get("preset", "?")
+        mode = a.get("mode", "paper")
+        agent_id = a.get("id", "?")[:8]
+        click.echo(f"  {agent_id}  agent/{preset}  {status}  {mode}")
+    click.echo()
+
+
+@agent.command()
+@click.argument("name")
+def pause(name: str):
+    """Pause an agent without deregistering."""
+    agents_file = os.path.join(ZEROOS_DIR, "agents.json")
+    if not os.path.exists(agents_file):
+        click.echo("  ✗ no agents found.")
+        raise SystemExit(1)
+
+    with open(agents_file) as f:
+        data = json.load(f)
+
+    found = False
+    for a in data.get("agents", []):
+        if a.get("preset") == name or a.get("id", "").startswith(name):
+            a["status"] = "paused"
+            found = True
+            click.echo(f"  ▸ agent/{a.get('preset', name)} paused.")
+            click.echo("  positions remain open. immune system stays active.")
+            click.echo("  new evaluations suspended.")
+            break
+
+    if not found:
+        click.echo(f"  ✗ agent '{name}' not found. run: zeroos agent list")
+        raise SystemExit(1)
+
+    with open(agents_file, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+@agent.command()
+@click.argument("name")
+def resume(name: str):
+    """Resume a paused agent."""
+    agents_file = os.path.join(ZEROOS_DIR, "agents.json")
+    if not os.path.exists(agents_file):
+        click.echo("  ✗ no agents found.")
+        raise SystemExit(1)
+
+    with open(agents_file) as f:
+        data = json.load(f)
+
+    found = False
+    for a in data.get("agents", []):
+        if a.get("preset") == name or a.get("id", "").startswith(name):
+            a["status"] = "running"
+            found = True
+            click.echo(f"  ▸ agent/{a.get('preset', name)} resumed.")
+            click.echo("  evaluation cycle restarted.")
+            break
+
+    if not found:
+        click.echo(f"  ✗ agent '{name}' not found. run: zeroos agent list")
+        raise SystemExit(1)
+
+    with open(agents_file, "w") as f:
+        json.dump(data, f, indent=2)
