@@ -1,8 +1,9 @@
-"""Main click group for ZERO OS CLI."""
+"""main click group for zero os CLI."""
 
 import click
 
 from scanner.zeroos_cli import __version__
+from scanner.zeroos_cli.style import Z
 from scanner.zeroos_cli.init_cmd import init_cmd
 from scanner.zeroos_cli.start_cmd import start
 from scanner.zeroos_cli.stop_cmd import stop
@@ -31,10 +32,51 @@ from scanner.zeroos_cli.race_cmd import race
 from scanner.zeroos_cli.feedback_cmd import feedback
 
 
-@click.group()
+class ZeroGroup(click.Group):
+    """Custom group with redesigned help output."""
+
+    def format_help(self, ctx, formatter):
+        print()
+        print(f'  {Z.logo()} {Z.mid("commands")}')
+        print()
+        print(f'  {Z.rule()}')
+        print()
+        print(f'  {Z.header("CORE")}')
+        print(f'  {Z.lime("zeroos init")}             {Z.dim("set up zero on this machine")}')
+        print(f'  {Z.lime("zeroos start")}            {Z.dim("boot the os and start agents")}')
+        print(f'  {Z.lime("zeroos stop")}             {Z.dim("clean shutdown")}')
+        print(f'  {Z.lime("zeroos status")}           {Z.dim("system and agent health")}')
+        print()
+        print(f'  {Z.header("INTELLIGENCE")}')
+        print(f'  {Z.lime("zeroos evaluate [COIN]")}  {Z.dim("see the reasoning engine think")}')
+        print(f'  {Z.lime("zeroos brief")}            {Z.dim("morning brief (daily summary)")}')
+        print(f'  {Z.lime("zeroos score")}            {Z.dim("your zero score + breakdown")}')
+        print(f'  {Z.lime("zeroos observe")}          {Z.dim("what the network is seeing")}')
+        print(f'  {Z.lime("zeroos think [COIN]")}     {Z.dim("live reasoning stream")}')
+        print()
+        print(f'  {Z.header("AGENTS")}')
+        print(f'  {Z.lime("zeroos agent add")}        {Z.dim("add another agent")}')
+        print(f'  {Z.lime("zeroos agent list")}       {Z.dim("view running agents")}')
+        print(f'  {Z.lime("zeroos agent pause")}      {Z.dim("pause an agent")}')
+        print(f'  {Z.lime("zeroos agent resume")}     {Z.dim("resume an agent")}')
+        print()
+        print(f'  {Z.header("NETWORK")}')
+        print(f'  {Z.lime("zeroos invite")}           {Z.dim("generate referral code")}')
+        print(f'  {Z.lime("zeroos weights")}          {Z.dim("view current collective weights")}')
+        print(f'  {Z.lime("zeroos fees")}             {Z.dim("view fee history")}')
+        print(f'  {Z.lime("zeroos conviction")}       {Z.dim("computed conviction index")}')
+        print()
+        print(f'  {Z.rule()}')
+        print()
+        print(f'  {Z.dim("docs: getzero.dev/docs")}')
+        print(f'  {Z.dim("support: t.me/zero_operators")}')
+        print()
+
+
+@click.group(cls=ZeroGroup)
 @click.version_option(version=__version__, prog_name="zeroos")
 def cli():
-    """ZERO OS — The operating system for trading agents."""
+    """zero os — the collective intelligence network."""
     pass
 
 
@@ -66,7 +108,7 @@ cli.add_command(race)
 cli.add_command(feedback)
 
 
-# GEM 5: Track operator behavior on every CLI invocation
+# Track operator behavior on every CLI invocation
 _TRACKABLE = {
     "status": "cli_status", "think": "cli_think", "score": "cli_score",
     "brief": "brief_read", "evaluate": "cli_status",
@@ -74,7 +116,6 @@ _TRACKABLE = {
 
 
 def _track_invocation():
-    """Fire-and-forget operator event tracking."""
     import sys
     try:
         cmd = sys.argv[1] if len(sys.argv) > 1 else ""
@@ -87,7 +128,6 @@ def _track_invocation():
 
 
 def _check_update():
-    """Non-blocking check for newer version on PyPI."""
     try:
         import urllib.request, json as _json
         req = urllib.request.Request(
@@ -98,11 +138,10 @@ def _check_update():
             data = _json.loads(resp.read())
             latest = data.get("info", {}).get("version", __version__)
             if latest != __version__:
-                click.echo(
-                    f"\n  zeroos {latest} available. you're on {__version__}.\n"
-                    f"  upgrade: pip install --upgrade zeroos\n",
-                    err=True,
-                )
+                print()
+                print(f'  {Z.dim(f"zeroos {latest} available. you\'re on {__version__}.")}')
+                print(f'  {Z.dim("upgrade:")} {Z.lime("pip install --upgrade zeroos")}')
+                print()
     except Exception:
         pass
 

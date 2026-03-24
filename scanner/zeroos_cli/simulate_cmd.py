@@ -1,6 +1,11 @@
-"""zeroos simulate — Test strategies against historical data."""
-import sys, click
+"""zeroos simulate — test strategies against historical data."""
+
+import sys
+import click
 from pathlib import Path
+
+from scanner.zeroos_cli.style import Z
+
 
 @click.command()
 @click.option("--preset", default="balanced", help="Agent preset")
@@ -9,7 +14,8 @@ from pathlib import Path
 def simulate(preset, equity, threshold):
     """Run a strategy simulation against historical trades."""
     v6 = str(Path(__file__).parent.parent / "v6")
-    if v6 not in sys.path: sys.path.insert(0, v6)
+    if v6 not in sys.path:
+        sys.path.insert(0, v6)
 
     import json
     trades_file = Path(v6) / "bus" / "trades.jsonl"
@@ -17,28 +23,39 @@ def simulate(preset, equity, threshold):
     if trades_file.exists():
         for line in trades_file.read_text().strip().split("\n"):
             if line.strip():
-                try: trades.append(json.loads(line))
-                except: pass
+                try:
+                    trades.append(json.loads(line))
+                except Exception:
+                    pass
+
+    print()
+    print(f'  {Z.logo()}')
+    print()
 
     if not trades:
-        click.echo("\n  no trade data found. agent needs to run first.\n")
+        print(f'  {Z.dim("no trade data found. agent needs to run first.")}')
+        print(f'  {Z.lime("$ zeroos start")}')
+        print()
         return
 
     from intelligence_expansions import run_simulation
     result = run_simulation(trades, equity, preset, threshold)
 
-    click.echo(f"\n  SIMULATION: {preset} preset")
-    click.echo(f"  ────────────────────────────────────────")
-    click.echo(f"  starting equity .... ${result['starting_equity']:,.0f}")
-    click.echo(f"  final equity ....... ${result['final_equity']:,.2f}")
-    click.echo(f"  total return ....... {result['total_return_pct']:+.1f}%")
-    click.echo(f"  trades ............. {result['trade_count']}")
-    click.echo(f"  win rate ........... {result['win_rate']:.0%}")
-    click.echo(f"  max drawdown ....... {result['max_drawdown_pct']:.1f}%")
-    click.echo()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.header(f"SIMULATION: {preset} preset")}')
+    print(f'  {Z.dots("starting equity", f"${result['starting_equity']:,.0f}")}')
+    print(f'  {Z.dots("final equity", f"${result['final_equity']:,.2f}")}')
+    print(f'  {Z.dots("total return", f"{result['total_return_pct']:+.1f}%")}')
+    print(f'  {Z.dots("trades", result["trade_count"])}')
+    print(f'  {Z.dots("win rate", f"{result['win_rate']:.0%}")}')
+    print(f'  {Z.dots("max drawdown", f"{result['max_drawdown_pct']:.1f}%")}')
+    print()
+
     rp = result.get("regime_performance", {})
     if rp:
-        click.echo(f"  PER REGIME:")
+        print(f'  {Z.header("PER REGIME")}')
         for regime, stats in rp.items():
-            click.echo(f"    {regime:20s} {stats['pnl_pct']:+.1f}%  {stats['trades']} trades  {stats['win_rate']:.0%} WR")
-    click.echo()
+            print(f'  {Z.dots(regime[:20], f"{stats['pnl_pct']:+.1f}%  {stats['trades']} trades  {stats['win_rate']:.0%} WR")}')
+
+    print()

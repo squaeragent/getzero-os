@@ -1,6 +1,12 @@
-"""zeroos proof — Generate and verify proofs of operator achievements."""
-import sys, json, click
+"""zeroos proof — generate and verify proofs of operator achievements."""
+
+import sys
+import json
+import click
 from pathlib import Path
+
+from scanner.zeroos_cli.style import Z
+
 
 @click.command()
 @click.option("--generate", "gen_type", help="Generate proof: run|score|performance|protection")
@@ -8,13 +14,21 @@ from pathlib import Path
 def proof(gen_type, verify_id):
     """Generate or verify proofs of achievement."""
     v6 = str(Path(__file__).parent.parent / "v6")
-    if v6 not in sys.path: sys.path.insert(0, v6)
+    if v6 not in sys.path:
+        sys.path.insert(0, v6)
     from intelligence_expansions import generate_proof, verify_proof, list_proofs
+
+    print()
+    print(f'  {Z.logo()}')
+    print()
 
     if verify_id:
         result = verify_proof(verify_id)
-        icon = "✓" if result.get("valid") else "✗"
-        click.echo(f"\n  {icon} {verify_id}: {'valid' if result.get('valid') else result.get('reason','invalid')}\n")
+        if result.get("valid"):
+            print(f'  {Z.success(f"{verify_id}: valid")}')
+        else:
+            print(f'  {Z.fail(f"{verify_id}: {result.get('reason', 'invalid')}")}')
+        print()
         return
 
     if gen_type:
@@ -31,30 +45,43 @@ def proof(gen_type, verify_id):
                     try:
                         dt = datetime.fromisoformat(started)
                         days = int((datetime.now(timezone.utc) - dt).total_seconds() / 86400)
-                    except: pass
+                    except Exception:
+                        pass
             data = {"days": days}
         elif gen_type == "score":
             try:
                 from scanner.v6.zero_score import score_from_db
                 result = score_from_db()
                 data = {"score": result.get("effective_score", 0), "components": result.get("components", {})}
-            except: data = {"score": 0}
+            except Exception:
+                data = {"score": 0}
+
         p = generate_proof(f"proof_of_{gen_type}", data)
-        click.echo(f"\n  PROOF GENERATED")
-        click.echo(f"  ────────────────────────────────────────")
-        click.echo(f"  type: {p.get('type','?')}")
-        if p.get("tier"): click.echo(f"  tier: {p['tier']}")
-        click.echo(f"  id: {p.get('id','?')}")
-        click.echo(f"  verify: {p.get('verify_url','?')}\n")
+
+        print(f'  {Z.rule()}')
+        print()
+        print(f'  {Z.header("PROOF GENERATED")}')
+        print(f'  {Z.dots("type", p.get("type", "?"))}')
+        if p.get("tier"):
+            print(f'  {Z.dots("tier", p["tier"])}')
+        print(f'  {Z.dots("id", p.get("id", "?"))}')
+        print(f'  {Z.dots("verify", p.get("verify_url", "?"))}')
+        print()
         return
 
     # List proofs
     proofs = list_proofs()
-    click.echo(f"\n  YOUR PROOFS ({len(proofs)})")
-    click.echo(f"  ────────────────────────────────────────")
+
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.header(f"YOUR PROOFS ({len(proofs)})")}')
+    print()
+
     if not proofs:
-        click.echo(f"  none yet. generate with: zeroos proof --generate run")
+        print(f'  {Z.dim("none yet.")}')
+        print(f'  {Z.lime("$ zeroos proof --generate run")}')
     for p in proofs[:10]:
         tier = f" ({p['tier']})" if p.get("tier") else ""
-        click.echo(f"  ▸ {p['type']}{tier} — {p['id']}")
-    click.echo()
+        print(f'  {Z.info(f"{p['type']}{tier} — {p['id']}")}')
+
+    print()

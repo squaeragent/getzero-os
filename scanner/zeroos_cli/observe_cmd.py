@@ -1,9 +1,11 @@
-"""zeroos observe — Show market observations from the agent analyst."""
+"""zeroos observe — what the network is seeing."""
 
 import sys
 from pathlib import Path
 
 import click
+
+from scanner.zeroos_cli.style import Z
 
 
 @click.command()
@@ -16,10 +18,9 @@ def observe():
     try:
         from category_changers import observe_market
     except ImportError:
-        click.echo("  error: category_changers module not found.")
+        print(f'  {Z.fail("category_changers module not found.")}')
         raise SystemExit(1)
 
-    # Build market/regime data from bus files
     bus_dir = Path(v6_dir) / "bus"
     import json
 
@@ -51,27 +52,34 @@ def observe():
             "regime_duration_hours": data.get("regime_duration_hours", 0),
         }
 
+    print()
+    print(f'  {Z.logo()}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+
     if not market_data:
-        click.echo("\n  no market data available. agent may not be running.")
-        click.echo("  start the agent with: zeroos start\n")
+        print(f'  {Z.dim("no market data available. agent may not be running.")}')
+        print(f'  {Z.lime("$ zeroos start")}')
+        print()
         return
 
     observations = observe_market(market_data, regime_data)
 
-    click.echo()
     if not observations:
-        click.echo("  no notable observations right now.")
-        click.echo("  the agent monitors 8 coins × 13 regimes continuously.")
+        print(f'  {Z.dim("no notable observations right now.")}')
+        print(f'  {Z.dim("the agent monitors continuously.")}')
     else:
-        click.echo(f"  {len(observations)} observation(s) from today's analysis:")
-        click.echo()
+        print(f'  {Z.header(f"OBSERVATIONS ({len(observations)})")}')
+        print()
         for obs in observations:
             sig = obs.get("significance", 0)
             icon = "◆" if sig > 0.85 else "▸" if sig > 0.75 else "·"
-            click.echo(f"  {icon} {obs['title']}")
-            click.echo(f"    {obs['detail']}")
+            print(f'  {Z.bright(icon)} {Z.mid(obs["title"])}')
+            print(f'    {Z.dim(obs["detail"])}')
             if obs.get("actionable") and obs.get("action_hint"):
-                click.echo(f"    → {obs['action_hint']}")
-            click.echo()
-    click.echo("  these are observations, not trade signals.")
-    click.echo()
+                print(f'    {Z.dim("→")} {Z.dim(obs["action_hint"])}')
+            print()
+
+    print(f'  {Z.dim("these are observations, not trade signals.")}')
+    print()

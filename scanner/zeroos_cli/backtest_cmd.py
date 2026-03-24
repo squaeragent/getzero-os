@@ -1,9 +1,11 @@
-"""zeroos backtest — Test reasoning engine against rare/unseen regimes."""
+"""zeroos backtest — test reasoning engine against rare/unseen regimes."""
 
 import sys
 from pathlib import Path
 
 import click
+
+from scanner.zeroos_cli.style import Z
 
 
 @click.command()
@@ -17,42 +19,51 @@ def backtest(days):
     try:
         from compounding_upgrades import find_rare_regimes, backtest_rare
     except ImportError:
-        click.echo("  error: compounding_upgrades module not found.")
+        print(f'  {Z.fail("compounding_upgrades module not found.")}')
         raise SystemExit(1)
 
-    click.echo()
-    click.echo("  SYNTHETIC BACKTEST: RARE REGIMES")
-    click.echo("  ────────────────────────────────────────")
-    click.echo(f"  testing against regimes not seen in {days} days...")
-    click.echo()
+    print()
+    print(f'  {Z.logo()}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.header("SYNTHETIC BACKTEST: RARE REGIMES")}')
+    print(f'  {Z.dim(f"testing against regimes not seen in {days} days...")}')
+    print()
 
     rare = find_rare_regimes(days)
     if not rare:
-        click.echo("  no rare regimes found. all conditions seen recently.")
-        click.echo()
+        print(f'  {Z.dim("no rare regimes found. all conditions seen recently.")}')
+        print()
         return
 
     warnings = 0
     for r in rare:
         result = backtest_rare(r["coin"], r["regime"])
         status = result.get("verdict", "?")
-        icon = "✓" if status == "ok" else "⚠" if status == "weak" else "?"
 
-        click.echo(f"  {r['coin']} · {r['regime']} · last seen {r['days_since']} days ago")
-
-        if result.get("periods"):
-            click.echo(f"    {result['periods']} periods · avg P&L: {result['avg_pnl_pct']:+.1f}% · WR: {result['win_rate']:.0%}")
-        
-        if result.get("warning"):
-            click.echo(f"    {icon} {result['warning']}")
+        if status == "ok":
+            icon = f'{Z.GREEN}✓{Z.RESET}'
+        elif status == "weak":
+            icon = f'{Z.YELLOW}⚠{Z.RESET}'
             warnings += 1
         else:
-            click.echo(f"    {icon} current weights handle this regime well.")
-        click.echo()
+            icon = f'{Z.DIM}?{Z.RESET}'
 
-    click.echo(f"  ────────────────────────────────────────")
+        print(f'  {Z.bright(r["coin"])} {Z.dim("·")} {Z.mid(r["regime"])} {Z.dim(f"· last seen {r['days_since']} days ago")}')
+
+        if result.get("periods"):
+            print(f'    {Z.dots("periods", result["periods"])}  {Z.dots("avg pnl", f"{result['avg_pnl_pct']:+.1f}%")}  {Z.dots("WR", f"{result['win_rate']:.0%}")}')
+
+        if result.get("warning"):
+            print(f'    {icon} {Z.mid(result["warning"])}')
+        else:
+            print(f'    {icon} {Z.dim("current weights handle this regime well.")}')
+        print()
+
+    print(f'  {Z.rule()}')
     if warnings:
-        click.echo(f"  {warnings} warning(s). reasoning engine may underperform.")
+        print(f'  {Z.warn(f"{warnings} warning(s). reasoning engine may underperform.")}')
     else:
-        click.echo(f"  all clear. weights handle known rare regimes.")
-    click.echo()
+        print(f'  {Z.success("all clear. weights handle known rare regimes.")}')
+    print()

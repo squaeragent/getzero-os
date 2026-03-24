@@ -1,16 +1,22 @@
-"""zeroos replay [trade_id] — Re-live any trade."""
-import sys, json, click
+"""zeroos replay [trade_id] — re-live any trade."""
+
+import sys
+import json
+import click
 from pathlib import Path
+
+from scanner.zeroos_cli.style import Z
+
 
 @click.command()
 @click.argument("trade_id", default="latest")
 def replay(trade_id):
     """Re-live a historical trade with full context."""
     v6 = str(Path(__file__).parent.parent / "v6")
-    if v6 not in sys.path: sys.path.insert(0, v6)
+    if v6 not in sys.path:
+        sys.path.insert(0, v6)
     from visible_intelligence import replay_trade
 
-    # Load trade data
     trades_file = Path(v6) / "bus" / "trades.jsonl"
     trade = None
     if trades_file.exists():
@@ -24,40 +30,55 @@ def replay(trade_id):
                     trade = t
                     break
 
+    print()
+    print(f'  {Z.logo()}')
+    print()
+
     if not trade:
-        click.echo(f"\n  trade {trade_id} not found.\n")
+        print(f'  {Z.dim(f"trade {trade_id} not found.")}')
+        print()
         return
 
     result = replay_trade(trade)
 
-    click.echo(f"\n  REPLAY: {result['coin']} {result['direction']} {'+'if result['pnl']>=0 else ''}{result['pnl']:.2f}")
-    click.echo(f"  ────────────────────────────────────────")
+    pnl_val = result.get("pnl", 0)
+    print(f'  {Z.header(f"REPLAY: {result['coin']} {result['direction']}")} {Z.pnl(pnl_val)}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
 
     # Entry
-    click.echo(f"\n  ENTRY:")
+    print(f'  {Z.header("ENTRY")}')
     e = result["entry"]
-    click.echo(f"    regime: {e['regime']} (H {e['hurst']:.2f})")
-    click.echo(f"    consensus: {e['consensus']:.0%}")
-    click.echo(f"    mode: {e['signal_mode']}")
+    print(f'  {Z.dots("regime", e["regime"])}')
+    print(f'  {Z.dots("consensus", f"{e['consensus']:.0%}")}')
+    print(f'  {Z.dots("mode", e["signal_mode"])}')
+    print()
 
-    # Chart
-    click.echo(f"\n  HOLD ({result['hold_hours']:.1f}h):")
-    click.echo(f"    {result['chart']}")
-    click.echo(f"    ■ entry  ▼ MAE ({result['mae_pct']:.1%})  ▲ MFE ({result['mfe_pct']:.1%})  ■ exit")
+    # Hold
+    print(f'  {Z.header(f"HOLD ({result['hold_hours']:.1f}h)")}')
+    print(f'  {Z.mid(result["chart"])}')
+    print(f'  {Z.dim(f"entry  ▼ MAE ({result['mae_pct']:.1%})  ▲ MFE ({result['mfe_pct']:.1%})  exit")}')
+    print()
 
     # Exit
-    click.echo(f"\n  EXIT:")
+    print(f'  {Z.header("EXIT")}')
     x = result["exit"]
-    click.echo(f"    reason: {x['reason']}")
+    print(f'  {Z.dots("reason", x["reason"])}')
     if x["regime_changed"]:
-        click.echo(f"    regime shifted: {result['entry']['regime']} → {x['regime_at_exit']}")
-    click.echo(f"    capture rate: {result['capture_rate']:.0%}")
+        print(f'  {Z.dots("regime shift", f"{result['entry']['regime']} → {x['regime_at_exit']}")}')
+    print(f'  {Z.dots("capture rate", f"{result['capture_rate']:.0%}")}')
 
     # Lessons
-    if result["lessons"]:
-        click.echo(f"\n  LESSONS:")
+    if result.get("lessons"):
+        print()
+        print(f'  {Z.header("LESSONS")}')
         for lesson in result["lessons"]:
-            icon = "✓" if lesson["type"] == "positive" else "→" if lesson["type"] == "improve" else "·"
-            click.echo(f"    {icon} {lesson['text']}")
+            if lesson["type"] == "positive":
+                print(f'  {Z.success(lesson["text"])}')
+            elif lesson["type"] == "improve":
+                print(f'  {Z.info(lesson["text"])}')
+            else:
+                print(f'  {Z.dim(f"· {lesson['text']}")}')
 
-    click.echo()
+    print()

@@ -1,9 +1,11 @@
-"""zeroos discoveries — Show strategy patterns discovered by the network."""
+"""zeroos discoveries — show strategy patterns discovered by the network."""
 
 import sys
 from pathlib import Path
 
 import click
+
+from scanner.zeroos_cli.style import Z
 
 
 @click.command()
@@ -13,7 +15,6 @@ def discoveries():
     if v6_dir not in sys.path:
         sys.path.insert(0, v6_dir)
 
-    # Load discovered rules from state
     state_file = Path.home() / ".zeroos" / "state" / "discoveries.json"
     import json
 
@@ -24,23 +25,29 @@ def discoveries():
         except Exception:
             pass
 
-    click.echo()
+    print()
+    print(f'  {Z.logo()}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+
     if not rules:
-        click.echo("  no discovered patterns yet.")
-        click.echo("  the network needs 100+ collective trades to start finding patterns.")
-        click.echo("  discoveries run monthly from the collective intelligence.")
+        print(f'  {Z.dim("no discovered patterns yet.")}')
+        print(f'  {Z.dim("the network needs 100+ collective trades to start finding patterns.")}')
+        print(f'  {Z.dim("discoveries run monthly from the collective intelligence.")}')
     else:
-        click.echo(f"  DISCOVERED PATTERNS ({len(rules)} rules)")
-        click.echo("  ────────────────────────────────────────")
+        print(f'  {Z.header(f"DISCOVERED PATTERNS ({len(rules)} rules)")}')
+        print()
         for i, rule in enumerate(rules, 1):
             direction = rule.get("direction", "?")
-            icon = "✓" if direction == "positive" else "⚠"
-            click.echo(f"\n  {icon} RULE #{i} (sample: {rule['sample_size']} trades)")
-            click.echo(f"    {rule['description']}")
-            click.echo(f"    WR: {rule['win_rate']:.0%} vs baseline {rule['baseline_wr']:.0%} "
-                       f"(improvement: {rule['improvement']:+.0%})")
+            icon = f'{Z.GREEN}✓{Z.RESET}' if direction == "positive" else f'{Z.YELLOW}⚠{Z.RESET}'
+            print(f'  {icon} {Z.bright(f"rule #{i}")} {Z.dim(f"(sample: {rule['sample_size']} trades)")}')
+            print(f'    {Z.mid(rule["description"])}')
+            print(f'    {Z.dots("win rate", f"{rule['win_rate']:.0%} vs baseline {rule['baseline_wr']:.0%} ({rule['improvement']:+.0%})")}')
             if direction == "negative":
-                click.echo(f"    → your agent AVOIDS this combination.")
+                print(f'    {Z.dim("→ your agent AVOIDS this combination.")}')
             else:
-                click.echo(f"    → your agent BOOSTS conviction for this pattern.")
-    click.echo()
+                print(f'    {Z.dim("→ your agent BOOSTS conviction for this pattern.")}')
+            print()
+
+    print()

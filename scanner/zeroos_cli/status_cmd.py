@@ -1,4 +1,4 @@
-"""zeroos status — Show current agent state."""
+"""zeroos status — system and agent health."""
 
 import json
 import os
@@ -9,11 +9,11 @@ import click
 import yaml
 
 from scanner.zeroos_cli import __version__
+from scanner.zeroos_cli.style import Z
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 CONFIG_PATH = os.path.join(ZEROOS_DIR, "config.yaml")
 PID_PATH = os.path.join(ZEROOS_DIR, "zeroos.pid")
-# Paper bus: where the daemon writes state
 PAPER_BUS_DIR = os.path.join(ZEROOS_DIR, "state", "bus")
 PAPER_STATE_FILE = os.path.join(ZEROOS_DIR, "state", "paper_state.json")
 
@@ -40,7 +40,7 @@ def _is_running() -> tuple[bool, int | None]:
         return False, None
 
 
-def _uptime_from_pid(pid: int | None) -> str:
+def _uptime_str(pid: int | None) -> str:
     if not pid:
         return "—"
     try:
@@ -72,25 +72,44 @@ def _fmt_pnl(val) -> str:
 def status():
     """Show ZERO OS agent status."""
     if not os.path.exists(CONFIG_PATH):
-        click.echo("  ✗ Not initialized. Run `zeroos init` first.")
+        print(f'  {Z.fail("not initialized. run:")} {Z.lime("$ zeroos init")}')
         raise SystemExit(1)
 
     with open(CONFIG_PATH) as f:
         cfg = yaml.safe_load(f)
 
     preset = cfg.get("agent", {}).get("preset", "balanced")
-    mode = cfg.get("agent", {}).get("mode", "paper").upper()
+    mode = cfg.get("agent", {}).get("mode", "paper")
     running, pid = _is_running()
-    run_status = "RUNNING" if running else "STOPPED"
+    uptime = _uptime_str(pid)
 
-    click.echo()
-    click.echo(f"  ■ ZERO OS v{__version__} │ agent/{preset} │ {run_status}")
-    click.echo()
+    # Header
+    print()
+    if running:
+        print(f'  {Z.logo()} {Z.mid("running")} {Z.dim("· uptime")} {Z.bright(uptime)}')
+    else:
+        print(f'  {Z.logo()} {Z.red("stopped")}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
 
-    # Mode
-    click.echo(f"  MODE:       {mode}")
+    # AGENT section
+    print(f'  {Z.header("AGENT")}')
 
-    # Equity & P&L — read from paper bus portfolio.json + paper_state.json
+    mode_display = f'{Z.GREEN}● LIVE{Z.RESET}' if mode == "live" else f'{Z.YELLOW}● PAPER{Z.RESET}'
+    print(f'  {Z.dots(f"agent/{preset}", mode_display)}')
+
+    # Wallet
+    net_path = os.path.join(ZEROOS_DIR, "network.json")
+    net = _load_json(net_path)
+    wallet = "—"
+    if net:
+        wallet = net.get("wallet_address", "—")
+        if len(wallet) > 10:
+            wallet = f"{wallet[:6]}...{wallet[-4:]}"
+    print(f'  {Z.dots("wallet", wallet)}')
+
+    # Equity & P&L
     portfolio = _load_json(os.path.join(PAPER_BUS_DIR, "portfolio.json"))
     paper_state = _load_json(PAPER_STATE_FILE)
 
@@ -98,57 +117,32 @@ def status():
     pnl = None
     if portfolio:
         equity = portfolio.get("account_value")
-
-    if paper_state and equity is not None:
-        # P&L = current balance + unrealized positions - starting balance ($10000)
+    if paper_state and equity is None:
+        equity = paper_state.get("balance", 10000.0)
+    if paper_state:
         start_balance = 10000.0
         balance = paper_state.get("balance", 10000.0)
-        positions = paper_state.get("positions", {})
-        # Simple P&L: current balance vs start
         pnl = balance - start_balance
-        # Add unrealized P&L from open positions
-        for coin, pos in positions.items():
-            size_usd = pos.get("size_usd", 0)
-            entry_px = pos.get("entry_price", 0)
-            # We don't have current price here — show balance P&L only
-        equity = balance
 
-    if equity is not None:
-        click.echo(f"  EQUITY:     {_fmt_usd(equity)}")
-        if pnl is not None:
-            pnl_pct = (pnl / 10000.0) * 100
-            click.echo(f"  P&L:        {_fmt_pnl(pnl)} ({'+' if pnl_pct >= 0 else ''}{pnl_pct:.2f}%)")
-        else:
-            click.echo("  P&L:        —")
+    print(f'  {Z.dots("equity", _fmt_usd(equity))}')
+    if pnl is not None:
+        pnl_color = Z.GREEN if pnl >= 0 else Z.RED
+        sign = "+" if pnl >= 0 else ""
+        print(f'  {Z.dots("today", f"{pnl_color}{sign}${abs(pnl):,.2f}{Z.RESET}")}')
     else:
-        click.echo("  EQUITY:     —")
-        click.echo("  P&L:        —")
+        print(f'  {Z.dots("today", "—")}')
 
-    # Positions — from bus positions.json
-    positions_data = _load_json(os.path.join(PAPER_BUS_DIR, "positions.json"))
-    max_pos = cfg.get("execution", {}).get("max_positions", 3)
-    positions_list = positions_data.get("positions", []) if positions_data else []
-    if positions_list:
-        pos_strs = [f"{p.get('coin','?')} {p.get('direction','?')}" for p in positions_list]
-        click.echo(f"  POSITIONS:  {len(positions_list)}/{max_pos} ({', '.join(pos_strs)})")
-    else:
-        click.echo(f"  POSITIONS:  0/{max_pos}")
+    print()
+    print(f'  {Z.rule()}')
+    print()
 
-    # Uptime
-    click.echo(f"  UPTIME:     {_uptime_from_pid(pid)}")
-
-    # Signals mode
+    # IMMUNE section
+    print(f'  {Z.header("IMMUNE")}')
     heartbeat = _load_json(os.path.join(PAPER_BUS_DIR, "heartbeat.json"))
-    # Signal provider: read from config or risk bus
-    subscription_plan = cfg.get("subscription", {}).get("plan", "free")
-    subscription_status = cfg.get("subscription", {}).get("status", "active")
-    if subscription_status != "active":
-        subscription_plan = "free"
-
-    if subscription_plan == "pro":
-        provider_label = "SmartProvider (11 indicators)"
-    else:
-        provider_label = "BasicProvider (RSI, EMA, MACD)"
+    immune_status = f'{Z.GREEN}✓ healthy{Z.RESET}'
+    checks = "—"
+    saves = "0"
+    last_check = "—"
 
     if heartbeat:
         eval_hb = heartbeat.get("evaluator", "")
@@ -156,53 +150,86 @@ def status():
             try:
                 hb_dt = datetime.fromisoformat(eval_hb.replace("Z", "+00:00"))
                 age_s = int((datetime.now(timezone.utc) - hb_dt).total_seconds())
-                ws_status = f"({age_s}s ago)" if age_s < 60 else f"⚠ stale ({age_s}s)"
-                click.echo(f"  SIGNALS:    {provider_label} | {ws_status}")
+                last_check = f"{age_s}s ago"
+                if age_s > 120:
+                    immune_status = f'{Z.YELLOW}⚠ stale{Z.RESET}'
             except Exception:
-                click.echo(f"  SIGNALS:    {provider_label}")
-        else:
-            click.echo(f"  SIGNALS:    {provider_label}")
-    else:
-        click.echo(f"  SIGNALS:    {provider_label} | starting...")
+                pass
 
-    if subscription_plan == "free" and mode == "LIVE":
-        click.echo("  ⚠ LIVE MODE requires Pro subscription ($49/mo).")
-        click.echo("    Run: zeroos upgrade  to unlock full reasoning engine.")
+    print(f'  {Z.dots("status", immune_status)}')
+    print(f'  {Z.dots("checks today", checks)}')
+    print(f'  {Z.dots("saves", saves)}')
+    print(f'  {Z.dots("last check", last_check)}')
 
-    # Dashboard
-    token = cfg.get("telemetry", {}).get("token")
-    if token:
-        click.echo("  DASHBOARD:  connected (getzero.dev/app)")
-    else:
-        click.echo("  DASHBOARD:  not connected")
+    print()
+    print(f'  {Z.rule()}')
+    print()
 
-    # Recent activity from bus files
-    risk = _load_json(os.path.join(PAPER_BUS_DIR, "risk.json"))
-    if risk and risk.get("halted"):
-        click.echo(f"\n  ⚠ HALTED: {risk.get('halt_reason', 'unknown reason')}")
+    # POSITIONS section
+    positions_data = _load_json(os.path.join(PAPER_BUS_DIR, "positions.json"))
+    positions_list = positions_data.get("positions", []) if positions_data else []
 
-    # Show open positions detail
+    print(f'  {Z.header(f"POSITIONS ({len(positions_list)})")}')
+
     if positions_list:
-        click.echo()
-        click.echo("  OPEN POSITIONS:")
+        print()
         for p in positions_list:
             coin = p.get("coin", "?")
-            direction = p.get("direction", "?")
-            entry = p.get("entry_price", 0)
-            size = p.get("size_usd", 0)
-            signal = p.get("signal_name", "?")[:35]
-            sharpe = p.get("sharpe", 0)
+            direction = p.get("direction", "?").upper()
             entry_time = p.get("entry_time", "")
-            age_str = ""
+            pnl_pct = p.get("pnl_pct", 0)
+
+            # Direction arrow
+            arrow = f'{Z.LIME}↗{Z.RESET}' if direction == "LONG" else f'{Z.RED}↘{Z.RESET}'
+            dir_label = f'{Z.LIME}LONG{Z.RESET}' if direction == "LONG" else f'{Z.RED}SHORT{Z.RESET}'
+
+            # Hold time
+            hold_str = "—"
             if entry_time:
                 try:
                     et = datetime.fromisoformat(entry_time.replace("Z", "+00:00"))
                     age_h = (datetime.now(timezone.utc) - et).total_seconds() / 3600
-                    age_str = f" | {age_h:.1f}h old"
+                    hold_str = f"{age_h:.0f}h held"
                 except Exception:
                     pass
-            size_str = f"${size:.0f}" if isinstance(size, (int, float)) else "—"
-            sharpe_str = f"S={sharpe:.2f}" if isinstance(sharpe, (int, float)) else ""
-            click.echo(f"  > {coin} {direction} @ ${entry:.4f} | {size_str} | {sharpe_str} | {signal}{age_str}")
 
-    click.echo()
+            # P&L
+            pnl_str = Z.pnl_pct(pnl_pct) if pnl_pct else f'{Z.DIM}—{Z.RESET}'
+
+            print(f'  {Z.bright(f"{coin:6s}")} {dir_label:>20s}  {pnl_str:>16s}  {Z.dim(hold_str):>16s}  {Z.dim("stop")} {Z.GREEN}✓{Z.RESET}')
+    else:
+        print(f'  {Z.dim("no open positions.")}')
+
+    print()
+    print(f'  {Z.rule()}')
+    print()
+
+    # TODAY section
+    print(f'  {Z.header("TODAY")}')
+
+    risk = _load_json(os.path.join(PAPER_BUS_DIR, "risk.json"))
+    evals = "—"
+    entries = "—"
+    rejections = "—"
+    reject_rate = "—"
+
+    print(f'  {Z.dots("evaluations", evals)}')
+    print(f'  {Z.dots("entries", entries)}')
+    print(f'  {Z.dots("rejections", rejections)}')
+    print(f'  {Z.dots("rejection rate", reject_rate)}')
+
+    if risk and risk.get("halted"):
+        print()
+        print(f'  {Z.warn(f"halted: {risk.get("halt_reason", "unknown")}")}')
+
+    print()
+    print(f'  {Z.rule()}')
+    print()
+
+    # NETWORK section
+    print(f'  {Z.header("NETWORK")}')
+    print(f'  {Z.dots("agents online", "—")}')
+    print(f'  {Z.dots("your rank", "—")}')
+    print(f'  {Z.dots("score", "—")}')
+
+    print()

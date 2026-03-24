@@ -1,15 +1,21 @@
-"""zeroos suggest — Network universe diversification suggestions."""
-import sys, json, click
+"""zeroos suggest — network universe diversification suggestions."""
+
+import sys
+import json
+import click
 from pathlib import Path
+
+from scanner.zeroos_cli.style import Z
+
 
 @click.command()
 def suggest():
     """Get network coverage suggestions for your coin universe."""
     v6 = str(Path(__file__).parent.parent / "v6")
-    if v6 not in sys.path: sys.path.insert(0, v6)
+    if v6 not in sys.path:
+        sys.path.insert(0, v6)
     from emergent_infrastructure import suggest_universe
 
-    # Load agent's current universe from config
     config_file = Path.home() / ".zeroos" / "config.json"
     universe = ["SOL", "ETH", "BTC", "WLD", "AVAX", "TIA", "NEAR", "APT"]
     if config_file.exists():
@@ -19,26 +25,30 @@ def suggest():
         except Exception:
             pass
 
-    # Simulate network coverage (in production: from collective)
     all_coins = universe + ["ONDO", "JUP", "PENDLE", "SEI", "SUI", "ARB", "OP", "LINK"]
     coverage = {c: 47 if c in ("SOL", "ETH", "BTC") else 12 if c in universe else 3 for c in all_coins}
 
     result = suggest_universe(universe, coverage, 120, all_coins)
 
-    click.echo(f"\n  NETWORK COVERAGE SUGGESTIONS")
-    click.echo(f"  ────────────────────────────────────────")
-    click.echo(f"  your universe: {' '.join(universe)}")
-    click.echo()
+    print()
+    print(f'  {Z.logo()}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.header("NETWORK COVERAGE SUGGESTIONS")}')
+    print(f'  {Z.dots("your universe", " ".join(universe))}')
+    print()
 
     for s in result.get("suggestions", []):
         action = s["action"]
         coin = s["coin"]
         icon = "▸" if action == "consider_adding" else "▾"
-        click.echo(f"  {icon} {action.replace('_', ' ')}: {coin}")
-        click.echo(f"    {s['reason']}")
-        click.echo()
+        print(f'  {Z.bright(icon)} {Z.mid(action.replace("_", " ") + ": " + coin)}')
+        print(f'    {Z.dim(s["reason"])}')
+        print()
 
     bonus = result.get("network_contribution_bonus", 0)
     if bonus > 0:
-        click.echo(f"  following suggestions earns +{bonus:.2f} network contribution bonus.")
-    click.echo()
+        print(f'  {Z.dim(f"following suggestions earns +{bonus:.2f} network contribution bonus.")}')
+
+    print()

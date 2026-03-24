@@ -1,6 +1,8 @@
-"""zeroos fees — Display fee summary and history."""
+"""zeroos fees — view fee history."""
 
 import click
+
+from scanner.zeroos_cli.style import Z
 
 
 @click.command()
@@ -15,21 +17,26 @@ def fees():
         from performance_fee import get_fee_summary
         s = get_fee_summary()
     except Exception as e:
-        click.echo(f"  ✗ could not load fee data: {e}")
+        print(f'  {Z.fail(f"could not load fee data: {e}")}')
         raise SystemExit(1)
 
-    click.echo()
-    click.echo("  FEE SUMMARY")
-    click.echo("  ────────────────────────────────────────")
-    click.echo(f"  rate .................. {s.get('fee_rate', '10%')} of net profit")
-    click.echo(f"  high-water mark ....... ${s.get('hwm', 0):,.2f}")
-    click.echo(f"  cumulative P&L ........ ${s.get('cumulative_pnl', 0):,.2f}")
-    click.echo()
-    click.echo(f"  total fees paid ....... ${s.get('total_fees_paid', 0):,.2f}")
-    click.echo(f"  pending ............... ${s.get('pending', 0):,.2f}")
-    click.echo(f"  today ................. ${s.get('daily_total', 0):,.2f}")
-    click.echo(f"  trades with fees ...... {s.get('trade_count', 0)}")
-    click.echo()
-    click.echo(f"  fee wallet: {s.get('fee_wallet', '?')}")
-    click.echo("  verify: all fees visible on HL explorer")
-    click.echo()
+    print()
+    print(f'  {Z.logo()}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.header("FEE SUMMARY")}')
+    print(f'  {Z.dots("rate", f"{s.get('fee_rate', '10%')} of net profit")}')
+    print(f'  {Z.dots("high-water mark", f"${s.get('hwm', 0):,.2f}")}')
+    print(f'  {Z.dots("cumulative pnl", f"${s.get('cumulative_pnl', 0):,.2f}")}')
+    print()
+    print(f'  {Z.dots("total fees paid", f"${s.get('total_fees_paid', 0):,.2f}")}')
+    print(f'  {Z.dots("pending", f"${s.get('pending', 0):,.2f}")}')
+    print(f'  {Z.dots("today", f"${s.get('daily_total', 0):,.2f}")}')
+    print(f'  {Z.dots("trades with fees", s.get("trade_count", 0))}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.dots("fee wallet", s.get("fee_wallet", "?"))}')
+    print(f'  {Z.dim("verify: all fees visible on HL explorer.")}')
+    print()

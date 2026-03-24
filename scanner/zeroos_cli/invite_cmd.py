@@ -1,4 +1,4 @@
-"""zeroos invite — Generate an invite link. 14 days Pro free for both."""
+"""zeroos invite — generate referral code."""
 
 import json
 import os
@@ -6,13 +6,14 @@ from urllib.request import Request, urlopen
 
 import click
 
+from scanner.zeroos_cli.style import Z
+
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 NETWORK_PATH = os.path.join(ZEROOS_DIR, "network.json")
 ZERO_API = "https://getzero.dev"
 
 
 def _get_referral_code() -> str | None:
-    """Get referral code from local network.json."""
     if os.path.exists(NETWORK_PATH):
         with open(NETWORK_PATH) as f:
             data = json.load(f)
@@ -24,17 +25,15 @@ def _get_referral_code() -> str | None:
 @click.option("--new", is_flag=True, help="Generate a fresh invite link.")
 def invite(new: bool):
     """Generate an invite link. Both operators get 14 days Pro free."""
-    click.echo()
+    print()
+    print(f'  {Z.logo()}')
+    print()
 
     referral = _get_referral_code()
 
     if not referral:
-        # Try to generate via API
         try:
-            req = Request(
-                f"{ZERO_API}/api/invite",
-                method="GET",
-            )
+            req = Request(f"{ZERO_API}/api/invite", method="GET")
             with urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read())
                 referral = data.get("code")
@@ -42,22 +41,25 @@ def invite(new: bool):
             pass
 
     if not referral:
-        click.echo("  ✗ no invite code found.")
-        click.echo("  run: zeroos init")
+        print(f'  {Z.fail("no invite code found.")}')
+        print(f'  {Z.lime("$ zeroos init")}')
+        print()
         raise SystemExit(1)
 
     invite_url = f"https://getzero.dev/waitlist?ref={referral}"
 
-    click.echo("  ■ ZERO INVITE")
-    click.echo()
-    click.echo(f"  {invite_url}")
-    click.echo()
-    click.echo("  ─────────────────────────────────")
-    click.echo("  they install → both get 14d Pro.")
-    click.echo("  you earn 10% of their subscription.")
-    click.echo("  forever. not 12 months. forever.")
-    click.echo("  ─────────────────────────────────")
-    click.echo()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.bright(invite_url)}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
+    print(f'  {Z.dim("they install → both get 14d pro.")}')
+    print(f'  {Z.dim("you earn 10% of their subscription.")}')
+    print(f'  {Z.dim("forever. not 12 months. forever.")}')
+    print()
+    print(f'  {Z.rule()}')
+    print()
 
     try:
         import subprocess
@@ -66,8 +68,8 @@ def invite(new: bool):
             input=invite_url.encode(),
             capture_output=True,
         )
-        click.echo("  copied to clipboard ✓")
+        print(f'  {Z.success("copied to clipboard.")}')
     except Exception:
-        click.echo("  copy the link above and share it.")
+        print(f'  {Z.dim("copy the link above and share it.")}')
 
-    click.echo()
+    print()
