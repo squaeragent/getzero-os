@@ -1,17 +1,66 @@
-include LICENSE
-include README.md
-recursive-include scanner/zeroos_cli *.py
-recursive-include scanner/v6 *.py
-recursive-exclude scanner/bus *
-recursive-exclude scanner/memory *
-recursive-exclude scanner/data *
+include scanner/zeroos_cli/*.py
+recursive-exclude scanner/v6 *
 recursive-exclude scanner/indicators *
-recursive-exclude scanner/v6/bus *
-recursive-exclude scanner/v6/cache *
-recursive-exclude scanner/v6/supervisor.log *
-prune scanner/bus
-prune scanner/memory
-prune scanner/data
+recursive-exclude scanner/immune_system *
+recursive-exclude scanner/bus *
+recursive-exclude scanner/data *
+recursive-exclude scanner/executor *
+recursive-exclude scanner/memory *
+recursive-exclude scanner/agents *
+recursive-exclude scanner/api *
+recursive-exclude scanner/core *
+recursive-exclude scanner/hands *
+recursive-exclude scanner/senses *
+recursive-exclude scanner/supabase *
+recursive-exclude scanner/tests *
+recursive-exclude scanner/tools *
+recursive-exclude skills *
+recursive-exclude specs *
+recursive-exclude docs *
+recursive-exclude intel *
+recursive-exclude public *
+recursive-exclude src *
+recursive-exclude scripts *
+recursive-exclude api *
+exclude scanner/smart_provider.py
+exclude scanner/smart_data.py
+exclude scanner/smart_indicators.py
+exclude scanner/hyperliquid_executor.py
+exclude scanner/signal_scanner.py
+exclude scanner/run_agents.py
+exclude scanner/backtester_taapi.py
+exclude scanner/backtest_signals.py
+exclude scanner/export_portfolio.py
+exclude scanner/fetch_history.py
+exclude scanner/generate_signals.py
+exclude scanner/utils.py
+exclude scanner/config.yaml
+exclude scanner/install.sh
+exclude scanner/run_cycle.sh
+exclude scanner/run_zero_live.sh
+exclude scanner/run_zero_paper.sh
+exclude scanner/AGENTS_SPEC.md
+exclude scanner/COGNITIVE_LOOP_SPEC.md
+prune scanner/v6
 prune scanner/indicators
-prune scanner/v6/bus
-prune scanner/v6/cache
+prune scanner/immune_system
+prune scanner/bus
+prune scanner/data
+prune scanner/executor
+prune scanner/memory
+prune scanner/agents
+prune scanner/api
+prune scanner/core
+prune scanner/hands
+prune scanner/senses
+prune scanner/supabase
+prune scanner/tests
+prune scanner/tools
+prune skills
+prune specs
+prune docs
+prune intel
+prune public
+prune src
+prune scripts
+prune api
