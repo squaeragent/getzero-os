@@ -1,234 +1,92 @@
 """zeroos evaluate — see the reasoning engine think."""
 
 import json
-import os
-import sys
 import time
 
 import click
 
 from scanner.zeroos_cli.console import (
-    console, spacer, rule, section, dots, fail, direction_icon,
+    console, logo, spacer, rule, section, dots, fail, success, direction_icon,
 )
-
-SCANNER_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-V6_DIR = os.path.join(SCANNER_ROOT, "v6")
-
-
-def _evaluate_coin(coin: str, verbose: bool = False) -> dict:
-    if V6_DIR not in sys.path:
-        sys.path.insert(0, V6_DIR)
-    try:
-        from smart_provider import SmartProvider
-    except ImportError:
-        fail("SmartProvider not found. is the scanner installed?")
-        raise SystemExit(1)
-
-    provider = SmartProvider()
-    return provider.evaluate_coin(coin.upper())
-
-
-def _regime_label(regime: str) -> str:
-    r = regime.lower() if regime else "unknown"
-    if r in ("trending", "trend"):
-        return "trending"
-    elif r in ("mean_reverting", "mean-reverting", "ranging", "range-bound"):
-        return "range-bound"
-    elif r in ("volatile", "chaotic"):
-        return "volatile"
-    elif r in ("stable", "quiet"):
-        return "stable"
-    return r
-
-
-def _confidence_label(conf) -> str:
-    if conf is None:
-        return "—"
-    if conf >= 0.8:
-        return "high"
-    elif conf >= 0.5:
-        return "moderate"
-    return "low"
-
-
-def _indicator_label(name: str) -> str:
-    mapping = {
-        "ema": "trend",
-        "macd": "momentum",
-        "rsi": "strength",
-        "bollinger": "bands",
-        "obv": "volume",
-        "funding": "funding",
-        "atr": "volatility",
-        "vwap": "flow",
-        "stoch": "oscillator",
-        "adx": "direction",
-        "cci": "cycles",
-    }
-    key = name.lower().split("_")[0]
-    return mapping.get(key, name.lower()[:12])
-
-
-def _vote_description(vote: str, name: str) -> str:
-    v = vote.lower() if vote else "neutral"
-    descs = {
-        "long": {
-            "ema": "agrees", "macd": "expanding", "rsi": "room to run",
-            "bollinger": "upper band", "obv": "volume confirms",
-        },
-        "short": {
-            "ema": "disagrees", "macd": "contracting", "rsi": "overbought",
-            "bollinger": "lower band", "obv": "volume fading",
-        },
-    }
-    key = name.lower().split("_")[0]
-    if v in descs and key in descs[v]:
-        return descs[v][key]
-    if v == "long":
-        return "agrees"
-    elif v == "short":
-        return "disagrees"
-    return "neutral"
 
 
 @click.command("evaluate")
 @click.argument("coin")
-@click.option("--verbose", "-v", is_flag=True, help="Show all indicator values.")
-@click.option("--json", "json_output", is_flag=True, help="Output raw JSON.")
-def evaluate(coin, verbose, json_output):
-    """Evaluate a coin using the reasoning engine."""
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
+def evaluate(coin, as_json):
+    """Evaluate a coin using the zero reasoning engine."""
+    from scanner.zeroos_cli.config_utils import load_token
+    from scanner.zeroos_cli.api_client import ZeroAPIClient
+
     coin = coin.upper()
-
-    if json_output:
-        try:
-            result = _evaluate_coin(coin, verbose)
-        except SystemExit:
-            raise
-        except Exception as e:
-            fail(f"evaluation failed: {e}")
-            raise SystemExit(1)
-        print(json.dumps(result, indent=2, default=str))
-        return
-
-    spacer()
-    console.print(f"  [lime]◆ evaluating {coin}[/lime]")
-    spacer()
-    rule()
-    spacer()
+    token = load_token()
+    api = ZeroAPIClient(token)
 
     t0 = time.time()
 
     try:
-        result = _evaluate_coin(coin, verbose)
-    except SystemExit:
-        raise
+        result = api.evaluate(coin)
     except Exception as e:
-        fail(f"evaluation failed: {e}")
+        fail(str(e))
         raise SystemExit(1)
 
     elapsed_ms = int((time.time() - t0) * 1000)
 
-    # REGIME section
-    regime = result.get("regime", "unknown")
-    confidence = result.get("confidence")
-    regime_ctx = result.get("regime_context", "")
+    if as_json:
+        print(json.dumps({
+            "coin": result.coin,
+            "regime": result.regime,
+            "regime_confidence": result.confidence,
+            "direction": result.direction,
+            "consensus": result.consensus_label,
+            "consensus_value": result.consensus_value,
+            "conviction": result.conviction_level,
+            "verdict": result.verdict,
+            "reasoning": result.reasoning,
+        }, indent=2))
+        return
 
-    section("REGIME")
-    dots("classification", _regime_label(regime))
-    dots("confidence", _confidence_label(confidence))
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
 
-    # Regime age from context if available
-    regime_age = "—"
-    if regime_ctx:
-        import re
-        age_match = re.search(r'(\d+)\s*(hour|day|hr)', regime_ctx.lower())
-        if age_match:
-            num = age_match.group(1)
-            unit = age_match.group(2)
-            if "day" in unit:
-                regime_age = f"{num} days"
-            else:
-                regime_age = f"{num} hours"
-    dots("age", regime_age)
+    section(f"EVALUATE {coin}")
+    spacer()
+
+    dots("regime", result.regime)
+    dots("confidence", result.confidence)
+    dots("direction", f"{direction_icon(result.direction)} {result.direction}")
+    dots("consensus", f"{result.consensus_label} ({result.consensus_value:.0%})")
+    dots("conviction", result.conviction_level)
 
     spacer()
     rule()
     spacer()
 
-    # INDICATORS section
-    section("INDICATORS")
+    # Verdict
+    section("VERDICT")
 
-    votes = result.get("indicator_votes", {})
-    direction = result.get("direction", "NEUTRAL")
-    quality = result.get("quality", 0)
-
-    long_count = 0
-    total_count = 0
-    consensus_str = "weak"
-
-    if votes:
-        for name, vote in votes.items():
-            total_count += 1
-            v = vote.lower() if vote else "neutral"
-
-            # Direction arrow and label
-            if v == "long":
-                arrow = "[lime]↗[/lime]"
-                dir_label = "[lime]long[/lime]"
-                long_count += 1
-            elif v == "short":
-                arrow = "[error]↘[/error]"
-                dir_label = "[error]short[/error]"
-            else:
-                arrow = "[dim]—[/dim]"
-                dir_label = "[dim]neutral[/dim]"
-
-            label = _indicator_label(name)
-            desc = _vote_description(vote, name)
-            dots(label, f"{arrow} {dir_label}")
-            console.print(f"      [dim]{desc}[/dim]")
-
-    # Funding & volatility
-    funding = result.get("funding_rate")
-    if funding is not None:
-        f_label = "neutral" if abs(funding) < 0.0001 else ("elevated" if funding > 0 else "negative")
-        dots("funding", f"[dim]— {f_label}[/dim]")
-
-    atr_pct = result.get("atr_pct")
-    if atr_pct is not None:
-        v_label = "normal" if atr_pct < 0.03 else ("elevated" if atr_pct < 0.06 else "high")
-        dots("volatility", f"[dim]— {v_label}[/dim]")
-
-    # Consensus
-    if total_count > 0:
-        consensus_str = "strong" if long_count >= total_count * 0.7 else "moderate" if long_count >= total_count * 0.4 else "weak"
-        dots("consensus", f"{consensus_str} ({long_count} of {total_count})")
-
-    spacer()
-    rule()
-    spacer()
-
-    # VERDICT section
-    if direction in ("LONG",):
-        reasons = result.get("reasons", [])
-        detail = f"strong consensus in a {_regime_label(regime)} regime." if consensus_str == "strong" else f"moderate signal in a {_regime_label(regime)} regime."
-        console.print("  [lime]VERDICT[/lime]")
-        console.print("  [lime]would consider entry.[/lime]")
-        console.print(f"  [dim]{detail}[/dim]")
-    elif direction in ("SHORT",):
-        detail = f"bearish consensus in a {_regime_label(regime)} regime."
-        console.print("  [lime]VERDICT[/lime]")
-        console.print("  [lime]would consider short entry.[/lime]")
-        console.print(f"  [dim]{detail}[/dim]")
+    if result.verdict == "would_enter":
+        console.print(f"  [success]▸ {result.verdict}[/success]")
+    elif result.verdict == "would_reject":
+        console.print(f"  [error]▸ {result.verdict}[/error]")
     else:
-        detail = f"insufficient consensus in a {_regime_label(regime)} regime."
-        section("VERDICT")
-        console.print("  [mid]no actionable signal.[/mid]")
-        console.print(f"  [dim]{detail}[/dim]")
+        console.print(f"  [dim]▸ {result.verdict}[/dim]")
+
+    if result.reasoning:
+        console.print(f"  [dim]{result.reasoning}[/dim]")
 
     spacer()
+
+    if result.verdict == "would_enter":
+        dots("entry", f"${result.entry_price:,.2f}")
+        dots("stop", f"${result.stop_price:,.2f}")
+        dots("size", f"{result.position_size_pct:.0%}")
+        spacer()
+
     rule()
     spacer()
-    console.print("  [dim]this is what the reasoning engine sees right now.[/dim]")
-    console.print("  [dim]all signals computed locally from on-chain data.[/dim]")
+    console.print(f"  [dim]evaluated in {elapsed_ms}ms via zero reasoning engine.[/dim]")
     spacer()

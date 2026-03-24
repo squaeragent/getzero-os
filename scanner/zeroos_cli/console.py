@@ -18,6 +18,7 @@ ZERO_THEME = Theme({
     "warning": "rgb(255,170,0)",
     "success": "rgb(0,255,136)",
     "header": "bold rgb(200,255,0)",
+    "command": "rgb(200,255,0)",
 })
 
 # singleton console — width capped at 64, no Rich auto-highlight

@@ -16,20 +16,10 @@ from scanner.zeroos_cli.score_cmd import score
 from scanner.zeroos_cli.agent_cmd import agent
 from scanner.zeroos_cli.evaluate_cmd import evaluate
 from scanner.zeroos_cli.brief_cmd import brief
-from scanner.zeroos_cli.invite_cmd import invite
-from scanner.zeroos_cli.fees_cmd import fees
-from scanner.zeroos_cli.weights_cmd import weights
-from scanner.zeroos_cli.backtest_cmd import backtest
+# from scanner.zeroos_cli.invite_cmd import invite  # future
+from scanner.zeroos_cli.credits_cmd import credits
 from scanner.zeroos_cli.observe_cmd import observe
-from scanner.zeroos_cli.discoveries_cmd import discoveries
-from scanner.zeroos_cli.proof_cmd import proof
-from scanner.zeroos_cli.simulate_cmd import simulate
-from scanner.zeroos_cli.conviction_cmd import conviction
-from scanner.zeroos_cli.suggest_cmd import suggest
-from scanner.zeroos_cli.think_cmd import think
-from scanner.zeroos_cli.replay_cmd import replay
-from scanner.zeroos_cli.race_cmd import race
-from scanner.zeroos_cli.feedback_cmd import feedback
+from scanner.zeroos_cli.serve_cmd import serve
 
 
 class ZeroGroup(click.Group):
@@ -60,11 +50,12 @@ class ZeroGroup(click.Group):
         console.print("  [lime]zeroos agent pause[/lime]      [dim]pause an agent[/dim]")
         console.print("  [lime]zeroos agent resume[/lime]     [dim]resume an agent[/dim]")
         spacer()
-        section("NETWORK")
-        console.print("  [lime]zeroos invite[/lime]           [dim]generate referral code[/dim]")
-        console.print("  [lime]zeroos weights[/lime]          [dim]view current collective weights[/dim]")
-        console.print("  [lime]zeroos fees[/lime]             [dim]view fee history[/dim]")
-        console.print("  [lime]zeroos conviction[/lime]       [dim]computed conviction index[/dim]")
+        section("CREDITS")
+        console.print("  [lime]zeroos credits[/lime]          [dim]view balance and usage[/dim]")
+        console.print("  [lime]zeroos credits buy[/lime]      [dim]purchase evaluation credits[/dim]")
+        spacer()
+        section("MCP")
+        console.print("  [lime]zeroos serve[/lime]            [dim]start as MCP server (for AI agents)[/dim]")
         spacer()
         rule()
         spacer()
@@ -92,20 +83,9 @@ cli.add_command(score)
 cli.add_command(agent)
 cli.add_command(evaluate)
 cli.add_command(brief)
-cli.add_command(invite)
-cli.add_command(fees)
-cli.add_command(weights)
-cli.add_command(backtest)
+cli.add_command(credits)
 cli.add_command(observe)
-cli.add_command(discoveries)
-cli.add_command(proof)
-cli.add_command(simulate)
-cli.add_command(conviction)
-cli.add_command(suggest)
-cli.add_command(think)
-cli.add_command(replay)
-cli.add_command(race)
-cli.add_command(feedback)
+cli.add_command(serve)
 
 
 # Track operator behavior on every CLI invocation
