@@ -81,9 +81,12 @@ def info(text: str):
     console.print(f"  [dim]▸ {text}[/dim]")
 
 
-def action(text: str):
-    """Print an action line (alias for info)."""
-    info(text)
+def action(cmd: str, desc: str = ""):
+    """Print a command suggestion: $ cmd    description"""
+    if desc:
+        console.print(f"  [command]$ {cmd}[/command]  [dim]{desc}[/dim]")
+    else:
+        console.print(f"  [command]$ {cmd}[/command]")
 
 
 def direction_icon(d: str) -> str:
