@@ -117,7 +117,7 @@ def run_once(name, script):
     if not script.exists():
         print(f"  [{name}] NOT FOUND")
         return
-    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=60)
+    result = subprocess.run([PYTHON, str(script)], capture_output=True, text=True, timeout=300)
     print(result.stdout)
     if result.returncode != 0:
         print(f"  [{name}] ERROR: {result.stderr[:200]}")
