@@ -56,7 +56,7 @@ def audit() -> list[str]:
     # 2. Check equity vs HL
     try:
         import urllib.request
-        main = "0x3fb367a8e25a19299ae3fab887b47ab69774b010"
+        main = "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"
         spot = json.loads(urllib.request.urlopen(urllib.request.Request(
             "https://api.hyperliquid.xyz/info",
             data=json.dumps({"type": "spotClearinghouseState", "user": main}).encode(),

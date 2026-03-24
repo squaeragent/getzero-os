@@ -187,7 +187,7 @@ ENVY_BASE_URL = "https://gate.getzero.dev/api/claw"
 ENVY_WS_URL   = "wss://gate.getzero.dev/api/claw/ws/indicators"
 
 # ─── HYPERLIQUID ──────────────────────────────────────────────────────────────
-HL_MAIN_ADDRESS  = "0x3fb367a8e25a19299ae3fab887b47ab69774b010"
+HL_MAIN_ADDRESS  = os.environ.get("HYPERLIQUID_MAIN_ADDRESS", "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884")
 HL_API_WALLET    = "0xc7b52216e7bc13de0cd010aa12cacb6d774453a2"
 HL_INFO_URL      = "https://api.hyperliquid.xyz/info"
 HL_EXCHANGE_URL  = "https://api.hyperliquid.xyz/exchange"

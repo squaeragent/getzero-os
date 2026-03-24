@@ -40,7 +40,7 @@ SIGNAL_OUTCOMES = SCANNER_DIR / "memory" / "signal_outcomes.jsonl"
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 HL_INFO_URL = "https://api.hyperliquid.xyz/info"
-MAIN_WALLET = "0x3fb367a8e25a19299ae3fab887b47ab69774b010"
+MAIN_WALLET = "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"
 ENVY_BASE_URL = "https://gate.getzero.dev/api/claw"
 
 # ─── Env loading ──────────────────────────────────────────────────────────────

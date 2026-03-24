@@ -445,7 +445,7 @@ def run():
     client = HLClient(secret)
 
     # Store main address for balance lookups
-    main_addr = env.get("HYPERLIQUID_MAIN_ADDRESS", "0x3fb367a8e25a19299ae3fab887b47ab69774b010")
+    main_addr = env.get("HYPERLIQUID_MAIN_ADDRESS", "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884")
 
     # Check balance
     perps_bal = client.get_balance()

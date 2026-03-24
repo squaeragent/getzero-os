@@ -7,7 +7,7 @@ set -uo pipefail
 AGENT_ID="4802c6f8-f862-42f1-b248-45679e1517e7"
 SCANNER_DIR="$HOME/getzero-os/scanner/v6"
 ENV_FILE="$HOME/.config/openclaw/.env"
-HL_WALLET="0x3fb367a8e25a19299ae3fab887b47ab69774b010"
+HL_WALLET="0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"
 SUPABASE_URL="https://fzzotmxxrcnmrqtmsesi.supabase.co"
 LOOP_INTERVAL=300  # 5 minutes
 
