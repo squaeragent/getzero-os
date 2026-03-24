@@ -6,7 +6,9 @@ import uuid
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, dots, success, fail, info,
+)
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 NETWORK_PATH = os.path.join(ZEROOS_DIR, "network.json")
@@ -49,16 +51,16 @@ def add(preset: str):
 
     token = _get_token()
     if not token:
-        print(f'  {Z.fail("no auth token.")}')
-        print(f'  {Z.lime("$ zeroos auth login")}')
+        fail("no auth token.")
+        console.print("  [lime]$ zeroos auth login[/lime]")
         raise SystemExit(1)
 
     agent_id = str(uuid.uuid4())
     desc, max_pos = PRESETS[preset]
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     try:
         headers = {
@@ -78,7 +80,10 @@ def add(preset: str):
         nonce = challenge["nonce"]
 
         from scanner.zeroos_cli.keystore import load_key
-        password = click.prompt(f'  {Z.dim("encryption password")}', hide_input=True, prompt_suffix="\n  > ")
+        password = click.prompt(
+            click.style("  encryption password", fg=(119, 119, 119)),
+            hide_input=True, prompt_suffix="\n  > ",
+        )
         key = load_key(password)
 
         from eth_account import Account
@@ -110,21 +115,21 @@ def add(preset: str):
             result = json.loads(resp.read())
 
         if "error" in result:
-            print(f'  {Z.fail(result["error"])}')
+            fail(result["error"])
             if result.get("upgrade"):
-                print(f'  {Z.dim(result["upgrade"])}')
+                console.print(f"  [dim]{result['upgrade']}[/dim]")
             raise SystemExit(1)
 
-        print(f'  {Z.success(f"agent/{preset} added. paper mode.")}')
+        success(f"agent/{preset} added. paper mode.")
         page_url = result.get("page_url", "")
         if page_url:
-            print(f'  {Z.dots("▸ agent page", page_url)}')
-        print()
+            dots("▸ agent page", page_url)
+        spacer()
 
     except SystemExit:
         raise
     except Exception as e:
-        print(f'  {Z.fail(str(e))}')
+        fail(str(e))
         raise SystemExit(1)
 
 
@@ -136,13 +141,13 @@ def remove(agent_id: str):
 
     token = _get_token()
     if not token:
-        print(f'  {Z.fail("no auth token.")}')
-        print(f'  {Z.lime("$ zeroos auth login")}')
+        fail("no auth token.")
+        console.print("  [lime]$ zeroos auth login[/lime]")
         raise SystemExit(1)
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     try:
         req = urllib.request.Request(
@@ -157,28 +162,28 @@ def remove(agent_id: str):
             result = json.loads(resp.read())
 
         if result.get("ok"):
-            print(f'  {Z.success("agent deactivated. signal access revoked.")}')
-            print(f'  {Z.dim("your on-chain positions remain open.")}')
-            print(f'  {Z.dim("close them manually on hyperliquid if needed.")}')
+            success("agent deactivated. signal access revoked.")
+            console.print("  [dim]your on-chain positions remain open.[/dim]")
+            console.print("  [dim]close them manually on hyperliquid if needed.[/dim]")
         else:
-            print(f'  {Z.fail(result.get("error", "unknown error"))}')
+            fail(result.get("error", "unknown error"))
 
     except Exception as e:
-        print(f'  {Z.fail(str(e))}')
-        print(f'  {Z.dim("try the web dashboard: getzero.dev/app")}')
+        fail(str(e))
+        console.print("  [dim]try the web dashboard: getzero.dev/app[/dim]")
         raise SystemExit(1)
 
-    print()
+    spacer()
 
 
 @agent.command(name="list")
 def list_agents():
     """List your registered agents."""
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
 
     agents_file = os.path.join(ZEROOS_DIR, "agents.json")
     agents = []
@@ -188,33 +193,33 @@ def list_agents():
 
     net = _get_network_info()
     if net and not agents:
-        print(f'  {Z.dots("agent_id", net.get("agent_id", "?")[:8] + "...")}')
-        print(f'  {Z.dots("page", net.get("page_url", "not registered"))}')
-        print(f'  {Z.dots("tier", net.get("tier", "unknown"))}')
-        print()
+        dots("agent_id", net.get("agent_id", "?")[:8] + "...")
+        dots("page", net.get("page_url", "not registered"))
+        dots("tier", net.get("tier", "unknown"))
+        spacer()
         return
 
     if not agents:
-        print(f'  {Z.dim("no agents registered.")}')
-        print(f'  {Z.lime("$ zeroos agent add --preset balanced")}')
-        print()
+        console.print("  [dim]no agents registered.[/dim]")
+        console.print("  [lime]$ zeroos agent add --preset balanced[/lime]")
+        spacer()
         return
 
     for a in agents:
         status_val = a.get("status", "unknown")
         if status_val == "running":
-            status_str = f'{Z.GREEN}● running{Z.RESET}'
+            status_str = "[success]● running[/success]"
         elif status_val == "paused":
-            status_str = f'{Z.YELLOW}● paused{Z.RESET}'
+            status_str = "[warning]● paused[/warning]"
         else:
-            status_str = f'{Z.RED}● {status_val}{Z.RESET}'
+            status_str = f"[error]● {status_val}[/error]"
 
         preset = a.get("preset", "?")
         mode = a.get("mode", "paper")
         aid = a.get("id", "?")[:8]
-        print(f'  {Z.dim(aid)}  {Z.mid(f"agent/{preset}")}  {status_str}  {Z.dim(mode)}')
+        console.print(f"  [dim]{aid}[/dim]  [mid]agent/{preset}[/mid]  {status_str}  [dim]{mode}[/dim]")
 
-    print()
+    spacer()
 
 
 @agent.command()
@@ -223,7 +228,7 @@ def pause(name: str):
     """Pause an agent without deregistering."""
     agents_file = os.path.join(ZEROOS_DIR, "agents.json")
     if not os.path.exists(agents_file):
-        print(f'  {Z.fail("no agents found.")}')
+        fail("no agents found.")
         raise SystemExit(1)
 
     with open(agents_file) as f:
@@ -234,14 +239,14 @@ def pause(name: str):
         if a.get("preset") == name or a.get("id", "").startswith(name):
             a["status"] = "paused"
             found = True
-            print(f'  {Z.success(f"agent/{a.get('preset', name)} paused.")}')
-            print(f'  {Z.dim("positions remain open. immune system stays active.")}')
-            print(f'  {Z.dim("new evaluations suspended.")}')
+            success(f"agent/{a.get('preset', name)} paused.")
+            console.print("  [dim]positions remain open. immune system stays active.[/dim]")
+            console.print("  [dim]new evaluations suspended.[/dim]")
             break
 
     if not found:
-        print(f'  {Z.fail(f"agent \'{name}\' not found.")}')
-        print(f'  {Z.lime("$ zeroos agent list")}')
+        fail(f"agent '{name}' not found.")
+        console.print("  [lime]$ zeroos agent list[/lime]")
         raise SystemExit(1)
 
     with open(agents_file, "w") as f:
@@ -254,7 +259,7 @@ def resume(name: str):
     """Resume a paused agent."""
     agents_file = os.path.join(ZEROOS_DIR, "agents.json")
     if not os.path.exists(agents_file):
-        print(f'  {Z.fail("no agents found.")}')
+        fail("no agents found.")
         raise SystemExit(1)
 
     with open(agents_file) as f:
@@ -265,13 +270,13 @@ def resume(name: str):
         if a.get("preset") == name or a.get("id", "").startswith(name):
             a["status"] = "running"
             found = True
-            print(f'  {Z.success(f"agent/{a.get('preset', name)} resumed.")}')
-            print(f'  {Z.dim("evaluation cycle restarted.")}')
+            success(f"agent/{a.get('preset', name)} resumed.")
+            console.print("  [dim]evaluation cycle restarted.[/dim]")
             break
 
     if not found:
-        print(f'  {Z.fail(f"agent \'{name}\' not found.")}')
-        print(f'  {Z.lime("$ zeroos agent list")}')
+        fail(f"agent '{name}' not found.")
+        console.print("  [lime]$ zeroos agent list[/lime]")
         raise SystemExit(1)
 
     with open(agents_file, "w") as f:

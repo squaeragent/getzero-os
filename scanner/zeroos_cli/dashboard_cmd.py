@@ -6,7 +6,9 @@ import secrets
 import click
 import yaml
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, dots, fail, success,
+)
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 CONFIG_PATH = os.path.join(ZEROOS_DIR, "config.yaml")
@@ -14,7 +16,8 @@ CONFIG_PATH = os.path.join(ZEROOS_DIR, "config.yaml")
 
 def _load_config() -> dict:
     if not os.path.exists(CONFIG_PATH):
-        print(f'  {Z.fail("not initialized. run:")} {Z.lime("$ zeroos init")}')
+        fail("not initialized. run:")
+        console.print("  [lime]$ zeroos init[/lime]")
         raise SystemExit(1)
     with open(CONFIG_PATH) as f:
         return yaml.safe_load(f)
@@ -37,9 +40,9 @@ def dashboard(connect, disconnect, show_status):
     """Manage dashboard connection."""
     cfg = _load_config()
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     if connect:
         token = secrets.token_urlsafe(32)
@@ -51,36 +54,36 @@ def dashboard(connect, disconnect, show_status):
 
         dashboard_url = cfg.get("telemetry", {}).get("dashboard_url", "https://getzero.dev")
 
-        print(f'  {Z.success("dashboard connected.")}')
-        print()
-        print(f'  {Z.dots("url", f"{dashboard_url}/app?token={token}")}')
-        print(f'  {Z.dots("token", token)}')
-        print()
-        print(f'  {Z.dim("open the url above to view your agent in real time.")}')
-        print(f'  {Z.lime("$ zeroos dashboard --disconnect")}  {Z.dim("to stop sharing")}')
+        success("dashboard connected.")
+        spacer()
+        dots("url", f"{dashboard_url}/app?token={token}")
+        dots("token", token)
+        spacer()
+        console.print("  [dim]open the url above to view your agent in real time.[/dim]")
+        console.print("  [lime]$ zeroos dashboard --disconnect[/lime]  [dim]to stop sharing[/dim]")
 
     elif disconnect:
         if "telemetry" in cfg:
             cfg["telemetry"]["token"] = None
             cfg["telemetry"]["enabled"] = False
         _save_config(cfg)
-        print(f'  {Z.success("dashboard disconnected. telemetry stopped.")}')
+        success("dashboard disconnected. telemetry stopped.")
 
     elif show_status:
-        print(f'  {Z.rule()}')
-        print()
+        rule()
+        spacer()
         token = cfg.get("telemetry", {}).get("token")
         enabled = cfg.get("telemetry", {}).get("enabled", False)
         if token and enabled:
             dashboard_url = cfg.get("telemetry", {}).get("dashboard_url", "https://getzero.dev")
-            print(f'  {Z.dots("dashboard", f"{Z.GREEN}● connected{Z.RESET}")}')
-            print(f'  {Z.dots("url", f"{dashboard_url}/app?token={token}")}')
-            print(f'  {Z.dots("token", f"{token[:8]}...{token[-4:]}")}')
+            dots("dashboard", "[success]● connected[/success]")
+            dots("url", f"{dashboard_url}/app?token={token}")
+            dots("token", f"{token[:8]}...{token[-4:]}")
         else:
-            print(f'  {Z.dots("dashboard", "not connected")}')
-            print(f'  {Z.lime("$ zeroos dashboard --connect")}  {Z.dim("to generate a token")}')
+            dots("dashboard", "not connected")
+            console.print("  [lime]$ zeroos dashboard --connect[/lime]  [dim]to generate a token[/dim]")
 
     else:
-        print(f'  {Z.dim("specify --connect, --disconnect, or --status.")}')
+        console.print("  [dim]specify --connect, --disconnect, or --status.[/dim]")
 
-    print()
+    spacer()

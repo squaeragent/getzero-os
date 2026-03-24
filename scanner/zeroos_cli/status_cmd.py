@@ -9,7 +9,9 @@ import click
 import yaml
 
 from scanner.zeroos_cli import __version__
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, fail, warn, pnl_pct,
+)
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 CONFIG_PATH = os.path.join(ZEROOS_DIR, "config.yaml")
@@ -72,7 +74,8 @@ def _fmt_pnl(val) -> str:
 def status():
     """Show ZERO OS agent status."""
     if not os.path.exists(CONFIG_PATH):
-        print(f'  {Z.fail("not initialized. run:")} {Z.lime("$ zeroos init")}')
+        fail("not initialized. run:")
+        console.print("  [lime]$ zeroos init[/lime]")
         raise SystemExit(1)
 
     with open(CONFIG_PATH) as f:
@@ -84,20 +87,20 @@ def status():
     uptime = _uptime_str(pid)
 
     # Header
-    print()
+    spacer()
     if running:
-        print(f'  {Z.logo()} {Z.mid("running")} {Z.dim("· uptime")} {Z.bright(uptime)}')
+        console.print(f"  [header]◆ zero▮[/header] [mid]running[/mid] [dim]· uptime[/dim] [bright]{uptime}[/bright]")
     else:
-        print(f'  {Z.logo()} {Z.red("stopped")}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+        console.print("  [header]◆ zero▮[/header] [error]stopped[/error]")
+    spacer()
+    rule()
+    spacer()
 
     # AGENT section
-    print(f'  {Z.header("AGENT")}')
+    section("AGENT")
 
-    mode_display = f'{Z.GREEN}● LIVE{Z.RESET}' if mode == "live" else f'{Z.YELLOW}● PAPER{Z.RESET}'
-    print(f'  {Z.dots(f"agent/{preset}", mode_display)}')
+    mode_display = "[success]● LIVE[/success]" if mode == "live" else "[warning]● PAPER[/warning]"
+    dots(f"agent/{preset}", mode_display)
 
     # Wallet
     net_path = os.path.join(ZEROOS_DIR, "network.json")
@@ -107,7 +110,7 @@ def status():
         wallet = net.get("wallet_address", "—")
         if len(wallet) > 10:
             wallet = f"{wallet[:6]}...{wallet[-4:]}"
-    print(f'  {Z.dots("wallet", wallet)}')
+    dots("wallet", wallet)
 
     # Equity & P&L
     portfolio = _load_json(os.path.join(PAPER_BUS_DIR, "portfolio.json"))
@@ -124,22 +127,22 @@ def status():
         balance = paper_state.get("balance", 10000.0)
         pnl = balance - start_balance
 
-    print(f'  {Z.dots("equity", _fmt_usd(equity))}')
+    dots("equity", _fmt_usd(equity))
     if pnl is not None:
-        pnl_color = Z.GREEN if pnl >= 0 else Z.RED
+        tag = "success" if pnl >= 0 else "error"
         sign = "+" if pnl >= 0 else ""
-        print(f'  {Z.dots("today", f"{pnl_color}{sign}${abs(pnl):,.2f}{Z.RESET}")}')
+        dots("today", f"[{tag}]{sign}${abs(pnl):,.2f}[/{tag}]")
     else:
-        print(f'  {Z.dots("today", "—")}')
+        dots("today", "—")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # IMMUNE section
-    print(f'  {Z.header("IMMUNE")}')
+    section("IMMUNE")
     heartbeat = _load_json(os.path.join(PAPER_BUS_DIR, "heartbeat.json"))
-    immune_status = f'{Z.GREEN}✓ healthy{Z.RESET}'
+    immune_status = "[success]✓ healthy[/success]"
     checks = "—"
     saves = "0"
     last_check = "—"
@@ -152,36 +155,40 @@ def status():
                 age_s = int((datetime.now(timezone.utc) - hb_dt).total_seconds())
                 last_check = f"{age_s}s ago"
                 if age_s > 120:
-                    immune_status = f'{Z.YELLOW}⚠ stale{Z.RESET}'
+                    immune_status = "[warning]⚠ stale[/warning]"
             except Exception:
                 pass
 
-    print(f'  {Z.dots("status", immune_status)}')
-    print(f'  {Z.dots("checks today", checks)}')
-    print(f'  {Z.dots("saves", saves)}')
-    print(f'  {Z.dots("last check", last_check)}')
+    dots("status", immune_status)
+    dots("checks today", checks)
+    dots("saves", saves)
+    dots("last check", last_check)
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # POSITIONS section
     positions_data = _load_json(os.path.join(PAPER_BUS_DIR, "positions.json"))
     positions_list = positions_data.get("positions", []) if positions_data else []
 
-    print(f'  {Z.header(f"POSITIONS ({len(positions_list)})")}')
+    section(f"POSITIONS ({len(positions_list)})")
 
     if positions_list:
-        print()
+        spacer()
         for p in positions_list:
             coin = p.get("coin", "?")
             direction = p.get("direction", "?").upper()
             entry_time = p.get("entry_time", "")
-            pnl_pct = p.get("pnl_pct", 0)
+            pnl_pct_val = p.get("pnl_pct", 0)
 
             # Direction arrow
-            arrow = f'{Z.LIME}↗{Z.RESET}' if direction == "LONG" else f'{Z.RED}↘{Z.RESET}'
-            dir_label = f'{Z.LIME}LONG{Z.RESET}' if direction == "LONG" else f'{Z.RED}SHORT{Z.RESET}'
+            if direction == "LONG":
+                arrow = "[lime]↗[/lime]"
+                dir_label = "[lime]LONG[/lime]"
+            else:
+                arrow = "[error]↘[/error]"
+                dir_label = "[error]SHORT[/error]"
 
             # Hold time
             hold_str = "—"
@@ -194,18 +201,18 @@ def status():
                     pass
 
             # P&L
-            pnl_str = Z.pnl_pct(pnl_pct) if pnl_pct else f'{Z.DIM}—{Z.RESET}'
+            pnl_str = pnl_pct(pnl_pct_val) if pnl_pct_val else "[dim]—[/dim]"
 
-            print(f'  {Z.bright(f"{coin:6s}")} {dir_label:>20s}  {pnl_str:>16s}  {Z.dim(hold_str):>16s}  {Z.dim("stop")} {Z.GREEN}✓{Z.RESET}')
+            console.print(f"  [bright]{coin:6s}[/bright] {dir_label}  {pnl_str}  [dim]{hold_str}[/dim]  [dim]stop[/dim] [success]✓[/success]")
     else:
-        print(f'  {Z.dim("no open positions.")}')
+        console.print("  [dim]no open positions.[/dim]")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # TODAY section
-    print(f'  {Z.header("TODAY")}')
+    section("TODAY")
 
     risk = _load_json(os.path.join(PAPER_BUS_DIR, "risk.json"))
     evals = "—"
@@ -213,23 +220,23 @@ def status():
     rejections = "—"
     reject_rate = "—"
 
-    print(f'  {Z.dots("evaluations", evals)}')
-    print(f'  {Z.dots("entries", entries)}')
-    print(f'  {Z.dots("rejections", rejections)}')
-    print(f'  {Z.dots("rejection rate", reject_rate)}')
+    dots("evaluations", evals)
+    dots("entries", entries)
+    dots("rejections", rejections)
+    dots("rejection rate", reject_rate)
 
     if risk and risk.get("halted"):
-        print()
-        print(f'  {Z.warn(f"halted: {risk.get("halt_reason", "unknown")}")}')
+        spacer()
+        warn(f"halted: {risk.get('halt_reason', 'unknown')}")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # NETWORK section
-    print(f'  {Z.header("NETWORK")}')
-    print(f'  {Z.dots("agents online", "—")}')
-    print(f'  {Z.dots("your rank", "—")}')
-    print(f'  {Z.dots("score", "—")}')
+    section("NETWORK")
+    dots("agents online", "—")
+    dots("your rank", "—")
+    dots("score", "—")
 
-    print()
+    spacer()

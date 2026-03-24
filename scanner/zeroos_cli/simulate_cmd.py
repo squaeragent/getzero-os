@@ -4,7 +4,9 @@ import sys
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots,
+)
 
 
 @click.command()
@@ -28,34 +30,34 @@ def simulate(preset, equity, threshold):
                 except Exception:
                     pass
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     if not trades:
-        print(f'  {Z.dim("no trade data found. agent needs to run first.")}')
-        print(f'  {Z.lime("$ zeroos start")}')
-        print()
+        console.print("  [dim]no trade data found. agent needs to run first.[/dim]")
+        console.print("  [lime]$ zeroos start[/lime]")
+        spacer()
         return
 
     from intelligence_expansions import run_simulation
     result = run_simulation(trades, equity, preset, threshold)
 
-    print(f'  {Z.rule()}')
-    print()
-    print(f'  {Z.header(f"SIMULATION: {preset} preset")}')
-    print(f'  {Z.dots("starting equity", f"${result['starting_equity']:,.0f}")}')
-    print(f'  {Z.dots("final equity", f"${result['final_equity']:,.2f}")}')
-    print(f'  {Z.dots("total return", f"{result['total_return_pct']:+.1f}%")}')
-    print(f'  {Z.dots("trades", result["trade_count"])}')
-    print(f'  {Z.dots("win rate", f"{result['win_rate']:.0%}")}')
-    print(f'  {Z.dots("max drawdown", f"{result['max_drawdown_pct']:.1f}%")}')
-    print()
+    rule()
+    spacer()
+    section(f"SIMULATION: {preset} preset")
+    dots("starting equity", f"${result['starting_equity']:,.0f}")
+    dots("final equity", f"${result['final_equity']:,.2f}")
+    dots("total return", f"{result['total_return_pct']:+.1f}%")
+    dots("trades", result["trade_count"])
+    dots("win rate", f"{result['win_rate']:.0%}")
+    dots("max drawdown", f"{result['max_drawdown_pct']:.1f}%")
+    spacer()
 
     rp = result.get("regime_performance", {})
     if rp:
-        print(f'  {Z.header("PER REGIME")}')
+        section("PER REGIME")
         for regime, stats in rp.items():
-            print(f'  {Z.dots(regime[:20], f"{stats['pnl_pct']:+.1f}%  {stats['trades']} trades  {stats['win_rate']:.0%} WR")}')
+            dots(regime[:20], f"{stats['pnl_pct']:+.1f}%  {stats['trades']} trades  {stats['win_rate']:.0%} WR")
 
-    print()
+    spacer()

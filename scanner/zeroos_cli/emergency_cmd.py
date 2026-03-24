@@ -8,7 +8,9 @@ from pathlib import Path
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, dots, fail, warn, success,
+)
 
 
 @click.command("emergency-close")
@@ -23,11 +25,11 @@ def emergency_close(paper: bool):
         HL_MAIN_ADDRESS, HL_INFO_URL, get_env,
     )
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.warn("EMERGENCY CLOSE — shutting down all positions")}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    warn("EMERGENCY CLOSE — shutting down all positions")
+    spacer()
 
     if paper:
         _emergency_close_paper()
@@ -35,7 +37,7 @@ def emergency_close(paper: bool):
 
     private_key = get_env("HL_PRIVATE_KEY")
     if not private_key:
-        print(f'  {Z.fail("HL_PRIVATE_KEY not set. cannot execute.")}')
+        fail("HL_PRIVATE_KEY not set. cannot execute.")
         raise SystemExit(1)
 
     from scanner.v6.executor import HLClient, load_hl_meta, COIN_TO_ASSET
@@ -44,7 +46,7 @@ def emergency_close(paper: bool):
     client = HLClient(private_key, HL_MAIN_ADDRESS)
 
     # 1. Cancel ALL open orders
-    print(f'  {Z.dots("▸ cancelling all open orders", "")}', end='', flush=True)
+    console.print("  [dim]▸ cancelling all open orders ...[/dim]", end="")
     try:
         orders = client.get_open_orders()
         if orders:
@@ -62,12 +64,12 @@ def emergency_close(paper: bool):
                     except Exception:
                         pass
             time.sleep(0.5)
-        print(f'\r  {Z.dots("▸ cancelling all open orders", "done")}')
+        dots("▸ cancelling all open orders", "done")
     except Exception as e:
-        print(f'\r  {Z.dots("▸ cancelling all open orders", Z.red("failed"))}')
+        dots("▸ cancelling all open orders", "[error]failed[/error]")
 
     # 2. Close ALL positions
-    print(f'  {Z.dots("▸ closing all positions", "")}', end='', flush=True)
+    console.print("  [dim]▸ closing all positions ...[/dim]", end="")
     try:
         hl_positions = client.get_positions()
         closed = 0
@@ -93,12 +95,12 @@ def emergency_close(paper: bool):
                 pass
             time.sleep(0.2)
 
-        print(f'\r  {Z.dots("▸ closing all positions", f"done ({closed} closed)")}')
+        dots("▸ closing all positions", f"done ({closed} closed)")
     except Exception as e:
-        print(f'\r  {Z.dots("▸ closing all positions", Z.red("failed"))}')
+        dots("▸ closing all positions", "[error]failed[/error]")
 
     # 3. Clear bus files
-    print(f'  {Z.dots("▸ clearing bus state", "")}', end='', flush=True)
+    console.print("  [dim]▸ clearing bus state ...[/dim]", end="")
     try:
         from scanner.v6.config import POSITIONS_FILE, ENTRIES_FILE, APPROVED_FILE
         from scanner.v6.bus_io import save_json_atomic
@@ -109,13 +111,13 @@ def emergency_close(paper: bool):
         save_json_atomic(POSITIONS_FILE, {"updated_at": now_iso, "positions": []})
         save_json_atomic(ENTRIES_FILE, {"updated_at": now_iso, "entries": []})
         save_json_atomic(APPROVED_FILE, {"updated_at": now_iso, "approved": []})
-        print(f'\r  {Z.dots("▸ clearing bus state", "done")}')
+        dots("▸ clearing bus state", "done")
     except Exception as e:
-        print(f'\r  {Z.dots("▸ clearing bus state", Z.red("failed"))}')
+        dots("▸ clearing bus state", "[error]failed[/error]")
 
-    print()
-    print(f'  {Z.mid("emergency close complete.")}')
-    print()
+    spacer()
+    console.print("  [mid]emergency close complete.[/mid]")
+    spacer()
 
     try:
         from scanner.v6.executor import send_alert
@@ -126,8 +128,8 @@ def emergency_close(paper: bool):
 
 def _emergency_close_paper():
     """Emergency close for paper trading mode."""
-    print(f'  {Z.dim("[paper mode]")}')
-    print()
+    console.print("  [dim]\\[paper mode][/dim]")
+    spacer()
 
     try:
         from scanner.v6.paper_executor import PaperExecutor
@@ -137,16 +139,16 @@ def _emergency_close_paper():
         positions = state.get("positions", {})
 
         if not positions:
-            print(f'  {Z.dim("no paper positions open.")}')
+            console.print("  [dim]no paper positions open.[/dim]")
         else:
-            print(f'  {Z.dots("▸ closing paper positions", f"done ({len(positions)} closed)")}')
+            dots("▸ closing paper positions", f"done ({len(positions)} closed)")
             state["positions"] = {}
             state["stops"] = {}
             from scanner.v6.paper_executor import _save_state
             _save_state(state)
 
     except Exception as e:
-        print(f'  {Z.fail(f"paper close failed: {e}")}')
+        fail(f"paper close failed: {e}")
         try:
             from scanner.v6.config import PAPER_STATE_FILE
             if PAPER_STATE_FILE.exists():
@@ -157,10 +159,10 @@ def _emergency_close_paper():
                 state["stops"] = {}
                 with open(PAPER_STATE_FILE, "w") as f:
                     _json.dump(state, f, indent=2)
-                print(f'  {Z.success("paper state reset via direct file write.")}')
+                success("paper state reset via direct file write.")
         except Exception as e2:
-            print(f'  {Z.fail(f"direct reset also failed: {e2}")}')
+            fail(f"direct reset also failed: {e2}")
 
-    print()
-    print(f'  {Z.mid("paper emergency close complete.")}')
-    print()
+    spacer()
+    console.print("  [mid]paper emergency close complete.[/mid]")
+    spacer()

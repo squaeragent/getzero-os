@@ -113,11 +113,11 @@ class PositionTracker:
         "mae", "mfe", "mae_pct", "mfe_pct",
         "regime_changes", "last_regime",
         "immune_checks", "immune_alerts",
-        "stop_moved", "entry_regime",
+        "stop_moved", "entry_regime", "trade_id",
     )
 
     def __init__(self, coin: str, direction: str, entry_price: float,
-                 entry_time: str, entry_regime: str = ""):
+                 entry_time: str, entry_regime: str = "", trade_id: str = ""):
         self.coin = coin
         self.direction = direction
         self.entry_price = entry_price
@@ -132,6 +132,7 @@ class PositionTracker:
         self.immune_checks = 0
         self.immune_alerts = 0
         self.stop_moved = False
+        self.trade_id = trade_id
 
     def update(self, current_price: float, current_regime: str = ""):
         """Update MAE/MFE with current price."""
@@ -167,10 +168,11 @@ _tracker_lock = threading.Lock()
 
 
 def create_tracker(coin: str, direction: str, entry_price: float,
-                   entry_time: str, entry_regime: str = "") -> PositionTracker:
+                   entry_time: str, entry_regime: str = "",
+                   trade_id: str = "") -> PositionTracker:
     """Create a new position tracker."""
     key = f"{coin}_{direction}"
-    tracker = PositionTracker(coin, direction, entry_price, entry_time, entry_regime)
+    tracker = PositionTracker(coin, direction, entry_price, entry_time, entry_regime, trade_id)
     with _tracker_lock:
         _trackers[key] = tracker
     return tracker
@@ -282,6 +284,7 @@ def record_enriched_trade_open(
     signal_data: dict | None = None,
     market_data: dict | None = None,
     portfolio_state: dict | None = None,
+    trade_id: str | None = None,
 ):
     """Record trade entry to trades_enriched and create MAE/MFE tracker."""
     sd = signal_data or {}
@@ -324,7 +327,7 @@ def record_enriched_trade_open(
     _async_write("trades_enriched", row)
 
     # Create MAE/MFE tracker
-    create_tracker(coin, direction, entry_price, now, sd.get("regime", ""))
+    create_tracker(coin, direction, entry_price, now, sd.get("regime", ""), trade_id or "")
 
     _log(f"trade open: {coin} {direction} @ ${entry_price:.4f} (regime={sd.get('regime', '?')})")
 
@@ -343,6 +346,7 @@ def record_enriched_trade_close(
     exit_reason: str = "unknown",
     signal_data: dict | None = None,
     portfolio_state: dict | None = None,
+    trade_id: str | None = None,
 ):
     """Update trades_enriched with exit data + tracker metrics."""
     sd = signal_data or {}

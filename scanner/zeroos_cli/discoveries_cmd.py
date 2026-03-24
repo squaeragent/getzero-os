@@ -5,7 +5,9 @@ from pathlib import Path
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots,
+)
 
 
 @click.command()
@@ -25,29 +27,29 @@ def discoveries():
         except Exception:
             pass
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
 
     if not rules:
-        print(f'  {Z.dim("no discovered patterns yet.")}')
-        print(f'  {Z.dim("the network needs 100+ collective trades to start finding patterns.")}')
-        print(f'  {Z.dim("discoveries run monthly from the collective intelligence.")}')
+        console.print("  [dim]no discovered patterns yet.[/dim]")
+        console.print("  [dim]the network needs 100+ collective trades to start finding patterns.[/dim]")
+        console.print("  [dim]discoveries run monthly from the collective intelligence.[/dim]")
     else:
-        print(f'  {Z.header(f"DISCOVERED PATTERNS ({len(rules)} rules)")}')
-        print()
-        for i, rule in enumerate(rules, 1):
-            direction = rule.get("direction", "?")
-            icon = f'{Z.GREEN}✓{Z.RESET}' if direction == "positive" else f'{Z.YELLOW}⚠{Z.RESET}'
-            print(f'  {icon} {Z.bright(f"rule #{i}")} {Z.dim(f"(sample: {rule['sample_size']} trades)")}')
-            print(f'    {Z.mid(rule["description"])}')
-            print(f'    {Z.dots("win rate", f"{rule['win_rate']:.0%} vs baseline {rule['baseline_wr']:.0%} ({rule['improvement']:+.0%})")}')
+        section(f"DISCOVERED PATTERNS ({len(rules)} rules)")
+        spacer()
+        for i, r in enumerate(rules, 1):
+            direction = r.get("direction", "?")
+            icon = "[success]✓[/success]" if direction == "positive" else "[warning]⚠[/warning]"
+            console.print(f"  {icon} [bright]rule #{i}[/bright] [dim](sample: {r['sample_size']} trades)[/dim]")
+            console.print(f"    [mid]{r['description']}[/mid]")
+            console.print(f"    [dim]win rate: {r['win_rate']:.0%} vs baseline {r['baseline_wr']:.0%} ({r['improvement']:+.0%})[/dim]")
             if direction == "negative":
-                print(f'    {Z.dim("→ your agent AVOIDS this combination.")}')
+                console.print("    [dim]→ your agent AVOIDS this combination.[/dim]")
             else:
-                print(f'    {Z.dim("→ your agent BOOSTS conviction for this pattern.")}')
-            print()
+                console.print("    [dim]→ your agent BOOSTS conviction for this pattern.[/dim]")
+            spacer()
 
-    print()
+    spacer()

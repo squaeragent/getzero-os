@@ -5,7 +5,9 @@ from pathlib import Path
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, fail, info,
+)
 
 
 @click.command()
@@ -18,7 +20,7 @@ def observe():
     try:
         from category_changers import observe_market
     except ImportError:
-        print(f'  {Z.fail("category_changers module not found.")}')
+        fail("category_changers module not found.")
         raise SystemExit(1)
 
     bus_dir = Path(v6_dir) / "bus"
@@ -52,34 +54,34 @@ def observe():
             "regime_duration_hours": data.get("regime_duration_hours", 0),
         }
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
 
     if not market_data:
-        print(f'  {Z.dim("no market data available. agent may not be running.")}')
-        print(f'  {Z.lime("$ zeroos start")}')
-        print()
+        console.print("  [dim]no market data available. agent may not be running.[/dim]")
+        console.print("  [lime]$ zeroos start[/lime]")
+        spacer()
         return
 
     observations = observe_market(market_data, regime_data)
 
     if not observations:
-        print(f'  {Z.dim("no notable observations right now.")}')
-        print(f'  {Z.dim("the agent monitors continuously.")}')
+        console.print("  [dim]no notable observations right now.[/dim]")
+        console.print("  [dim]the agent monitors continuously.[/dim]")
     else:
-        print(f'  {Z.header(f"OBSERVATIONS ({len(observations)})")}')
-        print()
+        section(f"OBSERVATIONS ({len(observations)})")
+        spacer()
         for obs in observations:
             sig = obs.get("significance", 0)
             icon = "◆" if sig > 0.85 else "▸" if sig > 0.75 else "·"
-            print(f'  {Z.bright(icon)} {Z.mid(obs["title"])}')
-            print(f'    {Z.dim(obs["detail"])}')
+            console.print(f"  [bright]{icon}[/bright] [mid]{obs['title']}[/mid]")
+            console.print(f"    [dim]{obs['detail']}[/dim]")
             if obs.get("actionable") and obs.get("action_hint"):
-                print(f'    {Z.dim("→")} {Z.dim(obs["action_hint"])}')
-            print()
+                console.print(f"    [dim]→[/dim] [dim]{obs['action_hint']}[/dim]")
+            spacer()
 
-    print(f'  {Z.dim("these are observations, not trade signals.")}')
-    print()
+    console.print("  [dim]these are observations, not trade signals.[/dim]")
+    spacer()

@@ -5,7 +5,9 @@ from pathlib import Path
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, fail, success, warn,
+)
 
 
 @click.command()
@@ -19,22 +21,22 @@ def backtest(days):
     try:
         from compounding_upgrades import find_rare_regimes, backtest_rare
     except ImportError:
-        print(f'  {Z.fail("compounding_upgrades module not found.")}')
+        fail("compounding_upgrades module not found.")
         raise SystemExit(1)
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
-    print(f'  {Z.header("SYNTHETIC BACKTEST: RARE REGIMES")}')
-    print(f'  {Z.dim(f"testing against regimes not seen in {days} days...")}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
+    section("SYNTHETIC BACKTEST: RARE REGIMES")
+    console.print(f"  [dim]testing against regimes not seen in {days} days...[/dim]")
+    spacer()
 
     rare = find_rare_regimes(days)
     if not rare:
-        print(f'  {Z.dim("no rare regimes found. all conditions seen recently.")}')
-        print()
+        console.print("  [dim]no rare regimes found. all conditions seen recently.[/dim]")
+        spacer()
         return
 
     warnings = 0
@@ -43,27 +45,27 @@ def backtest(days):
         status = result.get("verdict", "?")
 
         if status == "ok":
-            icon = f'{Z.GREEN}✓{Z.RESET}'
+            icon = "[success]✓[/success]"
         elif status == "weak":
-            icon = f'{Z.YELLOW}⚠{Z.RESET}'
+            icon = "[warning]⚠[/warning]"
             warnings += 1
         else:
-            icon = f'{Z.DIM}?{Z.RESET}'
+            icon = "[dim]?[/dim]"
 
-        print(f'  {Z.bright(r["coin"])} {Z.dim("·")} {Z.mid(r["regime"])} {Z.dim(f"· last seen {r['days_since']} days ago")}')
+        console.print(f"  [bright]{r['coin']}[/bright] [dim]·[/dim] [mid]{r['regime']}[/mid] [dim]· last seen {r['days_since']} days ago[/dim]")
 
         if result.get("periods"):
-            print(f'    {Z.dots("periods", result["periods"])}  {Z.dots("avg pnl", f"{result['avg_pnl_pct']:+.1f}%")}  {Z.dots("WR", f"{result['win_rate']:.0%}")}')
+            console.print(f"    [dim]periods: {result['periods']}  avg pnl: {result['avg_pnl_pct']:+.1f}%  WR: {result['win_rate']:.0%}[/dim]")
 
         if result.get("warning"):
-            print(f'    {icon} {Z.mid(result["warning"])}')
+            console.print(f"    {icon} [mid]{result['warning']}[/mid]")
         else:
-            print(f'    {icon} {Z.dim("current weights handle this regime well.")}')
-        print()
+            console.print(f"    {icon} [dim]current weights handle this regime well.[/dim]")
+        spacer()
 
-    print(f'  {Z.rule()}')
+    rule()
     if warnings:
-        print(f'  {Z.warn(f"{warnings} warning(s). reasoning engine may underperform.")}')
+        warn(f"{warnings} warning(s). reasoning engine may underperform.")
     else:
-        print(f'  {Z.success("all clear. weights handle known rare regimes.")}')
-    print()
+        success("all clear. weights handle known rare regimes.")
+    spacer()

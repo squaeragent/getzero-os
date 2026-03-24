@@ -6,7 +6,10 @@ from urllib.request import Request, urlopen
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, fail, info, success,
+    direction_icon, pnl,
+)
 
 BRIEF_URL = "https://getzero.dev/api/brief"
 
@@ -20,7 +23,7 @@ def brief(json_output):
         with urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
     except Exception as e:
-        print(f'  {Z.fail(f"could not fetch brief: {e}")}')
+        fail(f"could not fetch brief: {e}")
         raise SystemExit(1)
 
     if json_output:
@@ -29,36 +32,35 @@ def brief(json_output):
 
     # Header
     date_str = data.get("date", datetime.now().strftime("%b %d").lower())
-    print()
-    print(f'  {Z.logo()} {Z.mid(f"morning brief · {date_str}")}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    console.print(f"  [header]◆ zero▮[/header] [mid]morning brief · {date_str}[/mid]")
+    spacer()
+    rule()
+    spacer()
 
     # IMMUNE section
-    print(f'  {Z.header("IMMUNE")}')
+    section("IMMUNE")
     immune = data.get("immune_checks", 0)
     alerts = data.get("alerts_today", 0)
     saves = data.get("saves_today", 0)
     if alerts > 0:
-        print(f'  {Z.YELLOW}⚠{Z.RESET} {Z.mid(f"{immune} checks. {alerts} alerts. {saves} saves.")}')
+        console.print(f"  [warning]⚠[/warning] [mid]{immune} checks. {alerts} alerts. {saves} saves.[/mid]")
     else:
-        print(f'  {Z.GREEN}✓{Z.RESET} {Z.mid(f"clean. {immune} checks. {saves} saves. all stops held.")}')
+        console.print(f"  [success]✓[/success] [mid]clean. {immune} checks. {saves} saves. all stops held.[/mid]")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # OVERNIGHT section
-    print(f'  {Z.header("OVERNIGHT")}')
+    section("OVERNIGHT")
 
     equity = data.get("equity", 0)
-    pnl = data.get("pnl_24h", 0)
+    pnl_val = data.get("pnl_24h", 0)
     wins = data.get("wins_24h", 0)
     losses = data.get("losses_24h", 0)
 
-    pnl_str = Z.pnl(pnl)
-    print(f'  {Z.bright(f"${equity:,.2f}")} ({pnl_str})')
+    console.print(f"  [bright]${equity:,.2f}[/bright] ({pnl(pnl_val)})")
 
     # W/L and best/worst
     top_coin = data.get("top_coin", "—")
@@ -68,17 +70,17 @@ def brief(json_output):
 
     parts = [f"{wins}W {losses}L"]
     if top_coin != "—":
-        parts.append(f"best: {top_coin} {Z.pnl(top_pnl)}")
+        parts.append(f"best: {top_coin} {pnl(top_pnl)}")
     if worst_coin != "—":
-        parts.append(f"worst: {worst_coin} {Z.pnl(worst_pnl)}")
-    print(f'  {Z.dim(" · ".join(parts))}')
+        parts.append(f"worst: {worst_coin} {pnl(worst_pnl)}")
+    console.print(f"  [dim]{' · '.join(parts)}[/dim]")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # DECISIONS section
-    print(f'  {Z.header("DECISIONS")}')
+    section("DECISIONS")
     decisions = data.get("decisions", [])
     if decisions:
         for d in decisions[:6]:
@@ -87,35 +89,35 @@ def brief(json_output):
             action = d.get("action", "?")
             reason = d.get("reason", "")
             t = d.get("time", "")
-            pnl_val = d.get("pnl")
+            pnl_d = d.get("pnl")
 
             pnl_part = ""
-            if pnl_val is not None:
-                pnl_part = f" · {Z.pnl(pnl_val)}"
+            if pnl_d is not None:
+                pnl_part = f" · {pnl(pnl_d)}"
 
-            arrow = Z.direction(direction)
-            print(f'  {Z.info(f"{coin} {direction} {action}")}{pnl_part}  {Z.dim(reason)}  {Z.dim(t)}')
+            arrow = direction_icon(direction)
+            console.print(f"  [dim]▸ {coin} {direction} {action}[/dim]{pnl_part}  [dim]{reason}[/dim]  [dim]{t}[/dim]")
     else:
-        print(f'  {Z.dim("no decisions overnight.")}')
+        console.print("  [dim]no decisions overnight.[/dim]")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # NOTABLE section
     notable = data.get("notable", [])
     if notable:
-        print(f'  {Z.header("NOTABLE")}')
+        section("NOTABLE")
         for n in notable[:3]:
-            print(f'  {Z.info(n)}')
-        print()
-        print(f'  {Z.rule()}')
-        print()
+            info(n)
+        spacer()
+        rule()
+        spacer()
 
     # Footer
     evals = data.get("evaluations_overnight", data.get("total_trades", 0))
     entries = data.get("entries_overnight", data.get("trades_24h", 0))
     rejections = max(0, evals - entries) if isinstance(evals, int) and isinstance(entries, int) else "—"
-    print(f'  {Z.dim(f"the machine ran {evals} evaluations overnight.")}')
-    print(f'  {Z.dim(f"{entries} entered. {rejections} rejected. that ratio is the intelligence.")}')
-    print()
+    console.print(f"  [dim]the machine ran {evals} evaluations overnight.[/dim]")
+    console.print(f"  [dim]{entries} entered. {rejections} rejected. that ratio is the intelligence.[/dim]")
+    spacer()

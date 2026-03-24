@@ -5,7 +5,9 @@ import json
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, fail, success, info,
+)
 
 
 @click.command()
@@ -18,17 +20,17 @@ def proof(gen_type, verify_id):
         sys.path.insert(0, v6)
     from intelligence_expansions import generate_proof, verify_proof, list_proofs
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     if verify_id:
         result = verify_proof(verify_id)
         if result.get("valid"):
-            print(f'  {Z.success(f"{verify_id}: valid")}')
+            success(f"{verify_id}: valid")
         else:
-            print(f'  {Z.fail(f"{verify_id}: {result.get('reason', 'invalid')}")}')
-        print()
+            fail(f"{verify_id}: {result.get('reason', 'invalid')}")
+        spacer()
         return
 
     if gen_type:
@@ -58,30 +60,30 @@ def proof(gen_type, verify_id):
 
         p = generate_proof(f"proof_of_{gen_type}", data)
 
-        print(f'  {Z.rule()}')
-        print()
-        print(f'  {Z.header("PROOF GENERATED")}')
-        print(f'  {Z.dots("type", p.get("type", "?"))}')
+        rule()
+        spacer()
+        section("PROOF GENERATED")
+        dots("type", p.get("type", "?"))
         if p.get("tier"):
-            print(f'  {Z.dots("tier", p["tier"])}')
-        print(f'  {Z.dots("id", p.get("id", "?"))}')
-        print(f'  {Z.dots("verify", p.get("verify_url", "?"))}')
-        print()
+            dots("tier", p["tier"])
+        dots("id", p.get("id", "?"))
+        dots("verify", p.get("verify_url", "?"))
+        spacer()
         return
 
     # List proofs
     proofs = list_proofs()
 
-    print(f'  {Z.rule()}')
-    print()
-    print(f'  {Z.header(f"YOUR PROOFS ({len(proofs)})")}')
-    print()
+    rule()
+    spacer()
+    section(f"YOUR PROOFS ({len(proofs)})")
+    spacer()
 
     if not proofs:
-        print(f'  {Z.dim("none yet.")}')
-        print(f'  {Z.lime("$ zeroos proof --generate run")}')
+        console.print("  [dim]none yet.[/dim]")
+        console.print("  [lime]$ zeroos proof --generate run[/lime]")
     for p in proofs[:10]:
         tier = f" ({p['tier']})" if p.get("tier") else ""
-        print(f'  {Z.info(f"{p['type']}{tier} — {p['id']}")}')
+        info(f"{p['type']}{tier} — {p['id']}")
 
-    print()
+    spacer()

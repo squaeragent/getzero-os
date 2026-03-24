@@ -177,8 +177,8 @@ class SupabaseBridge:
         
         threading.Thread(target=_safe_write, args=("decisions", data), daemon=True).start()
     
-    def log_trade_open(self, position: dict):
-        """Log a trade entry. Called when a position is opened."""
+    def log_trade_open(self, position: dict) -> str | None:
+        """Log a trade entry. Returns trade UUID if successful, None otherwise."""
         data = {
             "agent_id": self.agent_id,
             "coin": position.get("coin"),
@@ -188,8 +188,16 @@ class SupabaseBridge:
             "entry_time": position.get("entry_time", _now_iso()),
             "status": "open",
         }
-        
-        threading.Thread(target=_safe_write, args=("trades", data), daemon=True).start()
+        try:
+            client = _get_client()
+            if not client:
+                return None
+            result = client.table("trades").insert(data).execute()
+            if result.data and len(result.data) > 0:
+                return result.data[0].get("id")
+        except Exception as e:
+            log.warning(f"Supabase write to trades failed: {e}")
+        return None
     
     def log_trade_close(self, coin: str, direction: str, entry_price: float,
                         exit_price: float, size_usd: float, pnl: float,
@@ -308,11 +316,12 @@ if _telem and _telem.enabled:
             pass
 
     def _bridged_log_trade_open(position):
-        _orig_log_trade_open(position)
+        trade_id = _orig_log_trade_open(position)
         try:
             _telem.push_trade_open(position)
         except Exception:
             pass
+        return trade_id
 
     def _bridged_log_trade_close(coin, direction, entry_price, exit_price,
                                   size_usd=0, pnl=0, fees=0, entry_time=None,

@@ -5,7 +5,9 @@ import time
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, spacer, rule, info,
+)
 
 
 @click.command()
@@ -21,20 +23,20 @@ def think(coin):
 
     stages = think_stream(coin)
 
-    print()
-    print(f'  {Z.lime(f"◆ thinking about {coin}")}')
-    print()
-    print(f'  {Z.rule()}')
+    spacer()
+    console.print(f"  [lime]◆ thinking about {coin}[/lime]")
+    spacer()
+    rule()
 
     for stage in stages:
-        print()
+        spacer()
         label = stage["label"]
-        print(f'  {Z.info(f"{label}...")}', end='', flush=True)
+        console.print(f"  [dim]▸ {label}...[/dim] ", end="")
         time.sleep(0.3)
-        print(f' {Z.green("done")}')
+        console.print("[success]done[/success]")
 
         for step in stage["steps"]:
-            print(f'    {Z.dim(step)}')
+            console.print(f"    [dim]{step}[/dim]")
             time.sleep(0.12)
 
         result = stage["result"]
@@ -42,10 +44,10 @@ def think(coin):
         if is_verdict:
             has_entry = "consider" in result.lower()
             if has_entry:
-                print(f'\n  {Z.lime(result)}')
+                console.print(f"\n  [lime]{result}[/lime]")
             else:
-                print(f'\n  {Z.mid(result)}')
+                console.print(f"\n  [mid]{result}[/mid]")
         else:
-            print(f'    {Z.dim("→")} {Z.mid(result)}')
+            console.print(f"    [dim]→[/dim] [mid]{result}[/mid]")
 
-    print()
+    spacer()

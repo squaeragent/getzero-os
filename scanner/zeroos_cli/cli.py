@@ -3,7 +3,7 @@
 import click
 
 from scanner.zeroos_cli import __version__
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import console, logo, spacer, rule, section
 from scanner.zeroos_cli.init_cmd import init_cmd
 from scanner.zeroos_cli.start_cmd import start
 from scanner.zeroos_cli.stop_cmd import stop
@@ -36,41 +36,41 @@ class ZeroGroup(click.Group):
     """Custom group with redesigned help output."""
 
     def format_help(self, ctx, formatter):
-        print()
-        print(f'  {Z.logo()} {Z.mid("commands")}')
-        print()
-        print(f'  {Z.rule()}')
-        print()
-        print(f'  {Z.header("CORE")}')
-        print(f'  {Z.lime("zeroos init")}             {Z.dim("set up zero on this machine")}')
-        print(f'  {Z.lime("zeroos start")}            {Z.dim("boot the os and start agents")}')
-        print(f'  {Z.lime("zeroos stop")}             {Z.dim("clean shutdown")}')
-        print(f'  {Z.lime("zeroos status")}           {Z.dim("system and agent health")}')
-        print()
-        print(f'  {Z.header("INTELLIGENCE")}')
-        print(f'  {Z.lime("zeroos evaluate [COIN]")}  {Z.dim("see the reasoning engine think")}')
-        print(f'  {Z.lime("zeroos brief")}            {Z.dim("morning brief (daily summary)")}')
-        print(f'  {Z.lime("zeroos score")}            {Z.dim("your zero score + breakdown")}')
-        print(f'  {Z.lime("zeroos observe")}          {Z.dim("what the network is seeing")}')
-        print(f'  {Z.lime("zeroos think [COIN]")}     {Z.dim("live reasoning stream")}')
-        print()
-        print(f'  {Z.header("AGENTS")}')
-        print(f'  {Z.lime("zeroos agent add")}        {Z.dim("add another agent")}')
-        print(f'  {Z.lime("zeroos agent list")}       {Z.dim("view running agents")}')
-        print(f'  {Z.lime("zeroos agent pause")}      {Z.dim("pause an agent")}')
-        print(f'  {Z.lime("zeroos agent resume")}     {Z.dim("resume an agent")}')
-        print()
-        print(f'  {Z.header("NETWORK")}')
-        print(f'  {Z.lime("zeroos invite")}           {Z.dim("generate referral code")}')
-        print(f'  {Z.lime("zeroos weights")}          {Z.dim("view current collective weights")}')
-        print(f'  {Z.lime("zeroos fees")}             {Z.dim("view fee history")}')
-        print(f'  {Z.lime("zeroos conviction")}       {Z.dim("computed conviction index")}')
-        print()
-        print(f'  {Z.rule()}')
-        print()
-        print(f'  {Z.dim("docs: getzero.dev/docs")}')
-        print(f'  {Z.dim("support: t.me/zero_operators")}')
-        print()
+        spacer()
+        console.print("  [header]◆ zero▮[/header] [mid]commands[/mid]")
+        spacer()
+        rule()
+        spacer()
+        section("CORE")
+        console.print("  [lime]zeroos init[/lime]             [dim]set up zero on this machine[/dim]")
+        console.print("  [lime]zeroos start[/lime]            [dim]boot the os and start agents[/dim]")
+        console.print("  [lime]zeroos stop[/lime]             [dim]clean shutdown[/dim]")
+        console.print("  [lime]zeroos status[/lime]           [dim]system and agent health[/dim]")
+        spacer()
+        section("INTELLIGENCE")
+        console.print("  [lime]zeroos evaluate \\[COIN][/lime]  [dim]see the reasoning engine think[/dim]")
+        console.print("  [lime]zeroos brief[/lime]            [dim]morning brief (daily summary)[/dim]")
+        console.print("  [lime]zeroos score[/lime]            [dim]your zero score + breakdown[/dim]")
+        console.print("  [lime]zeroos observe[/lime]          [dim]what the network is seeing[/dim]")
+        console.print("  [lime]zeroos think \\[COIN][/lime]     [dim]live reasoning stream[/dim]")
+        spacer()
+        section("AGENTS")
+        console.print("  [lime]zeroos agent add[/lime]        [dim]add another agent[/dim]")
+        console.print("  [lime]zeroos agent list[/lime]       [dim]view running agents[/dim]")
+        console.print("  [lime]zeroos agent pause[/lime]      [dim]pause an agent[/dim]")
+        console.print("  [lime]zeroos agent resume[/lime]     [dim]resume an agent[/dim]")
+        spacer()
+        section("NETWORK")
+        console.print("  [lime]zeroos invite[/lime]           [dim]generate referral code[/dim]")
+        console.print("  [lime]zeroos weights[/lime]          [dim]view current collective weights[/dim]")
+        console.print("  [lime]zeroos fees[/lime]             [dim]view fee history[/dim]")
+        console.print("  [lime]zeroos conviction[/lime]       [dim]computed conviction index[/dim]")
+        spacer()
+        rule()
+        spacer()
+        console.print("  [dim]docs: getzero.dev/docs[/dim]")
+        console.print("  [dim]support: t.me/zero_operators[/dim]")
+        spacer()
 
 
 @click.group(cls=ZeroGroup)
@@ -138,10 +138,10 @@ def _check_update():
             data = _json.loads(resp.read())
             latest = data.get("info", {}).get("version", __version__)
             if latest != __version__:
-                print()
-                print(f'  {Z.dim(f"zeroos {latest} available. you\'re on {__version__}.")}')
-                print(f'  {Z.dim("upgrade:")} {Z.lime("pip install --upgrade zeroos")}')
-                print()
+                spacer()
+                console.print(f"  [dim]zeroos {latest} available. you're on {__version__}.[/dim]")
+                console.print("  [dim]upgrade:[/dim] [lime]pip install --upgrade zeroos[/lime]")
+                spacer()
     except Exception:
         pass
 

@@ -5,7 +5,9 @@ import json
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, direction_icon, score_bar,
+)
 
 
 @click.command()
@@ -17,49 +19,49 @@ def conviction(history):
         sys.path.insert(0, v6)
     from emergent_infrastructure import get_cci, get_cci_history
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
 
     if history:
         hist = get_cci_history(24)
-        print(f'  {Z.header(f"CCI HISTORY (last {len(hist)} snapshots)")}')
-        print()
+        section(f"CCI HISTORY (last {len(hist)} snapshots)")
+        spacer()
         for h in hist[-10:]:
             ts = h.get("timestamp", "")[:16]
             coins = h.get("cci", {})
             parts = [f"{c}:{d['value']:+.2f}" for c, d in coins.items()]
-            print(f'  {Z.dim(ts)}  {Z.mid(" ".join(parts))}')
-        print()
+            console.print(f"  [dim]{ts}[/dim]  [mid]{' '.join(parts)}[/mid]")
+        spacer()
         return
 
     data = get_cci()
     cci = data.get("cci", {})
     agents = data.get("network_agents", 0)
 
-    print(f'  {Z.header("COMPUTED CONVICTION INDEX")}')
-    print(f'  {Z.dim(f"{agents} agents")}')
-    print()
+    section("COMPUTED CONVICTION INDEX")
+    console.print(f"  [dim]{agents} agents[/dim]")
+    spacer()
 
     if not cci:
-        print(f'  {Z.dim("no CCI data yet. agents need to report evaluations.")}')
-        print()
+        console.print("  [dim]no CCI data yet. agents need to report evaluations.[/dim]")
+        spacer()
         return
 
     sorted_coins = sorted(cci.items(), key=lambda x: -x[1].get("value", 0))
-    for coin, info in sorted_coins:
-        val = info.get("value", 0)
-        direction = info.get("direction", "neutral")
-        regime = info.get("regime", "?")
-        coin_agents = info.get("agents", 0)
+    for coin, info_data in sorted_coins:
+        val = info_data.get("value", 0)
+        direction = info_data.get("direction", "neutral")
+        regime = info_data.get("regime", "?")
+        coin_agents = info_data.get("agents", 0)
 
-        arrow = Z.direction(direction)
-        bar = Z.bar_small(abs(val), 1.0, 20)
-        print(f'  {Z.bright(f"{coin:6s}")} {bar} {Z.bright(f"{val:+.2f}")} {arrow} {Z.dim(f"{regime:12s} {coin_agents} agents")}')
+        arrow = direction_icon(direction)
+        b = score_bar(abs(val), 1.0, 20)
+        console.print(f"  [bright]{coin:6s}[/bright] {b} [bright]{val:+.2f}[/bright] {arrow} [dim]{regime:12s} {coin_agents} agents[/dim]")
 
-    print()
-    print(f'  {Z.dim(f"the cci is not a price prediction.")}')
-    print(f'  {Z.dim(f"it\'s what {agents} reasoning engines compute.")}')
-    print()
+    spacer()
+    console.print("  [dim]the cci is not a price prediction.[/dim]")
+    console.print(f"  [dim]it's what {agents} reasoning engines compute.[/dim]")
+    spacer()

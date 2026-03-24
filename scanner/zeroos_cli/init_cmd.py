@@ -7,7 +7,9 @@ import uuid
 import click
 import yaml
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, tagline, rule, spacer, section, dots, success, fail, info,
+)
 from scanner.zeroos_cli.keystore import store_key
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
@@ -202,12 +204,12 @@ def _register_with_network(agent_id: str, key: str, preset: str, operator_token:
 @click.command()
 def init_cmd():
     """Interactive first-time setup."""
-    print()
-    print(f'  {Z.logo()}')
-    print(f'  {Z.dim("the collective intelligence network.")}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    logo()
+    tagline()
+    spacer()
+    rule()
+    spacer()
 
     # --- Token validation ---
     token_path = os.path.join(ZEROOS_DIR, "auth_token")
@@ -217,35 +219,44 @@ def init_cmd():
             operator_token = f.read().strip()
 
     if operator_token:
-        print(f'  {Z.dots("▸ validating token", Z.green("✓ approved"))}')
-        print(f'  {Z.dots("▸ status", Z.lime("genesis"))}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+        dots("▸ validating token", "[success]✓ approved[/success]")
+        dots("▸ status", "[lime]genesis[/lime]")
+    spacer()
+    rule()
+    spacer()
 
     # --- HL connection ---
-    print(f'  {Z.header("CONNECT TO HYPERLIQUID")}')
-    print()
+    section("CONNECT TO HYPERLIQUID")
+    spacer()
 
-    key = click.prompt(f'  {Z.dim("enter your private key (64 hex characters)")}', hide_input=True, prompt_suffix="\n  > ")
+    key = click.prompt(
+        click.style("  enter your private key (64 hex characters)", fg=(119, 119, 119)),
+        hide_input=True, prompt_suffix="\n  > ",
+    )
 
     if not _validate_hex_key(key):
-        from scanner.zeroos_cli.errors import ERRORS
-        print(ERRORS['key_invalid'])
+        from scanner.zeroos_cli.errors import show_error
+        show_error('key_invalid')
         raise SystemExit(1)
 
     wallet_address = _derive_wallet(key)
     wallet_short = _wallet_short(wallet_address)
 
-    password = click.prompt(f'  {Z.dim("create an encryption password")}', hide_input=True, prompt_suffix="\n  > ")
-    confirm = click.prompt(f'  {Z.dim("confirm")}', hide_input=True, prompt_suffix="\n  > ")
+    password = click.prompt(
+        click.style("  create an encryption password", fg=(119, 119, 119)),
+        hide_input=True, prompt_suffix="\n  > ",
+    )
+    confirm = click.prompt(
+        click.style("  confirm", fg=(119, 119, 119)),
+        hide_input=True, prompt_suffix="\n  > ",
+    )
 
     if password != confirm:
-        print(f'  {Z.fail("passwords do not match.")}')
+        fail("passwords do not match.")
         raise SystemExit(1)
 
     if not password:
-        print(f'  {Z.fail("password cannot be empty.")}')
+        fail("password cannot be empty.")
         raise SystemExit(1)
 
     # Create directories
@@ -254,32 +265,32 @@ def init_cmd():
     os.chmod(ZEROOS_DIR, 0o700)
 
     store_key(key.strip(), password)
-    print()
-    print(f'  {Z.success(f"key encrypted and stored at ~/.zeroos/keystore.enc")}')
-    print(f'  {Z.success(f"wallet: {wallet_short}")}')
-    print(f'  {Z.success("your key NEVER leaves this machine.")}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    success("key encrypted and stored at ~/.zeroos/keystore.enc")
+    success(f"wallet: {wallet_short}")
+    success("your key NEVER leaves this machine.")
+    spacer()
+    rule()
+    spacer()
 
     # --- Agent preset ---
-    print(f'  {Z.header("CHOOSE YOUR AGENT")}')
-    print()
-    print(f'  {Z.dim("the agent decides when to trade and when to wait.")}')
-    print(f'  {Z.dim("different presets, different personalities.")}')
-    print()
-    print(f'  {Z.dim("[1]")} {Z.mid("conservative")} {Z.dim("— BTC/ETH only. few trades. high bar.")}')
-    print(f'  {Z.dim("[2]")} {Z.bright("balanced")}     {Z.dim("— 8 coins. moderate risk. the default.")}')
-    print(f'  {Z.dim("[3]")} {Z.mid("degen")}         {Z.dim("— wider universe. more trades. more risk.")}')
-    print()
+    section("CHOOSE YOUR AGENT")
+    spacer()
+    console.print("  [dim]the agent decides when to trade and when to wait.[/dim]")
+    console.print("  [dim]different presets, different personalities.[/dim]")
+    spacer()
+    console.print("  [dim]\\[1][/dim] [mid]conservative[/mid] [dim]— BTC/ETH only. few trades. high bar.[/dim]")
+    console.print("  [dim]\\[2][/dim] [bright]balanced[/bright]     [dim]— 8 coins. moderate risk. the default.[/dim]")
+    console.print("  [dim]\\[3][/dim] [mid]degen[/mid]         [dim]— wider universe. more trades. more risk.[/dim]")
+    spacer()
 
-    choice = input(f'  {Z.dim("preset [2]:")} ')
+    choice = input(click.style("  preset [2]: ", fg=(119, 119, 119)))
     preset_name, preset_desc, max_pos = PRESETS.get(choice.strip() or '2', PRESETS['2'])
 
-    print(f'  {Z.success(f"agent/{preset_name}")}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    success(f"agent/{preset_name}")
+    spacer()
+    rule()
+    spacer()
 
     # --- Network registration ---
     agent_id = str(uuid.uuid4())
@@ -289,7 +300,7 @@ def init_cmd():
         network_info = _register_with_network(agent_id, key, preset_name, operator_token)
 
     if network_info and "error" not in network_info:
-        print(f'  {Z.success("registered with zero network.")}')
+        success("registered with zero network.")
 
         # Save network info
         net_data = {
@@ -305,13 +316,13 @@ def init_cmd():
             json.dump(net_data, f, indent=2)
         os.chmod(NETWORK_PATH, 0o600)
     else:
-        print(f'  {Z.success("agent configured locally.")}')
+        success("agent configured locally.")
         if not operator_token:
-            print(f'  {Z.dim("connect to network later: zeroos auth login")}')
+            console.print("  [dim]connect to network later: zeroos auth login[/dim]")
 
     coins_count = {"conservative": 2, "balanced": 8, "degen": 15}.get(preset_name, 8)
-    print(f'  {Z.success(f"agent/{preset_name} · paper mode · watching {coins_count} coins.")}')
-    print()
+    success(f"agent/{preset_name} · paper mode · watching {coins_count} coins.")
+    spacer()
 
     # --- Write config ---
     cfg = DEFAULT_CONFIG.copy()
@@ -327,11 +338,11 @@ def init_cmd():
     os.chmod(CONFIG_PATH, 0o600)
 
     # --- Next steps ---
-    print(f'  {Z.header("NEXT STEPS")}')
-    print()
-    print(f'  {Z.lime("$ zeroos start")}        {Z.dim("boot the os. start your agent.")}')
-    print(f'  {Z.lime("$ zeroos status")}       {Z.dim("check health at any time.")}')
-    print(f'  {Z.lime("$ zeroos evaluate SOL")} {Z.dim("see the reasoning engine think.")}')
-    print()
-    print(f'  {Z.dim("patience is the product.")}')
-    print()
+    section("NEXT STEPS")
+    spacer()
+    console.print("  [lime]$ zeroos start[/lime]        [dim]boot the os. start your agent.[/dim]")
+    console.print("  [lime]$ zeroos status[/lime]       [dim]check health at any time.[/dim]")
+    console.print("  [lime]$ zeroos evaluate SOL[/lime] [dim]see the reasoning engine think.[/dim]")
+    spacer()
+    console.print("  [dim]patience is the product.[/dim]")
+    spacer()

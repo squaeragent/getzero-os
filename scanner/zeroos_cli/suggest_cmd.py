@@ -5,7 +5,9 @@ import json
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots,
+)
 
 
 @click.command()
@@ -30,25 +32,25 @@ def suggest():
 
     result = suggest_universe(universe, coverage, 120, all_coins)
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
-    print(f'  {Z.header("NETWORK COVERAGE SUGGESTIONS")}')
-    print(f'  {Z.dots("your universe", " ".join(universe))}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
+    section("NETWORK COVERAGE SUGGESTIONS")
+    dots("your universe", " ".join(universe))
+    spacer()
 
     for s in result.get("suggestions", []):
         action = s["action"]
         coin = s["coin"]
         icon = "▸" if action == "consider_adding" else "▾"
-        print(f'  {Z.bright(icon)} {Z.mid(action.replace("_", " ") + ": " + coin)}')
-        print(f'    {Z.dim(s["reason"])}')
-        print()
+        console.print(f"  [bright]{icon}[/bright] [mid]{action.replace('_', ' ')}: {coin}[/mid]")
+        console.print(f"    [dim]{s['reason']}[/dim]")
+        spacer()
 
     bonus = result.get("network_contribution_bonus", 0)
     if bonus > 0:
-        print(f'  {Z.dim(f"following suggestions earns +{bonus:.2f} network contribution bonus.")}')
+        console.print(f"  [dim]following suggestions earns +{bonus:.2f} network contribution bonus.[/dim]")
 
-    print()
+    spacer()

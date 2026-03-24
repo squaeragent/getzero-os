@@ -7,7 +7,9 @@ from datetime import datetime, timezone
 import click
 import yaml
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, fail, success, warn,
+)
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 CONFIG_PATH = os.path.join(ZEROOS_DIR, "config.yaml")
@@ -22,7 +24,8 @@ PAPER_MIN_TRADES = 50
 
 def _load_config() -> dict:
     if not os.path.exists(CONFIG_PATH):
-        print(f'  {Z.fail("not initialized. run:")} {Z.lime("$ zeroos init")}')
+        fail("not initialized. run:")
+        console.print("  [lime]$ zeroos init[/lime]")
         raise SystemExit(1)
     with open(CONFIG_PATH) as f:
         return yaml.safe_load(f)
@@ -78,52 +81,55 @@ def config(go_live, go_paper, preset_name):
     """Manage ZERO OS agent configuration."""
     if not any([go_live, go_paper, preset_name]):
         cfg = _load_config()
-        print()
-        print(f'  {Z.logo()}')
-        print()
-        print(f'  {Z.rule()}')
-        print()
-        print(f'  {Z.header("CONFIGURATION")}')
-        print(f'  {Z.dots("mode", cfg.get("agent", {}).get("mode", "?"))}')
-        print(f'  {Z.dots("preset", cfg.get("agent", {}).get("preset", "?"))}')
-        print(f'  {Z.dots("signals", "subscription (via zero os)")}')
-        print(f'  {Z.dots("network", cfg.get("hyperliquid", {}).get("network", "?"))}')
-        print()
+        spacer()
+        logo()
+        spacer()
+        rule()
+        spacer()
+        section("CONFIGURATION")
+        dots("mode", cfg.get("agent", {}).get("mode", "?"))
+        dots("preset", cfg.get("agent", {}).get("preset", "?"))
+        dots("signals", "subscription (via zero os)")
+        dots("network", cfg.get("hyperliquid", {}).get("network", "?"))
+        spacer()
         return
 
     cfg = _load_config()
 
     if go_live:
         if cfg.get("agent", {}).get("mode") == "live":
-            print(f'  {Z.dim("already in live mode.")}')
+            console.print("  [dim]already in live mode.[/dim]")
             return
         eligible, reason = _check_paper_eligibility()
         if not eligible:
-            print(f'  {Z.fail(f"cannot switch to live yet. {reason}")}')
+            fail(f"cannot switch to live yet. {reason}")
             raise SystemExit(1)
 
-        print()
-        print(f'  {Z.logo()}')
-        print()
-        print(f'  {Z.rule()}')
-        print()
-        print(f'  {Z.warn("live mode trades with real money.")}')
-        print()
-        print(f'  {Z.dim("live mode includes pro features:")}')
-        print(f'  {Z.dim("▸ full reasoning engine (11 indicators, regime detection)")}')
-        print(f'  {Z.dim("▸ collective intelligence (learned from the network)")}')
-        print(f'  {Z.dim("▸ arena + zero score")}')
-        print(f'  {Z.dim("▸ up to 3 agents")}')
-        print()
-        print(f'  {Z.dim("performance fee: 10% of net profit per trade.")}')
-        print(f'  {Z.dim("▸ on losses: zero receives nothing")}')
-        print(f'  {Z.dim("▸ high-water mark: you only pay on new highs")}')
-        print(f'  {Z.dim("▸ every fee is on-chain and verifiable")}')
-        print()
+        spacer()
+        logo()
+        spacer()
+        rule()
+        spacer()
+        warn("live mode trades with real money.")
+        spacer()
+        console.print("  [dim]live mode includes pro features:[/dim]")
+        console.print("  [dim]▸ full reasoning engine (11 indicators, regime detection)[/dim]")
+        console.print("  [dim]▸ collective intelligence (learned from the network)[/dim]")
+        console.print("  [dim]▸ arena + zero score[/dim]")
+        console.print("  [dim]▸ up to 3 agents[/dim]")
+        spacer()
+        console.print("  [dim]performance fee: 10% of net profit per trade.[/dim]")
+        console.print("  [dim]▸ on losses: zero receives nothing[/dim]")
+        console.print("  [dim]▸ high-water mark: you only pay on new highs[/dim]")
+        console.print("  [dim]▸ every fee is on-chain and verifiable[/dim]")
+        spacer()
 
-        confirm = click.prompt(f'  {Z.dim("type CONFIRM to go live")}', type=str)
+        confirm = click.prompt(
+            click.style("  type CONFIRM to go live", fg=(119, 119, 119)),
+            type=str,
+        )
         if confirm != "CONFIRM":
-            print(f'  {Z.dim("cancelled.")}')
+            console.print("  [dim]cancelled.[/dim]")
             return
 
         cfg["agent"]["mode"] = "live"
@@ -131,18 +137,18 @@ def config(go_live, go_paper, preset_name):
         cfg["subscription"]["status"] = "active"
         cfg["subscription"]["fee_consent"] = datetime.now(timezone.utc).isoformat()
         _save_config(cfg)
-        print()
-        print(f'  {Z.success(f"switched to live mode. ({reason})")}')
-        print(f'  {Z.dim("performance fee active. zero earns nothing on losses.")}')
+        spacer()
+        success(f"switched to live mode. ({reason})")
+        console.print("  [dim]performance fee active. zero earns nothing on losses.[/dim]")
 
     if go_paper:
         cfg["agent"]["mode"] = "paper"
         _save_config(cfg)
-        print(f'  {Z.success("switched to paper mode.")}')
+        success("switched to paper mode.")
 
     if preset_name:
         cfg["agent"]["preset"] = preset_name
         cfg["agent"]["name"] = preset_name
         cfg["execution"]["max_positions"] = PRESET_MAX_POSITIONS.get(preset_name, 3)
         _save_config(cfg)
-        print(f'  {Z.success(f"preset changed to: {preset_name}")}')
+        success(f"preset changed to: {preset_name}")

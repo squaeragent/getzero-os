@@ -5,7 +5,9 @@ import json
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, success, info, pnl, pnl_pct,
+)
 
 
 @click.command()
@@ -30,55 +32,55 @@ def replay(trade_id):
                     trade = t
                     break
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     if not trade:
-        print(f'  {Z.dim(f"trade {trade_id} not found.")}')
-        print()
+        console.print(f"  [dim]trade {trade_id} not found.[/dim]")
+        spacer()
         return
 
     result = replay_trade(trade)
 
     pnl_val = result.get("pnl", 0)
-    print(f'  {Z.header(f"REPLAY: {result['coin']} {result['direction']}")} {Z.pnl(pnl_val)}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    console.print(f"  [header]REPLAY: {result['coin']} {result['direction']}[/header] {pnl(pnl_val)}")
+    spacer()
+    rule()
+    spacer()
 
     # Entry
-    print(f'  {Z.header("ENTRY")}')
+    section("ENTRY")
     e = result["entry"]
-    print(f'  {Z.dots("regime", e["regime"])}')
-    print(f'  {Z.dots("consensus", f"{e['consensus']:.0%}")}')
-    print(f'  {Z.dots("mode", e["signal_mode"])}')
-    print()
+    dots("regime", e["regime"])
+    dots("consensus", f"{e['consensus']:.0%}")
+    dots("mode", e["signal_mode"])
+    spacer()
 
     # Hold
-    print(f'  {Z.header(f"HOLD ({result['hold_hours']:.1f}h)")}')
-    print(f'  {Z.mid(result["chart"])}')
-    print(f'  {Z.dim(f"entry  ▼ MAE ({result['mae_pct']:.1%})  ▲ MFE ({result['mfe_pct']:.1%})  exit")}')
-    print()
+    section(f"HOLD ({result['hold_hours']:.1f}h)")
+    console.print(f"  [mid]{result['chart']}[/mid]")
+    console.print(f"  [dim]entry  ▼ MAE ({result['mae_pct']:.1%})  ▲ MFE ({result['mfe_pct']:.1%})  exit[/dim]")
+    spacer()
 
     # Exit
-    print(f'  {Z.header("EXIT")}')
+    section("EXIT")
     x = result["exit"]
-    print(f'  {Z.dots("reason", x["reason"])}')
+    dots("reason", x["reason"])
     if x["regime_changed"]:
-        print(f'  {Z.dots("regime shift", f"{result['entry']['regime']} → {x['regime_at_exit']}")}')
-    print(f'  {Z.dots("capture rate", f"{result['capture_rate']:.0%}")}')
+        dots("regime shift", f"{result['entry']['regime']} → {x['regime_at_exit']}")
+    dots("capture rate", f"{result['capture_rate']:.0%}")
 
     # Lessons
     if result.get("lessons"):
-        print()
-        print(f'  {Z.header("LESSONS")}')
+        spacer()
+        section("LESSONS")
         for lesson in result["lessons"]:
             if lesson["type"] == "positive":
-                print(f'  {Z.success(lesson["text"])}')
+                success(lesson["text"])
             elif lesson["type"] == "improve":
-                print(f'  {Z.info(lesson["text"])}')
+                info(lesson["text"])
             else:
-                print(f'  {Z.dim(f"· {lesson['text']}")}')
+                console.print(f"  [dim]· {lesson['text']}[/dim]")
 
-    print()
+    spacer()

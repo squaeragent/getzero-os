@@ -5,7 +5,7 @@ import json
 import urllib.request
 from datetime import datetime, timezone
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import console, success
 
 
 @click.command()
@@ -15,7 +15,7 @@ def feedback(message: tuple, fb_type: str):
     """Send feedback to the zero team."""
     text = " ".join(message)
     if not text.strip():
-        print(f'  {Z.dim("usage: zeroos feedback \'your message here\'")}')
+        console.print("  [dim]usage: zeroos feedback 'your message here'[/dim]")
         return
 
     from scanner.zeroos_cli import __version__
@@ -38,7 +38,7 @@ def feedback(message: tuple, fb_type: str):
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status == 200:
-                print(f'  {Z.success("feedback sent. thank you.")}')
+                success("feedback sent. thank you.")
                 return
     except Exception:
         pass
@@ -48,4 +48,4 @@ def feedback(message: tuple, fb_type: str):
     fb_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     (fb_dir / f"{ts}.json").write_text(json.dumps(payload, indent=2))
-    print(f'  {Z.success("saved locally (network unavailable). will sync on next connection.")}')
+    success("saved locally (network unavailable). will sync on next connection.")

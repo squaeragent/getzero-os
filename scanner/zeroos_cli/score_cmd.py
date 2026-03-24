@@ -3,7 +3,9 @@
 import click
 import json
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, fail, success, bar, score_bar,
+)
 
 
 @click.command()
@@ -15,20 +17,20 @@ def score(share: bool, as_json: bool, save: bool):
     try:
         from scanner.v6.zero_score import score_from_db, save_snapshot, check_achievements, get_history, generate_insight, _rest_fetch
     except ImportError:
-        print(f'  {Z.fail("zero_score module not found.")}')
+        fail("zero_score module not found.")
         raise SystemExit(1)
 
     result = score_from_db()
 
     if result.get("score") is None:
-        print()
-        print(f'  {Z.logo()} {Z.mid("SCORE")}')
-        print()
-        print(f'  {Z.rule()}')
-        print()
-        print(f'  {Z.dim("insufficient data.")}')
-        print(f'  {Z.dim(result.get("message", ""))}')
-        print()
+        spacer()
+        console.print("  [header]◆ zero▮[/header] [mid]SCORE[/mid]")
+        spacer()
+        rule()
+        spacer()
+        console.print("  [dim]insufficient data.[/dim]")
+        console.print(f"  [dim]{result.get('message', '')}[/dim]")
+        spacer()
         raise SystemExit(0)
 
     if as_json:
@@ -39,27 +41,27 @@ def score(share: bool, as_json: bool, save: bool):
     comp = s.get("components", {})
     effective = s.get("effective_score", 0)
 
-    print()
-    print(f'  {Z.logo()} {Z.mid("SCORE")}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    console.print("  [header]◆ zero▮[/header] [mid]SCORE[/mid]")
+    spacer()
+    rule()
+    spacer()
 
     # Big score number
-    print(f'  {Z.BRIGHT}{Z.BOLD}{effective}{Z.RESET}')
-    print(f'  {Z.bar(effective, 10.0, 30)}')
-    print()
+    console.print(f"  [bright bold]{effective}[/bright bold]")
+    console.print(f"  {bar(effective, 10.0, 30)}")
+    spacer()
 
     rank = s.get("rank_label", "—")
     agents = s.get("total_agents", "—")
-    print(f'  {Z.dim(f"rank #{s.get('rank', '—')} of {agents} operators")}')
+    console.print(f"  [dim]rank #{s.get('rank', '—')} of {agents} operators[/dim]")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # BREAKDOWN
-    print(f'  {Z.header("BREAKDOWN")}')
+    section("BREAKDOWN")
     dimensions = [
         ("immune", comp.get("immune", 0)),
         ("discipline", comp.get("discipline", 0)),
@@ -68,11 +70,12 @@ def score(share: bool, as_json: bool, save: bool):
         ("resilience", comp.get("resilience", 0)),
     ]
     for name, val in dimensions:
-        print(f'  {Z.dots(name, f"{val:.1f}")}  {Z.bar_small(val, 10.0, 20)}')
+        dots(name, f"{val:.1f}")
+        console.print(f"      {score_bar(val, 10.0, 20)}")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # INSIGHT
     aid = "agent_id=eq.4802c6f8-f862-42f1-b248-45679e1517e7"
@@ -85,41 +88,46 @@ def score(share: bool, as_json: bool, save: bool):
         for ins in insights:
             if ins.get("impact") != "low":
                 if not shown:
-                    print(f'  {Z.header("INSIGHT")}')
+                    section("INSIGHT")
                     shown = True
-                print(f'  {Z.mid(ins["finding"])}')
+                console.print(f"  [mid]{ins['finding']}[/mid]")
                 if ins.get("action"):
-                    print(f'  {Z.dim(ins["action"])}')
+                    console.print(f"  [dim]{ins['action']}[/dim]")
     except Exception:
         insight = generate_insight(result, trades)
         if insight:
-            print(f'  {Z.header("INSIGHT")}')
-            print(f'  {Z.mid(insight)}')
+            section("INSIGHT")
+            console.print(f"  [mid]{insight}[/mid]")
 
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    rule()
+    spacer()
 
     # Footer
     trade_count = s.get("trade_count", 0)
     win_rate = s.get("win_rate", 0)
     avg_hold = s.get("avg_hold_hours", 0)
-    print(f'  {Z.dim(f"trades: {trade_count} · win rate: {win_rate:.0%} · avg hold: {avg_hold:.1f}h")}')
+    console.print(f"  [dim]trades: {trade_count} · win rate: {win_rate:.0%} · avg hold: {avg_hold:.1f}h[/dim]")
 
     # Achievements
     history = get_history()
     achievements = check_achievements(history, effective)
     if achievements:
-        print(f'  {Z.dim(f"achievements: {', '.join(a['name'] for a in achievements)}")}')
+        names = ', '.join(a['name'] for a in achievements)
+        console.print(f"  [dim]achievements: {names}[/dim]")
 
     # Save snapshot
     if save:
         saved = save_snapshot(result)
-        print(f'  {Z.success("snapshot saved") if saved else Z.fail("snapshot failed")}')
+        if saved:
+            success("snapshot saved")
+        else:
+            fail("snapshot failed")
 
     # Share card
     if share:
-        print()
-        print(f'  {Z.dim(f"share: getzero.dev/u/{s.get("short_id", "you")}")}')
+        spacer()
+        short_id = s.get("short_id", "you")
+        console.print(f"  [dim]share: getzero.dev/u/{short_id}[/dim]")
 
-    print()
+    spacer()

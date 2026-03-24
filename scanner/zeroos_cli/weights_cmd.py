@@ -6,7 +6,9 @@ from pathlib import Path
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, score_bar,
+)
 
 
 @click.command()
@@ -38,17 +40,17 @@ def weights():
         except Exception:
             pass
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
-    print(f'  {Z.rule()}')
-    print()
+    spacer()
+    logo()
+    spacer()
+    rule()
+    spacer()
 
     if not collective and not personal:
-        print(f'  {Z.dim("no weights available yet.")}')
-        print(f'  {Z.dim("collective: need 200+ network trades.")}')
-        print(f'  {Z.dim("personal: need 50+ local trades.")}')
-        print()
+        console.print("  [dim]no weights available yet.[/dim]")
+        console.print("  [dim]collective: need 200+ network trades.[/dim]")
+        console.print("  [dim]personal: need 50+ local trades.[/dim]")
+        spacer()
         return
 
     try:
@@ -64,17 +66,17 @@ def weights():
         p_regimes = len(personal)
         source_parts.append(f"personal ({p_regimes} regimes)")
 
-    print(f'  {Z.header("REASONING WEIGHTS")}')
+    section("REASONING WEIGHTS")
     if source_parts:
         blend_desc = "60% collective + 40% personal" if collective and personal else "100% " + ("collective" if collective else "personal")
-        print(f'  {Z.dots("source", blend_desc)}')
-        print(f'  {Z.dim(" · ".join(source_parts))}')
-    print()
+        dots("source", blend_desc)
+        console.print(f"  [dim]{' · '.join(source_parts)}[/dim]")
+    spacer()
 
     all_regimes = set(list(collective.keys()) + list(personal.keys()))
 
     for regime in sorted(all_regimes):
-        print(f'  {Z.header(regime.upper())}')
+        section(regime.upper())
         if has_blend and collective:
             blended = blend_weights(collective, regime)
         elif collective and regime in collective:
@@ -85,7 +87,8 @@ def weights():
             blended = {}
 
         for ind, val in sorted(blended.items(), key=lambda x: -x[1]):
-            print(f'  {Z.dots(ind[:16], f"{val:.2f}")}  {Z.bar_small(val, 1.0, 20)}')
-        print()
+            dots(ind[:16], f"{val:.2f}")
+            console.print(f"      {score_bar(val, 1.0, 20)}")
+        spacer()
 
-    print()
+    spacer()

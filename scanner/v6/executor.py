@@ -946,11 +946,16 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
     )
     log(f"  Opened {direction} {coin} @ ${price:,.4f} (stop={stop_pct*100:.0f}%)")
 
-    # Supabase telemetry
+    # Supabase telemetry — capture trade_id from the INSERT
+    _trade_id = None
     if _sb and not dry:
         _sb.log_decision(coin, direction, "entered", "passed all checks",
                          sharpe=trade.get("sharpe"), signal_name=trade.get("signal_name"))
-        _sb.log_trade_open(pos)
+        _trade_id = _sb.log_trade_open(pos)
+        if _trade_id:
+            pos["trade_id"] = _trade_id
+            # Re-save positions with trade_id for use at close time
+            save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": positions})
 
     # Enriched telemetry
     if _enrichment and not dry:
@@ -985,6 +990,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
                 },
                 market_data={"funding_rate": trade.get("funding_rate")},
                 portfolio_state={"equity": trade.get("equity"), "position_count": len(positions)},
+                trade_id=_trade_id,
             )
         except Exception:
             pass
@@ -1203,6 +1209,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
                 entry_time=entry_time, exit_reason=exit_reason,
                 signal_data={"regime": pos.get("regime")},
                 portfolio_state={"equity": pos.get("equity")},
+                trade_id=pos.get("trade_id"),
             )
         except Exception:
             pass

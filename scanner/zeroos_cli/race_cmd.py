@@ -6,7 +6,9 @@ import time
 import click
 from pathlib import Path
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, rule, section, dots, score_bar,
+)
 
 
 @click.command()
@@ -30,43 +32,41 @@ def race(preset_a, preset_b, equity):
                 except Exception:
                     pass
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     if len(trades) < 5:
-        print(f'  {Z.dim("not enough trade data. agent needs to run first.")}')
-        print(f'  {Z.lime("$ zeroos start")}')
-        print()
+        console.print("  [dim]not enough trade data. agent needs to run first.[/dim]")
+        console.print("  [lime]$ zeroos start[/lime]")
+        spacer()
         return
 
-    print(f'  {Z.rule()}')
-    print()
-    print(f'  {Z.header(f"RACE: {preset_a} vs {preset_b}")}')
-    print(f'  {Z.dim(f"equity: ${equity:,.0f} · {len(trades)} trades")}')
-    print()
-    print(f'  {Z.dim("simulating...")}', end='', flush=True)
+    rule()
+    spacer()
+    section(f"RACE: {preset_a} vs {preset_b}")
+    console.print(f"  [dim]equity: ${equity:,.0f} · {len(trades)} trades[/dim]")
+    spacer()
+    console.print("  [dim]simulating...[/dim]", end="")
     time.sleep(0.5)
 
     result = race_presets(trades, preset_a, preset_b, equity)
 
-    print(f' {Z.green("done")}')
-    print()
+    console.print(" [success]done[/success]")
+    spacer()
 
     ra = result[preset_a]
     rb = result[preset_b]
     winner = result["winner"]
 
-    bar_a = Z.bar_small(max(0, ra["total_return_pct"]), 50.0, 20)
-    bar_b = Z.bar_small(max(0, rb["total_return_pct"]), 50.0, 20)
+    bar_a = score_bar(max(0, ra["total_return_pct"]), 50.0, 20)
+    bar_b = score_bar(max(0, rb["total_return_pct"]), 50.0, 20)
 
-    a_color = Z.LIME if winner == preset_a else ""
-    b_color = Z.LIME if winner == preset_b else ""
-    a_reset = Z.RESET if winner == preset_a else ""
-    b_reset = Z.RESET if winner == preset_b else ""
+    a_tag = "lime" if winner == preset_a else "mid"
+    b_tag = "lime" if winner == preset_b else "mid"
 
-    print(f'  {a_color}{preset_a:14s}{a_reset} {bar_a} {Z.bright(f"{ra['total_return_pct']:+.1f}%")}  {Z.dim(f"{ra['trades']} trades  {ra['win_rate']:.0%} WR")}')
-    print(f'  {b_color}{preset_b:14s}{b_reset} {bar_b} {Z.bright(f"{rb['total_return_pct']:+.1f}%")}  {Z.dim(f"{rb['trades']} trades  {rb['win_rate']:.0%} WR")}')
-    print()
-    print(f'  {Z.dim(result["insight"])}')
-    print()
+    console.print(f"  [{a_tag}]{preset_a:14s}[/{a_tag}] {bar_a} [bright]{ra['total_return_pct']:+.1f}%[/bright]  [dim]{ra['trades']} trades  {ra['win_rate']:.0%} WR[/dim]")
+    console.print(f"  [{b_tag}]{preset_b:14s}[/{b_tag}] {bar_b} [bright]{rb['total_return_pct']:+.1f}%[/bright]  [dim]{rb['trades']} trades  {rb['win_rate']:.0%} WR[/dim]")
+    spacer()
+    console.print(f"  [dim]{result['insight']}[/dim]")
+    spacer()

@@ -1,17 +1,56 @@
 {
-  "timestamp": "2026-03-24T06:51:44.137928+00:00",
-  "approved": [],
+  "timestamp": "2026-03-24T12:05:19.749718+00:00",
+  "approved": [
+    {
+      "coin": "INJ",
+      "direction": "SHORT",
+      "signal": "TAAPI_ENGULFING_4H_SHORT",
+      "sharpe": 2.23,
+      "win_rate": 71.6,
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "",
+      "max_hold_hours": 16,
+      "regime": "stable",
+      "regime_match": true,
+      "regime_match_score": 0.864,
+      "signal_heat": 0.5,
+      "composite_score": 6.05,
+      "recent_record": "pattern"
+    },
+    {
+      "coin": "NEAR",
+      "direction": "SHORT",
+      "signal": "TAAPI_MARUBOZU_1H_SHORT",
+      "sharpe": 1.76,
+      "win_rate": 65.8,
+      "reason": "uncorrelated to portfolio, regime transition active",
+      "exit_expression": "",
+      "max_hold_hours": 4,
+      "regime": "shift",
+      "regime_match": true,
+      "regime_match_score": 0.63,
+      "signal_heat": 0.5,
+      "composite_score": 4.41,
+      "recent_record": "pattern"
+    }
+  ],
   "blocked": [
     {
       "coin": "BTC",
       "direction": "SHORT",
-      "signal": "XONE_AUDIV_CONTRARIAN_SHORT_R6V2_FR17_EX4_FR8",
+      "signal": "TAAPI_HANGINGMAN_4H_SHORT",
       "reason": "already have position in BTC"
+    },
+    {
+      "coin": "SUI",
+      "direction": "SHORT",
+      "signal": "TAAPI_HARAMI_4H_SHORT",
+      "reason": "already have position in SUI"
     }
   ],
   "portfolio_state": {
-    "net_direction": "LONG",
-    "net_exposure_pct": 29.6,
+    "net_direction": "SHORT",
+    "net_exposure_pct": 14.5,
     "correlation_risk": "low",
     "diversification_score": 1.0
   }

@@ -6,7 +6,9 @@ import time
 
 import click
 
-from scanner.zeroos_cli.style import Z
+from scanner.zeroos_cli.console import (
+    console, logo, spacer, dots, warn, fail,
+)
 
 ZEROOS_DIR = os.path.expanduser("~/.zeroos")
 PID_PATH = os.path.join(ZEROOS_DIR, "zeroos.pid")
@@ -37,21 +39,21 @@ def stop(force):
     pid = _read_pid()
 
     if pid is None or not _is_alive(pid):
-        from scanner.zeroos_cli.errors import ERRORS
-        print()
-        print(ERRORS['not_running'])
-        print()
+        from scanner.zeroos_cli.errors import show_error
+        spacer()
+        show_error('not_running')
+        spacer()
         if os.path.exists(PID_PATH):
             os.remove(PID_PATH)
         raise SystemExit(1)
 
-    print()
-    print(f'  {Z.logo()}')
-    print()
+    spacer()
+    logo()
+    spacer()
 
     if force:
         # Force stop
-        print(f'  {Z.dots("▸ force stopping agent", "")}', end='', flush=True)
+        console.print("  [dim]▸ force stopping agent ...[/dim]", end="")
         os.kill(pid, signal.SIGINT)
         for _ in range(100):
             time.sleep(0.1)
@@ -60,37 +62,34 @@ def stop(force):
         if _is_alive(pid):
             os.kill(pid, signal.SIGKILL)
             time.sleep(0.5)
-        print(f'\r  {Z.dots("▸ force stopping agent", "done")}')
+        dots("▸ force stopping agent", "done")
     else:
         # Graceful stop with progress
-        print(f'  {Z.dots("▸ closing open positions", "")}', end='', flush=True)
         os.kill(pid, signal.SIGTERM)
         time.sleep(0.5)
-        print(f'\r  {Z.dots("▸ closing open positions", "done")}')
+        dots("▸ closing open positions", "done")
 
-        print(f'  {Z.dots("▸ saving state", "")}', end='', flush=True)
         time.sleep(0.3)
-        print(f'\r  {Z.dots("▸ saving state", "done")}')
+        dots("▸ saving state", "done")
 
-        print(f'  {Z.dots("▸ disconnecting from network", "")}', end='', flush=True)
         for _ in range(300):
             time.sleep(0.1)
             if not _is_alive(pid):
                 break
-        print(f'\r  {Z.dots("▸ disconnecting from network", "done")}')
+        dots("▸ disconnecting from network", "done")
 
         if _is_alive(pid):
-            print()
-            print(f'  {Z.warn("agent still running after 30s.")}')
-            print(f'  {Z.lime("$ zeroos stop --force")}')
+            spacer()
+            warn("agent still running after 30s.")
+            console.print("  [lime]$ zeroos stop --force[/lime]")
             raise SystemExit(1)
 
     if os.path.exists(PID_PATH):
         os.remove(PID_PATH)
 
-    print()
-    print(f'  {Z.mid("zero stopped. your positions are closed.")}')
-    print()
-    print(f'  {Z.dim("your score pauses (decays after 14 days inactive).")}')
-    print(f'  {Z.lime("$ zeroos start")}  {Z.dim("to resume")}')
-    print()
+    spacer()
+    console.print("  [mid]zero stopped. your positions are closed.[/mid]")
+    spacer()
+    console.print("  [dim]your score pauses (decays after 14 days inactive).[/dim]")
+    console.print("  [lime]$ zeroos start[/lime]  [dim]to resume[/dim]")
+    spacer()
