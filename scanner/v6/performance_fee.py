@@ -24,7 +24,7 @@ from urllib.request import Request, urlopen
 
 # HARDCODED. Never changes. Never in an env var.
 # An attacker can't redirect fees without modifying source.
-ZERO_FEE_WALLET = "0x3fb367a8e25a19299ae3fab887b47ab69774b010"  # TODO: set to zero's collection wallet
+ZERO_FEE_WALLET = "0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e"  # TODO: set to zero's collection wallet
 
 FEE_RATE = 0.10           # 10% of net profit
 MAX_FEE_PCT = 0.20        # Per-trade cap: max 20% of profit
