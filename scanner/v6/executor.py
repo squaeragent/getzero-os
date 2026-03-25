@@ -475,12 +475,11 @@ class HLClient:
         return result
 
     def place_stop_loss(self, coin: str, is_buy: bool, size: float,
-                        trigger_price: float, limit_offset_pct: float = 0.02) -> dict:
-        """Place native stop-loss trigger order with LIMIT (not market).
+                        trigger_price: float) -> dict:
+        """Place native stop-loss market trigger order.
         
-        limit_offset_pct: how far below trigger (for sell) or above trigger (for buy)
-        to set the limit price. Default 2% — ensures fill on gap moves.
-        A trigger=$100 with 2% offset → limit=$98 (sell) or $102 (buy).
+        When triggerPx is hit, a market order fires to close the position.
+        More reliable than limit stops — no "invalid price" rejections.
         """
         asset = COIN_TO_ASSET.get(coin)
         if asset is None:
@@ -490,23 +489,19 @@ class HLClient:
         sz_str      = self.float_to_wire(round(size, sz_dec))
         trigger_str = self.float_to_wire(self.round_price(trigger_price))
 
-        # Limit price offset: more aggressive = more likely to fill on gap
-        if is_buy:  # buying to close a SHORT — limit above trigger
-            limit_price = trigger_price * (1 + limit_offset_pct)
-        else:  # selling to close a LONG — limit below trigger
-            limit_price = trigger_price * (1 - limit_offset_pct)
-        limit_str = self.float_to_wire(self.round_price(limit_price))
+        # Market stop: fills at market when trigger hits (isMarket=True)
+        # No limit price needed — more reliable than limit stops
 
         action = {
             "type": "order",
             "orders": [{
                 "a": asset,
                 "b": is_buy,
-                "p": limit_str,
+                "p": trigger_str,   # market stop: limit = trigger (HL ignores for isMarket=True)
                 "s": sz_str,
                 "r": True,
                 "t": {"trigger": {
-                    "isMarket":  False,
+                    "isMarket":  True,   # market stop — fills at market when trigger hits
                     "triggerPx": trigger_str,
                     "tpsl":      "sl",
                 }},

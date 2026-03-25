@@ -258,8 +258,25 @@ def run_health_check():
 
 
 def main():
+    # PID lock — prevent dual supervisors
+    pid_file = V6_DIR / "supervisor.pid"
+    if pid_file.exists():
+        old_pid = int(pid_file.read_text().strip())
+        try:
+            os.kill(old_pid, 0)  # check if alive
+            print(f"FATAL: supervisor already running (pid={old_pid}). Kill it first or remove {pid_file}")
+            sys.exit(1)
+        except ProcessLookupError:
+            pass  # stale PID file, safe to continue
+    pid_file.write_text(str(os.getpid()))
+
+    def _cleanup_pid(*_):
+        pid_file.unlink(missing_ok=True)
+
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+    import atexit
+    atexit.register(_cleanup_pid)
 
     # Paper mode: --paper flag or PAPER_MODE env var
     paper_mode = "--paper" in sys.argv or os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes")
