@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from scanner.v6.bus_io import load_json_locked
+from scanner.v6.bus_io import load_json_locked, save_json_locked
 from scanner.v6.config import (
     ENTRIES_FILE, APPROVED_FILE, POSITIONS_FILE, RISK_FILE, HEARTBEAT_FILE,
     BUS_DIR, MAX_POSITIONS, MAX_PER_COIN, CAPITAL_FLOOR, CAPITAL_FLOOR_PCT,
@@ -79,10 +79,13 @@ def load_json(path: Path, default=None):
 
 
 def save_json_atomic(path: Path, data: dict):
+    import os as _os
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
     with open(tmp, "w") as f:
         json.dump(data, f, indent=2)
+        f.flush()
+        _os.fsync(f.fileno())
     tmp.replace(path)
 
 
@@ -126,7 +129,7 @@ def _today_start() -> str:
 
 def save_risk(risk: dict):
     risk["updated_at"] = now_iso()
-    save_json_atomic(RISK_FILE, risk)
+    save_json_locked(RISK_FILE, risk)
 
 
 # ─── RISK CHECKS ──────────────────────────────────────────────────────────────

@@ -767,7 +767,9 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
                 lev_result = client._sign_and_send(lev_action)
                 log(f"  Leverage set: {coin} → {target_lev}x cross")
         except Exception as e:
-            log(f"  WARN: leverage set failed for {coin}: {e}")
+            log(f"  ❌ Leverage set FAILED for {coin}: {e}. Aborting trade.")
+            log_rejection(coin, direction, "leverage_failed", {"error": str(e)})
+            return False
 
         # ── PRE-TRADE CHECKS (HL Mastery) ──────────────────────────────────
 
@@ -844,6 +846,11 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
                 signal_age_min = (datetime.now(timezone.utc) - st).total_seconds() / 60
             except:
                 pass
+
+        if signal_age_min > 30:
+            log(f'  SKIP {coin}: signal too stale ({signal_age_min:.0f}m old)')
+            log_rejection(coin, direction, 'stale_signal', {'age_min': signal_age_min})
+            return False
 
         use_gtc = signal_age_min > 10  # non-urgent: signal persisted > 10 minutes
         if use_gtc and book.get("bids") and book.get("asks"):
@@ -946,8 +953,19 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
                 else:
                     log(f"  Stop retry also failed: {sl_retry}")
                     send_alert(f"🚨🚨 STOP RETRY FAILED for {coin}. NAKED POSITION. CLOSE MANUALLY.")
+                    if not sl_oid:
+                        log(f'  ❌ CRITICAL: Stop loss failed for {coin}. Closing position to prevent naked exposure.')
+                        send_alert(f'❌ Stop loss failed for {coin} {direction}. Closing position immediately.')
+                        close_result = client.market_sell(coin, filled_sz) if is_buy else client.market_buy(coin, filled_sz)
+                        log(f'  Emergency close result: {close_result}')
+                        return False
             except Exception as e:
                 log(f"  Stop retry error: {e}")
+                log(f'  ❌ CRITICAL: Stop loss failed for {coin}. Closing position to prevent naked exposure.')
+                send_alert(f'❌ Stop loss failed for {coin} {direction}. Closing position immediately.')
+                close_result = client.market_sell(coin, filled_sz) if is_buy else client.market_buy(coin, filled_sz)
+                log(f'  Emergency close result: {close_result}')
+                return False
 
     # Build position record
     pos_id    = f"{coin}_{direction}_{int(time.time())}"
@@ -1190,7 +1208,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
         # daily_loss_usd tracks gross losses only (for conservative halt check)
         if pnl_usd < 0:
             risk["daily_loss_usd"] = round(risk.get("daily_loss_usd", 0) + abs(pnl_usd), 4)
-        save_json_atomic(RISK_FILE, {**risk, "updated_at": now_iso()})
+        save_json_locked(RISK_FILE, {**risk, "updated_at": now_iso()})
 
     # Performance fee (10% of net profit, HWM protected)
     zero_fee = 0.0
@@ -1299,6 +1317,14 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool):
 # ─── MAIN CYCLE ───────────────────────────────────────────────────────────────
 
 def run_once(client: HLClient, dry: bool):
+    # Check circuit breaker
+    cb_path = BUS_DIR / 'circuit_breaker.json'
+    if cb_path.exists():
+        cb = load_json(str(cb_path))
+        if cb.get('paused') or cb.get('halted'):
+            log('⛔ CIRCUIT BREAKER ACTIVE — executor halted. Check immune.py or risk.json')
+            return
+
     positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
     approved  = load_json(APPROVED_FILE, {}).get("approved", [])
     exits     = load_json(EXITS_FILE,    {}).get("exits",    [])

@@ -716,8 +716,9 @@ def run_once(state: dict) -> dict:
                     "current_equity": curr_eq,
                     "triggered_at": now_iso(),
                 })
-    except Exception:
-        pass
+    except Exception as e:
+        log(f'  ❌ CRITICAL: Drawdown check failed: {e}')
+        send_telegram(f'❌ Immune drawdown check crashed: {e}. Circuit breaker may not fire.')
 
     # NVArena credit health (check every 10 cycles)
     cycle_count = state.get("cycle_count", 0)
