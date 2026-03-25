@@ -442,7 +442,7 @@ min_sharpe: 1.5
 min_win_rate: 60
 envy_api_key: ${ENVY_API_KEY}
 hl_secret: ${HYPERLIQUID_SECRET_KEY}
-hl_main_address: "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"
+hl_main_address: "0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e"
 ```
 
 ### Implementation Order
