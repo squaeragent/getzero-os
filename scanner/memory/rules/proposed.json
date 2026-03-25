@@ -1,44 +1,44 @@
 [
   {
     "id": "RULE_001",
-    "condition": "(direction == 'SHORT' && confidence > 0.7)",
-    "action": "boost_confidence",
+    "condition": "direction == 'LONG' AND confidence < 0.6",
+    "action": "reduce_confidence",
     "value": 0.1,
-    "action_description": "increase_position_size",
-    "evidence": "historical data shows a higher win rate for SHORT directions with high confidence.",
+    "action_description": "reduce_position_size",
+    "evidence": "low win rate (40%) suggests caution in LONG positions.",
     "generation": 1,
-    "created": "2026-03-25T17:58:20.473002+00:00",
+    "created": "2026-03-25T18:51:06.267072+00:00",
     "trades_tested": 0,
     "status": "proposed",
     "source": "reflection",
-    "raw_rule": "_002: IF (direction == 'SHORT' && confidence > 0.7) THEN increase_position_size BECAUSE historical data shows a higher win rate for SHORT directions with high confidence."
+    "raw_rule": "IF direction == 'LONG' AND confidence < 0.6 THEN reduce_position_size BECAUSE low win rate (40%) suggests caution in LONG positions."
   },
   {
     "id": "RULE_002",
-    "condition": "(net_PnL < -$2.00)",
-    "action": "reduce_confidence",
-    "value": 0.1,
-    "action_description": "reduce_risk_exposure",
-    "evidence": "the system has experienced losses, and reducing exposure can help minimize further losses.",
+    "condition": "net_PnL < -$2.00",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "stop_trading_for_1_hour",
+    "evidence": "recent losses (-$1.46) indicate a need for temporary risk reduction.",
     "generation": 1,
-    "created": "2026-03-25T17:58:20.473261+00:00",
+    "created": "2026-03-25T18:51:06.267350+00:00",
     "trades_tested": 0,
     "status": "proposed",
     "source": "reflection",
-    "raw_rule": "_003: IF (net_PnL < -$2.00) THEN reduce_risk_exposure BECAUSE the system has experienced losses, and reducing exposure can help minimize further losses."
+    "raw_rule": "IF net_PnL < -$2.00 THEN stop_trading_for_1_hour BECAUSE recent losses (-$1.46) indicate a need for temporary risk reduction."
   },
   {
     "id": "RULE_003",
-    "condition": "(trade_frequency < 5 trades/week)",
-    "action": "boost_confidence",
-    "value": 0.1,
-    "action_description": "increase_signal_sensitivity",
-    "evidence": "low trade frequency might indicate missed opportunities; increasing signal sensitivity could lead to more trading opportunities.",
+    "condition": "RULE_001 has triggered 3 times in the last 10 trades",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "adjust_RULE_001_condition",
+    "evidence": "repeated boosting of confidence without significant improvement in win rate may indicate an ineffective rule.",
     "generation": 1,
-    "created": "2026-03-25T17:58:20.473477+00:00",
+    "created": "2026-03-25T18:51:06.267586+00:00",
     "trades_tested": 0,
     "status": "proposed",
     "source": "reflection",
-    "raw_rule": "_004: IF (trade_frequency < 5 trades/week) THEN increase_signal_sensitivity BECAUSE low trade frequency might indicate missed opportunities; increasing signal sensitivity could lead to more trading opportunities."
+    "raw_rule": "IF RULE_001 has triggered 3 times in the last 10 trades THEN adjust_RULE_001_condition BECAUSE repeated boosting of confidence without significant improvement in win rate may indicate an ineffective rule."
   }
 ]
