@@ -39,6 +39,9 @@ HL_INFO_URL = "https://api.hyperliquid.xyz/info"
 TICK_INTERVAL = 15          # seconds between main loop ticks
 THREAD_POOL_SIZE = 4        # max concurrent SmartProvider evaluations
 PRICE_STALE_SEC = 30        # refetch prices if older than this
+EVAL_CACHE_TTL = 300        # shared eval cache valid for 5 minutes
+EVAL_BATCH_SIZE = 8         # coins per batch before rate-limit pause
+EVAL_BATCH_PAUSE = 2.0      # seconds between batches
 
 # Quality gate mapping: consensus_threshold → minimum quality score (0-10)
 QUALITY_GATE = {
@@ -123,6 +126,71 @@ class SharedPriceFeed:
 
     def get_price(self, coin: str) -> float:
         return self.prices.get(coin, 0)
+
+
+# ─── SHARED EVALUATION CACHE ────────────────────────────────────────────────
+
+class SharedEvaluationCache:
+    """Evaluate all unique coins ONCE per cycle. Agents read from cache."""
+
+    def __init__(self):
+        self._cache: dict[str, dict] = {}
+        self._last_eval: float = 0
+        self._coins: set[str] = set()
+
+    def register_coins(self, coins: list[str]):
+        """Agents register their coin scopes. Called before evaluation."""
+        self._coins.update(coins)
+
+    def clear_registrations(self):
+        self._coins.clear()
+
+    def is_fresh(self) -> bool:
+        return (time.time() - self._last_eval) < EVAL_CACHE_TTL
+
+    def get(self, coin: str) -> dict | None:
+        return self._cache.get(coin)
+
+    async def refresh(self, smart_provider, thread_pool):
+        """Evaluate all registered coins with rate-limit staggering."""
+        if self.is_fresh():
+            return
+
+        coins = sorted(self._coins)
+        if not coins:
+            return
+
+        t0 = time.time()
+        loop = asyncio.get_event_loop()
+        new_cache: dict[str, dict] = {}
+        rate_limited = 0
+        failed = 0
+
+        for i, coin in enumerate(coins):
+            # Rate-limit stagger: pause every EVAL_BATCH_SIZE coins
+            if i > 0 and i % EVAL_BATCH_SIZE == 0:
+                await asyncio.sleep(EVAL_BATCH_PAUSE)
+
+            try:
+                result = await loop.run_in_executor(
+                    thread_pool, smart_provider.evaluate_coin, coin)
+                new_cache[coin] = result
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str or "rate" in err_str.lower():
+                    rate_limited += 1
+                    # Back off harder on rate limit
+                    await asyncio.sleep(EVAL_BATCH_PAUSE * 2)
+                else:
+                    failed += 1
+
+        self._cache = new_cache
+        self._last_eval = time.time()
+        elapsed = time.time() - t0
+
+        _log(f"  Shared eval: {len(new_cache)} coins in {elapsed:.0f}s, "
+             f"{rate_limited} rate-limited, {len(new_cache)} cached"
+             + (f", {failed} failed" if failed else ""))
 
 
 # ─── PER-AGENT FILE I/O ──────────────────────────────────────────────────────
@@ -355,13 +423,15 @@ class SimAgent:
     """One paper-trading agent with session rotation."""
 
     def __init__(self, config: dict, price_feed: SharedPriceFeed,
-                 thread_pool: ThreadPoolExecutor):
+                 thread_pool: ThreadPoolExecutor,
+                 eval_cache: SharedEvaluationCache = None):
         self.name = config['name']
         self.handle = config['handle']
         self.rotation = config['rotation']
         self.initial_equity = config['equity']
         self.price_feed = price_feed
         self.thread_pool = thread_pool
+        self.eval_cache = eval_cache
 
         # Per-agent state
         self.paper = IsolatedPaperExecutor(self.handle, self.initial_equity)
@@ -674,9 +744,7 @@ class SimAgent:
 
     async def _evaluate_coins(self, smart_provider, coins: list[str],
                                open_coins: set, params: dict, session: dict):
-        """Evaluate coins using shared SmartProvider (CPU-bound, run in thread pool)."""
-        loop = asyncio.get_event_loop()
-
+        """Read coin evaluations from shared cache (no HL API calls)."""
         for coin in coins:
             if coin in open_coins:
                 continue
@@ -685,12 +753,9 @@ class SimAgent:
             if len(self.paper.get_positions()) >= params.get('max_positions', 3):
                 break
 
-            try:
-                result = await loop.run_in_executor(
-                    self.thread_pool,
-                    smart_provider.evaluate_coin, coin,
-                )
-            except Exception as e:
+            # Read from shared cache — never call SmartProvider directly
+            result = self.eval_cache.get(coin) if self.eval_cache else None
+            if result is None:
                 continue
 
             direction = result.get("signal", "NEUTRAL")
@@ -794,6 +859,7 @@ async def run_simulator():
     # Shared resources
     price_feed = SharedPriceFeed()
     thread_pool = ThreadPoolExecutor(max_workers=THREAD_POOL_SIZE)
+    eval_cache = SharedEvaluationCache()
 
     # Initialize SmartProvider (heavy — loads regime classifier, weights)
     _log("  Loading SmartProvider...")
@@ -802,7 +868,7 @@ async def run_simulator():
     _log("  SmartProvider ready")
 
     # Initialize agents
-    agents = [SimAgent(a, price_feed, thread_pool) for a in AGENTS]
+    agents = [SimAgent(a, price_feed, thread_pool, eval_cache) for a in AGENTS]
     _log(f"  All {len(agents)} agents initialized")
 
     # Initial price fetch
@@ -816,6 +882,17 @@ async def run_simulator():
 
         # Update shared price feed
         await price_feed.update()
+
+        # Collect all unique coins across agents and refresh shared cache
+        eval_cache.clear_registrations()
+        for agent in agents:
+            session = agent._get_session()
+            if session and session.get('status') == 'active':
+                strategy_key = session['strategy']
+                params = STRATEGIES.get(strategy_key, {})
+                coins = get_coins_for_scope(params.get('scope', 'top_20'))
+                eval_cache.register_coins(coins)
+        await eval_cache.refresh(smart_provider, thread_pool)
 
         # Run all agents concurrently
         tasks = [agent.tick(smart_provider) for agent in agents]
