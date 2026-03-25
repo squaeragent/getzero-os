@@ -361,35 +361,44 @@ class HLClient:
         return json.loads(urllib.request.urlopen(req, timeout=10).read())
 
     def get_balance(self) -> float:
-        """Total equity = spot USDC total + perp unrealized PnL.
+        """Total equity from HL. Supports both spot-collateral and perp-only accounts.
         
-        HL cross-margin: spot USDC 'hold' IS the perp collateral.
-        So real equity = spot total (includes held) + perp uPnL only.
-        DO NOT add perp accountValue — that double-counts the held USDC.
+        Strategy:
+        1. Try spot USDC total + perp uPnL (standard cross-margin)
+        2. Fall back to perp accountValue (when funds are perp-only)
         
         RAISES on API failure. Zero is never a valid equity.
         """
         # Spot USDC total (includes the portion held as perp collateral)
-        spot = self._info_post({"type": "spotClearinghouseState", "user": self.main_address})
         spot_usdc = 0.0
-        for bal in spot.get("balances", []):
-            if bal.get("coin") == "USDC":
-                spot_usdc = float(bal.get("total", 0))
-                break
+        try:
+            spot = self._info_post({"type": "spotClearinghouseState", "user": self.main_address})
+            for bal in spot.get("balances", []):
+                if bal.get("coin") == "USDC":
+                    spot_usdc = float(bal.get("total", 0))
+                    break
+        except Exception:
+            pass
 
-        if spot_usdc <= 0:
-            raise ValueError(f"get_balance: spot USDC is {spot_usdc} — API likely failed or account empty")
-
-        # Perp unrealized PnL only (NOT accountValue)
-        unrealized_pnl = 0.0
+        # Perp state (always needed)
         result = self._info_post({"type": "clearinghouseState", "user": self.main_address})
-        for pos in result.get("assetPositions", []):
-            p = pos.get("position", {})
-            unrealized_pnl += float(p.get("unrealizedPnl", 0))
+        perp_equity = float(result.get("marginSummary", {}).get("accountValue", 0))
 
-        equity = spot_usdc + unrealized_pnl
+        if spot_usdc > 0:
+            # Standard: spot USDC + perp uPnL
+            unrealized_pnl = 0.0
+            for pos in result.get("assetPositions", []):
+                p = pos.get("position", {})
+                unrealized_pnl += float(p.get("unrealizedPnl", 0))
+            equity = spot_usdc + unrealized_pnl
+        elif perp_equity > 0:
+            # Perp-only account (ZERO wallet): use accountValue directly
+            equity = perp_equity
+        else:
+            raise ValueError(f"get_balance: no funds found (spot={spot_usdc}, perp={perp_equity})")
+
         if equity <= 0:
-            raise ValueError(f"get_balance: equity is {equity} (spot={spot_usdc}, uPnL={unrealized_pnl}) — refusing to return")
+            raise ValueError(f"get_balance: equity is {equity} — refusing to return")
 
         return equity
 
