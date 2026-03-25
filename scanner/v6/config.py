@@ -37,22 +37,23 @@ PAPER_DATA_DIR = PAPER_STATE_DIR / "data"
 
 # ─── ACCOUNT ──────────────────────────────────────────────────────────────────
 CAPITAL           = 49.0    # ZERO wallet — initial deposit reference
-CAPITAL_FLOOR_PCT = 0.60    # halt if equity < 60% of peak
+CAPITAL_FLOOR_PCT = 0.40    # halt if equity < 40% of peak (degen: wider runway)
 CAPITAL_FLOOR     = CAPITAL * CAPITAL_FLOOR_PCT  # static fallback
-DAILY_LOSS_LIMIT_PCT = 0.07  # 7% of equity per day
+DAILY_LOSS_LIMIT_PCT = 0.12  # 12% of equity per day (degen: more room)
 DAILY_LOSS_LIMIT  = CAPITAL * DAILY_LOSS_LIMIT_PCT  # static fallback
 
 # ─── POSITION LIMITS (% of equity — computed dynamically) ─────────────────────
+# PRESET: DEGEN — more trades, bigger sizes, wider universe
 MAX_PER_COIN      = 1
-MAX_POSITION_PCT  = 0.33    # 33% of equity max per position
-MIN_POSITION_PCT  = 0.07    # 7% of equity min per position
+MAX_POSITION_PCT  = 0.50    # 50% of equity max per position (degen)
+MIN_POSITION_PCT  = 0.05    # 5% of equity min per position (degen: lower floor)
 FEE_RATE          = 0.00045  # 0.045% HL base taker — queried dynamically per trade
 
 
 def get_dynamic_limits(equity: float) -> dict:
-    """All position limits from current equity. Nothing hardcoded."""
+    """All position limits from current equity. DEGEN preset: more aggressive."""
     return {
-        "max_positions":    2 if equity < 500 else 3 if equity < 1500 else 4 if equity < 3000 else 5,
+        "max_positions":    3 if equity < 200 else 4 if equity < 1000 else 5 if equity < 3000 else 6,
         "max_position_usd": round(equity * MAX_POSITION_PCT, 2),
         "min_position_usd": round(max(10, equity * MIN_POSITION_PCT), 2),
         "daily_loss_limit": round(equity * DAILY_LOSS_LIMIT_PCT, 2),
@@ -60,7 +61,7 @@ def get_dynamic_limits(equity: float) -> dict:
 
 
 # Legacy constants (fallback when no equity available)
-MAX_POSITIONS     = 3
+MAX_POSITIONS     = 4
 MAX_POSITION_USD  = 250.0
 MIN_POSITION_USD  = 50.0
 
@@ -124,47 +125,48 @@ def get_slippage(coin: str) -> float:
 MIN_HOLD_MINUTES  = 120    # 2h minimum hold — P0 data: <1h trades avg $0.012, 4-12h avg $0.557
 
 # ─── LEVERAGE (E2: explicit, not HL defaults) ────────────────────────────────
+# PRESET: DEGEN — higher leverage across the board
 COIN_LEVERAGE = {
-    "BTC":      5,   # major, deep book
-    "ETH":      5,   # major, deep book
-    "SOL":      3,   # L1, volatile
-    "XRP":      3,
-    "DOGE":     3,
-    "LTC":      3,
-    "LINK":     3,
-    "DOT":      3,
-    "ADA":      3,
-    "AVAX":     3,
-    "NEAR":     3,
-    "SUI":      3,
-    "OP":       3,
-    "UNI":      3,
-    "BNB":      3,
-    "AAVE":     3,
-    "SEI":      3,
-    "TIA":      3,
-    "WLD":      3,
-    "INJ":      3,
-    "ZEC":      3,
-    "BCH":      3,
-    "CRV":      3,
-    "ENA":      3,
-    "LDO":      3,
-    "ONDO":     3,
-    "JUP":      3,
-    "TON":      3,
-    "TRX":      3,
-    "HYPE":     2,   # volatile alt
-    "TRUMP":    2,   # meme
-    "FARTCOIN": 2,   # meme, thin
-    "PUMP":     2,   # meme, thin
-    "XPL":      2,   # thin book
-    "kBONK":    2,
-    "kPEPE":    2,
-    "kSHIB":    2,
-    "PAXG":     3,   # gold, low vol
+    "BTC":      7,   # major, deep book
+    "ETH":      7,   # major, deep book
+    "SOL":      5,   # L1
+    "XRP":      5,
+    "DOGE":     5,
+    "LTC":      5,
+    "LINK":     5,
+    "DOT":      5,
+    "ADA":      5,
+    "AVAX":     5,
+    "NEAR":     5,
+    "SUI":      5,
+    "OP":       5,
+    "UNI":      5,
+    "BNB":      5,
+    "AAVE":     5,
+    "SEI":      5,
+    "TIA":      5,
+    "WLD":      5,
+    "INJ":      5,
+    "ZEC":      5,
+    "BCH":      5,
+    "CRV":      5,
+    "ENA":      5,
+    "LDO":      5,
+    "ONDO":     5,
+    "JUP":      5,
+    "TON":      5,
+    "TRX":      5,
+    "HYPE":     3,   # volatile alt
+    "TRUMP":    3,   # meme
+    "FARTCOIN": 3,   # meme, thin
+    "PUMP":     3,   # meme, thin
+    "XPL":      3,   # thin book
+    "kBONK":    3,
+    "kPEPE":    3,
+    "kSHIB":    3,
+    "PAXG":     5,   # gold, low vol
 }
-DEFAULT_LEVERAGE = 3
+DEFAULT_LEVERAGE = 5
 
 def get_leverage(coin: str) -> int:
     return COIN_LEVERAGE.get(coin, DEFAULT_LEVERAGE)
@@ -179,7 +181,7 @@ def get_trailing_trigger(coin: str) -> float:
 STRATEGY_REFRESH_HOURS = 6  # 6h refresh — 365d backtests don't change hourly. Saves ~2/3 credits.
                              # API audit 2026-03-22: signal check=$1, assemble=$3. At 2h: 864 credits/day (55 days).
                              # At 6h: 288 credits/day (164 days). WebSocket evaluator runs continuously regardless.
-ACTIVE_COINS_COUNT     = 16  # top coins from portfolio/optimize (or scoring)
+ACTIVE_COINS_COUNT     = 24  # degen: wider universe, more opportunities
 STRATEGY_VERSION       = 6
 
 # ─── ENVY API ─────────────────────────────────────────────────────────────────

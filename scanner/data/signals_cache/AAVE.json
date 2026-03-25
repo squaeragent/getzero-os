@@ -2056,5 +2056,41 @@
     "_pack": "trump",
     "_coin": "AAVE",
     "_fetched": "2026-03-25T11:51:42.332342+00:00"
+  },
+  {
+    "name": "DOJI_BB_RSI_LONG_V1_FR6_Q5_FR6",
+    "rarity": "Common",
+    "signal_type": "LONG",
+    "expression": "DOJI_SIGNAL >= 100 AND BB_POSITION_15M <= 0.15 AND RSI_3H30M < 32 AND SENKOU_A_6H30M_N < 1.0053020000",
+    "exit_expression": "RSI_3H30M > 65 OR BB_POSITION_15M >= 0.80",
+    "max_hold_hours": 72,
+    "sharpe": 1.5165,
+    "total_return": 9.0538,
+    "win_rate": 80,
+    "max_drawdown": 2.225,
+    "trade_count": 30,
+    "active_days": 24,
+    "composite_score": 7.044,
+    "_pack": "common",
+    "_coin": "AAVE",
+    "_fetched": "2026-03-25T12:12:58.131196+00:00"
+  },
+  {
+    "name": "BB_OVERSOLD_HURST_MOMENTUM_LONG_V2_EX5_Q3",
+    "rarity": "Legendary",
+    "signal_type": "LONG",
+    "expression": "BB_POSITION_15M <= 0.15 AND RSI_3H30M < 37 AND HURST_24H >= 0.75 AND MOMENTUM_2H30M_N >= -0.00005 AND LYAPUNOV_48H < 1.7991377725",
+    "exit_expression": "BB_POSITION_15M >= 0.80 OR RSI_3H30M > 88.4",
+    "max_hold_hours": 48,
+    "sharpe": 2.1478,
+    "total_return": 23.5837,
+    "win_rate": 82,
+    "max_drawdown": 5.5901,
+    "trade_count": 50,
+    "active_days": 50,
+    "composite_score": 11.859,
+    "_pack": "trump",
+    "_coin": "AAVE",
+    "_fetched": "2026-03-25T12:12:59.102684+00:00"
   }
 ]

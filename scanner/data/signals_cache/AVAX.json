@@ -1750,5 +1750,41 @@
     "_pack": "trump",
     "_coin": "AVAX",
     "_fetched": "2026-03-25T11:51:50.449813+00:00"
+  },
+  {
+    "name": "DOJI_BB_HIGH_HURST_SHORT_V2_EX1_Q7_MH24",
+    "rarity": "Rare",
+    "signal_type": "SHORT",
+    "expression": "DOJI_SIGNAL >= 100 AND BB_POSITION_15M >= 0.85 AND DOJI_DISTANCE >= 4.0 AND HURST_24H >= 0.70 AND LYAPUNOV_24H < 1.804258405",
+    "exit_expression": "RSI_3H30M <= 28",
+    "max_hold_hours": 24,
+    "sharpe": 1.5933,
+    "total_return": 26.206,
+    "win_rate": 70.2703,
+    "max_drawdown": 8.7777,
+    "trade_count": 37,
+    "active_days": 37,
+    "composite_score": 8.563,
+    "_pack": "common",
+    "_coin": "AVAX",
+    "_fetched": "2026-03-25T12:13:05.380824+00:00"
+  },
+  {
+    "name": "SCORING_TREND_SHORT_REFINED_V2_FR14_EX3_FR19",
+    "rarity": "Rare",
+    "signal_type": "SHORT",
+    "expression": "((EMA_N_6H <= 0.997) * 2) + ((MACD_N_6H <= -0.001) * 2) + ((ROC_6H <= -0.8) * 2) + ((HURST_24H >= 0.93) * 2) + ((ADX_3H30M >= 33.25) * 2) >= 6",
+    "exit_expression": "EMA_N_6H >= 1.1523",
+    "max_hold_hours": 24,
+    "sharpe": 1.9799,
+    "total_return": 27.2037,
+    "win_rate": 63.6364,
+    "max_drawdown": 5.1275,
+    "trade_count": 11,
+    "active_days": 13,
+    "composite_score": 6.049,
+    "_pack": "rare",
+    "_coin": "AVAX",
+    "_fetched": "2026-03-25T12:13:05.851687+00:00"
   }
 ]
