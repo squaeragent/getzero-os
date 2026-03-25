@@ -205,16 +205,30 @@ def _empty_metrics() -> dict:
 
 # ─── Backtester Engine ──────────────────────────────────────
 
+CHAOTIC_REGIMES = {"chaotic_trend", "chaotic_flat"}
+REVERTING_REGIMES = {"strong_revert", "moderate_revert", "weak_revert"}
+
+
 class Backtester:
-    def __init__(self, initial_equity=10000, position_size_pct=0.10):
+    def __init__(self, initial_equity=10000, position_size_pct=0.10,
+                 min_consensus=0, block_chaotic=False, reduce_reverting=False,
+                 min_hold_hours=0):
         self.initial_equity = initial_equity
         self.equity = initial_equity
         self.position_size_pct = position_size_pct
+        self.min_consensus = min_consensus
+        self.block_chaotic = block_chaotic
+        self.reduce_reverting = reduce_reverting
+        self.min_hold_hours = min_hold_hours
         self.trades: list[Trade] = []
         self.open_trades: dict[str, Trade] = {}  # coin -> Trade
         self.equity_curve: list[dict] = []
         self.rejections = 0
         self.evaluations = 0
+
+    def _hours_held(self, trade: Trade, current_ts: int) -> float:
+        entry_ts = int(datetime.strptime(trade.entry_time, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).timestamp() * 1000)
+        return (current_ts - entry_ts) / 3_600_000
 
     def check_stops_and_expiry(self, coin: str, candle: dict, current_ts: int):
         """Check if open trade for coin hit stop or max hold."""
@@ -233,8 +247,12 @@ class Backtester:
             hit_stop = True
             price = trade.stop_price
 
-        hours_held = (current_ts - int(datetime.strptime(trade.entry_time, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).timestamp() * 1000)) / 3_600_000
+        hours_held = self._hours_held(trade, current_ts)
         expired = hours_held >= 24
+
+        # FIX 3: min hold time — only stops can exit early
+        if not hit_stop and hours_held < self.min_hold_hours:
+            return
 
         if hit_stop or expired:
             self._close_trade(coin, price, ts_to_str(current_ts))
@@ -249,9 +267,12 @@ class Backtester:
         )
         self.open_trades[coin] = trade
 
-    def close_trade_signal(self, coin: str, price: float, ts_str: str):
-        """Close trade due to signal change."""
+    def close_trade_signal(self, coin: str, price: float, ts_str: str, current_ts: int = 0):
+        """Close trade due to signal change (respects min_hold_hours)."""
         if coin in self.open_trades:
+            if self.min_hold_hours > 0 and current_ts > 0:
+                if self._hours_held(self.open_trades[coin], current_ts) < self.min_hold_hours:
+                    return
             self._close_trade(coin, price, ts_str)
 
     def _close_trade(self, coin: str, exit_price: float, exit_time: str):
@@ -342,6 +363,98 @@ def run_smartprovider(data: dict) -> dict:
         bt.record_equity(ts_to_str(data[COINS[0]]["1h"][i]["timestamp"]))
 
     # Close all remaining at end
+    final_prices = {coin: data[coin]["1h"][-1]["close"] for coin in COINS}
+    bt.close_all(final_prices, ts_to_str(data[COINS[0]]["1h"][-1]["timestamp"]))
+
+    print(f"  Evaluations: {bt.evaluations}, Rejections: {bt.rejections}, Trades: {len(bt.trades)}")
+    metrics = compute_metrics(bt.trades, bt.equity_curve, bt.initial_equity)
+    return {"metrics": metrics, "equity_curve": bt.equity_curve, "trades": len(bt.trades)}
+
+
+# ─── Strategy A': SmartProvider with filters ──────────────────
+
+def run_smartprovider_variant(data: dict, min_consensus=0, block_chaotic=False,
+                              reduce_reverting=False, min_hold_hours=0) -> dict:
+    """Run SmartProvider with post-evaluation filters applied."""
+    sp = SmartProvider()
+    bt = Backtester(min_consensus=min_consensus, block_chaotic=block_chaotic,
+                    reduce_reverting=reduce_reverting, min_hold_hours=min_hold_hours)
+
+    warmup = 500
+    total_hours = len(data[COINS[0]]["1h"])
+
+    for i in range(warmup, total_hours):
+        if i % 500 == 0:
+            print(f"  [{i}/{total_hours}] evaluating...", flush=True)
+
+        for coin in COINS:
+            candles_1h = data[coin]["1h"]
+            if i >= len(candles_1h):
+                continue
+
+            candle = candles_1h[i]
+            ts_str = ts_to_str(candle["timestamp"])
+
+            bt.check_stops_and_expiry(coin, candle, candle["timestamp"])
+
+            if i % 4 != 0:
+                continue
+
+            bt.evaluations += 1
+            try:
+                md = build_market_data(coin, candles_1h, i, data[coin]["4h"], data[coin]["1d"])
+                result = sp.evaluate_coin(coin, md)
+            except Exception:
+                bt.rejections += 1
+                continue
+
+            direction = result.get("direction", "NEUTRAL")
+            quality = result.get("quality", 0)
+            atr_pct = result.get("atr_pct", 0.03)
+            regime = result.get("regime", "unknown")
+
+            # FIX 1: Consensus filter — count agreeing indicators
+            votes = result.get("indicator_votes", {})
+            if direction in ("LONG", "SHORT"):
+                consensus_count = sum(1 for v in votes.values() if v == direction.lower())
+            else:
+                consensus_count = 0
+
+            if consensus_count < bt.min_consensus and direction in ("LONG", "SHORT"):
+                bt.rejections += 1
+                continue
+
+            # FIX 2: Regime filter — block chaotic
+            if bt.block_chaotic and regime in CHAOTIC_REGIMES:
+                bt.rejections += 1
+                continue
+
+            # FIX 2b: Reduce position in reverting regimes
+            size_mult = 0.5 if (bt.reduce_reverting and regime in REVERTING_REGIMES) else 1.0
+
+            # If we have an open trade and direction changed, close it
+            if coin in bt.open_trades:
+                existing = bt.open_trades[coin]
+                if direction != existing.direction:
+                    bt.close_trade_signal(coin, candle["close"], ts_str, candle["timestamp"])
+
+            # Enter new trade if signal is actionable
+            if direction in ("LONG", "SHORT") and quality >= 3 and coin not in bt.open_trades:
+                stop_pct = max(atr_pct * 2, 0.03)
+                if direction == "LONG":
+                    stop_price = candle["close"] * (1 - stop_pct)
+                else:
+                    stop_price = candle["close"] * (1 + stop_pct)
+                # Apply reduced size for reverting regimes
+                old_size = bt.position_size_pct
+                bt.position_size_pct = old_size * size_mult
+                bt.open_trade(coin, direction, candle["close"], stop_price, ts_str)
+                bt.position_size_pct = old_size
+            elif direction == "NEUTRAL" or quality < 3:
+                bt.rejections += 1
+
+        bt.record_equity(ts_to_str(data[COINS[0]]["1h"][i]["timestamp"]))
+
     final_prices = {coin: data[coin]["1h"][-1]["close"] for coin in COINS}
     bt.close_all(final_prices, ts_to_str(data[COINS[0]]["1h"][-1]["timestamp"]))
 
