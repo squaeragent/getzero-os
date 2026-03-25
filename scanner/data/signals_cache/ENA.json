@@ -1408,5 +1408,41 @@
     "_pack": "common",
     "_coin": "ENA",
     "_fetched": "2026-03-25T12:39:10.948623+00:00"
+  },
+  {
+    "name": "EMA_CROSS_DOJI_BB_SHORT_V1_EX7_Q12_FR2_EX3",
+    "rarity": "Legendary",
+    "signal_type": "SHORT",
+    "expression": "EMA_CROSS_15M_N < 0.0085 AND DOJI_SIGNAL >= 100 AND RSI_3H30M > 52 AND DOJI_DISTANCE >= 5 AND LYAPUNOV_24H < 1.6795793000",
+    "exit_expression": "RSI_3H30M < 21.25 OR EMA_CROSS_15M_N > 0.017",
+    "max_hold_hours": 48,
+    "sharpe": 2.6236,
+    "total_return": 108.3169,
+    "win_rate": 75.5102,
+    "max_drawdown": 13.3192,
+    "trade_count": 49,
+    "active_days": 46,
+    "composite_score": 35.222,
+    "_pack": "trump",
+    "_coin": "ENA",
+    "_fetched": "2026-03-25T15:24:22.145730+00:00"
+  },
+  {
+    "name": "BB_LOW_MACD_CROSS_HURST_LONG_V3_EX0_Q13_FR11",
+    "rarity": "Legendary",
+    "signal_type": "LONG",
+    "expression": "BB_POSITION_15M < 0.15 AND MACD_CROSS_15M_N > 0.0004 AND HURST_24H >= 0.75 AND DOJI_DISTANCE_L < -3.169009870",
+    "exit_expression": "BB_POSITION_15M > 0.95",
+    "max_hold_hours": 30,
+    "sharpe": 2.311,
+    "total_return": 31.7732,
+    "win_rate": 94.7368,
+    "max_drawdown": 4.9793,
+    "trade_count": 19,
+    "active_days": 19,
+    "composite_score": 15.177,
+    "_pack": "trump",
+    "_coin": "ENA",
+    "_fetched": "2026-03-25T15:24:22.145759+00:00"
   }
 ]

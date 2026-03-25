@@ -200,6 +200,10 @@ def update_heartbeat():
 _alert_history: dict[str, float] = {}  # message_key -> last_sent_timestamp
 _ALERT_COOLDOWN = 300  # 5 minutes between identical alerts
 
+# ── Failed entry cooldown — don't retry same coin+direction for 15 min ──
+_failed_entries: dict[str, float] = {}  # "COIN_DIRECTION" -> timestamp
+_FAILED_ENTRY_COOLDOWN = 900  # 15 minutes
+
 def send_alert(message: str):
     """Send Telegram message. Never raises. Suppressed in paper mode. Rate-limited."""
     if os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes"):
@@ -408,6 +412,10 @@ class HLClient:
 
     def get_open_orders(self) -> list:
         return self._info_post({"type": "openOrders", "user": self.main_address})
+
+    def cancel_order(self, coin: str, oid: int) -> dict:
+        """Cancel a single order by oid."""
+        return self.exchange.cancel(coin, oid)
 
     def get_price(self, coin: str) -> float:
         """Get mid price. RAISES if price is zero or missing."""
@@ -718,6 +726,18 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
     coin       = trade["coin"]
     direction  = trade["direction"]
     is_buy     = direction == "LONG"
+
+    # ── Failed entry cooldown check ────────────────────────────────────
+    cooldown_key = f"{coin}_{direction}"
+    if cooldown_key in _failed_entries:
+        elapsed = time.time() - _failed_entries[cooldown_key]
+        if elapsed < _FAILED_ENTRY_COOLDOWN:
+            remaining = int(_FAILED_ENTRY_COOLDOWN - elapsed)
+            log(f"  SKIP {coin} {direction}: failed entry cooldown ({remaining}s remaining)")
+            return False
+        else:
+            del _failed_entries[cooldown_key]  # cooldown expired
+
     size_usd   = compute_size_usd(trade)
     signal_stop = trade.get("stop_loss_pct", 0)
     stop_pct   = get_stop_pct(coin, signal_stop)
@@ -802,8 +822,8 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         decimals = COIN_SZ_DECIMALS.get(coin, 2)
         size_coins = math.floor(raw_coins * 10**decimals) / 10**decimals
         # Ensure rounded size still meets HL $10 minimum (round UP if needed)
-        if size_coins * price < 10.0 and decimals == 0:
-            size_coins = math.ceil(raw_coins)
+        if size_coins * price < 10.0:
+            size_coins = math.ceil(raw_coins * 10**decimals) / 10**decimals
         residual_usd = abs(raw_coins - size_coins) * price
         if residual_usd > 0.01:
             log(f"  Precision residual: ${residual_usd:.2f} ({(residual_usd/size_usd*100):.1f}% of position)")
@@ -877,6 +897,16 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         if fill_px <= 0 or filled_sz <= 0:
             log(f"  🚨 NO FILL on entry for {coin}: fill_px={fill_px}, filled_sz={filled_sz}")
             send_alert(f"🚨 Entry order for {coin} {direction} got NO FILL. Order may be orphaned on HL.")
+            _failed_entries[f"{coin}_{direction}"] = time.time()  # cooldown: skip for 15 min
+            # Cancel any orphaned orders for this coin
+            try:
+                open_orders = client.get_open_orders()
+                for oo in open_orders:
+                    if oo.get("coin") == coin:
+                        log(f"  Cancelling orphaned order: {coin} oid={oo.get('oid')}")
+                        client.cancel_order(coin, oo["oid"])
+            except Exception as e:
+                log(f"  Warning: failed to cancel orphaned orders: {e}")
             return False
 
         # Check partial fill
