@@ -18510,3 +18510,470 @@ Supabase write to system_health failed: {'message': 'new row for relation "syste
   [executor] [2026-03-25 14:03:23 UTC] [EXEC]   Positions synced: 0 match HL
 [14:03:25] SUPERVISOR: Shutting down...
 [14:03:25] SUPERVISOR: Shutting down...
+[14:03:30] SUPERVISOR: Terminated evaluator (PID 72821)
+[14:03:30] SUPERVISOR: Terminated evaluator (PID 72821)
+[14:03:30] SUPERVISOR: Terminated immune (PID 72823)
+[14:03:30] SUPERVISOR: Terminated immune (PID 72823)
+Supabase write to system_health failed: {'message': 'new row for relation "system_health" violates check constraint "system_health_status_check"', 'code': '23514', 'hint': None, 'details': 'Failing row contains (e98298ad-2f30-4230-ac32-fab75928b23d, 2026-03-25 14:03:32.9684+00, agent/balanced, stopped, {"event": "shutdown", "reason": "signal_shutdown"}).'}
+[14:03:34] SUPERVISOR: ============================================================
+[14:03:34] SUPERVISOR: ============================================================
+[14:03:34] SUPERVISOR: V6 Supervisor starting [LIVE]
+[14:03:34] SUPERVISOR: V6 Supervisor starting [LIVE]
+[14:03:34] SUPERVISOR: Python: /opt/homebrew/opt/python@3.14/bin/python3.14
+[14:03:34] SUPERVISOR: Python: /opt/homebrew/opt/python@3.14/bin/python3.14
+[14:03:34] SUPERVISOR: ============================================================
+[14:03:34] SUPERVISOR: ============================================================
+[14:03:34] SUPERVISOR: Initial strategy refresh...
+[14:03:34] SUPERVISOR: Initial strategy refresh...
+  [strategy_manager] [2026-03-25 14:03:34 UTC] [STRATEGY] === V6 Strategy Manager starting ===
+  [strategy_manager] [2026-03-25 14:03:34 UTC] [STRATEGY] === Strategy refresh cycle ===
+  [strategy_manager] [2026-03-25 14:03:34 UTC] [STRATEGY] Phase 0a: Checking NVArena credit balance...
+  [strategy_manager] [2026-03-25 14:03:49 UTC] [STRATEGY]   Credit check failed: <urlopen error timed out>
+  [strategy_manager] [2026-03-25 14:03:49 UTC] [STRATEGY] Phase 0b: Ensuring signal pack cache is fresh...
+[14:03:50] SUPERVISOR:   [strategy_manager] ERROR: Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/v6/strategy_manager.py", line 1023, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/v6/strategy_manager.py", line 1011, in main
+    run_once(api_key)
+    ~~~~~~~~^^^^^^^^^
+  File "/Users/forge/getzer
+[14:03:50] SUPERVISOR:   [strategy_manager] ERROR: Traceback (most recent call last):
+  File "/Users/forge/getzero-os/scanner/v6/strategy_manager.py", line 1023, in <module>
+    main()
+    ~~~~^^
+  File "/Users/forge/getzero-os/scanner/v6/strategy_manager.py", line 1011, in main
+    run_once(api_key)
+    ~~~~~~~~^^^^^^^^^
+  File "/Users/forge/getzer
+[14:03:50] SUPERVISOR: Starting evaluator (WebSocket loop)...
+[14:03:50] SUPERVISOR: Starting evaluator (WebSocket loop)...
+[14:03:50] SUPERVISOR: evaluator PID: 79285
+[14:03:50] SUPERVISOR: evaluator PID: 79285
+[14:03:50] SUPERVISOR: Starting local_evaluator (SmartProvider loop)...
+[14:03:50] SUPERVISOR: Starting local_evaluator (SmartProvider loop)...
+[14:03:50] SUPERVISOR: local_evaluator PID: 79286
+[14:03:50] SUPERVISOR: local_evaluator PID: 79286
+[14:03:50] SUPERVISOR: Starting immune system monitor...
+[14:03:50] SUPERVISOR: Starting immune system monitor...
+[14:03:50] SUPERVISOR: immune PID: 79287
+[14:03:50] SUPERVISOR: immune PID: 79287
+  [immune] [2026-03-25 14:03:50 UTC] [IMMUNE] === V6 Immune System starting ===
+  [local_evaluator] [2026-03-25 14:03:50 UTC] [LOCAL_EVAL] === Local Evaluator starting ===
+  [local_evaluator] [2026-03-25 14:03:50 UTC] [LOCAL_EVAL]   Interval: 60s | Quality gate: q≥6.0
+  [evaluator] [2026-03-25 14:03:50 UTC] [EVAL] === V6 Evaluator starting WebSocket stream ===
+  [evaluator] [2026-03-25 14:03:50 UTC] [EVAL] Connecting to wss://gate.getzero.dev/api/claw/ws/indicators...
+  [immune] [2026-03-25 14:03:50 UTC] [IMMUNE] [MTTR] check_ws_freshness detected_at=2026-03-25T14:03:50.240768+00:00 type=ws_stale age_sec=4400
+  [immune] [2026-03-25 14:03:50 UTC] [IMMUNE] [MTTR] check_equity_anomaly detected_at=2026-03-25T14:03:50.248209+00:00 type=equity_anomaly equity=49.07 mean=748.14 sigma=8.7
+  [immune] [2026-03-25 14:03:50 UTC] [IMMUNE] SUPPRESSED (daily limit): 📡 WS DATA STALE: evaluator last tick 4400s ago
+  [immune] Expected every 15s. Possible disc
+  [immune] [2026-03-25 14:03:50 UTC] [IMMUNE] SUPPRESSED (daily limit): 📈 EQUITY ANOMALY: $49.07 is 8.7σ below mean
+  [immune] Mean: $748.14, σ: $79.94
+  [immune] [2026-03-25 14:03:50 UTC] [IMMUNE] SUPPRESSED (daily limit): 🚨 DRAWDOWN CIRCUIT BREAKER
+  [immune] Equity $49.07 is 93.9% below peak $798.28
+  [immune] Threshold: 
+  [local_evaluator]   [collective] [14:03:52] synced: source=thesis tier=free
+  [local_evaluator] [14:03:52] [SMART] Loaded weights from collective (source=thesis)
+  [local_evaluator] [2026-03-25 14:03:52 UTC] [LOCAL_EVAL]   SmartProvider initialized
+[14:03:53] SUPERVISOR: All components started. Entering main loop.
+[14:03:53] SUPERVISOR: All components started. Entering main loop.
+  [risk_guard] [2026-03-25 14:03:53 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:03:53 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:03:53 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:03:53 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:03:53 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:03:54 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:03:54 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:03:54 UTC] [EXEC]   Positions synced: 0 match HL
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET] === Hyperliquid Market Monitor starting ===
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET] Fetching HL meta + asset contexts...
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing MATIC: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing RNDR: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing FTM: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing MKR: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing FXS: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing HPOS: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing RLB: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing UNIBOT: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing OX: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing FRIEND: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing SHIA: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing CYBER: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing BLZ: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing LOOM: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing OGN: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing RDNT: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing BNT: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing CANTO: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing REQ: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing ORBS: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing STG: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing STRAX: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing BADGER: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing ILV: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing NFTI: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing NTRN: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing PANDORA: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing PIXEL: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing AI: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing MYRO: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing OMNI: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing LISTA: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing kDOGS: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing CATI: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing NEIROETH: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing AI16Z: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing JELLY: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing OM: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   WARN: error processing LAUNCHCOIN: float() argument must be a string or a real number, not 'NoneType'
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   Processed 190 markets
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   Regimes: trending_up: 64 | volatile: 48 | ranging: 45 | quiet: 20 | trending_down: 13
+  [market_monitor] [2026-03-25 14:03:54 UTC] [MARKET]   Tier 1 (ENVY): 40 | Tier 2 (HL only): 150
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]   Supabase: upserted 190 market regimes
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]   Top movers:
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]     VVV        ▲  19.47%  regime=volatile  vol=$9,002,134
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]     TAO        ▲  18.28%  regime=volatile  vol=$143,095,359
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]     MON        ▲  13.01%  regime=volatile  vol=$9,241,655
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]     FARTCOIN   ▲  10.67%  regime=volatile  vol=$17,263,309
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]     FET        ▲  10.60%  regime=volatile  vol=$6,550,617
+  [market_monitor] [2026-03-25 14:03:56 UTC] [MARKET]   Total: 190 markets (40 Tier 1, 150 Tier 2)
+  [local_evaluator] [2026-03-25 14:04:01 UTC] [LOCAL_EVAL]   ENTRY: ADA LONG q=6.0 regime=moderate_trend sharpe=4.2
+  [risk_guard] [2026-03-25 14:04:01 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:04:01 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:02 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:02 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:03 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:03 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:03 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:03 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:04:08 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:04:08 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:09 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:09 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:09 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:09 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:10 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:10 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:04:15 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:04:15 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:15 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:15 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:16 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:16 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:16 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:16 UTC] [EXEC]   Positions synced: 0 match HL
+  [evaluator] [2026-03-25 14:04:20 UTC] [EVAL] Connection error: timed out
+  [evaluator] [2026-03-25 14:04:20 UTC] [EVAL] Reconnecting in 5s...
+  [local_evaluator] [2026-03-25 14:04:20 UTC] [LOCAL_EVAL]   Wrote 1 entries to bus
+  [local_evaluator] [2026-03-25 14:04:20 UTC] [LOCAL_EVAL]   ERROR in cycle #1: cannot access local variable 'new_exits' where it is not associated with a value
+  [local_evaluator] Traceback (most recent call last):
+  [local_evaluator]   File "/Users/forge/getzero-os/scanner/v6/local_evaluator.py", line 218, in run_loop
+  [local_evaluator]     n_entries, n_exits = run_cycle(sp)
+  [local_evaluator]                          ~~~~~~~~~^^^^
+  [local_evaluator]   File "/Users/forge/getzero-os/scanner/v6/local_evaluator.py", line 200, in run_cycle
+  [local_evaluator]     return len(new_entries), len(new_exits)
+  [local_evaluator]                                  ^^^^^^^^^
+  [local_evaluator] UnboundLocalError: cannot access local variable 'new_exits' where it is not associated with a value
+  [risk_guard] [2026-03-25 14:04:22 UTC] [RISK] === V6 Risk Guard starting ===
+  [risk_guard] [2026-03-25 14:04:22 UTC] [RISK]   REJECTED: ADA [SMART_LONG_ADA_moderate_trend] — capital_floor: equity=$49 < $319
+  [risk_guard] [2026-03-25 14:04:22 UTC] [RISK]   CAPITAL FLOOR HIT: equity=$49 < floor=$319 (60% of peak $798) — halting
+  [risk_guard] [2026-03-25 14:04:22 UTC] [RISK]   DAILY LOSS LIMIT: $15.33 >= $6 (7% of $49) — halting 24h
+  [executor] [2026-03-25 14:04:22 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:22 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:22 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:22 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:23 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:23 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:23 UTC] [EXEC]   Positions synced: 0 match HL
+  [evaluator] [2026-03-25 14:04:25 UTC] [EVAL] Connecting to wss://gate.getzero.dev/api/claw/ws/indicators...
+  [risk_guard] [2026-03-25 14:04:29 UTC] [RISK] === V6 Risk Guard starting ===
+  [risk_guard] [2026-03-25 14:04:29 UTC] [RISK]   HALTED: daily_loss_limit (resumes in 24.0h)
+  [executor] [2026-03-25 14:04:29 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:29 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:29 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:29 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:29 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:30 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:30 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:04:35 UTC] [RISK] === V6 Risk Guard starting ===
+  [risk_guard] [2026-03-25 14:04:35 UTC] [RISK]   HALTED: daily_loss_limit (resumes in 24.0h)
+  [executor] [2026-03-25 14:04:35 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:35 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:36 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:36 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:36 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:36 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:36 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:04:42 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:04:42 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:42 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:42 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:43 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:43 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:43 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:44 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:04:49 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:04:49 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:49 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:49 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:49 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:50 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:50 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:50 UTC] [EXEC]   Positions synced: 0 match HL
+  [immune] [2026-03-25 14:04:50 UTC] [IMMUNE] [MTTR] check_equity_anomaly detected_at=2026-03-25T14:04:50.503954+00:00 type=equity_anomaly equity=49.07 mean=748.05 sigma=8.7
+  [immune] [2026-03-25 14:04:50 UTC] [IMMUNE] SUPPRESSED (daily limit): 📈 EQUITY ANOMALY: $49.07 is 8.7σ below mean
+  [immune] Mean: $748.05, σ: $80.33
+  [evaluator] [2026-03-25 14:04:55 UTC] [EVAL] Connection error: timed out
+  [evaluator] [2026-03-25 14:04:55 UTC] [EVAL] Reconnecting in 10s...
+  [risk_guard] [2026-03-25 14:04:55 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:04:55 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:04:55 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:04:56 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:04:56 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:04:56 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:04:56 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:04:56 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:05:01 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:05:02 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:02 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:02 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:02 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:02 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:03 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:03 UTC] [EXEC]   Positions synced: 0 match HL
+  [evaluator] [2026-03-25 14:05:05 UTC] [EVAL] Connecting to wss://gate.getzero.dev/api/claw/ws/indicators...
+  [risk_guard] [2026-03-25 14:05:08 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:05:08 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:08 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:09 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:09 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:09 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:09 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:09 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:05:15 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:05:15 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:15 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:15 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:16 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:16 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:16 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:16 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:05:21 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:05:21 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:21 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:22 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:22 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:22 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:22 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:23 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:05:28 UTC] [RISK] === V6 Risk Guard starting ===
+  [local_evaluator] [2026-03-25 14:05:29 UTC] [LOCAL_EVAL]   ENTRY: ADA LONG q=6.0 regime=moderate_trend sharpe=4.2
+  [executor] [2026-03-25 14:05:28 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:28 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:29 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:29 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:29 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:29 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:29 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:05:35 UTC] [RISK] === V6 Risk Guard starting ===
+  [evaluator] [2026-03-25 14:05:35 UTC] [EVAL] Connection error: timed out
+  [evaluator] [2026-03-25 14:05:35 UTC] [EVAL] Reconnecting in 20s...
+  [executor] [2026-03-25 14:05:35 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:35 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:35 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:35 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:36 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:36 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:36 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:05:41 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:05:41 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:41 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:42 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:42 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:42 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:42 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:42 UTC] [EXEC]   Positions synced: 0 match HL
+  [local_evaluator] [2026-03-25 14:05:42 UTC] [LOCAL_EVAL]   Wrote 1 entries to bus
+  [local_evaluator] [2026-03-25 14:05:42 UTC] [LOCAL_EVAL]   ERROR in cycle #2: cannot access local variable 'new_exits' where it is not associated with a value
+  [local_evaluator] Traceback (most recent call last):
+  [local_evaluator]   File "/Users/forge/getzero-os/scanner/v6/local_evaluator.py", line 218, in run_loop
+  [local_evaluator]     n_entries, n_exits = run_cycle(sp)
+  [local_evaluator]                          ~~~~~~~~~^^^^
+  [local_evaluator]   File "/Users/forge/getzero-os/scanner/v6/local_evaluator.py", line 200, in run_cycle
+  [local_evaluator]     return len(new_entries), len(new_exits)
+  [local_evaluator]                                  ^^^^^^^^^
+  [local_evaluator] UnboundLocalError: cannot access local variable 'new_exits' where it is not associated with a value
+  [risk_guard] [2026-03-25 14:05:48 UTC] [RISK] === V6 Risk Guard starting ===
+  [risk_guard] [2026-03-25 14:05:48 UTC] [RISK]   APPROVED: ADA LONG [SMART_LONG_ADA_moderate_trend]
+  [immune] [2026-03-25 14:05:50 UTC] [IMMUNE] [MTTR] check_equity_anomaly detected_at=2026-03-25T14:05:50.787949+00:00 type=equity_anomaly equity=49.07 mean=747.96 sigma=8.7
+  [immune] [2026-03-25 14:05:50 UTC] [IMMUNE] SUPPRESSED (daily limit): 📈 EQUITY ANOMALY: $49.07 is 8.7σ below mean
+  [immune] Mean: $747.96, σ: $80.72
+  [evaluator] [2026-03-25 14:05:55 UTC] [EVAL] Connecting to wss://gate.getzero.dev/api/claw/ws/indicators...
+  [executor] [2026-03-25 14:05:48 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:05:48 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:05:48 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:05:49 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:05:49 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:05:49 UTC] [EXEC] Rate limit: 33/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:05:49 UTC] [EXEC]   Positions synced: 0 match HL
+  [executor] [2026-03-25 14:05:49 UTC] [EXEC]   Size: 11% of $49 = $5 (conviction=0.65)
+  [executor] [2026-03-25 14:05:50 UTC] [EXEC]   Leverage set: ADA → 5x cross
+  [executor] [2026-03-25 14:05:50 UTC] [EXEC]   L2 book ADA: bids=5, asks=5, bid_depth=$11366, ask_depth=$15458
+  [executor] [2026-03-25 14:05:50 UTC] [EXEC]   Precision residual: $0.18 (1.8% of position)
+  [executor] [2026-03-25 14:05:50 UTC] [EXEC]   Opening LONG ADA: 36.0 coins ($10) IOC @ $0.2727 [funding=+0.000013/hr, depth=$15458, slip=1.0%]
+  [executor] [2026-03-25 14:05:52 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Order must have minimum value of $10. asset=65"}]}}, "_cloid": "0x57b0e7ff98644ca594d2bd219e5cd596"}
+  [executor] [2026-03-25 14:05:52 UTC] [EXEC]   🚨 NO FILL on entry for ADA: fill_px=0.0, filled_sz=0.0
+  [risk_guard] [2026-03-25 14:06:02 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:02 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:02 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:02 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:03 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:03 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:04 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:04 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:06:09 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:09 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:09 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:09 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:10 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:10 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:10 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:10 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:06:15 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:15 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:16 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:16 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:16 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:16 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:16 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:17 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:06:22 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:22 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:22 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:22 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:23 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:23 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:24 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:24 UTC] [EXEC]   Positions synced: 0 match HL
+  [evaluator] [2026-03-25 14:06:25 UTC] [EVAL] Connection error: timed out
+  [evaluator] [2026-03-25 14:06:25 UTC] [EVAL] Reconnecting in 40s...
+  [risk_guard] [2026-03-25 14:06:29 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:29 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:29 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:29 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:30 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:30 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:30 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:30 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:06:36 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:36 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:36 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:36 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:36 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:37 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:37 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:37 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:06:42 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:42 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:42 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:43 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:43 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:43 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:44 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:44 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:06:49 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:49 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:49 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:49 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:50 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:50 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:50 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:50 UTC] [EXEC]   Positions synced: 0 match HL
+  [immune] [2026-03-25 14:06:51 UTC] [IMMUNE] [MTTR] check_equity_anomaly detected_at=2026-03-25T14:06:51.056053+00:00 type=equity_anomaly equity=49.07 mean=747.87 sigma=8.6
+  [immune] [2026-03-25 14:06:51 UTC] [IMMUNE] SUPPRESSED (daily limit): 📈 EQUITY ANOMALY: $49.07 is 8.6σ below mean
+  [immune] Mean: $747.87, σ: $81.11
+  [local_evaluator] [2026-03-25 14:06:52 UTC] [LOCAL_EVAL]   ENTRY: ADA LONG q=6.0 regime=moderate_trend sharpe=4.2
+  [risk_guard] [2026-03-25 14:06:55 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:06:55 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:06:56 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:06:56 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:06:56 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:06:56 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:06:57 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:06:57 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:07:02 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:07:02 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:07:02 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:07:02 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:07:02 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:07:03 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:07:03 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:07:03 UTC] [EXEC]   Positions synced: 0 match HL
+  [evaluator] [2026-03-25 14:07:05 UTC] [EVAL] Connecting to wss://gate.getzero.dev/api/claw/ws/indicators...
+  [local_evaluator] [2026-03-25 14:07:06 UTC] [LOCAL_EVAL]   Wrote 1 entries to bus
+  [local_evaluator] [2026-03-25 14:07:06 UTC] [LOCAL_EVAL]   ERROR in cycle #3: cannot access local variable 'new_exits' where it is not associated with a value
+  [local_evaluator] Traceback (most recent call last):
+  [local_evaluator]   File "/Users/forge/getzero-os/scanner/v6/local_evaluator.py", line 218, in run_loop
+  [local_evaluator]     try:
+  [local_evaluator]     
+  [local_evaluator]   File "/Users/forge/getzero-os/scanner/v6/local_evaluator.py", line 200, in run_cycle
+  [local_evaluator] UnboundLocalError: cannot access local variable 'new_exits' where it is not associated with a value
+  [risk_guard] [2026-03-25 14:07:08 UTC] [RISK] === V6 Risk Guard starting ===
+  [risk_guard] [2026-03-25 14:07:08 UTC] [RISK]   APPROVED: ADA LONG [SMART_LONG_ADA_moderate_trend]
+  [executor] [2026-03-25 14:07:08 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:07:09 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:07:09 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:07:09 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:07:09 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:07:10 UTC] [EXEC] Rate limit: 35/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:07:10 UTC] [EXEC]   Positions synced: 0 match HL
+  [executor] [2026-03-25 14:07:10 UTC] [EXEC]   Size: 11% of $49 = $5 (conviction=0.65)
+  [executor] [2026-03-25 14:07:11 UTC] [EXEC]   Leverage set: ADA → 5x cross
+  [executor] [2026-03-25 14:07:11 UTC] [EXEC]   L2 book ADA: bids=5, asks=5, bid_depth=$6060, ask_depth=$17103
+  [executor] [2026-03-25 14:07:11 UTC] [EXEC]   Precision residual: $0.18 (1.8% of position)
+  [executor] [2026-03-25 14:07:11 UTC] [EXEC]   Opening LONG ADA: 36.0 coins ($10) IOC @ $0.2727 [funding=+0.000013/hr, depth=$17103, slip=1.0%]
+  [executor] [2026-03-25 14:07:12 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Order must have minimum value of $10. asset=65"}]}}, "_cloid": "0x46834a670d6e4d3183fe416505b34efd"}
+  [executor] [2026-03-25 14:07:12 UTC] [EXEC]   🚨 NO FILL on entry for ADA: fill_px=0.0, filled_sz=0.0
+  [risk_guard] [2026-03-25 14:07:18 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:07:18 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:07:19 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:07:19 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:07:19 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:07:20 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:07:20 UTC] [EXEC] Rate limit: 37/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:07:20 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:07:25 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:07:25 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:07:25 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:07:26 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:07:26 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:07:26 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:07:26 UTC] [EXEC] Rate limit: 37/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:07:26 UTC] [EXEC]   Positions synced: 0 match HL
+  [risk_guard] [2026-03-25 14:07:32 UTC] [RISK] === V6 Risk Guard starting ===
+  [executor] [2026-03-25 14:07:32 UTC] [EXEC] === V6 Executor ===
+  [executor] [2026-03-25 14:07:32 UTC] [EXEC] Loaded 229 coins from HL meta
+  [executor] [2026-03-25 14:07:32 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+  [executor] [2026-03-25 14:07:33 UTC] [EXEC] Account equity: $49.07
+  [executor] [2026-03-25 14:07:33 UTC] [EXEC] Fee rates: taker=0.045% maker=0.015%
+  [executor] [2026-03-25 14:07:33 UTC] [EXEC] Rate limit: 37/10494 used (cumVol=$495)
+  [executor] [2026-03-25 14:07:33 UTC] [EXEC]   Positions synced: 0 match HL
+[14:07:34] SUPERVISOR: Shutting down...
+[14:07:34] SUPERVISOR: Shutting down...
+Supabase write to system_health failed: {'message': 'new row for relation "system_health" violates check constraint "system_health_status_check"', 'code': '23514', 'hint': None, 'details': 'Failing row contains (e5249587-b4ca-4f9d-9a09-d1d619218506, 2026-03-25 14:07:34.959264+00, agent/balanced, stopped, {"event": "shutdown", "reason": "signal_shutdown"}).'}
+[14:07:35] SUPERVISOR: Terminated evaluator (PID 79285)
+[14:07:35] SUPERVISOR: Terminated evaluator (PID 79285)
+[14:07:35] SUPERVISOR: Terminated local_evaluator (PID 79286)
+[14:07:35] SUPERVISOR: Terminated local_evaluator (PID 79286)
+[14:07:35] SUPERVISOR: Terminated immune (PID 79287)
+[14:07:35] SUPERVISOR: Terminated immune (PID 79287)
+[14:07:35] SUPERVISOR: ============================================================
+[14:07:35] SUPERVISOR: ============================================================
+[14:07:35] SUPERVISOR: V6 Supervisor starting [LIVE]
+[14:07:35] SUPERVISOR: V6 Supervisor starting [LIVE]
+[14:07:35] SUPERVISOR: Python: /opt/homebrew/opt/python@3.14/bin/python3.14
+[14:07:35] SUPERVISOR: Python: /opt/homebrew/opt/python@3.14/bin/python3.14
+[14:07:35] SUPERVISOR: ============================================================
+[14:07:35] SUPERVISOR: ============================================================
+[14:07:35] SUPERVISOR: Initial strategy refresh...
+[14:07:35] SUPERVISOR: Initial strategy refresh...

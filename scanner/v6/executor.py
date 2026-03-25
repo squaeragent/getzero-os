@@ -801,7 +801,10 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         raw_coins = size_usd / price
         decimals = COIN_SZ_DECIMALS.get(coin, 2)
         size_coins = math.floor(raw_coins * 10**decimals) / 10**decimals
-        residual_usd = (raw_coins - size_coins) * price
+        # Ensure rounded size still meets HL $10 minimum (round UP if needed)
+        if size_coins * price < 10.0 and decimals == 0:
+            size_coins = math.ceil(raw_coins)
+        residual_usd = abs(raw_coins - size_coins) * price
         if residual_usd > 0.01:
             log(f"  Precision residual: ${residual_usd:.2f} ({(residual_usd/size_usd*100):.1f}% of position)")
         if size_coins <= 0:

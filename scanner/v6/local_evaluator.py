@@ -188,16 +188,18 @@ def run_cycle(smart_provider):
         _log(f"  Wrote {len(new_entries)} entries to bus")
 
     # Exits
+    n_exits = 0
     if positions:
         new_exits = evaluate_exits(smart_provider, positions)
+        n_exits = len(new_exits)
         if new_exits:
             existing = load_json(EXITS_FILE, {}).get("exits", [])
             existing.extend(new_exits)
             save_json_atomic(EXITS_FILE, {"updated_at": now_iso(), "exits": existing})
-            _log(f"  Wrote {len(new_exits)} exits to bus")
+            _log(f"  Wrote {n_exits} exits to bus")
 
     update_heartbeat()
-    return len(new_entries), len(new_exits)
+    return len(new_entries), n_exits
 
 
 def run_loop():
