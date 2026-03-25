@@ -197,11 +197,20 @@ def update_heartbeat():
 
 # ─── TELEGRAM ─────────────────────────────────────────────────────────────────
 
+_alert_history: dict[str, float] = {}  # message_key -> last_sent_timestamp
+_ALERT_COOLDOWN = 300  # 5 minutes between identical alerts
+
 def send_alert(message: str):
-    """Send Telegram message. Never raises. Suppressed in paper mode."""
+    """Send Telegram message. Never raises. Suppressed in paper mode. Rate-limited."""
     if os.environ.get("PAPER_MODE", "").lower() in ("1", "true", "yes"):
         log(f"[PAPER] Alert suppressed: {message[:80]}")
         return
+    # Rate limit: same alert key can only fire every 5 minutes
+    alert_key = message[:60]
+    now = time.time()
+    if alert_key in _alert_history and (now - _alert_history[alert_key]) < _ALERT_COOLDOWN:
+        return  # suppress duplicate alert
+    _alert_history[alert_key] = now
     try:
         token = get_env(TELEGRAM_BOT_TOKEN_ENV)
         if not token:
