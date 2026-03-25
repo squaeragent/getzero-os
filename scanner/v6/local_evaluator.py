@@ -25,9 +25,21 @@ from scanner.v6.config import (
     ACTIVE_COINS_COUNT, get_stop_pct,
 )
 
+# Session-aware imports — graceful fallback to hardcoded behavior
+try:
+    from scanner.v6.session_manager import (
+        get_active_session, get_session_params, check_session_expiry,
+        get_coins_for_scope,
+    )
+    _SESSION_AVAILABLE = True
+except ImportError:
+    _SESSION_AVAILABLE = False
+
 V6_DIR = Path(__file__).parent
+WATCH_ENTRIES_FILE = BUS_DIR / "watch_entries.json"
 EVAL_INTERVAL = 60  # seconds between evaluation cycles (1 min)
 MIN_QUALITY = 6.0   # quality threshold (0-10 scale) — matches ENVY evaluator q≥6
+_idle_log_counter = 0  # throttle idle logging
 
 def _log(msg: str):
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -70,9 +82,22 @@ def get_active_coins() -> list[str]:
     ][:ACTIVE_COINS_COUNT]
 
 
-def evaluate_entries(smart_provider, coins: list[str], open_coins: set) -> list[dict]:
+def evaluate_entries(smart_provider, coins: list[str], open_coins: set,
+                     session_params: dict | None = None) -> list[dict]:
     """Run SmartProvider on each coin, return entries that pass quality gate."""
     new_entries = []
+
+    # Session-aware overrides
+    if session_params:
+        quality_gate = MIN_QUALITY + (session_params.get('consensus_threshold', 6) - 6) * 0.5
+        allowed_dirs = [d.upper() for d in session_params.get('directions', ['long', 'short'])]
+        stop_override = session_params.get('stop_pct')
+        hold_override = session_params.get('max_hold_hours')
+    else:
+        quality_gate = MIN_QUALITY
+        allowed_dirs = None
+        stop_override = None
+        hold_override = None
 
     for i, coin in enumerate(coins):
         if coin in open_coins:
@@ -92,12 +117,17 @@ def evaluate_entries(smart_provider, coins: list[str], open_coins: set) -> list[
         quality = result.get("quality", 0)
         regime = result.get("regime", "unknown")
 
-        if direction == "NEUTRAL" or quality < MIN_QUALITY:
+        if direction == "NEUTRAL" or quality < quality_gate:
+            continue
+
+        # Direction filter from session
+        if allowed_dirs and direction not in allowed_dirs:
             continue
 
         # Convert to entry format
         atr_pct = result.get("atr_pct", 0.05)
-        stop_pct = get_stop_pct(coin)  # use per-coin stop from config
+        stop_pct = stop_override if stop_override else get_stop_pct(coin)
+        max_hold = hold_override if hold_override else 12
 
         entry = {
             "coin":            coin,
@@ -105,7 +135,7 @@ def evaluate_entries(smart_provider, coins: list[str], open_coins: set) -> list[
             "signal_name":     f"SMART_{direction}_{coin}_{regime}",
             "expression":      f"SMART_REGIME={regime}",
             "exit_expression": "",
-            "max_hold_hours":  12,
+            "max_hold_hours":  max_hold,
             "sharpe":          round(quality * 0.7, 2),
             "win_rate":        round(45 + quality * 5, 1),
             "composite_score": round(quality * 0.7, 2),
@@ -172,20 +202,77 @@ def evaluate_exits(smart_provider, positions: list[dict]) -> list[dict]:
     return new_exits
 
 
+def _increment_session_eval_count():
+    """Bump eval_count on the active session."""
+    try:
+        from scanner.v6.bus_io import load_json_locked, save_json_locked
+        from scanner.v6.session_manager import SESSION_FILE
+        session = load_json_locked(SESSION_FILE, None)
+        if session and session.get('status') == 'active':
+            session['eval_count'] = session.get('eval_count', 0) + 1
+            save_json_locked(SESSION_FILE, session)
+    except Exception:
+        pass
+
+
 def run_cycle(smart_provider):
     """Single evaluation cycle."""
-    coins = get_active_coins()
+    global _idle_log_counter
+
+    # ── Session gate ──────────────────────────────────────────────────────
+    session_params = None
+    paper_only = False
+
+    if _SESSION_AVAILABLE:
+        session = get_active_session()
+        if session is None:
+            _idle_log_counter += 1
+            if _idle_log_counter == 1 or _idle_log_counter % 10 == 0:
+                _log("[SESSION] No active session — agent idle, skipping evaluation")
+            return 0, 0
+
+        # Check expiry
+        check_session_expiry()
+        session = get_active_session()
+        if session is None:
+            _log("[SESSION] Session expired — agent idle")
+            return 0, 0
+
+        _idle_log_counter = 0  # reset since we have an active session
+        session_params = get_session_params()
+        paper_only = session_params.get('paper_only', False)
+
+        strategy_name = session_params.get('name', session.get('strategy', '?'))
+        _log(f"[SESSION] Using {strategy_name} params: "
+             f"max_pos={session_params.get('max_positions')}, "
+             f"scope={session_params.get('scope')}, "
+             f"stop={session_params.get('stop_pct')}")
+
+    # ── Coin selection ────────────────────────────────────────────────────
+    if session_params and 'coins' in session_params:
+        coins = session_params['coins']
+    else:
+        coins = get_active_coins()
+
     positions = load_json(POSITIONS_FILE, {}).get("positions", [])
     open_coins = {p["coin"] for p in positions}
 
     # Entries
-    new_entries = evaluate_entries(smart_provider, coins, open_coins)
+    new_entries = evaluate_entries(smart_provider, coins, open_coins,
+                                  session_params=session_params)
 
     if new_entries:
-        existing = load_json(ENTRIES_FILE, {}).get("entries", [])
-        existing.extend(new_entries)
-        save_json_atomic(ENTRIES_FILE, {"updated_at": now_iso(), "entries": existing})
-        _log(f"  Wrote {len(new_entries)} entries to bus")
+        if paper_only:
+            # Watch mode: write to watch_entries.json, not real entries
+            existing = load_json(WATCH_ENTRIES_FILE, {}).get("entries", [])
+            existing.extend(new_entries)
+            save_json_atomic(WATCH_ENTRIES_FILE, {"updated_at": now_iso(), "entries": existing})
+            _log(f"  [WATCH] Wrote {len(new_entries)} watch entries (paper_only)")
+        else:
+            existing = load_json(ENTRIES_FILE, {}).get("entries", [])
+            existing.extend(new_entries)
+            save_json_atomic(ENTRIES_FILE, {"updated_at": now_iso(), "entries": existing})
+            _log(f"  Wrote {len(new_entries)} entries to bus")
 
     # Exits
     n_exits = 0
@@ -197,6 +284,10 @@ def run_cycle(smart_provider):
             existing.extend(new_exits)
             save_json_atomic(EXITS_FILE, {"updated_at": now_iso(), "exits": existing})
             _log(f"  Wrote {n_exits} exits to bus")
+
+    # Track session eval count
+    if _SESSION_AVAILABLE and session_params:
+        _increment_session_eval_count()
 
     update_heartbeat()
     return len(new_entries), n_exits
@@ -216,15 +307,20 @@ def run_loop():
     while True:
         cycle += 1
         try:
-            coins = get_active_coins()
             n_entries, n_exits = run_cycle(sp)
             if cycle == 1 or cycle % 10 == 0 or n_entries > 0 or n_exits > 0:
-                _log(f"  Cycle #{cycle}: {len(coins)} coins → {n_entries} entries, {n_exits} exits")
+                _log(f"  Cycle #{cycle}: {n_entries} entries, {n_exits} exits")
         except Exception as e:
             _log(f"  ERROR in cycle #{cycle}: {e}")
             traceback.print_exc()
 
-        time.sleep(EVAL_INTERVAL)
+        # Use session eval interval if available, else default
+        interval = EVAL_INTERVAL
+        if _SESSION_AVAILABLE:
+            params = get_session_params()
+            if params:
+                interval = params.get('eval_interval_sec', EVAL_INTERVAL)
+        time.sleep(interval)
 
 
 def run_once():

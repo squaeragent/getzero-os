@@ -30,6 +30,13 @@ BUS_DIR  = V6_DIR / "bus"
 PYTHON   = sys.executable
 LOG_FILE = V6_DIR / "supervisor.log"
 
+# Session expiry — graceful fallback
+try:
+    from scanner.v6.session_manager import check_session_expiry as _check_session_expiry
+    _SESSION_AVAILABLE = True
+except ImportError:
+    _SESSION_AVAILABLE = False
+
 # Component definitions: (name, script, cycle_seconds, stale_threshold_seconds)
 COMPONENTS = [
     ("risk_guard",       V6_DIR / "risk_guard.py",           5,    60),  # 5s cycle, stale if >60s
@@ -326,6 +333,13 @@ def main():
         # Check local_evaluator and immune health
         check_evaluator()
         start_immune()  # restart if died
+
+        # Check session expiry — auto-completes expired sessions
+        if _SESSION_AVAILABLE:
+            try:
+                _check_session_expiry()
+            except Exception as e:
+                log(f"WARN: session expiry check failed: {e}")
 
         # Export portfolio.json for the website every 2 minutes
         if now - last_portfolio_export >= 120:

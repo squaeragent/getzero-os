@@ -33,6 +33,13 @@ from scanner.v6.config import (
     DAILY_LOSS_LIMIT, CAPITAL, get_dynamic_limits,
 )
 
+# Session-aware imports — graceful fallback to hardcoded behavior
+try:
+    from scanner.v6.session_manager import get_active_session, get_session_params
+    _SESSION_AVAILABLE = True
+except ImportError:
+    _SESSION_AVAILABLE = False
+
 # Supabase bridge — telemetry only
 try:
     from supabase_bridge import bridge as _sb
@@ -195,10 +202,50 @@ def check_halt(risk: dict) -> tuple[bool, str]:
     return True, risk.get("halt_reason", "unknown")
 
 
-def approve_entry(entry: dict, positions: list, risk: dict, equity: float) -> tuple[bool, str]:
+def _get_current_regime() -> str:
+    """Read current market regime from bus data."""
+    try:
+        regimes_file = BUS_DIR / "market_regimes.json" if (BUS_DIR / "market_regimes.json").exists() \
+            else BUS_DIR.parent.parent / "bus" / "regimes.json"
+        data = load_json(regimes_file, {})
+        return data.get("regime", data.get("current", "unknown"))
+    except Exception:
+        return "unknown"
+
+
+def approve_entry(entry: dict, positions: list, risk: dict, equity: float,
+                  session_params: dict | None = None) -> tuple[bool, str]:
     """Check if an entry passes all risk checks. Returns (approved, reason)."""
     coin      = entry.get("coin", "")
     direction = entry.get("direction", "LONG")
+
+    # ── Session-aware overrides ───────────────────────────────────────────
+    if session_params:
+        sess_max_pos = session_params.get('max_positions')
+        sess_directions = [d.upper() for d in session_params.get('directions', ['long', 'short'])]
+
+        # Direction filter
+        if direction not in sess_directions:
+            return False, f"session_direction: {direction} not in {sess_directions}"
+
+        # Max trades per session (Sniper)
+        max_trades = session_params.get('max_trades_per_session')
+        if max_trades is not None:
+            try:
+                from scanner.v6.session_manager import SESSION_FILE
+                sess = load_json_locked(SESSION_FILE, {})
+                trade_count = len(sess.get('trades', []))
+                if trade_count >= max_trades:
+                    return False, f"session_trade_limit: {trade_count} >= {max_trades}"
+            except Exception:
+                pass
+
+        # Allowed regimes
+        allowed_regimes = session_params.get('allowed_regimes')
+        if allowed_regimes:
+            current_regime = _get_current_regime()
+            if current_regime != "unknown" and current_regime not in allowed_regimes:
+                return False, f"regime_blocked: {current_regime} not in {allowed_regimes}"
 
     # Capital floor (dynamic: 60% of peak, minimum CAPITAL_FLOOR)
     peak = risk.get("peak_equity", CAPITAL)
@@ -211,13 +258,17 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float) -> tu
     dyn_daily_loss = limits["daily_loss_limit"]
     dyn_max_pos = limits["max_positions"]
 
+    # Session max_positions overrides dynamic limit (use the stricter)
+    if session_params and session_params.get('max_positions') is not None:
+        dyn_max_pos = min(dyn_max_pos, session_params['max_positions'])
+
     # Daily loss limit (dynamic: 7% of equity)
     if risk["daily_loss_usd"] >= dyn_daily_loss:
         return False, f"daily_loss_limit: ${risk['daily_loss_usd']:.2f} >= ${dyn_daily_loss:.0f} (7% of ${equity:.0f})"
 
-    # Max positions (scales with equity)
+    # Max positions (scales with equity, capped by session)
     if len(positions) >= dyn_max_pos:
-        return False, f"max_positions: {len(positions)} >= {dyn_max_pos} (equity=${equity:.0f})"
+        return False, f"max_positions: {len(positions)} >= {dyn_max_pos}"
 
     # Max per coin
     coin_count = sum(1 for p in positions if p.get("coin") == coin)
@@ -235,6 +286,20 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float) -> tu
 # ─── MAIN CYCLE ───────────────────────────────────────────────────────────────
 
 def run_once():
+    # ── Session gate ──────────────────────────────────────────────────────
+    session_params = None
+    if _SESSION_AVAILABLE:
+        session = get_active_session()
+        if session is None:
+            # No session → reject all entries (agent is idle)
+            save_json_atomic(APPROVED_FILE, {"updated_at": now_iso(), "approved": []})
+            update_heartbeat()
+            return
+        session_params = get_session_params()
+        log(f"[SESSION] {session_params.get('name', '?')}: "
+            f"max_pos={session_params.get('max_positions')}, "
+            f"dirs={session_params.get('directions')}")
+
     risk      = load_risk()
     positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
     entries   = load_json(ENTRIES_FILE, {}).get("entries", [])
@@ -288,7 +353,7 @@ def run_once():
     rejected = []
 
     for entry in entries:
-        ok, reason = approve_entry(entry, positions, risk, equity)
+        ok, reason = approve_entry(entry, positions, risk, equity, session_params=session_params)
         if ok:
             approved.append(entry)
             log(f"  APPROVED: {entry['coin']} {entry['direction']} [{entry['signal_name']}]")
