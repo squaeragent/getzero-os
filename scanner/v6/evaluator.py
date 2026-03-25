@@ -317,7 +317,7 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
                     log(f"  ENTRY BLOCKED (churn): {coin} {direction} [{sig_name}] — signal_reversal exit < {CHURN_COOLDOWN_MINUTES}m ago")
                     continue
                 # Consensus check: don't enter if >60% of signals point opposite
-                all_directions = [s.get("direction", "").upper() for s in coin_data.get("signals", [])]
+                all_directions = [s.get("direction", "").upper() for s in coin_signals]
                 opposite = "SHORT" if direction == "LONG" else "LONG"
                 opp_count = sum(1 for d in all_directions if d == opposite)
                 if len(all_directions) > 2 and opp_count / len(all_directions) > 0.6:
@@ -602,7 +602,14 @@ def run_websocket(api_key: str):
                     if msg_count == 1 or msg_count % 20 == 0:
                         log(f"  Tick #{msg_count}: {len(flat)} coins")
 
-                    evaluate_tick(flat)
+                    try:
+                        evaluate_tick(flat)
+                    except Exception as eval_err:
+                        log(f"WARN: evaluate_tick error (NOT reconnecting): {eval_err}")
+                        # Don't break — code errors should NOT trigger reconnect.
+                        # Log and continue to next tick.
+                        import traceback
+                        traceback.print_exc()
 
                 except (json.JSONDecodeError, OSError) as e:
                     log(f"WARN: message error: {e}")

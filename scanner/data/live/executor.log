@@ -40,3 +40,42 @@
 [2026-03-25 12:10:28 UTC] [EXEC]   Error: Insufficient margin to place order. asset=0
 [2026-03-25 12:10:28 UTC] [EXEC]   Not filled, skipping
 [2026-03-25 12:10:29 UTC] [EXEC] Summary: 2 positions, $360.00 notional, trades=69
+[2026-03-25 12:36:31 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-25 12:36:32 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-25 12:36:32 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-25 12:36:32 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-25 12:36:32 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-25 12:36:32 UTC] [EXEC] Positions: 0 | Throttle: 1.0 | Kill: False
+[2026-03-25 12:36:32 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-25 12:36:34 UTC] [EXEC] LIVE OPEN WLD SHORT | $152.94 (472.9) @ $0.3234 | sharpe=2.01
+[2026-03-25 12:36:34 UTC] [EXEC]   Margin: isolated 2x for WLD → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-25 12:36:34 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-25 12:36:35 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "309.5", "avgPx": "0.32345", "oid": 360881491201}}]}}}
+[2026-03-25 12:36:35 UTC] [EXEC]   Filled @ $0.3235
+[2026-03-25 12:36:35 UTC] [EXEC]   Execution: intended=$0.3234 filled=$0.3235 slippage=0.0062% ($0.0095) fill_time=1159ms spread=0.02779
+[2026-03-25 12:36:36 UTC] [EXEC]   WLD ATR-stop: ATR=0.228% → stop=3.00%
+[2026-03-25 12:36:36 UTC] [EXEC]   Stop loss: WLD trigger @ $0.3332 (buy 472.9)
+[2026-03-25 12:36:37 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 360881510564}}]}}}
+[2026-03-25 12:36:37 UTC] [EXEC]   Open fill fee for WLD: $0.045048
+[2026-03-25 12:36:39 UTC] [EXEC] LIVE OPEN NEAR SHORT | $152.00 (116.8) @ $1.3011 | sharpe=2.01
+[2026-03-25 12:36:39 UTC] [EXEC]   Margin: isolated 3x for NEAR → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-25 12:36:39 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-25 12:36:40 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Insufficient margin to place order. asset=74"}]}}}
+[2026-03-25 12:36:40 UTC] [EXEC]   Error: Insufficient margin to place order. asset=74
+[2026-03-25 12:36:40 UTC] [EXEC]   Not filled, skipping
+[2026-03-25 12:36:41 UTC] [EXEC] LIVE OPEN SUI SHORT | $152.00 (158.2) @ $0.9609 | sharpe=2.01
+[2026-03-25 12:36:41 UTC] [EXEC]   Margin: isolated 2x for SUI → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-25 12:36:41 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-25 12:36:43 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Insufficient margin to place order. asset=14"}]}}}
+[2026-03-25 12:36:43 UTC] [EXEC]   Error: Insufficient margin to place order. asset=14
+[2026-03-25 12:36:43 UTC] [EXEC]   Not filled, skipping
+[2026-03-25 12:36:43 UTC] [EXEC] Summary: 1 positions, $152.94 notional, trades=69
+[2026-03-25 13:25:45 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-25 13:25:46 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-25 13:25:46 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-25 13:25:46 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-25 13:25:46 UTC] [EXEC] Positions: 1 | Throttle: 0.0 | Kill: True
+[2026-03-25 13:25:46 UTC] [EXEC] KILL ALL — Risk Agent triggered emergency close
+[2026-03-25 13:25:47 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "309.5", "avgPx": "0.32634", "oid": 360921315937}}]}}}
+[2026-03-25 13:25:47 UTC] [EXEC]   Fees: open=$0.000000 close=$0.045451 total=$0.045451 | P&L after fees: $-0.9213
+[2026-03-25 13:25:47 UTC] [EXEC]   Closed WLD SHORT | risk_kill | -0.87% ($-0.88) (fees=$0.0455, net=$-0.9213)
