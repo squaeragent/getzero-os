@@ -1,0 +1,25 @@
+# NOTE: This is the pyproject.toml for the zero-skills package.
+# Copy to a separate repo or use as reference for PyPI publish.
+# The zero_skills/ directory can be published independently.
+
+[project]
+name = "zero-skills"
+version = "0.1.0"
+description = "Trading capabilities for AI agents — regime detection, consensus, immune protection, collective intelligence"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "ZERO", email = "degenie@getzero.dev"}]
+
+dependencies = []
+
+[project.urls]
+Homepage = "https://getzero.dev"
+Documentation = "https://getzero.dev/docs/api"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["zero_skills*"]
