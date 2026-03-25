@@ -47,7 +47,7 @@ def audit() -> list[str]:
     try:
         result = subprocess.run(["ps", "aux"], capture_output=True, text=True, timeout=5)
         running = result.stdout
-        for component in ["supervisor", "evaluator", "immune"]:
+        for component in ["supervisor", "local_evaluator", "immune"]:
             if f"v6/{component}" not in running:
                 findings.append(f"🔴 PROCESS DOWN: {component} is not running")
     except Exception:
@@ -76,7 +76,7 @@ def audit() -> list[str]:
     # 3. Check for stale heartbeats
     heartbeats = load_json(BUS_DIR / "heartbeat.json", {})
     now = datetime.now(timezone.utc)
-    for component in ["risk_guard", "executor", "evaluator"]:
+    for component in ["risk_guard", "executor", "local_evaluator"]:
         ts_str = heartbeats.get(component, "")
         if ts_str:
             try:

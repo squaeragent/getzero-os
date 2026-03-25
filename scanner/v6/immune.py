@@ -136,7 +136,7 @@ def check_ws_freshness(state: dict) -> list[str]:
     """Alert if WebSocket data is stale."""
     alerts = []
     heartbeats = load_json(HEARTBEAT_FILE, {})
-    evaluator_ts = heartbeats.get("evaluator", "")
+    evaluator_ts = heartbeats.get("local_evaluator", "")
 
     if evaluator_ts:
         try:
@@ -146,8 +146,8 @@ def check_ws_freshness(state: dict) -> list[str]:
             if age_seconds > 120:  # 2 minutes without a tick
                 log(f"[MTTR] check_ws_freshness detected_at={now_iso()} type=ws_stale age_sec={age_seconds:.0f}")
                 alerts.append(
-                    f"📡 WS DATA STALE: evaluator last tick {age_seconds:.0f}s ago\n"
-                    f"Expected every 15s. Possible disconnect."
+                    f"📡 DATA STALE: local_evaluator last tick {age_seconds:.0f}s ago\n"
+                    f"Expected every 60s. Possible crash."
                 )
         except (ValueError, TypeError):
             pass

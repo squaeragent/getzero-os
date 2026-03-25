@@ -3,8 +3,7 @@
 V6 Supervisor — runs all components with health monitoring and auto-restart.
 
 Components:
-  strategy_manager  — refreshes ENVY strategies every 6h
-  evaluator         — WebSocket signal evaluation (continuous)
+  local_evaluator   — SmartProvider signal evaluation (continuous, HL public API)
   risk_guard        — position limit checks (every 5s)
   executor          — HL execution (every 5s)
 """
@@ -33,11 +32,9 @@ LOG_FILE = V6_DIR / "supervisor.log"
 
 # Component definitions: (name, script, cycle_seconds, stale_threshold_seconds)
 COMPONENTS = [
-    ("strategy_manager", V6_DIR / "strategy_manager.py", 21600, 23400),  # 6h cycle, stale if >6.5h
     ("risk_guard",       V6_DIR / "risk_guard.py",           5,    60),  # 5s cycle, stale if >60s
     ("executor",         V6_DIR / "executor.py",              5,    60),  # 5s cycle, stale if >60s
     ("market_monitor",   V6_DIR / "market_monitor.py",      300,   600),  # 5min cycle, stale if >10min
-    # evaluator runs as a background loop (WebSocket — managed separately)
 ]
 
 processes = {}
@@ -113,7 +110,7 @@ def write_heartbeat(name: str):
 
 
 def run_once(name, script):
-    """Run a component once (for strategy_manager and cycle-based agents)."""
+    """Run a component once (for cycle-based agents)."""
     try:
         result = subprocess.run(
             [PYTHON, str(script)],
@@ -124,13 +121,7 @@ def run_once(name, script):
                 print(f"  [{name}] {line}", flush=True)
         if result.returncode != 0 and result.stderr:
             log(f"  [{name}] ERROR: {result.stderr[:300]}")
-        success = result.returncode == 0
-        # strategy_manager writes its own heartbeat internally, but also write
-        # a supervisor-side heartbeat so health checks reflect the last run time
-        # (the internal heartbeat may be stale between 6h refresh cycles)
-        if name == "strategy_manager":
-            write_heartbeat("strategy_manager")
-        return success
+        return result.returncode == 0
     except subprocess.TimeoutExpired as _e:
         log(f"  [{name}] TIMEOUT after 300s")
         return False
@@ -140,71 +131,36 @@ def run_once(name, script):
 
 
 def start_evaluator():
-    """Start the evaluator as a long-running background process.
-    
-    Runs BOTH:
-    - ENVY WebSocket evaluator (if API is available)
-    - Local SmartProvider evaluator (always — zero cost, HL data only)
-    
-    Local evaluator is the safety net. ENVY is enhancement.
+    """Start the local evaluator as a long-running background process.
+
+    Runs SmartProvider-based evaluation — zero cost, HL public API only.
     """
-    # Start ENVY evaluator (WebSocket)
-    name = "evaluator"
+    name = "local_evaluator"
     if name in processes:
         proc = processes[name]
         if proc.poll() is None:
-            pass  # Already running
-        else:
-            log(f"evaluator exited with code {proc.returncode}, restarting")
-            del processes[name]
-
-    if name not in processes:
-        log("Starting evaluator (WebSocket loop)...")
-        try:
-            env = os.environ.copy()
-            env["PYTHONUNBUFFERED"] = "1"
-            proc = subprocess.Popen(
-                [PYTHON, str(V6_DIR / "evaluator.py"), "--loop"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                env=env,
-            )
-            processes[name] = proc
-            t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
-            t.start()
-            log(f"evaluator PID: {proc.pid}")
-        except Exception as e:
-            log(f"Failed to start evaluator: {e}")
-
-    # Start local evaluator (SmartProvider — always runs)
-    local_name = "local_evaluator"
-    if local_name in processes:
-        proc = processes[local_name]
-        if proc.poll() is None:
-            pass  # Already running
+            return  # Already running
         else:
             log(f"local_evaluator exited with code {proc.returncode}, restarting")
-            del processes[local_name]
+            del processes[name]
 
-    if local_name not in processes:
-        log("Starting local_evaluator (SmartProvider loop)...")
-        try:
-            env = os.environ.copy()
-            env["PYTHONUNBUFFERED"] = "1"
-            proc = subprocess.Popen(
-                [PYTHON, str(V6_DIR / "local_evaluator.py"), "--loop"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                env=env,
-            )
-            processes[local_name] = proc
-            t = threading.Thread(target=_drain_output, args=(proc, local_name), daemon=True)
-            t.start()
-            log(f"local_evaluator PID: {proc.pid}")
-        except Exception as e:
-            log(f"Failed to start local_evaluator: {e}")
+    log("Starting local_evaluator (SmartProvider loop)...")
+    try:
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
+        proc = subprocess.Popen(
+            [PYTHON, str(V6_DIR / "local_evaluator.py"), "--loop"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            env=env,
+        )
+        processes[name] = proc
+        t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
+        t.start()
+        log(f"local_evaluator PID: {proc.pid}")
+    except Exception as e:
+        log(f"Failed to start local_evaluator: {e}")
 
 
 def start_immune():
@@ -237,13 +193,13 @@ def start_immune():
 
 
 def check_evaluator():
-    """Check evaluator health and restart if needed."""
+    """Check local_evaluator health and restart if needed."""
     start_evaluator()  # start if not running
 
-    proc = processes.get("evaluator")
+    proc = processes.get("local_evaluator")
     if proc and proc.poll() is not None:
-        log(f"evaluator died (code {proc.returncode}), restarting")
-        del processes["evaluator"]
+        log(f"local_evaluator died (code {proc.returncode}), restarting")
+        del processes["local_evaluator"]
         start_evaluator()
 
 
@@ -277,22 +233,22 @@ def run_health_check():
                 status.append(f"{name:20s}: parse error")
         else:
             status.append(f"{name:20s}: no heartbeat")
-    # Evaluator (long-running)
-    proc = processes.get("evaluator")
+    # Local evaluator (long-running)
+    proc = processes.get("local_evaluator")
     if proc and proc.poll() is None:
-        ts_str = hb.get("evaluator")
+        ts_str = hb.get("local_evaluator")
         if ts_str:
             try:
                 last = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
                 age = int((now - last).total_seconds())
                 flag = "✅" if age < 120 else "⚠️ STALE"
-                status.append(f"{'evaluator':20s}: {age:4d}s {flag}")
+                status.append(f"{'local_evaluator':20s}: {age:4d}s {flag}")
             except Exception as _e:
-                status.append(f"{'evaluator':20s}: running (no hb)")
+                status.append(f"{'local_evaluator':20s}: running (no hb)")
         else:
-            status.append(f"{'evaluator':20s}: running (no hb yet)")
+            status.append(f"{'local_evaluator':20s}: running (no hb yet)")
     else:
-        status.append(f"{'evaluator':20s}: DEAD")
+        status.append(f"{'local_evaluator':20s}: DEAD")
     log("Health: " + " | ".join(status))
 
 
@@ -345,43 +301,29 @@ def main():
     if _sb:
         _sb.mark_running({"preset": "balanced", "version": "v6"})
 
-    # Initial strategy refresh
-    log("Initial strategy refresh...")
-    run_once("strategy_manager", V6_DIR / "strategy_manager.py")
-
-    # Start evaluator (WebSocket loop)
+    # Start local evaluator (SmartProvider loop)
     start_evaluator()
 
     # Start immune system (monitoring loop)
     start_immune()
     time.sleep(3)  # Give them time to start
 
-    last_strategy_refresh = time.time()
     last_health_check = time.time()
     last_portfolio_export = 0  # export immediately on first cycle
     cycle_times = {name: 0 for name, _, _, _ in COMPONENTS}
-    cycle_times["strategy_manager"] = time.time()  # already ran
 
     log("All components started. Entering main loop.")
 
     while True:
         now = time.time()
 
-        # Run risk_guard and executor on their cycles
+        # Run risk_guard, executor, market_monitor on their cycles
         for name, script, cycle_s, stale_thresh in COMPONENTS:
-            if name == "strategy_manager":
-                continue  # handled separately below
             if now - cycle_times.get(name, 0) >= cycle_s:
                 run_once(name, script)
                 cycle_times[name] = now
 
-        # Strategy refresh every 6h (credit conservation: signal check=$1, assemble=$3)
-        if now - last_strategy_refresh >= 21600:
-            log("Refreshing strategies (6h interval, delta check active)...")
-            run_once("strategy_manager", V6_DIR / "strategy_manager.py")
-            last_strategy_refresh = now
-
-        # Check evaluator and immune health
+        # Check local_evaluator and immune health
         check_evaluator()
         start_immune()  # restart if died
 

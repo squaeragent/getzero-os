@@ -15,7 +15,7 @@ from pathlib import Path
 from scanner.v6.config import BUS_DIR, get_env
 from scanner.v6.signal_cache import SignalCache, freshness
 from scanner.v6.signal_provider import (
-    SignalMode, SignalAPIProvider, CachedProvider, BasicProvider,
+    SignalMode, CachedProvider, BasicProvider,
 )
 
 SIGNAL_MODE_FILE = BUS_DIR / "signal_mode.json"
@@ -55,14 +55,12 @@ class SignalManager:
         self.cache = SignalCache()
         self._mode = SignalMode.SMART  # SmartProvider is default
         self._last_mode_change = time.time()
-        self._api_key = get_env("ENVY_API_KEY")
         self._providers = {}
-        self._x402_monitor = None
         self._smart_provider = None
 
     def _get_provider(self, mode: str):
         """Lazy-init providers."""
-        if mode == SignalMode.SMART or mode == SignalMode.ENHANCED:
+        if mode == SignalMode.SMART:
             if self._smart_provider is None:
                 try:
                     from scanner.v6.smart_provider import SmartProvider
@@ -73,22 +71,11 @@ class SignalManager:
                     return None
             return self._smart_provider
         if mode not in self._providers:
-            if mode == SignalMode.FULL:
-                self._providers[mode] = SignalAPIProvider(self._api_key)
-            elif mode == SignalMode.CACHED:
+            if mode == SignalMode.CACHED:
                 self._providers[mode] = CachedProvider()
             elif mode == SignalMode.BASIC:
                 self._providers[mode] = BasicProvider()
         return self._providers.get(mode)
-
-    def _get_x402_monitor(self):
-        if self._x402_monitor is None:
-            try:
-                from scanner.v6.x402_monitor import X402Monitor
-                self._x402_monitor = X402Monitor()
-            except Exception:
-                pass
-        return self._x402_monitor
 
     def _set_mode(self, mode: str, reason: str = ""):
         if mode != self._mode:
@@ -110,14 +97,6 @@ class SignalManager:
             "changed_at": datetime.now(timezone.utc).isoformat(),
             "cache_freshness": self.cache.overall_freshness(),
         }
-        # x402 status if available
-        monitor = self._get_x402_monitor()
-        if monitor:
-            try:
-                x402_status = monitor.get_status()
-                data["x402"] = x402_status
-            except Exception:
-                pass
         _save_json(SIGNAL_MODE_FILE, data)
 
     def _alert_mode_change(self, old: str, new: str, reason: str):
@@ -144,29 +123,6 @@ class SignalManager:
         """
         results = {}
 
-        # Check x402 proactively
-        monitor = self._get_x402_monitor()
-        if monitor:
-            try:
-                if monitor.is_depleted():
-                    self._set_mode(SignalMode.BASIC, "x402_depleted")
-            except Exception:
-                pass
-
-        # Check NVArena credit balance from bus file (written by strategy_manager)
-        try:
-            from scanner.v6.config import BUS_DIR
-            credit_file = BUS_DIR / "credit_status.json"
-            if credit_file.exists():
-                import json
-                cdata = json.loads(credit_file.read_text())
-                if cdata.get("is_revoked"):
-                    self._set_mode(SignalMode.BASIC, "subscription_revoked")
-                elif cdata.get("credits", 999999) <= 1000:
-                    self._set_mode(SignalMode.CACHED, "credits_critical")
-        except Exception:
-            pass
-
         # Try SMART (ZERO's own signal engine — default)
         smart = self._get_provider(SignalMode.SMART)
         if smart:
@@ -181,21 +137,6 @@ class SignalManager:
             except Exception as e:
                 _log(f"SMART provider failed: {e}")
                 results = {}
-
-        # Try FULL (ENVY API — optional enhancement)
-        if self._api_key:
-            provider = self._get_provider(SignalMode.FULL)
-            if provider:
-                try:
-                    for coin in coins:
-                        result = provider.check_signals(coin)
-                        if result.get("signals") or not result.get("error"):
-                            results[coin] = result
-                    if results:
-                        self._set_mode(SignalMode.FULL, "api_available")
-                        return results
-                except Exception as e:
-                    _log(f"FULL provider failed: {e}")
 
         # Try CACHED
         _log("Falling back to CACHED provider")
@@ -273,16 +214,16 @@ class SignalManager:
             return {}
 
     def position_size_multiplier(self) -> float:
-        """Position size multiplier based on cache freshness.
+        """Position size multiplier based on signal mode.
 
-        FULL: 1.0 (normal)
+        SMART: 1.0 (normal)
         CACHED fresh: 1.0
         CACHED aging: 0.5 (reduce 50%)
         CACHED stale: 0.0 (no new entries)
         BASIC: 0.5 (reduced confidence)
         PROTECTION: 0.0
         """
-        if self._mode == SignalMode.FULL:
+        if self._mode == SignalMode.SMART:
             return 1.0
         if self._mode == SignalMode.PROTECTION:
             return 0.0

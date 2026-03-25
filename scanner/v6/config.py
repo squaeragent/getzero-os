@@ -184,10 +184,6 @@ STRATEGY_REFRESH_HOURS = 6  # 6h refresh — 365d backtests don't change hourly.
 ACTIVE_COINS_COUNT     = 24  # degen: wider universe, more opportunities
 STRATEGY_VERSION       = 6
 
-# ─── ENVY API ─────────────────────────────────────────────────────────────────
-ENVY_BASE_URL = "https://gate.getzero.dev/api/claw"
-ENVY_WS_URL   = "wss://gate.getzero.dev/api/claw/ws/indicators"
-
 # ─── HYPERLIQUID ──────────────────────────────────────────────────────────────
 HL_MAIN_ADDRESS  = os.environ.get("HYPERLIQUID_MAIN_ADDRESS", "0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e")
 HL_API_WALLET    = "0xc7b52216e7bc13de0cd010aa12cacb6d774453a2"
@@ -244,5 +240,4 @@ if __name__ == "__main__":
     print(f"  STOP_LOSS_PCT:    {STOP_LOSS_PCT*100:.0f}%")
     print(f"  MIN_HOLD_MINUTES: {MIN_HOLD_MINUTES}")
     env = load_env()
-    print(f"  NVARENA_API_KEY:  {'SET' if env.get('NVARENA_API_KEY') or env.get('ENVY_API_KEY') else 'MISSING'}")
     print(f"  HL_PRIVATE_KEY:   {'SET' if env.get('HL_PRIVATE_KEY') else 'MISSING'}")
