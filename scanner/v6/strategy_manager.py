@@ -803,9 +803,18 @@ def run_once(api_key: str):
         return
 
     # Phase 0b: Auto-fetch missing/stale signal packs from API
-    # Only fetch for ACTIVE_COINS_COUNT top coins, not all 40 — avoids rate limiting the signal API
+    # Prioritize: coins with positions > previous active > rest
     log("Phase 0b: Ensuring signal pack cache is fresh...")
-    ensure_signal_packs(ALL_COINS[:ACTIVE_COINS_COUNT], api_key)
+    prev_active = list(load_json(ALLOCATION_FILE, {}).get("allocations", {}).keys())
+    position_coins = [p.get("coin","") for p in load_json(POSITIONS_FILE, {}).get("positions", [])]
+    # Build priority list: position coins first, then prev active, then rest
+    priority = []
+    seen = set()
+    for c in position_coins + prev_active + ALL_COINS:
+        if c and c not in seen and c in ALL_COINS:
+            seen.add(c)
+            priority.append(c)
+    ensure_signal_packs(priority[:ACTIVE_COINS_COUNT], api_key)
 
     # Phase 1: Load and score signals for each coin
     log("Phase 1: Loading and scoring signals...")
