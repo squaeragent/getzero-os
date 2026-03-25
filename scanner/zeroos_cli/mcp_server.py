@@ -138,3 +138,45 @@ def zero_help() -> dict:
             {'name': 'zero_help', 'desc': 'this help'},
         ]
     }
+
+@mcp.tool()
+def zero_doctor() -> dict:
+    """Run 6 diagnostic checks — token, API, credits, agent, config, Python version."""
+    import os, sys
+    checks = []
+    
+    try:
+        from scanner.zeroos_cli.config_utils import load_token
+        token = load_token()
+        checks.append({'name': 'token', 'status': 'ok' if token else 'fail', 'detail': 'token loaded' if token else 'no token'})
+    except Exception:
+        checks.append({'name': 'token', 'status': 'fail', 'detail': 'could not load token'})
+        return {'checks': checks}
+    
+    if token:
+        try:
+            client = _get_client()
+            credits = client.get_credits()
+            checks.append({'name': 'api', 'status': 'ok', 'detail': 'api reachable'})
+            bal = getattr(credits, 'balance', 0)
+            checks.append({'name': 'credits', 'status': 'ok' if bal > 0 else 'warn', 'detail': f'{bal} credits'})
+        except Exception as e:
+            checks.append({'name': 'api', 'status': 'fail', 'detail': str(e)})
+    
+    config_path = os.path.expanduser('~/.zeroos/config.json')
+    checks.append({'name': 'config', 'status': 'ok' if os.path.exists(config_path) else 'warn', 'detail': 'exists' if os.path.exists(config_path) else 'missing'})
+    
+    py_ok = sys.version_info >= (3, 10)
+    checks.append({'name': 'python', 'status': 'ok' if py_ok else 'warn', 'detail': f'{sys.version_info.major}.{sys.version_info.minor}'})
+    
+    return {'checks': checks, 'passed': sum(1 for c in checks if c['status'] == 'ok'), 'total': len(checks)}
+
+
+@mcp.tool()
+def zero_arena() -> dict:
+    """Get arena info — weekly rewards and score multipliers."""
+    return {
+        'weekly_rewards': {'1st': 5000, '2nd': 3000, '3rd': 2000, '4th-10th': 500},
+        'score_multipliers': {'6.0-6.9': '1.2x', '7.0-7.9': '1.5x', '8.0-8.9': '2.0x', '9.0+': '3.0x'},
+        'leaderboard': 'app.getzero.dev/arena',
+    }

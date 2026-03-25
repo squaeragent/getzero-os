@@ -1,57 +1,60 @@
 {
-  "timestamp": "2026-03-24T12:05:19.749718+00:00",
-  "approved": [
-    {
-      "coin": "INJ",
-      "direction": "SHORT",
-      "signal": "TAAPI_ENGULFING_4H_SHORT",
-      "sharpe": 2.23,
-      "win_rate": 71.6,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "",
-      "max_hold_hours": 16,
-      "regime": "stable",
-      "regime_match": true,
-      "regime_match_score": 0.864,
-      "signal_heat": 0.5,
-      "composite_score": 6.05,
-      "recent_record": "pattern"
-    },
-    {
-      "coin": "NEAR",
-      "direction": "SHORT",
-      "signal": "TAAPI_MARUBOZU_1H_SHORT",
-      "sharpe": 1.76,
-      "win_rate": 65.8,
-      "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "",
-      "max_hold_hours": 4,
-      "regime": "shift",
-      "regime_match": true,
-      "regime_match_score": 0.63,
-      "signal_heat": 0.5,
-      "composite_score": 4.41,
-      "recent_record": "pattern"
-    }
-  ],
+  "timestamp": "2026-03-25T03:25:27.611963+00:00",
+  "approved": [],
   "blocked": [
     {
-      "coin": "BTC",
+      "coin": "XPL",
       "direction": "SHORT",
-      "signal": "TAAPI_HANGINGMAN_4H_SHORT",
-      "reason": "already have position in BTC"
+      "signal": "MOMENTUM_CASCADE_SHORT_FR5_EX0_FR3_MH144_EX2",
+      "reason": "already have position in XPL"
+    },
+    {
+      "coin": "XPL",
+      "direction": "SHORT",
+      "signal": "MOMENTUM_CASCADE_SHORT_V4_MH72_MH36",
+      "reason": "already have position in XPL"
+    },
+    {
+      "coin": "PAXG",
+      "direction": "SHORT",
+      "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_V2_FR1_EX2_FR4_",
+      "reason": "would exceed 80% net directional exposure"
+    },
+    {
+      "coin": "SOL",
+      "direction": "SHORT",
+      "signal": "TAAPI_ENGULFING_1H_SHORT",
+      "reason": "would exceed 80% net directional exposure; correlated to existing AVAX SHORT (r=0.70)"
     },
     {
       "coin": "SUI",
       "direction": "SHORT",
-      "signal": "TAAPI_HARAMI_4H_SHORT",
+      "signal": "TAAPI_MARUBOZU_1H_SHORT",
       "reason": "already have position in SUI"
+    },
+    {
+      "coin": "BTC",
+      "direction": "SHORT",
+      "signal": "TAAPI_3BLACKCROWS_1H_SHORT",
+      "reason": "would exceed 80% net directional exposure"
+    },
+    {
+      "coin": "FARTCOIN",
+      "direction": "SHORT",
+      "signal": "SYNTH_SHORT_09",
+      "reason": "would exceed 80% net directional exposure"
+    },
+    {
+      "coin": "BTC",
+      "direction": "SHORT",
+      "signal": "TAAPI_HARAMI_4H_SHORT",
+      "reason": "would exceed 80% net directional exposure"
     }
   ],
   "portfolio_state": {
     "net_direction": "SHORT",
-    "net_exposure_pct": 14.5,
-    "correlation_risk": "low",
-    "diversification_score": 1.0
+    "net_exposure_pct": 81.6,
+    "correlation_risk": "medium",
+    "diversification_score": 0.8
   }
 }
