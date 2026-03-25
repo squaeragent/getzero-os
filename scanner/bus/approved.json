@@ -1,79 +1,57 @@
 {
-  "timestamp": "2026-03-25T10:31:41.091959+00:00",
+  "timestamp": "2026-03-25T11:49:21.909059+00:00",
   "approved": [
     {
-      "coin": "XPL",
+      "coin": "SOL",
       "direction": "SHORT",
-      "signal": "MOMENTUM_CASCADE_SHORT_FR5_EX0_FR3_MH144_EX2",
-      "sharpe": 3.1548,
-      "win_rate": 68.97,
+      "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_R5V2_EX3_EX3",
+      "sharpe": 2.5628,
+      "win_rate": 56.67,
       "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "MOMENTUM_N_6H > 0.115",
-      "max_hold_hours": 144,
-      "regime": "stable",
-      "regime_match": true,
-      "regime_match_score": 0.5,
-      "signal_heat": 0.5,
-      "composite_score": 8.55,
-      "recent_record": "0W/0L"
-    },
-    {
-      "coin": "PAXG",
-      "direction": "SHORT",
-      "signal": "RSI_OVERBOUGHT_XONE_NEGATIVE_SHORT_V2_FR1_EX2_FR4_",
-      "sharpe": 2.3842,
-      "win_rate": 91.67,
-      "reason": "divergent from APT (r=-0.35), regime transition active",
-      "exit_expression": "RSI_3H30M <= 25.2 OR XONE_AVG_NET >= 27.5",
-      "max_hold_hours": 72,
+      "exit_expression": "RSI_3H30M <= 14.45 OR XONE_AVG_NET_DELTA >= 18",
+      "max_hold_hours": 48,
       "regime": "trending",
       "regime_match": false,
       "regime_match_score": 0.0,
       "signal_heat": 0.5,
-      "composite_score": 7.33,
+      "composite_score": 6.54,
       "recent_record": "0W/0L"
     },
     {
-      "coin": "ETH",
+      "coin": "SOL",
       "direction": "SHORT",
-      "signal": "TAAPI_HARAMI_1H_SHORT",
-      "sharpe": 1.3,
-      "win_rate": 60.0,
+      "signal": "WEIGHTED_BEAR_SOCIAL_SHORT_R5V2_EX3",
+      "sharpe": 2.2184,
+      "win_rate": 55.51,
       "reason": "uncorrelated to portfolio, regime transition active",
-      "exit_expression": "",
-      "max_hold_hours": 4,
+      "exit_expression": "RSI_3H30M <= 17 OR XONE_AVG_NET_DELTA >= 18",
+      "max_hold_hours": 48,
       "regime": "trending",
-      "regime_match": true,
-      "regime_match_score": 0.4,
+      "regime_match": false,
+      "regime_match_score": 0.0,
       "signal_heat": 0.5,
-      "composite_score": 2.8,
-      "recent_record": "pattern"
+      "composite_score": 5.99,
+      "recent_record": "0W/0L"
     }
   ],
   "blocked": [
     {
-      "coin": "SOL",
+      "coin": "NEAR",
       "direction": "SHORT",
       "signal": "TAAPI_HANGINGMAN_1H_SHORT",
-      "reason": "already have position in SOL"
+      "reason": "group 'l1_alts' already has 2 positions (max 2)"
     },
     {
-      "coin": "SUI",
+      "coin": "ARB",
       "direction": "SHORT",
-      "signal": "TAAPI_SHOOTINGSTAR_4H_SHORT",
-      "reason": "already have position in SUI"
-    },
-    {
-      "coin": "SUI",
-      "direction": "SHORT",
-      "signal": "TAAPI_ENGULFING_1H_SHORT",
-      "reason": "already have position in SUI"
+      "signal": "TAAPI_HARAMI_1H_SHORT",
+      "reason": "group 'l1_alts' already has 2 positions (max 2)"
     }
   ],
   "portfolio_state": {
     "net_direction": "LONG",
-    "net_exposure_pct": 18.2,
+    "net_exposure_pct": 7.7,
     "correlation_risk": "low",
-    "diversification_score": 0.67
+    "diversification_score": 0.5
   }
 }
