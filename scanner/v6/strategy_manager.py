@@ -661,8 +661,8 @@ def apply_hysteresis(candidate_coins: list[str], smoothed_sharpes: dict) -> list
             seen.add(c)
             result.append(c)
     
-    # Cap at MAX_ACTIVE (8) — sort retained coins by smoothed Sharpe, keep best
-    MAX_ACTIVE = 8
+    # Cap at MAX_ACTIVE — sort retained coins by smoothed Sharpe, keep best
+    MAX_ACTIVE = ACTIVE_COINS_COUNT
     if len(result) > MAX_ACTIVE:
         # Sort by smoothed Sharpe, keep top MAX_ACTIVE
         result.sort(key=lambda c: smoothed_sharpes.get(c, 0), reverse=True)
@@ -749,7 +749,7 @@ def local_allocation(coins_data: dict) -> dict:
     """
     MIN_SHARPE_THRESHOLD = 1.5   # assembled Sharpe floor (was 2.0 for signal Sharpe)
     MIN_SIGNALS = 2
-    MAX_ACTIVE = 8               # concentrated: 8 coins max
+    MAX_ACTIVE = ACTIVE_COINS_COUNT  # from config.py (default 16)
 
     qualified = {}
     for coin, data in coins_data.items():
