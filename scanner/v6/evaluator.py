@@ -290,7 +290,7 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
                     "signal_name":     sig_name,
                     "expression":      expr,
                     "exit_expression": sig.get("exit_expression", ""),
-                    "max_hold_hours":  sig.get("max_hold_hours", 24),
+                    "max_hold_hours":  sig.get("max_hold_hours", 12),
                     "sharpe":          sig.get("sharpe", 0),
                     "win_rate":        sig.get("win_rate", 0),
                     "composite_score": sig.get("composite_score", 0),
@@ -306,7 +306,7 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
         pos_id     = pos.get("id", "")
         direction  = pos.get("direction", "LONG")
         exit_expr  = pos.get("exit_expression", "")
-        max_hold   = pos.get("max_hold_hours", 24)
+        max_hold   = pos.get("max_hold_hours", 12)
         held_mins  = _minutes_held(pos)
 
         if coin not in flat_indicators:
@@ -495,7 +495,7 @@ def run_websocket(api_key: str):
             log(f"  RECOVERY CHECK: {len(positions)} open positions at startup")
             for pos in positions:
                 entry_str = pos.get("entry_time", "")
-                max_hold = pos.get("max_hold_hours", 24)
+                max_hold = pos.get("max_hold_hours", 12)
                 if entry_str:
                     try:
                         entry_dt = datetime.fromisoformat(entry_str.replace("Z", "+00:00"))
