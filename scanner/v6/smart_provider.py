@@ -257,7 +257,7 @@ class SmartProvider(SignalProvider):
             pass
 
         # GEM 1: Record rejections for rejection database
-        if direction == "NEUTRAL" or quality_10 < 5:
+        if direction == "NEUTRAL" or quality_10 < 6:
             try:
                 from hidden_gems import record_rejection
                 consensus_pct = max(long_pct, short_pct)
