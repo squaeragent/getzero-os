@@ -36,6 +36,7 @@ COMPONENTS = [
     ("strategy_manager", V6_DIR / "strategy_manager.py", 21600, 23400),  # 6h cycle, stale if >6.5h
     ("risk_guard",       V6_DIR / "risk_guard.py",           5,    60),  # 5s cycle, stale if >60s
     ("executor",         V6_DIR / "executor.py",              5,    60),  # 5s cycle, stale if >60s
+    ("market_monitor",   V6_DIR / "market_monitor.py",      300,   600),  # 5min cycle, stale if >10min
     # evaluator runs as a background loop (WebSocket — managed separately)
 ]
 
