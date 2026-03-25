@@ -118,6 +118,7 @@ class EnrichmentSignal:
         """Run all enrichment checks."""
         self._check_funding()
         self._check_funding_trend()
+        self._check_cross_exchange_funding()
         self._check_book_imbalance()
         self._check_oi_divergence()
         self._check_fear_greed()
@@ -179,6 +180,36 @@ class EnrichmentSignal:
             self.flags.append(f"✅ funding REVERSED (avg={avg:.5f}→curr={ft['current']:.5f})")
             if self.direction == "SHORT":
                 self.boost += 0.4
+
+    def _check_cross_exchange_funding(self):
+        """Cross-exchange funding divergence — arb/sentiment signal."""
+        xf = get_cross_exchange_funding(self.coin)
+        if not xf or len(xf) < 2:
+            return
+
+        hl_rate = xf.get("HlPerp")
+        bin_rate = xf.get("BinPerp")
+        bybit_rate = xf.get("BybitPerp")
+
+        if hl_rate is None:
+            return
+
+        # Compare HL vs CEX average
+        cex_rates = [r for r in [bin_rate, bybit_rate] if r is not None]
+        if not cex_rates:
+            return
+
+        cex_avg = sum(cex_rates) / len(cex_rates)
+        divergence = hl_rate - cex_avg
+
+        # HL funding much higher than CEX = HL longs are more crowded
+        if abs(divergence) > 0.0002:
+            if divergence > 0 and self.direction == "LONG":
+                self.flags.append(f"⚠ HL funding > CEX ({hl_rate:.5f} vs {cex_avg:.5f}), HL longs crowded")
+                self.boost -= 0.2
+            elif divergence < 0 and self.direction == "SHORT":
+                self.flags.append(f"⚠ HL funding < CEX ({hl_rate:.5f} vs {cex_avg:.5f}), HL shorts crowded")
+                self.boost -= 0.2
 
     def _check_book_imbalance(self):
         """Order book bid/ask imbalance — near-term pressure."""
@@ -341,6 +372,42 @@ def _fetch_book_imbalance(coin: str) -> dict:
 def get_book_imbalance(coin: str) -> dict:
     """Get order book imbalance. Cached 2 min per coin."""
     return _cached(f"book_{coin}", 120, lambda: _fetch_book_imbalance(coin)) or {"imbalance": 0}
+
+
+# ─── CROSS-EXCHANGE FUNDING (Layer 5 — FREE from HL) ─────────────────────────
+
+def _fetch_predicted_fundings() -> dict:
+    """Fetch predicted funding rates across exchanges. FREE."""
+    import urllib.request
+    payload = json.dumps({"type": "predictedFundings"}).encode()
+    req = urllib.request.Request(HL_INFO_URL, data=payload, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        result = {}
+        for item in data:
+            if isinstance(item, list) and len(item) >= 2:
+                coin = item[0]
+                venues = item[1]
+                if isinstance(venues, list):
+                    venue_rates = {}
+                    for v in venues:
+                        if isinstance(v, list) and len(v) >= 2:
+                            venue_name = v[0]
+                            rate_data = v[1]
+                            if isinstance(rate_data, dict):
+                                venue_rates[venue_name] = float(rate_data.get("fundingRate", 0))
+                    if venue_rates:
+                        result[coin] = venue_rates
+        return result
+    except Exception:
+        return {}
+
+
+def get_cross_exchange_funding(coin: str) -> dict | None:
+    """Get predicted funding rates across exchanges for a coin. Cached 15 min."""
+    all_fundings = _cached("predicted_fundings", 900, _fetch_predicted_fundings) or {}
+    return all_fundings.get(coin)
 
 
 def check_entry(coin: str, direction: str) -> EnrichmentSignal:
