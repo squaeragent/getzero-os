@@ -19,6 +19,11 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from hl_enrichment import check_entry as _enrichment_check
+except ImportError:
+    _enrichment_check = None
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scanner.v6.bus_io import load_json_locked
 from scanner.v6.config import (
@@ -318,6 +323,16 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
                 if len(all_directions) > 2 and opp_count / len(all_directions) > 0.6:
                     log(f"  ENTRY BLOCKED (consensus): {coin} {direction} [{sig_name}] — {opp_count}/{len(all_directions)} signals say {opposite}")
                     continue
+                # Enrichment layer: funding, OI, fear/greed, macro
+                if _enrichment_check:
+                    enrich = _enrichment_check(coin, direction)
+                    log(f"  {enrich.summary()}")
+                    if enrich.block:
+                        log(f"  ENTRY BLOCKED (enrichment): {coin} {direction} [{sig_name}] — {enrich.block_reason}")
+                        continue
+                    if enrich.boost < -1.0:
+                        log(f"  ENTRY BLOCKED (enrichment score): {coin} {direction} [{sig_name}] — boost={enrich.boost:+.1f}")
+                        continue
                 log(f"  ENTRY FIRED: {coin} {direction} [{sig_name}]")
                 _mark_entry_fired(coin, sig_name)
                 new_entries.append({
