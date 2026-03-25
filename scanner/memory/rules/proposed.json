@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "id": "RULE_001",
+    "condition": "(direction == 'SHORT' && confidence > 0.7)",
+    "action": "boost_confidence",
+    "value": 0.1,
+    "action_description": "increase_position_size",
+    "evidence": "historical data shows a higher win rate for SHORT directions with high confidence.",
+    "generation": 1,
+    "created": "2026-03-25T17:58:20.473002+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_002: IF (direction == 'SHORT' && confidence > 0.7) THEN increase_position_size BECAUSE historical data shows a higher win rate for SHORT directions with high confidence."
+  },
+  {
+    "id": "RULE_002",
+    "condition": "(net_PnL < -$2.00)",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_risk_exposure",
+    "evidence": "the system has experienced losses, and reducing exposure can help minimize further losses.",
+    "generation": 1,
+    "created": "2026-03-25T17:58:20.473261+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_003: IF (net_PnL < -$2.00) THEN reduce_risk_exposure BECAUSE the system has experienced losses, and reducing exposure can help minimize further losses."
+  },
+  {
+    "id": "RULE_003",
+    "condition": "(trade_frequency < 5 trades/week)",
+    "action": "boost_confidence",
+    "value": 0.1,
+    "action_description": "increase_signal_sensitivity",
+    "evidence": "low trade frequency might indicate missed opportunities; increasing signal sensitivity could lead to more trading opportunities.",
+    "generation": 1,
+    "created": "2026-03-25T17:58:20.473477+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "_004: IF (trade_frequency < 5 trades/week) THEN increase_signal_sensitivity BECAUSE low trade frequency might indicate missed opportunities; increasing signal sensitivity could lead to more trading opportunities."
+  }
+]

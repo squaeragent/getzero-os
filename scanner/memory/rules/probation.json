@@ -72,15 +72,15 @@
     "evidence": "our current short-selling strategy seems ineffective, and we should be more cautious when considering short positions to avoid unnecessary losses.",
     "generation": 1,
     "created": "2026-03-19T07:56:54.223588+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' && confidence_level < 0.7) THEN reject_signal BECAUSE our current short-selling strategy seems ineffective, and we should be more cautious when considering short positions to avoid unnecessary losses.",
     "probation_start": "2026-03-19T08:44:59.170892+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_001",
@@ -91,15 +91,15 @@
     "evidence": "our SHORT position in HYPE has a higher win rate than our overall win rate, suggesting potential for increased returns.",
     "generation": 1,
     "created": "2026-03-19T10:11:47.066235+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "_002: IF (coin == 'HYPE' && direction == 'SHORT') THEN scale_position(1.2) BECAUSE our SHORT position in HYPE has a higher win rate than our overall win rate, suggesting potential for increased returns.",
     "probation_start": "2026-03-19T20:56:57.158066+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_002",
@@ -127,15 +127,15 @@
     "evidence": "recent wins suggest an edge in profitable short trades.",
     "generation": 1,
     "created": "2026-03-19T10:30:17.167312+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' && upnl > $0.50) THEN scale_in(10%) BECAUSE recent wins suggest an edge in profitable short trades.",
     "probation_start": "2026-03-19T20:56:57.158066+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_005",
@@ -197,15 +197,15 @@
     "evidence": "our win rate suggests we have an edge in shorting, and this rule aims to capitalize on oversold conditions.",
     "generation": 1,
     "created": "2026-03-19T19:10:15.532590+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' && RSI(14) < 30) THEN increase_position_size BECAUSE our win rate suggests we have an edge in shorting, and this rule aims to capitalize on oversold conditions.",
     "probation_start": "2026-03-19T20:56:57.158066+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_009",
@@ -233,15 +233,15 @@
     "evidence": "our win rate is higher when shorting, and scaling in during periods of high downward momentum may increase profits.",
     "generation": 1,
     "created": "2026-03-19T19:56:13.690120+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "_002: IF (direction == 'SHORT' && price_change < -2%) THEN scale_in BECAUSE our win rate is higher when shorting, and scaling in during periods of high downward momentum may increase profits.",
     "probation_start": "2026-03-19T20:56:57.158066+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_011",
@@ -337,15 +337,15 @@
     "evidence": "historical data shows that SOL tends to continue its downward trend when below the 20-day EMA.",
     "generation": 1,
     "created": "2026-03-19T21:39:21.200704+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (SOL price < 20-day EMA) AND (direction == 'SHORT') THEN increase_position_size BECAUSE historical data shows that SOL tends to continue its downward trend when below the 20-day EMA.",
     "probation_start": "2026-03-21T14:02:00.951154+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_002",
@@ -456,15 +456,15 @@
     "evidence": "the current short position on BTC might benefit from a stop-loss to limit potential losses.",
     "generation": 1,
     "created": "2026-03-24T07:55:19.950591+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF `coin == 'BTC' AND direction == 'SHORT'` THEN `set_stop_loss` BECAUSE the current short position on BTC might benefit from a stop-loss to limit potential losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_006",
@@ -509,15 +509,15 @@
     "evidence": "BTC short positions have historically been challenging for the system.",
     "generation": 1,
     "created": "2026-03-24T09:31:33.583027+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin == 'BTC' AND direction == 'SHORT') THEN increase_stop_loss BECAUSE BTC short positions have historically been challenging for the system.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_009",
@@ -681,15 +681,15 @@
     "evidence": "historical data suggests SHORT trades with positive unrealized profit tend to continue in our favor.",
     "generation": 1,
     "created": "2026-03-24T12:32:14.149332+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' AND upnl > $10) THEN scale_position(1.2) BECAUSE historical data suggests SHORT trades with positive unrealized profit tend to continue in our favor.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_020",
@@ -734,15 +734,15 @@
     "evidence": "large short position and potential for increased volatility.",
     "generation": 1,
     "created": "2026-03-24T12:46:33.835477+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin == 'XPL' AND direction == 'SHORT') THEN reduce_position_size BECAUSE large short position and potential for increased volatility.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_024",
@@ -770,15 +770,15 @@
     "evidence": "our SHORT positions are not profitable, and we should limit potential losses.",
     "generation": 1,
     "created": "2026-03-24T13:23:53.908038+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF direction == 'SHORT' AND upnl < -$10 THEN reduce_position_size BECAUSE our SHORT positions are not profitable, and we should limit potential losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_027",
@@ -806,15 +806,15 @@
     "evidence": "altcoin SHORT positions have been profitable in the past.",
     "generation": 1,
     "created": "2026-03-24T13:38:47.713175+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF ( coin == 'altcoin' AND direction == 'SHORT' ) THEN increase_position_size BECAUSE altcoin SHORT positions have been profitable in the past.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_029",
@@ -842,15 +842,15 @@
     "evidence": "BTC SHORT positions have not performed well in the past, and it may be wise to avoid them or adjust the strategy for this specific coin.",
     "generation": 1,
     "created": "2026-03-24T13:38:47.714189+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF ( coin == 'BTC' AND direction == 'SHORT' ) THEN close_position BECAUSE BTC SHORT positions have not performed well in the past, and it may be wise to avoid them or adjust the strategy for this specific coin.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_031",
@@ -912,15 +912,15 @@
     "evidence": "recent short position in BTC has not yielded a profit, and scaling down may help minimize losses.",
     "generation": 1,
     "created": "2026-03-24T16:05:29.013840+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin == 'BTC' AND direction == 'SHORT') THEN scale_down_position BECAUSE recent short position in BTC has not yielded a profit, and scaling down may help minimize losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_035",
@@ -999,15 +999,15 @@
     "evidence": "these coins have been consistently shorted in the current portfolio, and skipping signals may help avoid over-trading or false signals.",
     "generation": 1,
     "created": "2026-03-24T16:31:11.661280+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin == 'AVAX' OR coin == 'INJ') AND (direction == 'SHORT') THEN skip_signal BECAUSE these coins have been consistently shorted in the current portfolio, and skipping signals may help avoid over-trading or false signals.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_040",
@@ -1018,15 +1018,15 @@
     "evidence": "recent shorts have not been profitable, and reducing position size can help minimize losses.",
     "generation": 1,
     "created": "2026-03-24T16:57:00.269657+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' && upnl < -$10) THEN reduce_position_size BECAUSE recent shorts have not been profitable, and reducing position size can help minimize losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_042",
@@ -1071,15 +1071,15 @@
     "evidence": "BTC SHORT signals have been relatively successful in the past, and increasing position size may amplify gains.",
     "generation": 1,
     "created": "2026-03-24T17:48:37.653197+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "_004: IF (coin == 'BTC' && direction == 'SHORT') THEN increase_position_size BECAUSE BTC SHORT signals have been relatively successful in the past, and increasing position size may amplify gains.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_047",
@@ -1090,15 +1090,15 @@
     "evidence": "high volatility in SHORT positions might lead to increased losses; reducing position sizes can mitigate potential losses.",
     "generation": 1,
     "created": "2026-03-24T18:15:50.873511+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' AND coin_volatility > 3) THEN reduce_position_size BECAUSE high volatility in SHORT positions might lead to increased losses; reducing position sizes can mitigate potential losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_048",
@@ -1126,15 +1126,15 @@
     "evidence": "large short positions may amplify potential losses.",
     "generation": 1,
     "created": "2026-03-24T19:03:26.603132+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (position_size > $200 AND direction == 'SHORT') THEN reduce_position_size BECAUSE large short positions may amplify potential losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_051",
@@ -1213,15 +1213,15 @@
     "evidence": "recent SHORT positions have resulted in losses, and reducing position size may help mitigate further losses.",
     "generation": 1,
     "created": "2026-03-24T22:33:00.494284+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' && upnl < -$10) THEN reduce_position_size BECAUSE recent SHORT positions have resulted in losses, and reducing position size may help mitigate further losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_056",
@@ -1232,15 +1232,15 @@
     "evidence": "these coins have a higher proportion of SHORT positions, and increasing the stop-loss could help limit potential losses.",
     "generation": 1,
     "created": "2026-03-24T22:33:00.494982+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin in ['AVAX', 'INJ'] && direction == 'SHORT') THEN increase_stop_loss BECAUSE these coins have a higher proportion of SHORT positions, and increasing the stop-loss could help limit potential losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_057",
@@ -1268,15 +1268,15 @@
     "evidence": "we're overweight on short cryptocurrency positions.",
     "generation": 1,
     "created": "2026-03-24T22:37:13.246584+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin == 'BTC' OR coin == 'ADA') AND direction == 'SHORT' THEN reduce_position_size BECAUSE we're overweight on short cryptocurrency positions.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_060",
@@ -1287,15 +1287,15 @@
     "evidence": "we've noticed a pattern of recent losses in short cryptocurrency positions.",
     "generation": 1,
     "created": "2026-03-24T22:37:13.247979+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF regime == 'cryptocurrency' AND direction == 'SHORT' THEN require_stronger_signal BECAUSE we've noticed a pattern of recent losses in short cryptocurrency positions.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_061",
@@ -1510,15 +1510,15 @@
     "evidence": "the system's win rate is low, and reducing position size during losing streaks could limit potential losses.",
     "generation": 1,
     "created": "2026-03-25T03:48:48.273734+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (direction == 'SHORT' && consecutive_losses > 2) THEN reduce_position_size BECAUSE the system's win rate is low, and reducing position size during losing streaks could limit potential losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_075",
@@ -1801,15 +1801,15 @@
     "evidence": "our current short position in SUI has a high potential for profit, given the market conditions.",
     "generation": 1,
     "created": "2026-03-25T10:00:17.097573+00:00",
-    "trades_tested": 52,
+    "trades_tested": 63,
     "status": "probation",
     "source": "reflection",
     "raw_rule": "IF (coin == 'SUI' and direction == 'SHORT') THEN increase_position_size BECAUSE our current short position in SUI has a high potential for profit, given the market conditions.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
     "probation_wins": 0,
     "probation_losses": 0,
-    "probation_wr": 46.2,
-    "probation_net": 2.19
+    "probation_wr": 47.6,
+    "probation_net": 2.07
   },
   {
     "id": "RULE_093",
@@ -1910,6 +1910,72 @@
     "source": "reflection",
     "raw_rule": "IF (net P&L < -$1.00) THEN reduce_position_sizes BECAUSE our current strategy may be underperforming, and reducing position sizes can help minimize further losses.",
     "probation_start": "2026-03-25T15:47:40.578590+00:00",
+    "probation_wins": 0,
+    "probation_losses": 0
+  },
+  {
+    "id": "RULE_101",
+    "condition": "pattern == 'SMART_SHORT_XRP_moderate_trend'",
+    "action": "boost_confidence",
+    "value": 0.1,
+    "evidence": "Pattern 'SMART_SHORT_XRP_moderate_trend' wins 75.0% over 4 trades",
+    "generation": 13,
+    "created": "2026-03-25T17:05:55.774624+00:00",
+    "trades_tested": 5,
+    "status": "probation",
+    "source": "parameter_evolution",
+    "probation_start": "2026-03-25T17:05:55.775139+00:00",
+    "probation_wins": 0,
+    "probation_losses": 0
+  },
+  {
+    "id": "RULE_001",
+    "condition": "(short_term_momentum < 0 AND long_term_momentum > 0)",
+    "action": "boost_confidence",
+    "value": 0.1,
+    "action_description": "boost_confidence",
+    "evidence": "mean-reversion strategies tend to perform well in such scenarios.",
+    "generation": 1,
+    "created": "2026-03-25T17:06:37.492060+00:00",
+    "trades_tested": 0,
+    "status": "probation",
+    "source": "reflection",
+    "raw_rule": "IF (short_term_momentum < 0 AND long_term_momentum > 0) THEN boost_confidence BECAUSE mean-reversion strategies tend to perform well in such scenarios.",
+    "probation_start": "2026-03-25T17:57:39.527714+00:00",
+    "probation_wins": 0,
+    "probation_losses": 0
+  },
+  {
+    "id": "RULE_002",
+    "condition": "(volatility > 2*average_volatility)",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_position_size",
+    "evidence": "high volatility often leads to increased uncertainty and potential losses.",
+    "generation": 1,
+    "created": "2026-03-25T17:06:37.492337+00:00",
+    "trades_tested": 0,
+    "status": "probation",
+    "source": "reflection",
+    "raw_rule": "IF (volatility > 2*average_volatility) THEN reduce_position_size BECAUSE high volatility often leads to increased uncertainty and potential losses.",
+    "probation_start": "2026-03-25T17:57:39.527714+00:00",
+    "probation_wins": 0,
+    "probation_losses": 0
+  },
+  {
+    "id": "RULE_003",
+    "condition": "(consecutive_wins > 3)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "adjust_stop_loss",
+    "evidence": "a streak of wins may indicate a trend, and adjusting the stop-loss can help lock in profits.",
+    "generation": 1,
+    "created": "2026-03-25T17:06:37.492570+00:00",
+    "trades_tested": 0,
+    "status": "probation",
+    "source": "reflection",
+    "raw_rule": "IF (consecutive_wins > 3) THEN adjust_stop_loss BECAUSE a streak of wins may indicate a trend, and adjusting the stop-loss can help lock in profits.",
+    "probation_start": "2026-03-25T17:57:39.527714+00:00",
     "probation_wins": 0,
     "probation_losses": 0
   }
