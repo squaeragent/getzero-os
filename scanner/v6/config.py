@@ -36,7 +36,7 @@ PAPER_BUS_DIR  = PAPER_STATE_DIR / "bus"
 PAPER_DATA_DIR = PAPER_STATE_DIR / "data"
 
 # ─── ACCOUNT ──────────────────────────────────────────────────────────────────
-CAPITAL           = 750.0   # initial deposit — reference only
+CAPITAL           = 49.0    # ZERO wallet — initial deposit reference
 CAPITAL_FLOOR_PCT = 0.60    # halt if equity < 60% of peak
 CAPITAL_FLOOR     = CAPITAL * CAPITAL_FLOOR_PCT  # static fallback
 DAILY_LOSS_LIMIT_PCT = 0.07  # 7% of equity per day

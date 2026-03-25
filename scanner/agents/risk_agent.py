@@ -157,7 +157,7 @@ def parse_hl_state(hl_data):
         try:
             spot_req = urllib.request.Request(
                 "https://api.hyperliquid.xyz/info",
-                data=json.dumps({"type": "spotClearinghouseState", "user": "0xA5F25E3Bbf7a10EB61EEfA471B61E1dfa5777884"}).encode(),
+                data=json.dumps({"type": "spotClearinghouseState", "user": "0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e"}).encode(),
                 headers={"Content-Type": "application/json"}, method="POST")
             with urllib.request.urlopen(spot_req, timeout=10) as spot_resp:
                 spot_data = json.loads(spot_resp.read().decode())
