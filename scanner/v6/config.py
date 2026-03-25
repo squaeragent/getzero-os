@@ -179,7 +179,7 @@ def get_trailing_trigger(coin: str) -> float:
 STRATEGY_REFRESH_HOURS = 6  # 6h refresh — 365d backtests don't change hourly. Saves ~2/3 credits.
                              # API audit 2026-03-22: signal check=$1, assemble=$3. At 2h: 864 credits/day (55 days).
                              # At 6h: 288 credits/day (164 days). WebSocket evaluator runs continuously regardless.
-ACTIVE_COINS_COUNT     = 8   # top coins from portfolio/optimize (or scoring)
+ACTIVE_COINS_COUNT     = 16  # top coins from portfolio/optimize (or scoring)
 STRATEGY_VERSION       = 6
 
 # ─── ENVY API ─────────────────────────────────────────────────────────────────
