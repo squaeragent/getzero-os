@@ -251,7 +251,7 @@ def _mirror_positions_to_v5(positions: list):
                 "size_coins":       p.get("size_coins", 0),
                 "sharpe":           p.get("sharpe", 0),
                 "win_rate":         p.get("win_rate", 0),
-                "max_hold_hours":   24,
+                "max_hold_hours":   12,
                 "exit_expression":  "",
                 "stop_loss":        p.get("stop_loss_price", 0),
                 "stop_loss_pct":    (p.get("stop_loss_pct", 0.05) * 100
@@ -740,7 +740,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
 
         # 1. Funding rate check
         funding_rate = client.get_predicted_funding(coin)
-        funding_cost_pct = abs(funding_rate) * trade.get("max_hold_hours", 24)  # hourly rate × hold hours
+        funding_cost_pct = abs(funding_rate) * trade.get("max_hold_hours", 12)  # hourly rate × hold hours
         funding_hurts = (is_buy and funding_rate > 0) or (not is_buy and funding_rate < 0)
         if funding_hurts and funding_cost_pct > 0.005:  # >0.5% funding cost for the hold period
             log(f"  ⚠️ FUNDING WARNING: {coin} rate={funding_rate:.6f}/hr, est cost={funding_cost_pct:.2%} over {trade.get('max_hold_hours', 24)}h")
@@ -913,7 +913,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool) -> bool:
         "signal_name":     trade.get("signal_name", ""),
         "expression":      trade.get("expression", ""),
         "exit_expression": trade.get("exit_expression", ""),
-        "max_hold_hours":  trade.get("max_hold_hours", 24),
+        "max_hold_hours":  trade.get("max_hold_hours", 12),
         "entry_price":     price,
         "size_usd":        size_usd,
         "size_coins":      size_coins,
@@ -1411,14 +1411,21 @@ def _reconcile_positions(client: "HLClient"):
     if new_positions:
         try:
             open_orders = client.get_open_orders()
-            coins_with_stops = set()
+            # FIX 4: Build stop price map from HL open orders
+            coins_with_stops = {}  # coin -> stop_price
             for order in open_orders:
-                # HL returns orderType as None for trigger/stop orders
-                # Any order for a coin with an open position is considered a stop
-                coins_with_stops.add(order.get("coin"))
+                order_coin = order.get("coin")
+                order_price = float(order.get("limitPx", 0))
+                # Track the stop order price for each coin
+                if order_coin and order_price > 0:
+                    coins_with_stops[order_coin] = order_price
 
             for pos in new_positions:
                 coin = pos["coin"]
+                # Sync actual stop price from HL to position record
+                if coin in coins_with_stops:
+                    pos["stop_loss_price"] = coins_with_stops[coin]
+                
                 if coin not in coins_with_stops:
                     direction = pos["direction"]
                     entry = pos.get("entry_price", 0)

@@ -67,6 +67,8 @@ HEARTBEAT_FILE     = BUS_DIR  / "heartbeat.json"
 LOG_FILE           = LIVE_DIR / "observer.log"
 
 CYCLE_SECONDS = 120  # 2 minutes
+MIN_KILL_HOLD_MINUTES = 60   # kill conditions can't fire for first 60 minutes
+_kill_pending: dict[str, str] = {}   # coin_direction -> last_triggered_condition (confirmation tracker)
 
 # ─── LOGGING ─────────────────────────────────────────────────────────────────
 def log(msg: str):
@@ -361,6 +363,20 @@ def check_kill_conditions():
     for pos in positions:
         coin      = pos["coin"]
         direction = pos["direction"]
+
+        # FIX 1: min hold floor — don't kill in first 60 minutes
+        entry_time = pos.get("entry_time", "")
+        if entry_time:
+            try:
+                from datetime import datetime, timezone
+                entry_dt = datetime.fromisoformat(entry_time)
+                held_min = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 60
+                if held_min < MIN_KILL_HOLD_MINUTES:
+                    log(f"  {coin} {direction}: held {held_min:.0f}m < {MIN_KILL_HOLD_MINUTES}m — skipping kill check")
+                    continue
+            except Exception:
+                pass  # if we can't parse, allow the check
+
         hyp       = find_hypothesis(pos, all_hyps)
         kill_conds = hyp.get("kill_conditions", [])
         hyp_id     = hyp.get("hypothesis_id", pos.get("hypothesis_id", "unknown"))
@@ -373,27 +389,41 @@ def check_kill_conditions():
             triggered, desc = _check_kill_condition(kc, coin, direction, world_state)
             if triggered:
                 key = (coin, direction)
+                pending_key = f"{coin}_{direction}"
                 urgency = _kill_urgency(kc)
-                log(f"  KILL SIGNAL: {coin} {direction} — '{kc}' → {desc} [{urgency}]")
+                
+                # FIX 2: confirmation — need 2 consecutive checks before killing
+                if pending_key in _kill_pending and _kill_pending[pending_key] == kc:
+                    # Second consecutive trigger — CONFIRMED, execute kill
+                    log(f"  KILL CONFIRMED: {coin} {direction} — '{kc}' → {desc} [{urgency}] (2nd check)")
+                    del _kill_pending[pending_key]
 
-                signal_rec = {
-                    "coin":          coin,
-                    "direction":     direction,
-                    "reason":        "kill_condition_hit",
-                    "kill_condition": kc,
-                    "hypothesis_id": hyp_id,
-                    "urgency":       urgency,
-                    "detail":        desc,
-                }
-                # Only add if not already signalled (execution agent may not have run yet)
-                if key not in existing_keys:
-                    new_signals.append(signal_rec)
-                    existing_keys.add(key)
+                    signal_rec = {
+                        "coin":          coin,
+                        "direction":     direction,
+                        "reason":        "kill_condition_hit",
+                        "kill_condition": kc,
+                        "hypothesis_id": hyp_id,
+                        "urgency":       urgency,
+                        "detail":        desc,
+                    }
+                    if key not in existing_keys:
+                        new_signals.append(signal_rec)
+                        existing_keys.add(key)
+                    else:
+                        log(f"    (already signalled for {coin} {direction}, skipping duplicate)")
+                    break
                 else:
-                    log(f"    (already signalled for {coin} {direction}, skipping duplicate)")
-                break  # One signal per position is enough — execution will close it
+                    # First trigger — mark as pending, wait for confirmation
+                    _kill_pending[pending_key] = kc
+                    log(f"  KILL PENDING: {coin} {direction} — '{kc}' → {desc} (awaiting confirmation)")
+                    break
             else:
                 log(f"  {coin} {direction}: '{kc[:40]}...' → {desc} — OK")
+                # Reset pending kill if condition no longer triggered
+                pending_key = f"{coin}_{direction}"
+                if pending_key in _kill_pending and _kill_pending[pending_key] == kc:
+                    del _kill_pending[pending_key]
 
     # Merge new signals with unconsumed existing ones
     all_signals = old_signals + new_signals
