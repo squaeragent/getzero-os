@@ -1,6 +1,6 @@
 """ConsensusEngine — multi-indicator consensus for entry signals."""
 
-from zero_skills._client import _get_client
+from zero_skills._client import _evaluate
 
 
 class ConsensusEngine:
@@ -17,12 +17,11 @@ class ConsensusEngine:
             dict with keys: direction (LONG/SHORT/NEUTRAL), consensus (0-1),
                            quality (0-10), verdict (would_enter/reject)
         """
-        client = _get_client()
-        result = client.evaluate(coin)
+        result = _evaluate(coin)
         return {
             "direction": result.direction,
             "consensus": result.consensus_value,
-            "quality": getattr(result, "quality", 0),
+            "quality": result.quality,
             "verdict": result.verdict,
             "reasoning": result.reasoning,
         }

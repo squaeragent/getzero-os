@@ -1,6 +1,6 @@
 """ExitIntelligence — exit signal detection."""
 
-from zero_skills._client import _get_client
+from zero_skills._client import _evaluate
 
 
 class ExitIntelligence:
@@ -23,8 +23,7 @@ class ExitIntelligence:
         Returns:
             dict with keys: exit (bool), reason, pnl_pct
         """
-        client = _get_client()
-        result = client.evaluate(coin)
+        result = _evaluate(coin)
         
         if entry_direction == "LONG":
             pnl_pct = (current_price - entry_price) / entry_price * 100
@@ -40,7 +39,7 @@ class ExitIntelligence:
             reason = f"consensus_flip_{result.direction}"
         
         # Time decay (>48h with low quality)
-        if hours_held > 48 and getattr(result, "quality", 5) < 5:
+        if hours_held > 48 and result.quality < 5:
             exit_signal = True
             reason = "time_decay"
         

@@ -14,9 +14,6 @@ class NetworkClient:
         """Report a completed trade to the network.
         
         Earns +5 credits per trade reported.
-        
-        Returns:
-            dict with keys: accepted (bool), credits_earned
         """
         client = _get_client()
         try:
@@ -48,10 +45,7 @@ class NetworkClient:
             return {"accepted": False, "error": str(e)}
 
     def get_intelligence(self) -> dict:
-        """Get collective network intelligence.
-        
-        Returns aggregate signals, regime distribution, network health.
-        """
+        """Get collective network intelligence."""
         client = _get_client()
         try:
             return client._get("/api/network/intelligence")

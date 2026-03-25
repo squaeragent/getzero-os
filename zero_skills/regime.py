@@ -1,6 +1,6 @@
 """RegimeDetector — classify market regime via zero API."""
 
-from zero_skills._client import _get_client
+from zero_skills._client import _evaluate
 
 
 class RegimeDetector:
@@ -20,8 +20,7 @@ class RegimeDetector:
         Returns:
             dict with keys: regime, confidence, description
         """
-        client = _get_client()
-        result = client.evaluate(coin)
+        result = _evaluate(coin)
         return {
             "regime": result.regime,
             "confidence": result.confidence,
