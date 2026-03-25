@@ -140,33 +140,71 @@ def run_once(name, script):
 
 
 def start_evaluator():
-    """Start the evaluator as a long-running background process."""
+    """Start the evaluator as a long-running background process.
+    
+    Runs BOTH:
+    - ENVY WebSocket evaluator (if API is available)
+    - Local SmartProvider evaluator (always — zero cost, HL data only)
+    
+    Local evaluator is the safety net. ENVY is enhancement.
+    """
+    # Start ENVY evaluator (WebSocket)
     name = "evaluator"
     if name in processes:
         proc = processes[name]
         if proc.poll() is None:
-            return  # Already running
+            pass  # Already running
         else:
             log(f"evaluator exited with code {proc.returncode}, restarting")
+            del processes[name]
 
-    log("Starting evaluator (WebSocket loop)...")
-    try:
-        env = os.environ.copy()
-        env["PYTHONUNBUFFERED"] = "1"
-        proc = subprocess.Popen(
-            [PYTHON, str(V6_DIR / "evaluator.py"), "--loop"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            env=env,
-        )
-        processes[name] = proc
-        # Drain evaluator output in background thread so pipe doesn't block
-        t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
-        t.start()
-        log(f"evaluator PID: {proc.pid}")
-    except Exception as e:
-        log(f"Failed to start evaluator: {e}")
+    if name not in processes:
+        log("Starting evaluator (WebSocket loop)...")
+        try:
+            env = os.environ.copy()
+            env["PYTHONUNBUFFERED"] = "1"
+            proc = subprocess.Popen(
+                [PYTHON, str(V6_DIR / "evaluator.py"), "--loop"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                env=env,
+            )
+            processes[name] = proc
+            t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
+            t.start()
+            log(f"evaluator PID: {proc.pid}")
+        except Exception as e:
+            log(f"Failed to start evaluator: {e}")
+
+    # Start local evaluator (SmartProvider — always runs)
+    local_name = "local_evaluator"
+    if local_name in processes:
+        proc = processes[local_name]
+        if proc.poll() is None:
+            pass  # Already running
+        else:
+            log(f"local_evaluator exited with code {proc.returncode}, restarting")
+            del processes[local_name]
+
+    if local_name not in processes:
+        log("Starting local_evaluator (SmartProvider loop)...")
+        try:
+            env = os.environ.copy()
+            env["PYTHONUNBUFFERED"] = "1"
+            proc = subprocess.Popen(
+                [PYTHON, str(V6_DIR / "local_evaluator.py"), "--loop"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                env=env,
+            )
+            processes[local_name] = proc
+            t = threading.Thread(target=_drain_output, args=(proc, local_name), daemon=True)
+            t.start()
+            log(f"local_evaluator PID: {proc.pid}")
+        except Exception as e:
+            log(f"Failed to start local_evaluator: {e}")
 
 
 def start_immune():
