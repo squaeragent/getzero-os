@@ -117,6 +117,8 @@ class EnrichmentSignal:
     def analyze(self):
         """Run all enrichment checks."""
         self._check_funding()
+        self._check_funding_trend()
+        self._check_book_imbalance()
         self._check_oi_divergence()
         self._check_fear_greed()
         self._check_macro()
@@ -155,6 +157,49 @@ class EnrichmentSignal:
         if funding < -0.0001 and self.direction == "LONG":
             self.flags.append(f"✅ funding={funding:.4%} (crowded short, LONG confirmed)")
             self.boost += 0.3
+
+    def _check_funding_trend(self):
+        """Funding rate trend over last 8h — momentum of sentiment."""
+        ft = get_funding_trend(self.coin)
+        if not ft:
+            return
+        trend = ft.get("trend", 0)
+        avg = ft.get("average_8h", 0)
+
+        # Funding trending up while going long = increasing crowd risk
+        if trend > 0.0002 and self.direction == "LONG":
+            self.flags.append(f"⚠ funding rising (trend={trend:.5f}), longs getting crowded")
+            self.boost -= 0.3
+        elif trend < -0.0002 and self.direction == "SHORT":
+            self.flags.append(f"⚠ funding falling (trend={trend:.5f}), shorts getting crowded")
+            self.boost -= 0.3
+
+        # Funding reversing (was positive, now negative) = sentiment flip
+        if avg > 0 and ft.get("current", 0) < 0:
+            self.flags.append(f"✅ funding REVERSED (avg={avg:.5f}→curr={ft['current']:.5f})")
+            if self.direction == "SHORT":
+                self.boost += 0.4
+
+    def _check_book_imbalance(self):
+        """Order book bid/ask imbalance — near-term pressure."""
+        book = get_book_imbalance(self.coin)
+        imbalance = book.get("imbalance", 0)
+
+        # Strong bid wall = near-term bullish pressure
+        if imbalance > 0.3 and self.direction == "LONG":
+            self.flags.append(f"✅ book bid-heavy (imb={imbalance:+.2f})")
+            self.boost += 0.2
+        elif imbalance > 0.3 and self.direction == "SHORT":
+            self.flags.append(f"⚠ book bid-heavy (imb={imbalance:+.2f}), shorting into bids")
+            self.boost -= 0.2
+
+        # Strong ask wall = near-term bearish pressure
+        if imbalance < -0.3 and self.direction == "SHORT":
+            self.flags.append(f"✅ book ask-heavy (imb={imbalance:+.2f})")
+            self.boost += 0.2
+        elif imbalance < -0.3 and self.direction == "LONG":
+            self.flags.append(f"⚠ book ask-heavy (imb={imbalance:+.2f}), buying into resistance")
+            self.boost -= 0.2
 
     def _check_oi_divergence(self):
         """OI vs price direction — genuine trend vs squeeze."""
@@ -226,6 +271,76 @@ class EnrichmentSignal:
         status = "BLOCK" if self.block else ("WARN" if self.boost < -0.5 else "OK")
         flags_str = " | ".join(self.flags) if self.flags else "no enrichment flags"
         return f"[ENRICH] {self.coin} {self.direction}: {status} (boost={self.boost:+.1f}) — {flags_str}"
+
+
+# ─── HL FUNDING HISTORY ───────────────────────────────────────────────────────
+
+HL_INFO_URL = "https://api.hyperliquid.xyz/info"
+
+def _fetch_funding_history(coin: str) -> list[float]:
+    """Fetch last 8 hourly funding rates for a coin. FREE."""
+    import urllib.request
+    start_ms = int((time.time() - 8 * 3600) * 1000)
+    payload = json.dumps({"type": "fundingHistory", "coin": coin, "startTime": start_ms}).encode()
+    req = urllib.request.Request(HL_INFO_URL, data=payload, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+        return [float(x.get("fundingRate", 0)) for x in data[-8:]]
+    except Exception:
+        return []
+
+
+def get_funding_trend(coin: str) -> dict | None:
+    """Get funding rate trend (last 8h). Cached 15 min per coin."""
+    rates = _cached(f"funding_{coin}", 900, lambda: _fetch_funding_history(coin))
+    if not rates or len(rates) < 2:
+        return None
+    avg = sum(rates) / len(rates)
+    trend = rates[-1] - rates[0]  # positive = funding rising
+    return {
+        "current": rates[-1],
+        "average_8h": avg,
+        "trend": trend,  # positive = longs paying more, getting crowded
+        "count": len(rates),
+    }
+
+
+# ─── HL ORDER BOOK IMBALANCE ─────────────────────────────────────────────────
+
+def _fetch_book_imbalance(coin: str) -> dict:
+    """Fetch L2 book and compute bid/ask imbalance. FREE."""
+    import urllib.request
+    payload = json.dumps({"type": "l2Book", "coin": coin}).encode()
+    req = urllib.request.Request(HL_INFO_URL, data=payload, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+        levels = data.get("levels", [[], []])
+        bids = levels[0][:10] if len(levels) > 0 else []
+        asks = levels[1][:10] if len(levels) > 1 else []
+
+        bid_depth = sum(float(b.get("sz", 0)) * float(b.get("px", 0)) for b in bids)
+        ask_depth = sum(float(a.get("sz", 0)) * float(a.get("px", 0)) for a in asks)
+        total = bid_depth + ask_depth
+
+        if total == 0:
+            return {"imbalance": 0, "bid_depth": 0, "ask_depth": 0}
+
+        # Positive = more bids (buyers), negative = more asks (sellers)
+        imbalance = (bid_depth - ask_depth) / total
+        return {
+            "imbalance": round(imbalance, 3),
+            "bid_depth": round(bid_depth, 2),
+            "ask_depth": round(ask_depth, 2),
+        }
+    except Exception:
+        return {"imbalance": 0, "bid_depth": 0, "ask_depth": 0}
+
+
+def get_book_imbalance(coin: str) -> dict:
+    """Get order book imbalance. Cached 2 min per coin."""
+    return _cached(f"book_{coin}", 120, lambda: _fetch_book_imbalance(coin)) or {"imbalance": 0}
 
 
 def check_entry(coin: str, direction: str) -> EnrichmentSignal:
