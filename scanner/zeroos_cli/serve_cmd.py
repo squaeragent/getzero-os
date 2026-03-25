@@ -7,7 +7,7 @@ import click
 def serve():
     """Start zeroos as an MCP server (stdio transport)."""
     try:
-        from zeroos.mcp.server import mcp
+        from scanner.zeroos_cli.mcp_server import mcp
         mcp.run(transport='stdio')
     except ImportError:
         from scanner.zeroos_cli.console import fail, action
