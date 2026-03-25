@@ -150,7 +150,7 @@ class SupabaseBridge:
         For REJECTED: rate-limited to 1 per coin per hour.
         """
         # Rate limit rejections
-        if decision in ("REJECTED", "BLOCKED"):
+        if decision.upper() in ("REJECTED", "BLOCKED"):
             key = f"{coin}_{decision}"
             now = time.time()
             last = _rejection_tracker.get(key, 0)
@@ -186,6 +186,7 @@ class SupabaseBridge:
             "entry_price": position.get("entry_price"),
             "size_usd": position.get("size_usd"),
             "entry_time": position.get("entry_time", _now_iso()),
+            "entered_at": position.get("entry_time", _now_iso()),
             "status": "open",
         }
         try:
@@ -215,6 +216,7 @@ class SupabaseBridge:
             "fees": round(fees, 6) if fees else 0,
             "entry_time": entry_time,
             "exit_time": _now_iso(),
+            "closed_at": _now_iso(),
             "exit_reason": exit_reason[:100] if exit_reason else None,
             "status": "closed",
         }
