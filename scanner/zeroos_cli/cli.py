@@ -20,6 +20,8 @@ from scanner.zeroos_cli.brief_cmd import brief
 from scanner.zeroos_cli.credits_cmd import credits
 from scanner.zeroos_cli.observe_cmd import observe
 from scanner.zeroos_cli.serve_cmd import serve
+from scanner.zeroos_cli.doctor_cmd import doctor
+from scanner.zeroos_cli.arena_cmd import arena
 
 
 class ZeroGroup(click.Group):
@@ -53,6 +55,11 @@ class ZeroGroup(click.Group):
         section("CREDITS")
         console.print("  [lime]zeroos credits[/lime]          [dim]view balance and usage[/dim]")
         console.print("  [lime]zeroos credits buy[/lime]      [dim]purchase evaluation credits[/dim]")
+        console.print("  [lime]zeroos credits history[/lime]  [dim]transaction history[/dim]")
+        spacer()
+        section("DIAGNOSTICS")
+        console.print("  [lime]zeroos doctor[/lime]           [dim]run 6 health checks[/dim]")
+        console.print("  [lime]zeroos arena[/lime]            [dim]leaderboard and rewards[/dim]")
         spacer()
         section("MCP")
         console.print("  [lime]zeroos serve[/lime]            [dim]start as MCP server (for AI agents)[/dim]")
@@ -86,6 +93,8 @@ cli.add_command(brief)
 cli.add_command(credits)
 cli.add_command(observe)
 cli.add_command(serve)
+cli.add_command(doctor)
+cli.add_command(arena)
 
 
 # Track operator behavior on every CLI invocation

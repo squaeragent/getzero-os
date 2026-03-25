@@ -79,6 +79,56 @@ def credits(ctx, as_json):
 
 
 @credits.command()
+@click.option('--json', 'as_json', is_flag=True, help='Output as JSON.')
+def history(as_json):
+    """View credit transaction history."""
+    from scanner.zeroos_cli.config_utils import load_token
+    from scanner.zeroos_cli.api_client import ZeroAPIClient
+
+    token = load_token()
+    if not token:
+        fail('not authenticated.')
+        action('zeroos init --token YOUR_TOKEN')
+        raise SystemExit(1)
+
+    client = ZeroAPIClient(token)
+    try:
+        data = client._request('GET', '/credits/history')
+
+        if 'error' in data:
+            fail(data['error'])
+            raise SystemExit(1)
+
+        transactions = data.get('transactions', [])
+
+        if as_json:
+            print(_json.dumps(data, indent=2))
+            return
+
+        spacer()
+        console.print('  [header]◆ zero▮[/header] [mid]credit history[/mid]')
+        spacer()
+
+        if not transactions:
+            console.print('  [dim]no transactions yet.[/dim]')
+        else:
+            for tx in transactions[:20]:
+                amount = tx.get('amount', 0)
+                sign = '+' if amount > 0 else ''
+                color = 'green' if amount > 0 else 'red'
+                tx_type = tx.get('type', '?')
+                date = tx.get('created_at', '')[:10]
+                console.print(f'  [{color}]{sign}{amount:>6}[/{color}]  {tx_type:16s}  {date}')
+
+        spacer()
+    except SystemExit:
+        raise
+    except Exception as e:
+        fail(f'failed to fetch history: {e}')
+        raise SystemExit(1)
+
+
+@credits.command()
 @click.argument('package', type=click.Choice(['starter', 'pro', 'scale']))
 def buy(package):
     """Buy credits — opens Stripe checkout."""
