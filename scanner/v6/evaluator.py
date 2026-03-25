@@ -232,6 +232,31 @@ COIN_BLACKLIST = {"PUMP", "XPL", "TRUMP"}
 def evaluate_tick(flat_indicators: dict[str, dict]):
     """Called on each WS tick. flat_indicators = {COIN: {IND_CODE: value}}."""
     new_entries = []
+
+    # ── CHURN PREVENTION: load recent signal_reversal exits ──────────────
+    recent_reversal_exits = set()  # (coin, direction) pairs to block
+    CHURN_COOLDOWN_MINUTES = 30
+    try:
+        trades_file = BUS_DIR / "trades.jsonl"
+        if trades_file.exists():
+            import io
+            lines = trades_file.read_text().strip().split("\n")
+            for line in reversed(lines[-50:]):  # check last 50 trades
+                try:
+                    t = json.loads(line)
+                    if t.get("exit_reason") == "signal_reversal":
+                        exit_time = t.get("exit_time", "")
+                        if exit_time:
+                            exit_dt = datetime.fromisoformat(exit_time)
+                            mins_ago = (datetime.now(timezone.utc) - exit_dt).total_seconds() / 60
+                            if mins_ago < CHURN_COOLDOWN_MINUTES:
+                                recent_reversal_exits.add((t.get("coin"), t.get("direction")))
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    if recent_reversal_exits:
+        log(f"  Churn prevention: blocking re-entry for {recent_reversal_exits}")
     new_exits   = []
 
     # ── Entry evaluation ──────────────────────────────────────────────────────
@@ -282,6 +307,17 @@ def evaluate_tick(flat_indicators: dict[str, dict]):
 
             fired, missing = evaluate_expression(expr, ind_values)
             if fired:
+                # Churn prevention: don't re-enter same coin+direction after signal_reversal
+                if (coin, direction) in recent_reversal_exits:
+                    log(f"  ENTRY BLOCKED (churn): {coin} {direction} [{sig_name}] — signal_reversal exit < {CHURN_COOLDOWN_MINUTES}m ago")
+                    continue
+                # Consensus check: don't enter if >60% of signals point opposite
+                all_directions = [s.get("direction", "").upper() for s in coin_data.get("signals", [])]
+                opposite = "SHORT" if direction == "LONG" else "LONG"
+                opp_count = sum(1 for d in all_directions if d == opposite)
+                if len(all_directions) > 2 and opp_count / len(all_directions) > 0.6:
+                    log(f"  ENTRY BLOCKED (consensus): {coin} {direction} [{sig_name}] — {opp_count}/{len(all_directions)} signals say {opposite}")
+                    continue
                 log(f"  ENTRY FIRED: {coin} {direction} [{sig_name}]")
                 _mark_entry_fired(coin, sig_name)
                 new_entries.append({
