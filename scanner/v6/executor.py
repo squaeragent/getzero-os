@@ -1446,6 +1446,11 @@ def _reconcile_positions(client: "HLClient"):
                     except Exception as e:
                         log(f"  Emergency stop FAILED: {e}")
                         send_alert(f"🚨🚨 EMERGENCY STOP FAILED for {coin}: {e}\nCLOSE MANUALLY NOW.")
+            # Re-save positions with synced stop prices from HL
+            save_json_locked(POSITIONS_FILE, {
+                "updated_at": now_iso(),
+                "positions": new_positions,
+            })
         except Exception as e:
             log(f"  WARN: stop verification failed: {e}")
 
