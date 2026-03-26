@@ -40,5 +40,47 @@
     "status": "proposed",
     "source": "reflection",
     "raw_rule": "IF time_since_last_trade > 24 hours THEN scan_for_new_opportunities BECAUSE inactivity may indicate missed opportunities or changes in market conditions that require adaptation."
+  },
+  {
+    "id": "RULE_004",
+    "condition": "(short_position && price > entry_price * 1.05)",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "close_position",
+    "evidence": "recent short positions have resulted in losses, and this rule aims to limit potential downsides by closing positions that have moved against us by 5% or more.",
+    "generation": 1,
+    "created": "2026-03-26T06:18:14.854308+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (short_position && price > entry_price * 1.05) THEN close_position BECAUSE recent short positions have resulted in losses, and this rule aims to limit potential downsides by closing positions that have moved against us by 5% or more."
+  },
+  {
+    "id": "RULE_005",
+    "condition": "(new_short_signal && RSI(14) < 30)",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_position_size",
+    "evidence": "the system's win rate is relatively low, and entering short positions during oversold markets might increase the likelihood of whipsaws; reducing position size can help mitigate potential losses.",
+    "generation": 1,
+    "created": "2026-03-26T06:18:14.854609+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (new_short_signal && RSI(14) < 30) THEN reduce_position_size BECAUSE the system's win rate is relatively low, and entering short positions during oversold markets might increase the likelihood of whipsaws; reducing position size can help mitigate potential losses."
+  },
+  {
+    "id": "RULE_006",
+    "condition": "(consecutive_wins > 2 && new_long_signal)",
+    "action": "boost_confidence",
+    "value": 0.1,
+    "action_description": "increase_position_size",
+    "evidence": "the system has a moderate win rate, and consecutive wins may indicate a strong trend; increasing position size during these periods could potentially amplify gains.",
+    "generation": 1,
+    "created": "2026-03-26T06:18:14.854860+00:00",
+    "trades_tested": 0,
+    "status": "proposed",
+    "source": "reflection",
+    "raw_rule": "IF (consecutive_wins > 2 && new_long_signal) THEN increase_position_size BECAUSE the system has a moderate win rate, and consecutive wins may indicate a strong trend; increasing position size during these periods could potentially amplify gains."
   }
 ]
