@@ -49,7 +49,7 @@ AGENTS = [
     ("correlation",         AGENTS_DIR / "correlation_agent.py",     300,   10),
     ("risk",                AGENTS_DIR / "risk_agent.py",            120,    5),
     ("parameter_evolution", AGENTS_DIR / "parameter_evolution.py",   600,   20),  # Phase 5: replaces evolution
-    ("execution",           AGENTS_DIR / "execution_agent.py",       300,   10),
+    # ("execution",           AGENTS_DIR / "execution_agent.py",       300,   10),  # KILLED 2026-03-26: V5 executor replaced by V6 executor (v6/executor.py)
     ("observer",            AGENTS_DIR / "observer.py",              120,    5),   # Phase 4: closes cognitive loop
     ("reflection",          AGENTS_DIR / "reflection.py",          21600, 1440),  # Phase 5: Ollama reflection (6h)
     ("counterfactual",      AGENTS_DIR / "counterfactual.py",       1800,   90),  # Meta-learning: resolves killed hypotheses (30-min)
