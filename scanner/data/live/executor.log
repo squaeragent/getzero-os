@@ -605,3 +605,139 @@
 [2026-03-26 08:01:25 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 361703465491}}]}}}
 [2026-03-26 08:01:25 UTC] [EXEC]   Open fill fee for BTC: $0.009148
 [2026-03-26 08:01:26 UTC] [EXEC] Summary: 2 positions, $135.60 notional, trades=98
+[2026-03-26 08:27:37 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 08:27:38 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 08:27:38 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 08:27:38 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 08:27:38 UTC] [EXEC] Positions: 2 | Throttle: 0.0 | Kill: True
+[2026-03-26 08:27:38 UTC] [EXEC] KILL ALL — Risk Agent triggered emergency close
+[2026-03-26 08:27:39 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "0.00029", "avgPx": "69822.0", "oid": 361722973268}}]}}}
+[2026-03-26 08:27:40 UTC] [EXEC]   Fees: open=$0.000000 close=$0.009111 total=$0.009111 | P&L after fees: $+0.0719
+[2026-03-26 08:27:40 UTC] [EXEC]   Closed BTC SHORT | risk_kill | +0.40% ($+0.08) (fees=$0.0091, net=$+0.0719)
+[2026-03-26 08:27:43 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "9.67", "avgPx": "9.3994", "oid": 361723024917}}]}}}
+[2026-03-26 08:27:43 UTC] [EXEC]   Fees: open=$0.000000 close=$0.040901 total=$0.040901 | P&L after fees: $+0.2676
+[2026-03-26 08:27:43 UTC] [EXEC]   Closed AVAX SHORT | risk_kill | +0.34% ($+0.31) (fees=$0.0409, net=$+0.2676)
+[2026-03-26 08:58:53 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 08:58:53 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 08:58:54 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 08:58:54 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 08:58:54 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 08:58:54 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 08:58:54 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 08:58:54 UTC] [EXEC]   [STREAK] size=150 (base=125 × streak_mod=1.2)
+[2026-03-26 08:58:55 UTC] [EXEC] LIVE OPEN DOGE SHORT | $150.00 (1626.0) @ $0.0922 | sharpe=2.50
+[2026-03-26 08:58:55 UTC] [EXEC]   Margin: isolated 2x for DOGE → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-26 08:58:55 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-26 08:58:57 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "1082.0", "avgPx": "0.092226", "oid": 361743607253}}]}}}
+[2026-03-26 08:58:57 UTC] [EXEC]   Filled @ $0.0922
+[2026-03-26 08:58:57 UTC] [EXEC]   Execution: intended=$0.0922 filled=$0.0922 slippage=0.0000% ($0.0000) fill_time=1412ms spread=0.001084
+[2026-03-26 08:58:57 UTC] [EXEC]   DOGE ATR-stop: ATR=0.250% → stop=3.00%
+[2026-03-26 08:58:57 UTC] [EXEC]   Stop loss: DOGE trigger @ $0.0955 (buy 1626.0)
+[2026-03-26 08:58:58 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 361743614446}}]}}}
+[2026-03-26 08:58:59 UTC] [EXEC]   Open fill fee for DOGE: $0.044904
+[2026-03-26 08:59:07 UTC] [EXEC]   [STREAK] size=128 (base=107 × streak_mod=1.2)
+[2026-03-26 08:59:08 UTC] [EXEC] LIVE OPEN HYPE SHORT | $127.91 (3.26) @ $39.1795 | sharpe=2.32
+[2026-03-26 08:59:08 UTC] [EXEC]   Margin: isolated 3x for HYPE → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-26 08:59:08 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-26 08:59:10 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Insufficient margin to place order. asset=159"}]}}}
+[2026-03-26 08:59:10 UTC] [EXEC]   Error: Insufficient margin to place order. asset=159
+[2026-03-26 08:59:10 UTC] [EXEC]   Not filled, skipping
+[2026-03-26 08:59:10 UTC] [EXEC]   [STREAK] size=107 (base=89 × streak_mod=1.2)
+[2026-03-26 08:59:10 UTC] [EXEC] LIVE OPEN HYPE SHORT | $106.66 (2.72) @ $39.1775 | sharpe=2.14
+[2026-03-26 08:59:11 UTC] [EXEC]   Margin: isolated 3x for HYPE → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-26 08:59:11 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-26 08:59:12 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Insufficient margin to place order. asset=159"}]}}}
+[2026-03-26 08:59:12 UTC] [EXEC]   Error: Insufficient margin to place order. asset=159
+[2026-03-26 08:59:12 UTC] [EXEC]   Not filled, skipping
+[2026-03-26 08:59:12 UTC] [EXEC]   [STREAK] size=104 (base=87 × streak_mod=1.2)
+[2026-03-26 08:59:12 UTC] [EXEC] LIVE OPEN HYPE SHORT | $104.15 (2.66) @ $39.1770 | sharpe=2.12
+[2026-03-26 08:59:13 UTC] [EXEC]   Margin: isolated 3x for HYPE → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-26 08:59:13 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-26 08:59:14 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Insufficient margin to place order. asset=159"}]}}}
+[2026-03-26 08:59:14 UTC] [EXEC]   Error: Insufficient margin to place order. asset=159
+[2026-03-26 08:59:14 UTC] [EXEC]   Not filled, skipping
+[2026-03-26 08:59:14 UTC] [EXEC]   [STREAK] size=102 (base=85 × streak_mod=1.2)
+[2026-03-26 08:59:15 UTC] [EXEC] LIVE OPEN HYPE SHORT | $101.81 (2.6) @ $39.1795 | sharpe=2.10
+[2026-03-26 08:59:16 UTC] [EXEC]   Margin: isolated 3x for HYPE → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-26 08:59:16 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-26 08:59:17 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"error": "Insufficient margin to place order. asset=159"}]}}}
+[2026-03-26 08:59:17 UTC] [EXEC]   Error: Insufficient margin to place order. asset=159
+[2026-03-26 08:59:17 UTC] [EXEC]   Not filled, skipping
+[2026-03-26 08:59:17 UTC] [EXEC] Summary: 1 positions, $150.00 notional, trades=100
+[2026-03-26 09:25:23 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 09:25:24 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 09:25:24 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 09:25:24 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 09:25:24 UTC] [EXEC] Positions: 1 | Throttle: 0.0 | Kill: True
+[2026-03-26 09:25:24 UTC] [EXEC] KILL ALL — Risk Agent triggered emergency close
+[2026-03-26 09:25:25 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "1082.0", "avgPx": "0.091925", "oid": 361762322131}}]}}}
+[2026-03-26 09:25:26 UTC] [EXEC]   Fees: open=$0.000000 close=$0.044758 total=$0.044758 | P&L after fees: $+0.2820
+[2026-03-26 09:25:26 UTC] [EXEC]   Closed DOGE SHORT | risk_kill | +0.33% ($+0.33) (fees=$0.0448, net=$+0.2820)
+[2026-03-26 09:51:41 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 09:51:41 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 09:51:42 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 09:51:42 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 09:51:42 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 09:51:42 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 09:51:42 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 09:51:43 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=101
+[2026-03-26 10:18:21 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 10:18:21 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 10:18:21 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 10:18:21 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 10:18:22 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 10:18:22 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 10:18:22 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 10:18:23 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=101
+[2026-03-26 10:44:44 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 10:44:44 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 10:44:45 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 10:44:45 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 10:44:45 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 10:44:45 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 10:44:45 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 10:44:46 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=101
+[2026-03-26 11:10:47 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 11:10:47 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 11:10:47 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 11:10:47 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 11:10:48 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 11:10:48 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 11:10:49 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 11:10:49 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=101
+[2026-03-26 11:37:42 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 11:37:43 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 11:37:43 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 11:37:43 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 11:37:43 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 11:37:43 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 11:37:44 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 11:37:44 UTC] [EXEC]   [STREAK] size=44 (base=37 × streak_mod=1.2)
+[2026-03-26 11:37:44 UTC] [EXEC] LIVE OPEN DOGE SHORT | $44.40 (486.0) @ $0.0913 | sharpe=1.62
+[2026-03-26 11:37:45 UTC] [EXEC]   Margin: isolated 2x for DOGE → {'status': 'ok', 'response': {'type': 'default'}}
+[2026-03-26 11:37:45 UTC] [EXEC]   IOC entry: signal age 0s (urgent)
+[2026-03-26 11:37:47 UTC] [EXEC]   Order result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "486.0", "avgPx": "0.091302", "oid": 361855846529}}]}}}
+[2026-03-26 11:37:47 UTC] [EXEC]   Filled @ $0.0913
+[2026-03-26 11:37:47 UTC] [EXEC]   Execution: intended=$0.0913 filled=$0.0913 slippage=0.0000% ($0.0000) fill_time=1814ms spread=0.001095
+[2026-03-26 11:37:47 UTC] [EXEC]   DOGE ATR-stop: ATR=0.250% → stop=3.00%
+[2026-03-26 11:37:47 UTC] [EXEC]   Stop loss: DOGE trigger @ $0.0946 (buy 486.0)
+[2026-03-26 11:37:48 UTC] [EXEC]   Stop result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"resting": {"oid": 361855855699}}]}}}
+[2026-03-26 11:37:48 UTC] [EXEC]   Open fill fee for DOGE: $0.019967
+[2026-03-26 11:37:50 UTC] [EXEC] Summary: 1 positions, $44.40 notional, trades=101
+[2026-03-26 12:04:18 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 12:04:18 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 12:04:18 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 12:04:18 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 12:04:18 UTC] [EXEC] Positions: 1 | Throttle: 0.0 | Kill: True
+[2026-03-26 12:04:19 UTC] [EXEC] KILL ALL — Risk Agent triggered emergency close
+[2026-03-26 12:04:21 UTC] [EXEC]   Close result: {"status": "ok", "response": {"type": "order", "data": {"statuses": [{"filled": {"totalSz": "486.0", "avgPx": "0.091157", "oid": 361870915189}}]}}}
+[2026-03-26 12:04:21 UTC] [EXEC]   Fees: open=$0.000000 close=$0.019936 total=$0.019936 | P&L after fees: $+0.0408
+[2026-03-26 12:04:21 UTC] [EXEC]   Closed DOGE SHORT | risk_kill | +0.14% ($+0.06) (fees=$0.0199, net=$+0.0408)
+[2026-03-26 12:30:25 UTC] [EXEC] === ZERO OS Execution Agent LIVE ===
+[2026-03-26 12:30:26 UTC] [EXEC] Loaded 229 coins from HL meta
+[2026-03-26 12:30:26 UTC] [EXEC] Wallet: 0x744641cAC14BE9fFE80d1E8fD5D7eE2bC773a5eb (main: 0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e)
+[2026-03-26 12:30:26 UTC] [EXEC] ⚠️  STARTUP: positions.json is empty — will reconcile from HL via v6 executor
+[2026-03-26 12:30:26 UTC] [EXEC] --- Execution cycle (LIVE) ---
+[2026-03-26 12:30:26 UTC] [EXEC] Positions: 0 | Throttle: 0.5 | Kill: False
+[2026-03-26 12:30:27 UTC] [EXEC] ⚠ ENVY API DOWN — no exit indicators available. Positions protected by HL stops + max hold only.
+[2026-03-26 12:30:27 UTC] [EXEC] Summary: 0 positions, $0.00 notional, trades=102
