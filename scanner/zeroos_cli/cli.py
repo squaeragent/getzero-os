@@ -22,6 +22,7 @@ from scanner.zeroos_cli.observe_cmd import observe
 from scanner.zeroos_cli.serve_cmd import serve
 from scanner.zeroos_cli.doctor_cmd import doctor
 from scanner.zeroos_cli.arena_cmd import arena
+from scanner.zeroos_cli.mode_cmd import mode
 
 
 class ZeroGroup(click.Group):
@@ -56,6 +57,12 @@ class ZeroGroup(click.Group):
         console.print("  [lime]zeroos credits[/lime]          [dim]view balance and usage[/dim]")
         console.print("  [lime]zeroos credits buy[/lime]      [dim]purchase evaluation credits[/dim]")
         console.print("  [lime]zeroos credits history[/lime]  [dim]transaction history[/dim]")
+        spacer()
+        section("MODES")
+        console.print("  [lime]zeroos mode[/lime]             [dim]view current mode config[/dim]")
+        console.print("  [lime]zeroos mode set[/lime]         [dim]set a mode dimension[/dim]")
+        console.print("  [lime]zeroos mode reset[/lime]       [dim]reset all modes to defaults[/dim]")
+        console.print("  [lime]zeroos mode history[/lime]     [dim]recent mode changes[/dim]")
         spacer()
         section("DIAGNOSTICS")
         console.print("  [lime]zeroos doctor[/lime]           [dim]run 6 health checks[/dim]")
@@ -95,6 +102,7 @@ cli.add_command(observe)
 cli.add_command(serve)
 cli.add_command(doctor)
 cli.add_command(arena)
+cli.add_command(mode)
 
 
 # Track operator behavior on every CLI invocation

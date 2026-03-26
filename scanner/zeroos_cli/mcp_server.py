@@ -146,6 +146,17 @@ def zero_help() -> dict:
             {'name': 'zero_queue_session', 'desc': 'queue a session'},
             {'name': 'zero_session_history', 'desc': 'recent session history'},
             {'name': 'zero_get_achievements', 'desc': 'earned achievements'},
+            {'name': 'zero_set_strategy', 'desc': 'set trading strategy'},
+            {'name': 'zero_set_direction', 'desc': 'set direction mode'},
+            {'name': 'zero_set_risk', 'desc': 'set risk level'},
+            {'name': 'zero_set_state', 'desc': 'set agent state'},
+            {'name': 'zero_set_scope', 'desc': 'set trading scope'},
+            {'name': 'zero_add_condition', 'desc': 'add auto-switching condition'},
+            {'name': 'zero_remove_condition', 'desc': 'remove a condition'},
+            {'name': 'zero_get_modes', 'desc': 'current mode configuration'},
+            {'name': 'zero_size_up', 'desc': 'increase size 1.5x'},
+            {'name': 'zero_size_down', 'desc': 'decrease size 0.5x'},
+            {'name': 'zero_reset_size', 'desc': 'reset size to 1.0x'},
         ]
     }
 
@@ -306,3 +317,92 @@ def zero_get_achievements() -> dict:
         'total_earned': 0,
         'note': 'achievements coming soon — this is a placeholder',
     }
+
+
+# ── Mode System ──────────────────────────────────────────────
+
+def _get_mode_manager():
+    from scanner.v6.mode_manager import ModeManager
+    return ModeManager()
+
+
+@mcp.tool()
+def zero_set_strategy(strategy: str, coins: str = '') -> dict:
+    """Set trading strategy. Options: momentum, mean_revert, breakout, sniper, scalp, grid. Optional comma-separated coins for per-coin override."""
+    mm = _get_mode_manager()
+    coin_list = [c.strip().upper() for c in coins.split(',') if c.strip()] if coins else None
+    return mm.set_strategy(strategy, coin_list)
+
+
+@mcp.tool()
+def zero_set_direction(direction: str) -> dict:
+    """Set direction mode. Options: long_only, both, short_only, funding_harvest."""
+    mm = _get_mode_manager()
+    return mm.set_direction(direction)
+
+
+@mcp.tool()
+def zero_set_risk(risk: str) -> dict:
+    """Set risk level. Options: defense, normal, aggressive. Each has preset position size, max positions, stops, and circuit breakers."""
+    mm = _get_mode_manager()
+    return mm.set_risk(risk)
+
+
+@mcp.tool()
+def zero_set_state(state: str, condition: str = '') -> dict:
+    """Set agent state. Options: active, observe, sleep, exit_only, paper. Optional wake condition for sleep/exit_only."""
+    mm = _get_mode_manager()
+    cond = condition if condition else None
+    return mm.set_state(state, cond)
+
+
+@mcp.tool()
+def zero_set_scope(scope: str) -> dict:
+    """Set trading scope. Options: focused, broad, full, or comma-separated coins for custom scope, or sector name (large_caps, defi, memes, l1s)."""
+    mm = _get_mode_manager()
+    if ',' in scope:
+        coin_list = [c.strip().upper() for c in scope.split(',') if c.strip()]
+        return mm.set_scope(coin_list)
+    return mm.set_scope(scope)
+
+
+@mcp.tool()
+def zero_add_condition(trigger: str, action: str) -> dict:
+    """Add an auto-switching condition. Example trigger: 'btc_drops_5pct', action: 'set_risk_defense'."""
+    mm = _get_mode_manager()
+    return mm.add_condition(trigger, action)
+
+
+@mcp.tool()
+def zero_remove_condition(trigger: str) -> dict:
+    """Remove an auto-switching condition by its trigger name."""
+    mm = _get_mode_manager()
+    return mm.remove_condition(trigger)
+
+
+@mcp.tool()
+def zero_get_modes() -> dict:
+    """Get current mode configuration — strategy, direction, risk, state, scope, conditions, size multiplier."""
+    mm = _get_mode_manager()
+    return mm.get_modes()
+
+
+@mcp.tool()
+def zero_size_up() -> dict:
+    """Increase position size multiplier by 1.5x."""
+    mm = _get_mode_manager()
+    return mm.size_up()
+
+
+@mcp.tool()
+def zero_size_down() -> dict:
+    """Decrease position size multiplier by 0.5x."""
+    mm = _get_mode_manager()
+    return mm.size_down()
+
+
+@mcp.tool()
+def zero_reset_size() -> dict:
+    """Reset position size multiplier to 1.0x."""
+    mm = _get_mode_manager()
+    return mm.reset_size()
