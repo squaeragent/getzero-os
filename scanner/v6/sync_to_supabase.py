@@ -210,12 +210,18 @@ def _build_agent_row(session: dict) -> dict:
     total_pnl = sum(t.get("pnl", 0) for t in trades)
     score_result = _compute_score(trades, name)
 
+    # Generate a deterministic user_id and hl_wallet for sim agents
+    sim_user_id = str(uuid5(NAMESPACE_DNS, f"zeroos.sim.user.{name}"))
+    sim_wallet = f"0x{uuid5(NAMESPACE_DNS, f'zeroos.sim.wallet.{name}').hex[:40]}"
+
     return {
         "id": agent_uuid(name),
+        "user_id": sim_user_id,
         "name": name,
-        "status": session.get("status", "unknown"),
+        "status": "running" if session.get("status") == "active" else "stopped",
         "agent_type": "sim",
         "mode": "paper",
+        "hl_wallet": sim_wallet,
         "preset": session.get("strategy", ""),
         "config": {
             "session_id": session.get("session_id"),
@@ -323,7 +329,7 @@ def _build_rejection_rows(last_sync: str | None) -> list[dict]:
                 "coin": r.get("coin"),
                 "direction": r.get("dir", "").lower(),
                 "regime": r.get("gate"),
-                "consensus": r.get("details", {}).get("signal"),
+                "consensus": r.get("details", {}).get("consensus_pct"),
                 "rejection_reason": r.get("reason"),
             })
     except (json.JSONDecodeError, OSError):
