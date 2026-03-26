@@ -172,6 +172,37 @@ def _strategy_match_rate(strategy: str) -> float:
     return rates.get(strategy, 0.5)
 
 
+def _split_into_sessions(trades: list[dict], agent_name: str) -> list[dict]:
+    """Split trades into hour-based sessions for scoring.
+
+    Groups paired trades by hour (from entry_time) so compute_score sees
+    multiple sessions and can activate all 5 dimensions.
+    Hour granularity because sim agents may only span 1-2 calendar days.
+    """
+    from collections import defaultdict
+
+    by_period = defaultdict(list)
+    for t in trades:
+        opened = t.get("entry_time") or t.get("exit_time") or ""
+        # Use YYYY-MM-DDTHH as session key (hour granularity)
+        period = opened[:13] if len(opened) >= 13 else "unknown"
+        by_period[period].append(t)
+
+    sessions = []
+    for period, period_trades in sorted(by_period.items()):
+        sid = f"{agent_name}_{period}"
+        pnl = sum(t.get("pnl", 0) for t in period_trades)
+        sessions.append({
+            "session_id": sid,
+            "day": period[:10] if len(period) >= 10 else period,
+            "trades": period_trades,
+            "pnl": pnl,
+            "profitable": pnl > 0,
+            "trade_count": len(period_trades),
+        })
+    return sessions
+
+
 def _build_enriched_agent(session: dict, paired_trades: list[dict]) -> dict:
     """Build enriched agent metadata from session data for compute_score."""
     name = session["_agent_name"]
@@ -201,13 +232,37 @@ def _build_enriched_agent(session: dict, paired_trades: list[dict]) -> dict:
     total_paired = len(paired_trades)
     immune_uptime_pct = 100.0 * (1.0 - immune_failures / max(total_paired, 1))
 
+    # Split into day-based sessions for multi-session scoring
+    sessions = _split_into_sessions(paired_trades, name)
+    session_count = len(sessions)
+
+    # Compute realistic sessions_per_week from actual date spread
+    if session_count >= 2:
+        days_sorted = sorted(s["day"] for s in sessions if s["day"] != "unknown")
+        if len(days_sorted) >= 2:
+            from datetime import datetime as _dt
+            try:
+                first = _dt.strptime(days_sorted[0], "%Y-%m-%d")
+                last = _dt.strptime(days_sorted[-1], "%Y-%m-%d")
+                span_weeks = max((last - first).days / 7, 1)
+                sessions_per_week = session_count / span_weeks
+            except Exception:
+                sessions_per_week = 3.0
+        else:
+            sessions_per_week = 3.0
+    else:
+        sessions_per_week = 3.0
+
     return {
         "name": name,
         "strategy": strategy,
+        "sessions": sessions,
+        "session_count": session_count,
+        "completed_sessions": session_count,
         "eval_count": eval_count,
         "rejection_rate": min(max(rejection_rate, 0.0), 1.0),
         "session_completion_rate": session_completion_rate,
-        "sessions_per_week": 3.0,
+        "sessions_per_week": sessions_per_week,
         "immune_uptime_pct": immune_uptime_pct,
         "immune_failures": immune_failures,
         "immune_saves": immune_saves,
@@ -220,11 +275,18 @@ def _build_enriched_agent(session: dict, paired_trades: list[dict]) -> dict:
 def _compute_score(trades: list[dict], session: dict) -> dict | None:
     """Compute zero_score with enriched agent data, falling back to simple heuristic."""
     enriched = _build_enriched_agent(session, trades)
+    name = session["_agent_name"]
+    strategy = session.get("strategy", "watch")
     try:
         from scanner.v6.zero_score import compute_score
-        # Convert paired trades to the format compute_score expects
+        # Convert paired trades to the format compute_score expects,
+        # stamping each with session_id (day-based) and strategy so
+        # compute_score sees multiple sessions and strategies.
         score_trades = []
         for t in trades:
+            entry_time = t.get("entry_time") or t.get("exit_time") or ""
+            # Hour granularity to match _split_into_sessions
+            period = entry_time[:13] if len(entry_time) >= 13 else "unknown"
             score_trades.append({
                 "entry_price": t.get("entry_price"),
                 "exit_price": t.get("exit_price"),
@@ -236,6 +298,8 @@ def _compute_score(trades: list[dict], session: dict) -> dict | None:
                 "direction": t.get("direction"),
                 "coin": t.get("coin"),
                 "exit_reason": t.get("exit_reason"),
+                "session_id": f"{name}_{period}",
+                "strategy": f"{strategy}_{t.get('coin', 'unknown')}",
             })
         return compute_score(score_trades, enriched)
     except Exception:
@@ -313,6 +377,15 @@ def _build_score_row(session: dict) -> dict:
     trades = _pair_trades(session.get("trades", []))
     score_result = _compute_score(trades, session)
     components = score_result.get("components", {}) if score_result else {}
+
+    # Compute days_active from actual trade date spread
+    days = set()
+    for t in trades:
+        ts = t.get("entry_time") or t.get("exit_time") or ""
+        if len(ts) >= 10:
+            days.add(ts[:10])
+    days_active = max(len(days), 1)
+
     return {
         "agent_id": agent_uuid(name),
         "score": score_result["score"] if score_result else 5.0,
@@ -324,7 +397,7 @@ def _build_score_row(session: dict) -> dict:
         "confidence": score_result.get("confidence", 0),
         "immune": components.get("adaptation"),
         "trade_count": len(trades),
-        "days_active": 1,
+        "days_active": days_active,
     }
 
 
