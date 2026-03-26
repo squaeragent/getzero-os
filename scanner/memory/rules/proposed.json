@@ -1,44 +1,44 @@
 [
   {
     "id": "RULE_001",
-    "condition": "direction == 'LONG' AND confidence < 0.6",
-    "action": "reduce_confidence",
-    "value": 0.1,
-    "action_description": "reduce_position_size",
-    "evidence": "low win rate (40%) suggests caution in LONG positions.",
+    "condition": "SOL price > $60",
+    "action": "adjust_confidence",
+    "value": 0.0,
+    "action_description": "close_short",
+    "evidence": "our current short position is near breakeven, and a slight increase in price may indicate a trend reversal.",
     "generation": 1,
-    "created": "2026-03-25T18:51:06.267072+00:00",
+    "created": "2026-03-26T02:16:53.288863+00:00",
     "trades_tested": 0,
     "status": "proposed",
     "source": "reflection",
-    "raw_rule": "IF direction == 'LONG' AND confidence < 0.6 THEN reduce_position_size BECAUSE low win rate (40%) suggests caution in LONG positions."
+    "raw_rule": "IF SOL price > $60 THEN close_short BECAUSE our current short position is near breakeven, and a slight increase in price may indicate a trend reversal."
   },
   {
     "id": "RULE_002",
-    "condition": "net_PnL < -$2.00",
-    "action": "adjust_confidence",
-    "value": 0.0,
-    "action_description": "stop_trading_for_1_hour",
-    "evidence": "recent losses (-$1.46) indicate a need for temporary risk reduction.",
+    "condition": "confidence_level < 0.5 AND direction == 'SHORT'",
+    "action": "reduce_confidence",
+    "value": 0.1,
+    "action_description": "reduce_position_size",
+    "evidence": "our win rate for SHORT trades is relatively low, and we should be cautious of over-committing to underperforming strategies.",
     "generation": 1,
-    "created": "2026-03-25T18:51:06.267350+00:00",
+    "created": "2026-03-26T02:16:53.289146+00:00",
     "trades_tested": 0,
     "status": "proposed",
     "source": "reflection",
-    "raw_rule": "IF net_PnL < -$2.00 THEN stop_trading_for_1_hour BECAUSE recent losses (-$1.46) indicate a need for temporary risk reduction."
+    "raw_rule": "IF confidence_level < 0.5 AND direction == 'SHORT' THEN reduce_position_size BECAUSE our win rate for SHORT trades is relatively low, and we should be cautious of over-committing to underperforming strategies."
   },
   {
     "id": "RULE_003",
-    "condition": "RULE_001 has triggered 3 times in the last 10 trades",
+    "condition": "time_since_last_trade > 24 hours",
     "action": "adjust_confidence",
     "value": 0.0,
-    "action_description": "adjust_RULE_001_condition",
-    "evidence": "repeated boosting of confidence without significant improvement in win rate may indicate an ineffective rule.",
+    "action_description": "scan_for_new_opportunities",
+    "evidence": "inactivity may indicate missed opportunities or changes in market conditions that require adaptation.",
     "generation": 1,
-    "created": "2026-03-25T18:51:06.267586+00:00",
+    "created": "2026-03-26T02:16:53.289388+00:00",
     "trades_tested": 0,
     "status": "proposed",
     "source": "reflection",
-    "raw_rule": "IF RULE_001 has triggered 3 times in the last 10 trades THEN adjust_RULE_001_condition BECAUSE repeated boosting of confidence without significant improvement in win rate may indicate an ineffective rule."
+    "raw_rule": "IF time_since_last_trade > 24 hours THEN scan_for_new_opportunities BECAUSE inactivity may indicate missed opportunities or changes in market conditions that require adaptation."
   }
 ]

@@ -331,7 +331,7 @@ def _extract_max_drawdown(trades: list[dict]) -> float:
         peak = max(peak, cumulative)
         dd = peak - cumulative
         max_dd = max(max_dd, dd)
-    return max_dd * 100  # convert to percentage points
+    return max_dd  # pnl_pct is already in percentage points
 
 
 def _extract_profit_factor(trades: list[dict]) -> tuple[float, float]:
@@ -367,7 +367,7 @@ def _extract_max_single_loss(trades: list[dict]) -> float:
     if not trades:
         return 0.0
     losses = [abs(t.get("pnl_pct", 0)) for t in trades if t.get("pnl_pct", 0) < 0]
-    return max(losses) * 100 if losses else 0.0
+    return max(losses) if losses else 0.0
 
 
 def _extract_unique_strategies(trades: list[dict]) -> int:
