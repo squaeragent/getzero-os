@@ -162,8 +162,64 @@ def _set_last_sync():
 
 # ─── Score computation ────────────────────────────────────────
 
-def _compute_score(trades: list[dict], agent_name: str) -> dict | None:
-    """Compute zero_score, falling back to simple heuristic."""
+def _strategy_match_rate(strategy: str) -> float:
+    """Estimate strategy-market match rate based on strategy type."""
+    rates = {
+        "momentum": 0.65, "fade": 0.6, "defense": 0.7,
+        "watch": 0.5, "degen": 0.45, "sniper": 0.75,
+        "scout": 0.6, "funding": 0.65, "apex": 0.55,
+    }
+    return rates.get(strategy, 0.5)
+
+
+def _build_enriched_agent(session: dict, paired_trades: list[dict]) -> dict:
+    """Build enriched agent metadata from session data for compute_score."""
+    name = session["_agent_name"]
+    raw_trades = session.get("trades", [])
+    eval_count = session.get("eval_count", 0)
+    strategy = session.get("strategy", "watch")
+    status = session.get("status", "")
+
+    # Count opens from raw trades
+    opens_count = sum(1 for t in raw_trades if t.get("action") == "open")
+    rejection_rate = 1.0 - (opens_count / max(eval_count, 1))
+
+    # Session completion rate
+    if status == "completed":
+        session_completion_rate = 1.0
+    elif status == "active":
+        session_completion_rate = 0.9
+    else:
+        session_completion_rate = 0.5
+
+    # Immune metrics from paired trades
+    immune_failures = sum(1 for t in paired_trades if t.get("pnl_pct", 0) < -5.0)
+    immune_saves = sum(
+        1 for t in paired_trades
+        if t.get("exit_reason") and ("stop" in str(t["exit_reason"]).lower() or "immune" in str(t["exit_reason"]).lower())
+    )
+    total_paired = len(paired_trades)
+    immune_uptime_pct = 100.0 * (1.0 - immune_failures / max(total_paired, 1))
+
+    return {
+        "name": name,
+        "strategy": strategy,
+        "eval_count": eval_count,
+        "rejection_rate": min(max(rejection_rate, 0.0), 1.0),
+        "session_completion_rate": session_completion_rate,
+        "sessions_per_week": 3.0,
+        "immune_uptime_pct": immune_uptime_pct,
+        "immune_failures": immune_failures,
+        "immune_saves": immune_saves,
+        "strategy_market_match_rate": _strategy_match_rate(strategy),
+        "score_history": [],
+        "uptime_days": 30,
+    }
+
+
+def _compute_score(trades: list[dict], session: dict) -> dict | None:
+    """Compute zero_score with enriched agent data, falling back to simple heuristic."""
+    enriched = _build_enriched_agent(session, trades)
     try:
         from scanner.v6.zero_score import compute_score
         # Convert paired trades to the format compute_score expects
@@ -175,17 +231,17 @@ def _compute_score(trades: list[dict], agent_name: str) -> dict | None:
                 "entry_time": t.get("entry_time"),
                 "exit_time": t.get("exit_time"),
                 "pnl": t.get("pnl", 0),
+                "pnl_pct": t.get("pnl_pct", 0),
                 "size_usd": t.get("size_usd", 0),
                 "direction": t.get("direction"),
                 "coin": t.get("coin"),
                 "exit_reason": t.get("exit_reason"),
             })
-        agent_meta = {"rejection_rate": 0.9, "session_completion_rate": 0.8}
-        return compute_score(score_trades, agent_meta)
+        return compute_score(score_trades, enriched)
     except Exception:
         # Fallback: simple heuristic
         if not trades:
-            return {"score": 5.0, "components": {}}
+            return {"score": 5.0, "components": {}, "confidence": 0}
         total_pnl = sum(t.get("pnl", 0) for t in trades)
         wins = sum(1 for t in trades if t.get("pnl", 0) > 0)
         win_rate = wins / len(trades) if trades else 0
@@ -194,11 +250,12 @@ def _compute_score(trades: list[dict], agent_name: str) -> dict | None:
             "score": round(score, 1),
             "components": {
                 "performance": round(min(10, max(0, 5 + total_pnl * 0.2)), 1),
-                "discipline": 5.0,
-                "protection": 5.0,
+                "discipline": round(min(10, enriched["rejection_rate"] * 10), 1),
+                "protection": round(min(10, enriched["immune_uptime_pct"] / 10), 1),
                 "consistency": round(win_rate * 10, 1),
-                "adaptation": 5.0,
+                "adaptation": round(_strategy_match_rate(enriched.get("strategy", "watch")) * 10, 1),
             },
+            "confidence": 0,
         }
 
 
@@ -208,7 +265,7 @@ def _build_agent_row(session: dict) -> dict:
     name = session["_agent_name"]
     trades = _pair_trades(session.get("trades", []))
     total_pnl = sum(t.get("pnl", 0) for t in trades)
-    score_result = _compute_score(trades, name)
+    score_result = _compute_score(trades, session)
 
     # Generate a deterministic user_id and hl_wallet for sim agents
     sim_user_id = str(uuid5(NAMESPACE_DNS, f"zeroos.sim.user.{name}"))
@@ -254,7 +311,7 @@ def _build_trade_rows(session: dict, last_sync: str | None) -> list[dict]:
 def _build_score_row(session: dict) -> dict:
     name = session["_agent_name"]
     trades = _pair_trades(session.get("trades", []))
-    score_result = _compute_score(trades, name)
+    score_result = _compute_score(trades, session)
     components = score_result.get("components", {}) if score_result else {}
     return {
         "agent_id": agent_uuid(name),
@@ -379,10 +436,15 @@ def sync(dry_run: bool = False) -> dict:
         print(f"  {counts['cci']} CCI history rows")
         print(f"  {counts['rejections']} rejections")
         if agent_rows:
-            print(f"\nSample agent: {agent_rows[0]['name']} "
-                  f"(score={agent_rows[0]['zero_score']}, "
-                  f"trades={agent_rows[0]['total_trades']}, "
-                  f"pnl={agent_rows[0]['total_pnl']})")
+            print(f"\nAgent scores:")
+            for a in sorted(agent_rows, key=lambda x: x["zero_score"], reverse=True):
+                comps = a.get("score_components", {})
+                comp_str = ", ".join(
+                    f"{k}={v}" for k, v in comps.items() if v is not None
+                )
+                print(f"  {a['name']:20s} score={a['zero_score']:4.1f}  "
+                      f"trades={a['total_trades']:3d}  pnl={a['total_pnl']:+8.4f}  "
+                      f"[{comp_str}]")
         return counts
 
     # Push to Supabase
