@@ -1,4 +1,4 @@
-"""zeroos MCP server — 12 tools for AI agents to interact with zero."""
+"""zeroos MCP server — 22 tools for AI agents to interact with zero."""
 
 from fastmcp import FastMCP
 
@@ -136,6 +136,16 @@ def zero_help() -> dict:
             {'name': 'zero_config', 'desc': 'view/update config'},
             {'name': 'zero_network', 'desc': 'network intelligence'},
             {'name': 'zero_help', 'desc': 'this help'},
+            {'name': 'zero_doctor', 'desc': 'run diagnostics'},
+            {'name': 'zero_arena', 'desc': 'arena info and rewards'},
+            {'name': 'zero_list_strategies', 'desc': 'catalog of 9 strategies'},
+            {'name': 'zero_preview_strategy', 'desc': 'preview one strategy'},
+            {'name': 'zero_start_session', 'desc': 'start a trading session'},
+            {'name': 'zero_session_status', 'desc': 'active session status'},
+            {'name': 'zero_end_session', 'desc': 'end active session'},
+            {'name': 'zero_queue_session', 'desc': 'queue a session'},
+            {'name': 'zero_session_history', 'desc': 'recent session history'},
+            {'name': 'zero_get_achievements', 'desc': 'earned achievements'},
         ]
     }
 
@@ -179,4 +189,120 @@ def zero_arena() -> dict:
         'weekly_rewards': {'1st': 5000, '2nd': 3000, '3rd': 2000, '4th-10th': 500},
         'score_multipliers': {'6.0-6.9': '1.2x', '7.0-7.9': '1.5x', '8.0-8.9': '2.0x', '9.0+': '3.0x'},
         'leaderboard': 'app.getzero.dev/arena',
+    }
+
+
+STRATEGY_CATALOG = [
+    {'name': 'momentum', 'cost': 500, 'risk_level': 'medium', 'direction': 'long', 'max_hold': '4h',
+     'desc': 'ride strong directional moves with trend confirmation across timeframes'},
+    {'name': 'degen', 'cost': 1000, 'risk_level': 'high', 'direction': 'both', 'max_hold': '2h',
+     'desc': 'aggressive entries on volatile setups. high reward, high risk. not for beginners'},
+    {'name': 'defense', 'cost': 200, 'risk_level': 'low', 'direction': 'short', 'max_hold': '6h',
+     'desc': 'protective hedging against drawdowns. deploys when fear spikes'},
+    {'name': 'sniper', 'cost': 750, 'risk_level': 'medium-high', 'direction': 'both', 'max_hold': '1h',
+     'desc': 'precision entries at key levels. waits for confluence then strikes fast'},
+    {'name': 'scout', 'cost': 100, 'risk_level': 'low', 'direction': 'neutral', 'max_hold': '24h',
+     'desc': 'passive market monitoring. no trades. builds intelligence for future sessions'},
+    {'name': 'fade', 'cost': 400, 'risk_level': 'medium', 'direction': 'contrarian', 'max_hold': '3h',
+     'desc': 'counter-trend plays at exhaustion points. fades overextended moves'},
+    {'name': 'funding', 'cost': 300, 'risk_level': 'low-medium', 'direction': 'both', 'max_hold': '8h',
+     'desc': 'exploit funding rate imbalances. delta-neutral when possible'},
+    {'name': 'watch', 'cost': 50, 'risk_level': 'none', 'direction': 'neutral', 'max_hold': '12h',
+     'desc': 'observation mode. zero tracks markets and reports back. no capital deployed'},
+    {'name': 'apex', 'cost': 800, 'risk_level': 'high', 'direction': 'both', 'max_hold': '6h',
+     'desc': 'multi-layer strategy combining momentum + sniper + funding signals. advanced'},
+]
+
+
+@mcp.tool()
+def zero_list_strategies() -> dict:
+    """List all 9 available strategy types with name, cost, risk level, direction, and max hold time."""
+    return {'strategies': STRATEGY_CATALOG, 'count': len(STRATEGY_CATALOG)}
+
+
+@mcp.tool()
+def zero_preview_strategy(strategy_type: str) -> dict:
+    """Preview a specific strategy — details, cost, risk, and current market match assessment."""
+    match = next((s for s in STRATEGY_CATALOG if s['name'] == strategy_type), None)
+    if not match:
+        names = [s['name'] for s in STRATEGY_CATALOG]
+        return {'error': f'unknown strategy: {strategy_type}', 'available': names}
+    return {
+        **match,
+        'market_match': 'assessment requires live data — use zero_evaluate() on target coin first',
+        'requirements': f'{match["cost"]} credits required to activate',
+    }
+
+
+@mcp.tool()
+def zero_start_session(strategy: str) -> dict:
+    """Start a new trading session with the specified strategy. Deducts credits on activation."""
+    match = next((s for s in STRATEGY_CATALOG if s['name'] == strategy), None)
+    if not match:
+        names = [s['name'] for s in STRATEGY_CATALOG]
+        return {'error': f'unknown strategy: {strategy}', 'available': names}
+    return {
+        'status': 'session_started',
+        'strategy': strategy,
+        'cost_credits': match['cost'],
+        'note': 'session management coming soon — this is a placeholder',
+    }
+
+
+@mcp.tool()
+def zero_session_status() -> dict:
+    """Check active session status — strategy, runtime, P&L, positions, stops."""
+    return {
+        'status': 'active',
+        'strategy': 'momentum',
+        'runtime_minutes': 47,
+        'pnl_usd': 12.40,
+        'positions': 1,
+        'stops_triggered': 0,
+        'note': 'session status coming soon — this is mock data',
+    }
+
+
+@mcp.tool()
+def zero_end_session() -> dict:
+    """End the current active session. Closes positions and generates session report."""
+    return {
+        'status': 'session_ended',
+        'note': 'session management coming soon — this is a placeholder',
+    }
+
+
+@mcp.tool()
+def zero_queue_session(strategy: str) -> dict:
+    """Queue a session to start when market conditions match the strategy requirements."""
+    match = next((s for s in STRATEGY_CATALOG if s['name'] == strategy), None)
+    if not match:
+        names = [s['name'] for s in STRATEGY_CATALOG]
+        return {'error': f'unknown strategy: {strategy}', 'available': names}
+    return {
+        'status': 'queued',
+        'strategy': strategy,
+        'cost_credits': match['cost'],
+        'note': 'session queuing coming soon — this is a placeholder',
+    }
+
+
+@mcp.tool()
+def zero_session_history(limit: int = 5) -> dict:
+    """Get recent session history — strategy, result, P&L, duration for past sessions."""
+    return {
+        'sessions': [],
+        'total': 0,
+        'limit': limit,
+        'note': 'session history coming soon — this is a placeholder',
+    }
+
+
+@mcp.tool()
+def zero_get_achievements() -> dict:
+    """Get earned achievements — milestones, streaks, arena placements, special badges."""
+    return {
+        'achievements': [],
+        'total_earned': 0,
+        'note': 'achievements coming soon — this is a placeholder',
     }
