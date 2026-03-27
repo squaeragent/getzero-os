@@ -379,3 +379,181 @@ class TestSamplePNGs:
         assert path == "/tmp/test_funnel.png"
         with open(path, "rb") as f:
             assert _is_png(f.read())
+
+
+# ── S21 Backtest card templates ────────────────────────────────────
+
+BACKTEST_SUMMARY_DATA = {
+    "strategies": [
+        {"name": "momentum", "total_pnl_pct": 12.5, "total_trades": 45, "win_rate": 62.2, "max_drawdown_pct": 4.8, "sharpe_ratio": 1.85},
+        {"name": "mean_revert", "total_pnl_pct": -3.2, "total_trades": 30, "win_rate": 46.7, "max_drawdown_pct": 8.1, "sharpe_ratio": -0.42},
+        {"name": "breakout", "total_pnl_pct": 7.8, "total_trades": 22, "win_rate": 59.1, "max_drawdown_pct": 3.5, "sharpe_ratio": 1.20},
+        {"name": "degen", "total_pnl_pct": -15.3, "total_trades": 120, "win_rate": 38.3, "max_drawdown_pct": 22.0, "sharpe_ratio": -2.10},
+        {"name": "sniper", "total_pnl_pct": 5.1, "total_trades": 8, "win_rate": 75.0, "max_drawdown_pct": 2.1, "sharpe_ratio": 2.30},
+        {"name": "funding_arb", "total_pnl_pct": 1.2, "total_trades": 55, "win_rate": 52.7, "max_drawdown_pct": 1.8, "sharpe_ratio": 0.65},
+        {"name": "scalp", "total_pnl_pct": -0.5, "total_trades": 200, "win_rate": 49.0, "max_drawdown_pct": 5.0, "sharpe_ratio": -0.10},
+        {"name": "trend_follow", "total_pnl_pct": 9.3, "total_trades": 15, "win_rate": 66.7, "max_drawdown_pct": 6.2, "sharpe_ratio": 1.50},
+        {"name": "grid", "total_pnl_pct": 3.4, "total_trades": 90, "win_rate": 55.6, "max_drawdown_pct": 3.0, "sharpe_ratio": 0.80},
+    ],
+    "days": 90,
+    "start_date": "2025-12-28",
+    "end_date": "2026-03-27",
+}
+
+BACKTEST_EQUITY_DATA = {
+    "strategy": "momentum",
+    "equity_curve": [
+        {"ts": "2026-03-01", "equity": 100.0},
+        {"ts": "2026-03-05", "equity": 102.5},
+        {"ts": "2026-03-10", "equity": 101.0},
+        {"ts": "2026-03-15", "equity": 105.2},
+        {"ts": "2026-03-18", "equity": 103.8},
+        {"ts": "2026-03-20", "equity": 107.1},
+        {"ts": "2026-03-22", "equity": 108.5},
+        {"ts": "2026-03-25", "equity": 106.0},
+        {"ts": "2026-03-27", "equity": 112.5},
+    ],
+    "total_pnl_pct": 12.5,
+    "max_drawdown_pct": 4.8,
+    "total_trades": 45,
+    "win_rate": 62.2,
+    "days": 30,
+}
+
+BACKTEST_COMPARE_DATA = {
+    "a": {
+        "strategy": "momentum",
+        "equity_curve": [
+            {"ts": "2026-03-01", "equity": 100.0},
+            {"ts": "2026-03-05", "equity": 103.0},
+            {"ts": "2026-03-10", "equity": 101.5},
+            {"ts": "2026-03-15", "equity": 106.0},
+            {"ts": "2026-03-20", "equity": 108.0},
+            {"ts": "2026-03-25", "equity": 105.5},
+            {"ts": "2026-03-27", "equity": 112.5},
+        ],
+        "total_pnl_pct": 12.5,
+        "win_rate": 62.2,
+        "max_drawdown_pct": 4.8,
+        "sharpe_ratio": 1.85,
+    },
+    "b": {
+        "strategy": "degen",
+        "equity_curve": [
+            {"ts": "2026-03-01", "equity": 100.0},
+            {"ts": "2026-03-05", "equity": 98.0},
+            {"ts": "2026-03-10", "equity": 95.0},
+            {"ts": "2026-03-15", "equity": 92.0},
+            {"ts": "2026-03-20", "equity": 88.0},
+            {"ts": "2026-03-25", "equity": 86.0},
+            {"ts": "2026-03-27", "equity": 84.7},
+        ],
+        "total_pnl_pct": -15.3,
+        "win_rate": 38.3,
+        "max_drawdown_pct": 22.0,
+        "sharpe_ratio": -2.10,
+    },
+    "days": 30,
+}
+
+
+class TestBacktestSummaryCard:
+    def test_renders(self, renderer):
+        png = renderer.render("backtest_summary_card", BACKTEST_SUMMARY_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("backtest_summary_card", BACKTEST_SUMMARY_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_empty_strategies(self, renderer):
+        png = renderer.render("backtest_summary_card", {
+            "strategies": [], "days": 30, "start_date": "---", "end_date": "---"})
+        assert _is_png(png)
+
+    def test_single_strategy(self, renderer):
+        data = {**BACKTEST_SUMMARY_DATA, "strategies": BACKTEST_SUMMARY_DATA["strategies"][:1]}
+        png = renderer.render("backtest_summary_card", data)
+        assert _is_png(png)
+
+
+class TestBacktestEquityCard:
+    def test_renders(self, renderer):
+        png = renderer.render("backtest_equity_card", BACKTEST_EQUITY_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("backtest_equity_card", BACKTEST_EQUITY_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_empty_curve(self, renderer):
+        data = {**BACKTEST_EQUITY_DATA, "equity_curve": []}
+        png = renderer.render("backtest_equity_card", data)
+        assert _is_png(png)
+
+    def test_negative_pnl(self, renderer):
+        curve = [{"ts": str(i), "equity": 100 - i * 2} for i in range(10)]
+        data = {**BACKTEST_EQUITY_DATA, "equity_curve": curve, "total_pnl_pct": -18.0}
+        png = renderer.render("backtest_equity_card", data)
+        assert _is_png(png)
+
+    def test_single_point(self, renderer):
+        data = {**BACKTEST_EQUITY_DATA, "equity_curve": [{"ts": "0", "equity": 100}]}
+        png = renderer.render("backtest_equity_card", data)
+        assert _is_png(png)
+
+
+class TestBacktestCompareCard:
+    def test_renders(self, renderer):
+        png = renderer.render("backtest_compare_card", BACKTEST_COMPARE_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("backtest_compare_card", BACKTEST_COMPARE_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_empty_curves(self, renderer):
+        data = {
+            "a": {"strategy": "A", "equity_curve": [], "total_pnl_pct": 0, "win_rate": 0, "max_drawdown_pct": 0, "sharpe_ratio": 0},
+            "b": {"strategy": "B", "equity_curve": [], "total_pnl_pct": 0, "win_rate": 0, "max_drawdown_pct": 0, "sharpe_ratio": 0},
+            "days": 30,
+        }
+        png = renderer.render("backtest_compare_card", data)
+        assert _is_png(png)
+
+    def test_one_empty_curve(self, renderer):
+        data = {**BACKTEST_COMPARE_DATA}
+        data["b"] = {**data["b"], "equity_curve": []}
+        png = renderer.render("backtest_compare_card", data)
+        assert _is_png(png)
+
+
+class TestBacktestSamplePNGs:
+    """Generate backtest sample PNGs to /tmp for visual inspection."""
+
+    def test_backtest_summary_png(self, renderer):
+        path = renderer.render_to_file("backtest_summary_card", BACKTEST_SUMMARY_DATA, "/tmp/test_backtest_summary.png")
+        assert path == "/tmp/test_backtest_summary.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())
+
+    def test_backtest_equity_png(self, renderer):
+        path = renderer.render_to_file("backtest_equity_card", BACKTEST_EQUITY_DATA, "/tmp/test_backtest_equity.png")
+        assert path == "/tmp/test_backtest_equity.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())
+
+    def test_backtest_compare_png(self, renderer):
+        path = renderer.render_to_file("backtest_compare_card", BACKTEST_COMPARE_DATA, "/tmp/test_backtest_compare.png")
+        assert path == "/tmp/test_backtest_compare.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())

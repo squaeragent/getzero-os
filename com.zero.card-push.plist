@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Install with: cp com.zero.card-push.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.zero.card-push.plist -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.zero.card-push</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/forge/getzero-os/.venv/bin/python3</string>
+        <string>scanner/v6/card_push.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/forge/getzero-os</string>
+
+    <key>StartInterval</key>
+    <integer>1800</integer>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/zero-card-push.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/zero-card-push.err</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.strategy { font-size: 22px; font-weight: 700; color: #c8ff00; }
+.stats { font-size: 11px; color: #666; text-align: right; line-height: 1.6; }
+.stats .val { color: #e8e4df; }
+.chart-area {
+  flex: 1;
+  position: relative;
+  border-left: 1px solid #333;
+  border-bottom: 1px solid #333;
+  margin: 8px 0;
+}
+.chart-svg { width: 100%; height: 100%; }
+.axis-label {
+  position: absolute;
+  font-size: 10px;
+  color: #555;
+}
+.y-max { top: 0; left: -4px; transform: translateX(-100%); }
+.y-min { bottom: 0; left: -4px; transform: translateX(-100%); }
+.y-zero { left: -4px; transform: translateX(-100%); color: #666; }
+.bottom { display: flex; justify-content: space-between; margin-top: 4px; }
+.pnl-final { font-size: 16px; font-weight: 700; }
+.meta { font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <div class="title">BACKTEST EQUITY</div>
+    <div class="strategy">{{strategy}}</div>
+  </div>
+  <div class="stats">
+    <div>trades: <span class="val">{{total_trades}}</span></div>
+    <div>win rate: <span class="val">{{win_rate}}%</span></div>
+    <div>max DD: <span class="val">{{max_drawdown_pct}}%</span></div>
+  </div>
+</div>
+<div class="chart-area">
+  <span class="axis-label y-max">{{y_max}}</span>
+  <span class="axis-label y-min">{{y_min}}</span>
+  <span class="axis-label y-zero" style="top:{{y_zero_pct}}%">0</span>
+  <svg class="chart-svg" viewBox="0 0 740 280" preserveAspectRatio="none">
+    {{drawdown_fill}}
+    {{equity_segments}}
+  </svg>
+</div>
+<div class="bottom">
+  <div>
+    <span class="pnl-final" style="color:{{pnl_color}}">{{total_pnl_pct}}%</span>
+  </div>
+  <span class="meta">{{days}}d  ZERO v6</span>
+</div>
+</body>
+</html>

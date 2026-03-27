@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+}
+.top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.days { font-size: 11px; color: #555; }
+.legend { display: flex; gap: 20px; font-size: 11px; margin-bottom: 6px; }
+.legend-a { color: #c8ff00; }
+.legend-b { color: #ffb000; }
+.chart-area {
+  flex: 1;
+  position: relative;
+  border-left: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+.chart-svg { width: 100%; height: 100%; }
+.axis-label {
+  position: absolute;
+  font-size: 10px;
+  color: #555;
+}
+.y-max { top: 0; left: -4px; transform: translateX(-100%); }
+.y-min { bottom: 0; left: -4px; transform: translateX(-100%); }
+.compare-table {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr;
+  gap: 4px 16px;
+  font-size: 11px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+.ct-header { color: #555; font-size: 10px; letter-spacing: 1px; }
+.ct-label { color: #666; }
+.ct-a { color: #c8ff00; }
+.ct-b { color: #ffb000; }
+.footer { font-size: 10px; color: #555; text-align: right; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="title">BACKTEST COMPARE</div>
+  <div class="days">{{days}}d</div>
+</div>
+<div class="legend">
+  <span class="legend-a">■ {{a_strategy}}</span>
+  <span class="legend-b">■ {{b_strategy}}</span>
+</div>
+<div class="chart-area">
+  <span class="axis-label y-max">{{y_max}}</span>
+  <span class="axis-label y-min">{{y_min}}</span>
+  <svg class="chart-svg" viewBox="0 0 740 200" preserveAspectRatio="none">
+    {{equity_lines}}
+  </svg>
+</div>
+<div class="compare-table">
+  <span class="ct-header"></span>
+  <span class="ct-header">{{a_strategy}}</span>
+  <span class="ct-header">{{b_strategy}}</span>
+  <span class="ct-label">P&L %</span>
+  <span class="ct-a">{{a_pnl}}</span>
+  <span class="ct-b">{{b_pnl}}</span>
+  <span class="ct-label">Win Rate</span>
+  <span class="ct-a">{{a_wr}}</span>
+  <span class="ct-b">{{b_wr}}</span>
+  <span class="ct-label">Max DD</span>
+  <span class="ct-a">{{a_dd}}</span>
+  <span class="ct-b">{{b_dd}}</span>
+  <span class="ct-label">Sharpe</span>
+  <span class="ct-a">{{a_sharpe}}</span>
+  <span class="ct-b">{{b_sharpe}}</span>
+</div>
+<div class="footer">ZERO v6</div>
+</body>
+</html>

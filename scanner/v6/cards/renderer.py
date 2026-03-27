@@ -267,6 +267,159 @@ def _build_radar_svg(layers: list) -> dict:
     }
 
 
+def _build_backtest_summary_rows(strategies: list) -> str:
+    """Build HTML rows for backtest summary grid."""
+    if not strategies:
+        return ""
+    best_pnl = max((s.get("total_pnl_pct", -999) for s in strategies), default=0)
+    rows = []
+    for s in strategies[:9]:
+        pnl = s.get("total_pnl_pct", 0)
+        is_best = abs(pnl - best_pnl) < 1e-9 and pnl > -999
+        pnl_class = "pnl-pos" if pnl >= 0 else "pnl-neg"
+        best_cls = ' best' if is_best else ''
+        wr = s.get("win_rate", 0)
+        dd = s.get("max_drawdown_pct", 0)
+        sharpe = s.get("sharpe_ratio", 0)
+        trades = s.get("total_trades", 0)
+        rows.append(
+            f'<div class="row{best_cls}">'
+            f'<span class="name">{s.get("name", s.get("strategy", "?"))}</span>'
+            f'<span class="{pnl_class}">{pnl:+.1f}%</span>'
+            f'<span>{trades}</span>'
+            f'<span>{wr:.1f}%</span>'
+            f'<span>{dd:.1f}%</span>'
+            f'<span>{sharpe:.2f}</span>'
+            f'</div>'
+        )
+    return "\n".join(rows)
+
+
+def _build_backtest_equity_svg(equity_curve: list) -> dict:
+    """Build SVG elements for backtest equity curve with drawdown shading.
+
+    Returns dict with equity_segments, drawdown_fill, y_max, y_min,
+    y_zero_pct, pnl_color.
+    """
+    if not equity_curve:
+        return {
+            "equity_segments": "", "drawdown_fill": "",
+            "y_max": "0", "y_min": "0", "y_zero_pct": "50",
+            "pnl_color": "#666",
+        }
+
+    equities = [p.get("equity", 100) for p in equity_curve]
+    start_eq = equities[0] if equities else 100
+    pnls = [e - start_eq for e in equities]
+
+    y_max = max(max(pnls), 0)
+    y_min = min(min(pnls), 0)
+    y_range = y_max - y_min if y_max != y_min else 1
+
+    n = len(equity_curve)
+    svg_w, svg_h = 740, 280
+
+    def to_xy(i, pnl):
+        x = (i / max(n - 1, 1)) * svg_w
+        y = svg_h - ((pnl - y_min) / y_range) * svg_h
+        return x, y
+
+    y_zero_pct = ((y_max - 0) / y_range) * 100 if y_range else 50
+
+    # Build line segments colored green/red
+    segments = []
+    for i in range(n - 1):
+        x1, y1 = to_xy(i, pnls[i])
+        x2, y2 = to_xy(i + 1, pnls[i + 1])
+        color = "#c8ff00" if pnls[i + 1] >= 0 else "#ff3333"
+        segments.append(
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+            f'stroke="{color}" stroke-width="2.5" />'
+        )
+
+    # Drawdown shading: fill area between peak-so-far line and equity line
+    peak = pnls[0]
+    dd_points = []
+    peak_points = []
+    for i, pnl in enumerate(pnls):
+        peak = max(peak, pnl)
+        if peak > pnl:  # in drawdown
+            x_eq, y_eq = to_xy(i, pnl)
+            x_pk, y_pk = to_xy(i, peak)
+            dd_points.append((x_eq, y_eq))
+            peak_points.append((x_pk, y_pk))
+
+    dd_fill = ""
+    if dd_points:
+        # Build a filled polygon for each contiguous drawdown region
+        poly_pts = []
+        for x, y in dd_points:
+            poly_pts.append(f"{x:.1f},{y:.1f}")
+        for x, y in reversed(peak_points):
+            poly_pts.append(f"{x:.1f},{y:.1f}")
+        dd_fill = f'<polygon points="{" ".join(poly_pts)}" fill="#ff3333" fill-opacity="0.08" />'
+
+    final_pnl = pnls[-1]
+    return {
+        "equity_segments": "\n".join(segments),
+        "drawdown_fill": dd_fill,
+        "y_max": f"${y_max:.2f}",
+        "y_min": f"${y_min:.2f}",
+        "y_zero_pct": f"{y_zero_pct:.0f}",
+        "pnl_color": "#c8ff00" if final_pnl >= 0 else "#ff3333",
+    }
+
+
+def _build_compare_svg(curve_a: list, curve_b: list) -> dict:
+    """Build overlaid SVG equity lines for two strategies.
+
+    Returns dict with equity_lines, y_max, y_min.
+    """
+    if not curve_a and not curve_b:
+        return {"equity_lines": "", "y_max": "0", "y_min": "0"}
+
+    def to_pnls(curve):
+        eqs = [p.get("equity", 100) for p in curve]
+        start = eqs[0] if eqs else 100
+        return [e - start for e in eqs]
+
+    pnls_a = to_pnls(curve_a) if curve_a else []
+    pnls_b = to_pnls(curve_b) if curve_b else []
+
+    all_pnls = pnls_a + pnls_b
+    y_max = max(max(all_pnls), 0) if all_pnls else 0
+    y_min = min(min(all_pnls), 0) if all_pnls else 0
+    y_range = y_max - y_min if y_max != y_min else 1
+
+    svg_w, svg_h = 740, 200
+
+    def build_polyline(pnls, color):
+        n = len(pnls)
+        if n < 2:
+            return ""
+        pts = []
+        for i, pnl in enumerate(pnls):
+            x = (i / max(n - 1, 1)) * svg_w
+            y = svg_h - ((pnl - y_min) / y_range) * svg_h
+            pts.append(f"{x:.1f},{y:.1f}")
+        return (
+            f'<polyline points="{" ".join(pts)}" fill="none" '
+            f'stroke="{color}" stroke-width="2" />'
+        )
+
+    lines = []
+    if pnls_a:
+        lines.append(build_polyline(pnls_a, "#c8ff00"))
+    if pnls_b:
+        lines.append(build_polyline(pnls_b, "#ffb000"))
+
+    return {
+        "equity_lines": "\n".join(lines),
+        "y_max": f"${y_max:.2f}",
+        "y_min": f"${y_min:.2f}",
+    }
+
+
 def _build_gauge_arcs() -> str:
     """Build SVG arc paths for the 5 color zones of the gauge."""
     cx, cy = 250, 220
@@ -388,6 +541,36 @@ def _preprocess(template_name: str, data: dict) -> dict:
         out["trades_bar_pct"] = str(max(3, int((tc / ec) * 100))) if ec else "0"
         rate = (rc / ec * 100) if ec else 0
         out["reject_rate"] = f"{rate:.1f}%"
+
+    elif template_name == "backtest_summary_card":
+        strategies = data.get("strategies", [])
+        out["strategy_rows"] = _build_backtest_summary_rows(strategies)
+        out["strategy_count"] = str(len(strategies))
+
+    elif template_name == "backtest_equity_card":
+        eq = _build_backtest_equity_svg(data.get("equity_curve", []))
+        out.update(eq)
+        # Format stats for corner display
+        out["total_pnl_pct"] = f"{data.get('total_pnl_pct', 0):+.1f}"
+        out["max_drawdown_pct"] = f"{data.get('max_drawdown_pct', 0):.1f}"
+        out["win_rate"] = f"{data.get('win_rate', 0):.1f}"
+        out["total_trades"] = str(data.get("total_trades", 0))
+
+    elif template_name == "backtest_compare_card":
+        a = data.get("a", {})
+        b = data.get("b", {})
+        cmp = _build_compare_svg(a.get("equity_curve", []), b.get("equity_curve", []))
+        out.update(cmp)
+        out["a_strategy"] = a.get("strategy", "A")
+        out["b_strategy"] = b.get("strategy", "B")
+        out["a_pnl"] = f"{a.get('total_pnl_pct', 0):+.1f}%"
+        out["b_pnl"] = f"{b.get('total_pnl_pct', 0):+.1f}%"
+        out["a_wr"] = f"{a.get('win_rate', 0):.1f}%"
+        out["b_wr"] = f"{b.get('win_rate', 0):.1f}%"
+        out["a_dd"] = f"{a.get('max_drawdown_pct', 0):.1f}%"
+        out["b_dd"] = f"{b.get('max_drawdown_pct', 0):.1f}%"
+        out["a_sharpe"] = f"{a.get('sharpe_ratio', 0):.2f}"
+        out["b_sharpe"] = f"{b.get('sharpe_ratio', 0):.2f}"
 
     return out
 
