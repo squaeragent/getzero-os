@@ -106,7 +106,7 @@ class TestStartSession:
         mock_session.paper = True
         mock_session.ends_at = datetime(2026, 3, 29, tzinfo=timezone.utc)
 
-        api._session_mgr.active_session.return_value = None
+        api._session_mgr.active_session = None
         api._session_mgr.start_session.return_value = mock_session
 
         result = api.start_session(OP, "momentum", paper=True)
@@ -119,7 +119,7 @@ class TestStartSession:
         active.id = "sess-existing"
         active.strategy_config.display = "Momentum Surf"
         active.state = "active"
-        api._session_mgr.active_session.return_value = active
+        api._session_mgr.active_session = active
 
         result = api.start_session(OP, "momentum")
         assert "error" in result
@@ -158,7 +158,7 @@ class TestEndSession:
         mock_result.narrative_text = "Good session."
 
         mock_session = MagicMock()
-        api._session_mgr.active_session.return_value = mock_session
+        api._session_mgr.active_session = mock_session
         api._session_mgr.end_session_early.return_value = mock_result
 
         result = api.end_session(OP)
@@ -167,7 +167,7 @@ class TestEndSession:
         assert result["wins"] == 2
 
     def test_end_no_session(self, api):
-        api._session_mgr.active_session.return_value = None
+        api._session_mgr.active_session = None
         result = api.end_session(OP)
         assert "error" in result
 

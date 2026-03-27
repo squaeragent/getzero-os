@@ -24,6 +24,12 @@ from typing import Optional
 from scanner.v6.config import BUS_DIR
 from scanner.v6.monitor import Monitor
 from scanner.v6.session import SessionManager
+from scanner.v6.operator import (
+    OperatorContext,
+    resolve_operator,
+    plan_allows_strategy,
+    get_allowed_strategies,
+)
 from scanner.v6.strategy_loader import (
     load_strategy,
     load_all_strategies,
@@ -42,30 +48,40 @@ class ZeroAPI:
     Unified API for the ZERO trading engine.
 
     Every method takes operator_id as first parameter.
-    V1: operator_id is ignored (single operator).
-    V2: operator_id resolves to isolated state (bus_dir, wallet, HLClient).
+    operator_id resolves to OperatorContext with isolated bus_dir.
     """
 
     def __init__(self, bus_dir: Path | None = None):
-        self._bus_dir = bus_dir or BUS_DIR
-        # V1: single operator instances
-        self._monitor = Monitor(bus_dir=self._bus_dir)
-        self._session_mgr = SessionManager(bus_dir=self._bus_dir)
+        self._default_bus_dir = bus_dir or BUS_DIR
+        # Cache: operator_id → (Monitor, SessionManager)
+        self._instances: dict[str, tuple[Monitor, SessionManager]] = {}
+        # Shared monitor for market data (evaluations are stateless)
+        self._shared_monitor: Monitor | None = None
 
     # ── HELPERS ──────────────────────────────────────────────────────────
 
-    def _resolve_bus_dir(self, operator_id: str) -> Path:
-        """V1: returns default bus_dir. V2: returns per-operator bus_dir."""
-        # TODO: when multi-operator, resolve operator_id → bus/{operator_id}/
-        return self._bus_dir
+    def _resolve(self, operator_id: str) -> OperatorContext:
+        """Resolve operator_id to OperatorContext."""
+        return resolve_operator(operator_id)
+
+    def _get_instances(self, operator_id: str) -> tuple[Monitor, SessionManager]:
+        """Get or create Monitor + SessionManager for this operator."""
+        ctx = self._resolve(operator_id)
+        cache_key = str(ctx.bus_dir)  # cache by bus_dir, not operator_id
+        if cache_key not in self._instances:
+            ctx.ensure_bus_dir()
+            monitor = Monitor(bus_dir=ctx.bus_dir)
+            session_mgr = SessionManager(bus_dir=ctx.bus_dir)
+            self._instances[cache_key] = (monitor, session_mgr)
+        return self._instances[cache_key]
 
     def _get_monitor(self, operator_id: str) -> Monitor:
-        """V1: returns shared monitor. V2: returns per-operator monitor."""
-        return self._monitor
+        """Get or create a Monitor for this operator's bus_dir."""
+        return self._get_instances(operator_id)[0]
 
     def _get_session_mgr(self, operator_id: str) -> SessionManager:
-        """V1: returns shared session manager. V2: per-operator."""
-        return self._session_mgr
+        """Get or create a SessionManager for this operator's bus_dir."""
+        return self._get_instances(operator_id)[1]
 
     # ── SESSION (8 tools) ────────────────────────────────────────────────
 
@@ -130,10 +146,20 @@ class ZeroAPI:
 
     def start_session(self, operator_id: str, strategy: str, paper: bool = True) -> dict:
         """Start a trading session. Returns session ID and confirmation."""
+        # Plan gating
+        ctx = self._resolve(operator_id)
+        if not plan_allows_strategy(ctx.plan, strategy):
+            allowed = sorted(get_allowed_strategies(ctx.plan))
+            return {
+                "error": f"Strategy '{strategy}' requires a higher plan. Your plan: {ctx.plan}",
+                "allowed_strategies": allowed,
+                "plan": ctx.plan,
+            }
+
         sm = self._get_session_mgr(operator_id)
 
         # Check if a session is already active
-        active = sm.active_session()
+        active = sm.active_session
         if active is not None:
             return {
                 "error": "Session already active",
@@ -168,7 +194,7 @@ class ZeroAPI:
 
         session_data = status["session"]
         # Add position data
-        positions = self._read_positions()
+        positions = self._read_positions(operator_id)
         session_data["open_positions"] = len(positions)
         session_data["positions"] = positions
         return {"active": True, "session": session_data}
@@ -176,7 +202,7 @@ class ZeroAPI:
     def end_session(self, operator_id: str) -> dict:
         """End the active session early. Returns result card."""
         sm = self._get_session_mgr(operator_id)
-        session = sm.active_session()
+        session = sm.active_session
         if session is None:
             return {"error": "No active session"}
 
@@ -356,10 +382,11 @@ class ZeroAPI:
 
     def get_engine_health(self, operator_id: str) -> dict:
         """Get engine health metrics."""
+        ctx = self._resolve(operator_id)
         monitor = self._get_monitor(operator_id)
         metrics = monitor.last_cycle_metrics
         # Read heartbeat
-        hb_file = self._bus_dir / "heartbeat.json"
+        hb_file = ctx.bus_dir / "heartbeat.json"
         heartbeat = {}
         if hb_file.exists():
             try:
@@ -367,7 +394,7 @@ class ZeroAPI:
             except Exception:
                 pass
         # Read immune state
-        immune_file = self._bus_dir / "immune_state.json"
+        immune_file = ctx.bus_dir / "immune_state.json"
         immune = {}
         if immune_file.exists():
             try:
@@ -388,9 +415,10 @@ class ZeroAPI:
 
     # ── PRIVATE HELPERS ──────────────────────────────────────────────────
 
-    def _read_positions(self) -> list[dict]:
+    def _read_positions(self, operator_id: str = "op_default") -> list[dict]:
         """Read current positions from bus."""
-        positions_file = self._bus_dir / "positions.json"
+        ctx = self._resolve(operator_id)
+        positions_file = ctx.bus_dir / "positions.json"
         if not positions_file.exists():
             return []
         try:

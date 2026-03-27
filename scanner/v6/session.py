@@ -736,6 +736,9 @@ class SessionManager:
              f"trades={len(trades)} | pnl=${total_pnl:.2f} | "
              f"evals={session.eval_count} | rejects={session.reject_count}")
 
+        # Clear active session
+        self._active_session = None
+
         return result
 
     # ── END EARLY ─────────────────────────────────────────────────────────────
@@ -862,7 +865,7 @@ class SessionManager:
 
     def get_status(self) -> dict:
         """Get current session status."""
-        session = self.active_session()
+        session = self.active_session
         if session is None:
             return {"active": False, "session": None}
         return {

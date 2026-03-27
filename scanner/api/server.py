@@ -922,62 +922,92 @@ try:
 
     _v6_api = ZeroAPI()
 
-    # REST endpoints for v6 engine (all under /v6/)
+    # ── Operator management ──────────────────────────────────────────────
+    from scanner.v6.operator import register_operator, list_operators as list_ops
+
+    @app.post("/v6/operator/register")
+    def v6_register_operator(
+        id: str = "op_default",
+        wallet: str = "",
+        api_wallet: str = "",
+        plan: str = "free",
+    ):
+        ctx = register_operator(id, wallet, api_wallet=api_wallet, plan=plan)
+        return {
+            "operator_id": ctx.operator_id,
+            "plan": ctx.plan,
+            "bus_dir": str(ctx.bus_dir),
+            "created": True,
+        }
+
+    @app.get("/v6/operators")
+    def v6_list_operators():
+        return {"operators": list_ops()}
+
+    # ── REST endpoints for v6 engine (all under /v6/) ────────────────
     @app.get("/v6/strategies")
-    def v6_strategies():
-        return _v6_api.list_strategies("op_default")
+    def v6_strategies(operator_id: str = Query("op_default")):
+        return _v6_api.list_strategies(operator_id)
 
     @app.get("/v6/strategy/{name}")
-    def v6_strategy(name: str):
-        return _v6_api.preview_strategy("op_default", name)
+    def v6_strategy(name: str, operator_id: str = Query("op_default")):
+        return _v6_api.preview_strategy(operator_id, name)
 
     @app.post("/v6/session/start")
-    def v6_start(strategy: str = "momentum", paper: bool = True):
-        return _v6_api.start_session("op_default", strategy, paper=paper)
+    def v6_start(
+        strategy: str = "momentum",
+        paper: bool = True,
+        operator_id: str = Query("op_default"),
+    ):
+        return _v6_api.start_session(operator_id, strategy, paper=paper)
 
     @app.get("/v6/session/status")
-    def v6_session_status():
-        return _v6_api.session_status("op_default")
+    def v6_session_status(operator_id: str = Query("op_default")):
+        return _v6_api.session_status(operator_id)
 
     @app.post("/v6/session/end")
-    def v6_end():
-        return _v6_api.end_session("op_default")
+    def v6_end(operator_id: str = Query("op_default")):
+        return _v6_api.end_session(operator_id)
 
     @app.post("/v6/session/queue")
-    def v6_queue(strategy: str = "momentum", paper: bool = True):
-        return _v6_api.queue_session("op_default", strategy, paper=paper)
+    def v6_queue(
+        strategy: str = "momentum",
+        paper: bool = True,
+        operator_id: str = Query("op_default"),
+    ):
+        return _v6_api.queue_session(operator_id, strategy, paper=paper)
 
     @app.get("/v6/session/history")
-    def v6_history(limit: int = 10):
-        return _v6_api.session_history("op_default", limit=limit)
+    def v6_history(limit: int = 10, operator_id: str = Query("op_default")):
+        return _v6_api.session_history(operator_id, limit=limit)
 
     @app.get("/v6/session/{session_id}")
-    def v6_result(session_id: str):
-        return _v6_api.session_result("op_default", session_id)
+    def v6_result(session_id: str, operator_id: str = Query("op_default")):
+        return _v6_api.session_result(operator_id, session_id)
 
     @app.get("/v6/evaluate/{coin}")
-    def v6_evaluate(coin: str):
-        return _v6_api.evaluate("op_default", coin)
+    def v6_evaluate(coin: str, operator_id: str = Query("op_default")):
+        return _v6_api.evaluate(operator_id, coin)
 
     @app.get("/v6/heat")
-    def v6_heat():
-        return _v6_api.get_heat("op_default")
+    def v6_heat(operator_id: str = Query("op_default")):
+        return _v6_api.get_heat(operator_id)
 
     @app.get("/v6/approaching")
-    def v6_approaching():
-        return _v6_api.get_approaching("op_default")
+    def v6_approaching(operator_id: str = Query("op_default")):
+        return _v6_api.get_approaching(operator_id)
 
     @app.get("/v6/pulse")
-    def v6_pulse(limit: int = 20):
-        return _v6_api.get_pulse("op_default", limit=limit)
+    def v6_pulse(limit: int = 20, operator_id: str = Query("op_default")):
+        return _v6_api.get_pulse(operator_id, limit=limit)
 
     @app.get("/v6/brief")
-    def v6_brief():
-        return _v6_api.get_brief("op_default")
+    def v6_brief(operator_id: str = Query("op_default")):
+        return _v6_api.get_brief(operator_id)
 
     @app.get("/v6/engine/health")
-    def v6_engine_health():
-        return _v6_api.get_engine_health("op_default")
+    def v6_engine_health(operator_id: str = Query("op_default")):
+        return _v6_api.get_engine_health(operator_id)
 
     # Mount MCP server at /mcp
     mount_on_fastapi(app, "/mcp")
