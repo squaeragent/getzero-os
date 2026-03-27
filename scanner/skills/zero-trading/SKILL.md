@@ -49,6 +49,10 @@ it rejects 97% of setups. the 3% that pass: those are the trades.
 - `zero_get_pulse` — recent market events
 - `zero_get_brief` — overnight briefing
 
+### drive modes (LIVE)
+- `zero_set_mode` — set comfort/sport/track mode for active session
+- `zero_get_regime` — global market regime (direction, distribution, volatility)
+
 ### engine health (LIVE)
 - `zero_get_engine_health` — cycle time, data freshness, immune status
 
@@ -78,6 +82,8 @@ card endpoints (render via API, send as image to operator):
 - `/v6/cards/brief` — morning brief with fear & greed + positions
 - `/v6/cards/approaching` — coins near threshold with bottleneck
 - `/v6/cards/result?session_id=X` — session complete summary
+- `/v6/cards/regime` — global market regime state
+- `/v6/cards/mode?mode=comfort` — drive mode comparison
 
 always pair a visual card with a short text summary. the card is the data, the text is the interpretation.
 
@@ -106,6 +112,10 @@ when you receive a callback_data value, execute the corresponding action:
 | `show_approaching` | render approaching card image, send to operator |
 | `show_result` | render result card image, send to operator |
 | `show_history` | `zero_session_history` |
+| `show_regime` | render regime card image, send to operator |
+| `set_mode_comfort` | `zero_set_mode("comfort")` |
+| `set_mode_sport` | `zero_set_mode("sport")` |
+| `set_mode_track` | `zero_set_mode("track")` |
 | `eval_SOL` (or any coin) | `zero_evaluate(coin)` + eval card image |
 | `cancel_deploy` | "no problem. say 'deploy' when ready." |
 

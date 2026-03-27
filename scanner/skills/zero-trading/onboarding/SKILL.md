@@ -83,15 +83,23 @@ if empty: "nothing forming. engine is selective. that's the point."
 
 ## step 7: hand off (3 seconds)
 
+send mode card image with caption:
+"3 drive modes. you're on comfort. upgrades available."
+
 ```
 message: "you're set up. here's what happens next:
 • i push you a card when a position enters or exits
 • morning brief every day at 08:00
 • approaching alerts when coins near threshold
-• silence means i'm watching. no news is good news."
+• silence means i'm watching. no news is good news.
+
+drive modes:
+• comfort (default) — set it and forget it
+• sport — full narration, see the engine thinking
+• track — you approve every trade manually"
 buttons:
   row 1: [📊 Status | session_status] [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
-  row 2: [📋 Brief | show_brief] [⏹ End Session | end_session]
+  row 2: [🏎 Sport Mode | set_mode_sport] [🏁 Track Mode | set_mode_track] [⏹ End | end_session]
 ```
 
 total onboarding: 7 steps. 5 images. 36 seconds of operator time.

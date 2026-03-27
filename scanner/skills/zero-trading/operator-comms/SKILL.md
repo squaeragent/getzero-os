@@ -65,6 +65,19 @@ consider degen for your next session?"
 
 near misses are the CONVERSION engine for strategy upgrades.
 
+### regime update
+call `zero_get_regime` for the global market state.
+send regime card image with caption:
+"[dominant_direction] market. [trending_count] coins trending. fear & greed: [value]. [funding_bias]."
+
+push regime card when regime SHIFTS (direction changes, fear/greed crosses boundary).
+in sport/track mode, push regime card every 2 hours.
+
+```
+buttons:
+  row 1: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
+```
+
 ### morning brief
 call `zero_get_brief` and extract these fields:
 - `fear_greed` — the number, classify it (extreme fear / neutral / greed)

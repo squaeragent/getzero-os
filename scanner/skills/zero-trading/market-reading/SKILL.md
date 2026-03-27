@@ -87,6 +87,13 @@ the bottleneck tells you WHAT needs to change:
 - book bottleneck: liquidity needs to improve
 - macro bottleneck: sentiment needs to change
 
+approaching coins now include velocity data:
+- velocity: layers gained/lost per hour
+- velocity_label: ACCELERATING (≥2/h), BUILDING (≥0.5/h), STEADY (0), DECELERATING (≤-0.5/h), RETREATING (≤-2/h)
+- time_to_threshold: estimated time to reach 5/7 at current velocity ("~30 min", "~2 hours")
+
+narrate velocity when present: "SOL accelerating. 2→4/7 in 90 minutes. if book clears, engine enters in ~30 min."
+
 the `bottleneck_detail` field contains raw engine syntax like "technical: rsi=neutral/macd=neutral/ema=✓/bollinger=neutral agree=1/4". do NOT relay this to the operator. translate it:
 - "technical: agree=1/4" → "only 1 of 4 technical indicators agrees. needs more alignment."
 - "book: bid_ratio=0.31" → "buy-side liquidity is thin. needs more depth."
