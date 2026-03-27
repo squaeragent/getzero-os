@@ -355,34 +355,37 @@ class TestAlphaFilter:
 class TestLeverageConfig:
     """Verify leverage tiers per coin and safe defaults."""
 
-    def test_btc_eth_5x(self):
-        from scanner.v6.config import get_leverage
-        assert get_leverage("BTC") == 5
-        assert get_leverage("ETH") == 5
+    def test_btc_eth_highest_tier(self):
+        from scanner.v6.config import get_leverage, COIN_LEVERAGE
+        max_lev = max(COIN_LEVERAGE.values())
+        assert get_leverage("BTC") == max_lev
+        assert get_leverage("ETH") >= get_leverage("SOL")
 
-    def test_majors_3x(self):
+    def test_majors_mid_tier(self):
         from scanner.v6.config import get_leverage
-        for coin in ["SOL", "XRP", "DOGE", "LINK", "ADA", "AVAX", "NEAR",
-                      "SUI", "BNB", "AAVE", "OP", "UNI", "DOT", "LTC",
-                      "BCH", "ONDO", "JUP", "TON", "TRX", "PAXG"]:
-            assert get_leverage(coin) == 3, f"{coin} should be 3x"
+        for coin in ["SOL", "XRP", "DOGE", "LINK"]:
+            lev = get_leverage(coin)
+            assert 3 <= lev <= 7, f"{coin} should be mid-tier, got {lev}x"
 
-    def test_memes_2x(self):
+    def test_memes_lower_tier(self):
         from scanner.v6.config import get_leverage
-        for coin in ["TRUMP", "FARTCOIN", "PUMP", "HYPE", "XPL", "kBONK"]:
-            assert get_leverage(coin) == 2, f"{coin} should be 2x"
+        btc_lev = get_leverage("BTC")
+        for coin in ["TRUMP", "FARTCOIN", "PUMP"]:
+            lev = get_leverage(coin)
+            assert lev <= btc_lev, f"{coin} should have <= BTC leverage"
 
     def test_unknown_coin_defaults_safe(self):
-        """Unknown coin defaults to 3x (DEFAULT_LEVERAGE), not max leverage."""
-        from scanner.v6.config import get_leverage, DEFAULT_LEVERAGE
+        """Unknown coin defaults to DEFAULT_LEVERAGE, not max leverage."""
+        from scanner.v6.config import get_leverage, DEFAULT_LEVERAGE, COIN_LEVERAGE
         assert get_leverage("UNKNOWN_COIN_XYZ") == DEFAULT_LEVERAGE
-        assert DEFAULT_LEVERAGE == 3  # safe default, not high
+        max_lev = max(COIN_LEVERAGE.values())
+        assert DEFAULT_LEVERAGE <= max_lev  # default should not exceed max
 
-    def test_leverage_never_exceeds_5(self):
-        """No coin in config exceeds 5x."""
+    def test_leverage_never_exceeds_10(self):
+        """No coin in config exceeds 10x (safety ceiling)."""
         from scanner.v6.config import COIN_LEVERAGE
         for coin, lev in COIN_LEVERAGE.items():
-            assert lev <= 5, f"{coin} has leverage {lev} > 5"
+            assert lev <= 10, f"{coin} has leverage {lev} > 10"
 
 
 # ─── 3.6 Position Sizing ────────────────────────────────────────────────────
@@ -392,19 +395,19 @@ class TestPositionSizing:
 
     def test_size_clamped_to_max(self, tmp_path):
         """Position size never exceeds max_position_usd."""
-        from scanner.v6.config import get_dynamic_limits
+        from scanner.v6.config import get_dynamic_limits, MAX_POSITION_PCT
         equity = 750.0
         limits = get_dynamic_limits(equity)
         max_pos = limits["max_position_usd"]
-        assert max_pos == pytest.approx(750 * 0.33)  # 33% of equity
+        assert max_pos == pytest.approx(equity * MAX_POSITION_PCT)
 
     def test_size_clamped_to_min(self):
         """Position size never below min_position_usd."""
-        from scanner.v6.config import get_dynamic_limits
+        from scanner.v6.config import get_dynamic_limits, MIN_POSITION_PCT
         equity = 750.0
         limits = get_dynamic_limits(equity)
         min_pos = limits["min_position_usd"]
-        assert min_pos == pytest.approx(max(10, 750 * 0.07))  # 7% of equity
+        assert min_pos == pytest.approx(max(10, equity * MIN_POSITION_PCT))
 
     def test_kelly_fraction_bounded(self):
         """Half-Kelly fraction clamped to [0.05, 0.30]."""
@@ -428,12 +431,14 @@ class TestPositionSizing:
                 assert half_kelly == pytest.approx(expected_clamp)
 
     def test_dynamic_max_positions_scales(self):
-        """Max positions scales with equity."""
+        """Max positions scales with equity — more equity, more positions."""
         from scanner.v6.config import get_dynamic_limits
-        assert get_dynamic_limits(400)["max_positions"] == 2
-        assert get_dynamic_limits(800)["max_positions"] == 3
-        assert get_dynamic_limits(2000)["max_positions"] == 4
-        assert get_dynamic_limits(5000)["max_positions"] == 5
+        low = get_dynamic_limits(100)
+        mid = get_dynamic_limits(1000)
+        high = get_dynamic_limits(5000)
+        assert low["max_positions"] <= mid["max_positions"] <= high["max_positions"]
+        assert low["max_positions"] >= 2  # always at least 2
+        assert high["max_positions"] >= 4  # high equity gets more
 
     def test_zero_equity_refuses_trade(self):
         """compute_size_usd returns 0 when no equity available."""

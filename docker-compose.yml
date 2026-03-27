@@ -1,0 +1,53 @@
+# ZERO OS Trading Engine — Docker Compose
+# Usage: docker compose up -d
+
+services:
+  evaluator:
+    build:
+      context: .
+      target: production
+    command: ["python", "-m", "scanner.v6.local_evaluator", "--loop"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - bus_data:/app/scanner/v6/bus
+      - trade_data:/app/scanner/v6/data
+
+  risk-guard:
+    build:
+      context: .
+      target: production
+    command: ["python", "scanner/v6/risk_guard.py", "--loop"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - bus_data:/app/scanner/v6/bus
+      - trade_data:/app/scanner/v6/data
+
+  executor:
+    build:
+      context: .
+      target: production
+    command: ["python", "scanner/v6/executor.py", "--loop"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - bus_data:/app/scanner/v6/bus
+      - trade_data:/app/scanner/v6/data
+
+  api:
+    build:
+      context: .
+      target: production
+    command: ["uvicorn", "scanner.api.server:app", "--host", "0.0.0.0", "--port", "8420"]
+    restart: unless-stopped
+    ports:
+      - "8420:8420"
+    env_file: .env
+    volumes:
+      - bus_data:/app/scanner/v6/bus
+      - trade_data:/app/scanner/v6/data
+
+volumes:
+  bus_data:
+  trade_data:
