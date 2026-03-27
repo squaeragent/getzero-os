@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.title { font-size: 22px; font-weight: 700; color: #c8ff00; }
+.count { font-size: 14px; color: #888; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  flex: 1;
+}
+.heat-cell {
+  border: 1px solid #333;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.hc-top { display: flex; justify-content: space-between; align-items: center; }
+.hc-coin { font-size: 14px; font-weight: 700; color: #c8ff00; }
+.hc-dir { font-size: 11px; font-weight: 700; }
+.hc-mid { font-size: 12px; color: #888; margin: 4px 0; }
+.hc-bar { height: 4px; background: #1a1a1a; width: 100%; }
+.hc-fill { height: 100%; background: #c8ff00; }
+.ts { font-size: 11px; color: #555; margin-top: 8px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">HEAT MAP</span>
+  <span class="count">{{count}} coins scanned</span>
+</div>
+<div class="grid">
+{{heat_grid}}
+</div>
+<div class="ts">ZERO v6</div>
+</body>
+</html>

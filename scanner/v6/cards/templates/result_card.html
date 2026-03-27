@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.title { font-size: 22px; font-weight: 700; color: #c8ff00; }
+.badge { font-size: 14px; font-weight: 700; padding: 4px 12px; border: 2px solid {{paper_color}}; color: {{paper_color}}; }
+.meta { font-size: 13px; color: #888; margin-bottom: 16px; }
+.meta span { color: #e8e4df; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat { border: 1px solid #1a1a1a; padding: 12px; text-align: center; }
+.stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.stat-val { font-size: 22px; font-weight: 700; }
+.funnel {
+  font-size: 13px; color: #888;
+  padding: 10px;
+  border: 1px solid #1a1a1a;
+  text-align: center;
+  letter-spacing: 1px;
+}
+.funnel-arrow { color: #555; }
+.ts { font-size: 11px; color: #555; margin-top: auto; text-align: right; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">SESSION COMPLETE</span>
+  <span class="badge">{{paper_badge}}</span>
+</div>
+<div class="meta">
+  <span>{{strategy}}</span> | {{duration_hours}}h
+</div>
+<div class="stats">
+  <div class="stat">
+    <div class="stat-label">TRADES</div>
+    <div class="stat-val" style="color:#e8e4df">{{trades}}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">WIN RATE</div>
+    <div class="stat-val" style="color:#c8ff00">{{win_rate}}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">P&L</div>
+    <div class="stat-val" style="color:{{pnl_color}}">{{total_pnl}}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">MAX DD</div>
+    <div class="stat-val" style="color:#ff3333">{{max_drawdown}}</div>
+  </div>
+</div>
+<div class="funnel">{{funnel}}</div>
+<div class="ts">ZERO v6</div>
+</body>
+</html>

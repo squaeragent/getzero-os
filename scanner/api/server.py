@@ -1009,10 +1009,14 @@ try:
     def v6_engine_health(operator_id: str = Query("op_default")):
         return _v6_api.get_engine_health(operator_id)
 
+    # ── Card PNG endpoints ──────────────────────────────────────────────
+    from scanner.v6.cards.card_api import router as cards_router
+    app.include_router(cards_router)
+
     # Mount MCP server at /mcp
     mount_on_fastapi(app, "/mcp")
 
-    print("[V6] Engine API mounted at /v6/* | MCP at /mcp")
+    print("[V6] Engine API mounted at /v6/* | Cards at /v6/cards/* | MCP at /mcp")
 except ImportError as e:
     print(f"[V6] Engine not available: {e}")
 except Exception as e:

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { margin-bottom: 16px; }
+.title { font-size: 22px; font-weight: 700; color: #ffb000; }
+.rows { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.ap-row { border: 1px solid #1a1a1a; padding: 10px 12px; }
+.ap-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.ap-coin { font-size: 16px; font-weight: 700; color: #c8ff00; }
+.ap-dir { font-size: 13px; font-weight: 700; }
+.ap-frac { font-size: 13px; color: #888; margin-left: auto; }
+.ap-bar { height: 6px; background: #1a1a1a; width: 100%; }
+.ap-fill { height: 100%; background: #ffb000; }
+.ap-bn { font-size: 11px; color: #888; margin-top: 4px; }
+.ts { font-size: 11px; color: #555; margin-top: auto; text-align: right; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">APPROACHING</span>
+</div>
+<div class="rows">
+{{approaching_html}}
+</div>
+<div class="ts">ZERO v6</div>
+</body>
+</html>

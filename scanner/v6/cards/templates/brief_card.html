@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.title { font-size: 22px; font-weight: 700; color: #c8ff00; }
+.content { display: flex; gap: 32px; flex: 1; }
+.left { flex: 1; }
+.right { flex: 1; }
+.gauge { text-align: center; margin-bottom: 12px; }
+.gauge-val { font-size: 48px; font-weight: 700; }
+.gauge-label { font-size: 12px; margin-top: 4px; }
+.fg-title { font-size: 11px; color: #888; margin-bottom: 4px; }
+.arc-wrap {
+  width: 120px; height: 64px; margin: 0 auto;
+  position: relative; overflow: hidden;
+}
+.arc-bg {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 8px solid #1a1a1a;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  transform: rotate(225deg);
+  position: absolute; top: 0;
+}
+.arc-fg {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 8px solid transparent;
+  border-top-color: {{fg_color}};
+  border-right-color: {{fg_color}};
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  transform: rotate(225deg);
+  clip-path: polygon(50% 50%, 100% 0, 100% 100%, 0 100%, 0 0);
+  position: absolute; top: 0;
+}
+.section-title { font-size: 11px; color: #888; margin-bottom: 6px; border-bottom: 1px solid #1a1a1a; padding-bottom: 4px; }
+.pos-summary { font-size: 13px; color: #e8e4df; margin-bottom: 10px; }
+.pos-row { display: flex; gap: 12px; font-size: 13px; padding: 3px 0; }
+.pos-coin { font-weight: 700; color: #c8ff00; width: 50px; }
+.pos-dir { width: 60px; font-weight: 700; }
+.pos-price { color: #888; }
+.session-box { margin-top: 12px; padding: 8px; border: 1px solid #333; }
+.session-status { font-size: 14px; font-weight: 700; }
+.session-strat { font-size: 12px; color: #888; }
+.ts { font-size: 11px; color: #555; margin-top: auto; text-align: right; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">BRIEF</span>
+</div>
+<div class="content">
+  <div class="left">
+    <div class="fg-title">FEAR & GREED</div>
+    <div class="gauge">
+      <div class="gauge-val" style="color:{{fg_color}}">{{fear_greed}}</div>
+      <div class="gauge-label" style="color:{{fg_color}}">{{fg_label}}</div>
+    </div>
+    <div class="session-box">
+      <div class="session-status" style="color:{{session_color}}">{{session_status}}</div>
+      <div class="session-strat">{{session_strategy}}</div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="section-title">POSITIONS</div>
+    <div class="pos-summary">{{position_summary}}</div>
+{{positions_html}}
+  </div>
+</div>
+<div class="ts">ZERO v6</div>
+</body>
+</html>
