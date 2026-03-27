@@ -30,7 +30,7 @@ class TestSafeWrite:
 
     def test_rejects_empty_when_hl_has_positions(self, tmp_path):
         """Empty write blocked when HL shows live positions."""
-        from scanner.v6.executor import _safe_save_positions, POSITIONS_FILE
+        from scanner.v6.controller import _safe_save_positions; from scanner.v6.config import POSITIONS_FILE
 
         pos_file = tmp_path / "positions.json"
         pos_file.write_text(json.dumps({"positions": [{"coin": "BTC"}]}))
@@ -38,9 +38,9 @@ class TestSafeWrite:
         hl_active = [{"position": {"szi": "0.5", "coin": "BTC"}}]
         client = self._make_client(hl_active)
 
-        with patch("scanner.v6.executor.POSITIONS_FILE", pos_file), \
-             patch("scanner.v6.executor._reconcile_positions") as mock_recon, \
-             patch("scanner.v6.executor.send_alert"):
+        with patch("scanner.v6.controller.POSITIONS_FILE", pos_file), \
+             patch("scanner.v6.controller._reconcile_positions") as mock_recon, \
+             patch("scanner.v6.controller.send_alert"):
             _safe_save_positions(client, [], source="test")
 
         # Should NOT have written empty — file should still have old data or reconciliation ran
@@ -49,7 +49,7 @@ class TestSafeWrite:
 
     def test_accepts_valid_nonempty(self, tmp_path):
         """Non-empty write proceeds normally."""
-        from scanner.v6.executor import _safe_save_positions
+        from scanner.v6.controller import _safe_save_positions
 
         pos_file = tmp_path / "positions.json"
         lock_file = tmp_path / "positions.lock"
@@ -58,8 +58,7 @@ class TestSafeWrite:
         client = MagicMock()
         new_positions = [{"coin": "ETH", "direction": "LONG"}]
 
-        with patch("scanner.v6.executor.POSITIONS_FILE", pos_file), \
-             patch("scanner.v6.executor.V5_POSITIONS_FILE", tmp_path / "v5_pos.json"):
+        with patch("scanner.v6.controller.POSITIONS_FILE", pos_file):
             _safe_save_positions(client, new_positions, source="test")
 
         # Should NOT query HL for non-empty writes
@@ -82,7 +81,7 @@ class TestSafeWrite:
 
     def test_empty_write_allowed_when_hl_also_empty(self, tmp_path):
         """Empty write proceeds if HL confirms 0 positions."""
-        from scanner.v6.executor import _safe_save_positions
+        from scanner.v6.controller import _safe_save_positions
 
         pos_file = tmp_path / "positions.json"
         lock_file = tmp_path / "positions.lock"
@@ -91,8 +90,7 @@ class TestSafeWrite:
         hl_no_active = [{"position": {"szi": "0", "coin": "BTC"}}]
         client = self._make_client(hl_no_active)
 
-        with patch("scanner.v6.executor.POSITIONS_FILE", pos_file), \
-             patch("scanner.v6.executor.V5_POSITIONS_FILE", tmp_path / "v5_pos.json"):
+        with patch("scanner.v6.controller.POSITIONS_FILE", pos_file):
             _safe_save_positions(client, [], source="test")
 
         saved = json.loads(pos_file.read_text())
@@ -221,7 +219,7 @@ class TestStopOffset:
 
     def test_long_stop_limit_below_trigger(self):
         """LONG stop: selling to close → limit = trigger * 0.98."""
-        from scanner.v6.executor import HLClient
+        from scanner.v6.hl_client import HLClient
 
         trigger = 100.0
         offset_pct = 0.02
@@ -240,7 +238,7 @@ class TestStopOffset:
     def test_stop_reduce_only_flag(self):
         """Stop order action has r=True (reduce_only)."""
         # Verify the action structure built by place_stop_loss
-        from scanner.v6.executor import HLClient, COIN_TO_ASSET, COIN_SZ_DECIMALS
+        from scanner.v6.hl_client import HLClient, COIN_TO_ASSET, COIN_SZ_DECIMALS
 
         # Setup minimal state
         COIN_TO_ASSET["TEST"] = 999
@@ -442,11 +440,11 @@ class TestPositionSizing:
 
     def test_zero_equity_refuses_trade(self):
         """compute_size_usd returns 0 when no equity available."""
-        from scanner.v6.executor import compute_size_usd
+        from scanner.v6.controller import compute_size_usd
 
         trade = {"coin": "BTC", "win_rate": 60, "sharpe": 2.0}
-        with patch("scanner.v6.executor.load_json", return_value={}), \
-             patch("scanner.v6.executor.BUS_DIR", Path("/tmp")):
+        with patch("scanner.v6.controller.load_json", return_value={}), \
+             patch("scanner.v6.controller.BUS_DIR", Path("/tmp")):
             # portfolio.json returns 0 equity
             size = compute_size_usd(trade)
         assert size == 0

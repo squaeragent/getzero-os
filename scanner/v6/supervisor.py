@@ -4,8 +4,11 @@ V6 Supervisor — runs all components with health monitoring and auto-restart.
 
 Components:
   local_evaluator   — SmartProvider signal evaluation (continuous, HL public API)
-  risk_guard        — position limit checks (every 5s)
-  executor          — HL execution (every 5s)
+  controller        — unified engine: risk checks + execution (every 5s)
+  market_monitor    — market regime tracking (every 5min)
+
+Session 8b: risk_guard + executor absorbed into controller.py.
+Legacy mode kept for emergency rollback only (--legacy flag).
 """
 
 import json
@@ -56,8 +59,8 @@ if _USE_CONTROLLER:
 else:
     # Legacy: separate risk_guard + executor (default — always works)
     COMPONENTS = [
-        ("risk_guard",       V6_DIR / "risk_guard.py",         5,    60),  # 5s cycle, stale if >60s
-        ("executor",         V6_DIR / "executor.py",            5,    60),  # 5s cycle, stale if >60s
+        ("risk_guard",       V6_DIR / "risk_guard_legacy.py",   5,    60),  # legacy — renamed
+        ("executor",         V6_DIR / "executor_v6_legacy.py",  5,    60),  # legacy — renamed
         ("market_monitor",   V6_DIR / "market_monitor.py",    300,   600),  # 5min cycle, stale if >10min
     ]
 

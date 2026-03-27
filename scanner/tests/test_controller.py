@@ -10,6 +10,8 @@ Tests:
   - handle_entry_end_events() respects entry_end_action
   - Watch strategy blocks all entries
   - Pipeline flow: entry → risk check → approved dict → executor params
+  - Position / TradeResult / SessionState dataclasses (Session 8b)
+  - Near-miss detection logging
 
 All tests are fully mocked — no file I/O, no mainnet calls.
 """
@@ -29,6 +31,9 @@ from scanner.v6.controller import (
     check_time_exits,
     handle_entry_end_events,
     _StrategyParams,
+    Position,
+    TradeResult,
+    SessionState,
 )
 from scanner.v6.strategy_loader import load_strategy, StrategyConfig
 
@@ -647,3 +652,183 @@ class TestStrategyParamsFallback:
         positions = [make_position("BTC", size_usd=400.0)]
         # $1000 - $200 reserve - $400 invested = $400 available
         assert params.available_usd(positions) == pytest.approx(400.0)
+
+
+# ─── DATACLASSES (Session 8b) ─────────────────────────────────────────────────
+
+class TestPositionDataclass:
+    """Position dataclass — typed position record replaces raw dicts."""
+
+    def _make_pos(self, **kwargs) -> Position:
+        defaults = dict(
+            id="BTC_LONG_123",
+            coin="BTC",
+            direction="LONG",
+            strategy="momentum",
+            session_id="sess_001",
+            entry_price=50000.0,
+            size_usd=500.0,
+            size_coins=0.01,
+            stop_loss_pct=0.03,
+            stop_loss_price=48500.0,
+            entry_time="2026-03-01T00:00:00+00:00",
+            signal_name="test_signal",
+            sharpe=2.0,
+            hl_order_id="0xabc",
+            sl_order_id="0xdef",
+        )
+        defaults.update(kwargs)
+        return Position(**defaults)
+
+    def test_create_position(self):
+        pos = self._make_pos()
+        assert pos.coin == "BTC"
+        assert pos.direction == "LONG"
+        assert pos.peak_pnl_pct == 0.0
+        assert pos.trailing_activated is False
+
+    def test_default_fields(self):
+        pos = self._make_pos()
+        assert pos.peak_pnl_pct == 0.0
+        assert not pos.trailing_activated
+        assert pos.win_rate == 0.0
+
+    def test_to_dict(self):
+        pos = self._make_pos()
+        d   = pos.to_dict()
+        assert isinstance(d, dict)
+        assert d["coin"] == "BTC"
+        assert d["strategy"] == "momentum"
+
+    def test_from_dict_roundtrip(self):
+        pos = self._make_pos()
+        d   = pos.to_dict()
+        pos2 = Position.from_dict(d)
+        assert pos2.coin == pos.coin
+        assert pos2.entry_price == pos.entry_price
+        assert pos2.trailing_activated == pos.trailing_activated
+
+    def test_from_dict_ignores_unknown_keys(self):
+        pos = self._make_pos()
+        d   = pos.to_dict()
+        d["some_legacy_field"] = "junk"
+        pos2 = Position.from_dict(d)
+        assert pos2.coin == pos.coin
+
+    def test_direction_values(self):
+        long_pos  = self._make_pos(direction="LONG")
+        short_pos = self._make_pos(direction="SHORT")
+        assert long_pos.direction == "LONG"
+        assert short_pos.direction == "SHORT"
+
+    def test_trailing_activated_toggle(self):
+        pos = self._make_pos(trailing_activated=True)
+        assert pos.trailing_activated is True
+
+    def test_peak_pnl_pct_update(self):
+        pos = self._make_pos()
+        assert pos.peak_pnl_pct == 0.0
+        pos.peak_pnl_pct = 0.05
+        assert pos.peak_pnl_pct == pytest.approx(0.05)
+
+
+class TestTradeResultDataclass:
+    """TradeResult dataclass — typed trade log record."""
+
+    def _make_trade(self, **kwargs) -> TradeResult:
+        defaults = dict(
+            position_id="BTC_LONG_123",
+            coin="BTC",
+            direction="LONG",
+            strategy="momentum",
+            session_id="sess_001",
+            entry_price=50000.0,
+            exit_price=52000.0,
+            size_usd=500.0,
+            size_coins=0.01,
+            entry_time="2026-03-01T00:00:00+00:00",
+            exit_time="2026-03-01T06:00:00+00:00",
+            exit_reason="max_hold_hours",
+            pnl_usd=19.0,
+            pnl_pct=0.04,
+            pnl_usd_gross=20.0,
+            fees_usd=1.0,
+            slippage_pct=0.01,
+            actual_notional=520.0,
+            won=True,
+            sharpe=2.0,
+            win_rate=0.6,
+        )
+        defaults.update(kwargs)
+        return TradeResult(**defaults)
+
+    def test_create(self):
+        tr = self._make_trade()
+        assert tr.won is True
+        assert tr.pnl_usd == pytest.approx(19.0)
+
+    def test_losing_trade(self):
+        tr = self._make_trade(pnl_usd=-10.0, won=False)
+        assert not tr.won
+        assert tr.pnl_usd < 0
+
+    def test_to_dict(self):
+        tr = self._make_trade()
+        d  = tr.to_dict()
+        assert d["coin"] == "BTC"
+        assert d["won"] is True
+        assert "zero_fee" in d
+
+
+class TestSessionStateDataclass:
+    """SessionState — lifecycle state machine."""
+
+    def _make_session(self, **kwargs) -> SessionState:
+        defaults = dict(
+            session_id="sess_001",
+            strategy="momentum",
+            status="active",
+            started_at="2026-03-01T00:00:00+00:00",
+            expires_at="2026-03-03T00:00:00+00:00",
+            equity_start=1000.0,
+        )
+        defaults.update(kwargs)
+        return SessionState(**defaults)
+
+    def test_initial_state(self):
+        ss = self._make_session()
+        assert ss.status == "active"
+        assert ss.total_pnl == 0.0
+        assert ss.trade_count == 0
+
+    def test_result_card_no_trades(self):
+        ss   = self._make_session(equity_end=1000.0)
+        card = ss.result_card()
+        assert card["roi_pct"] == 0.0
+        assert card["trade_count"] == 0
+        assert card["win_rate"] == 0
+
+    def test_result_card_profitable(self):
+        ss = self._make_session(
+            equity_end=1100.0, total_pnl=100.0,
+            trade_count=5, wins=4, losses=1,
+            status="completed",
+        )
+        card = ss.result_card()
+        assert card["roi_pct"] == pytest.approx(10.0)
+        assert card["win_rate"] == pytest.approx(80.0)
+        assert card["total_pnl"] == pytest.approx(100.0)
+
+    def test_expired_state(self):
+        ss = self._make_session(status="expired")
+        assert ss.status == "expired"
+
+    def test_near_misses_tracked(self):
+        ss = self._make_session(near_misses=3)
+        card = ss.result_card()
+        assert card["near_misses"] == 3
+
+    def test_all_states(self):
+        for state in ["pending", "active", "completing", "completed", "expired"]:
+            ss = self._make_session(status=state)
+            assert ss.status == state
