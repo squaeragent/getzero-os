@@ -160,12 +160,12 @@ def start_immune():
         else:
             log(f"immune exited with code {proc.returncode}, restarting")
 
-    log("Starting immune system monitor...")
+    log("Starting immune system v2 monitor...")
     try:
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
         proc = subprocess.Popen(
-            [PYTHON, str(V6_DIR / "immune.py"), "--loop"],
+            [PYTHON, str(V6_DIR / "immune_v2.py"), "--loop"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

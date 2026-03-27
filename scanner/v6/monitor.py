@@ -125,6 +125,49 @@ class EvaluationResult:
 
 
 @dataclass
+class ApproachingSignal:
+    """Signal emitted when a coin is close to passing consensus threshold."""
+    coin: str
+    consensus: int
+    threshold: int
+    distance: int
+    passing_layers: list
+    failing_layers: list
+    bottleneck: str
+    bottleneck_detail: str
+    direction: str
+    price: float
+    timestamp: str
+    urgency: str  # "high" or "low"
+
+    def to_dict(self) -> dict:
+        return self.__dict__.copy()
+
+
+@dataclass
+class CycleMetrics:
+    """Execution metrics for a single monitor cycle."""
+    cycle_number: int
+    timestamp: str
+    cycle_duration_ms: int
+    data_fetch_duration_ms: int
+    evaluation_duration_ms: int
+    signal_emission_duration_ms: int
+    data_freshness_max_ms: int
+    data_sources_available: int
+    data_sources_stale: int
+    coins_evaluated: int
+    coins_passed: int
+    coins_rejected: int
+    coins_approaching: int
+    signals_emitted: int
+    memory_mb: float
+
+    def to_dict(self) -> dict:
+        return self.__dict__.copy()
+
+
+@dataclass
 class Signal:
     type: str            # "ENTRY", "ENTRY_END", "EXIT"
     coin: str
@@ -190,6 +233,10 @@ class DataCache:
         self._book_cache: dict[str, tuple[float, float]] = {}  # coin -> (bid_depth, ask_depth)
         self._book_ts: dict[str, float] = {}
 
+        # B5: API call tracking
+        self.api_call_count: int = 0
+        self.api_calls_by_type: dict[str, int] = {}
+
     def refresh(self) -> bool:
         """
         Batch-refresh prices + funding + OI.
@@ -197,6 +244,7 @@ class DataCache:
         """
         # 1. All mids
         try:
+            self._track_api_call("allMids")
             mids = _hl_post({"type": "allMids"})
             if isinstance(mids, dict):
                 self.prices = {k: float(v) for k, v in mids.items()}
@@ -207,6 +255,7 @@ class DataCache:
 
         # 2. Funding + OI via metaAndAssetCtxs
         try:
+            self._track_api_call("metaAndAssetCtxs")
             meta = _hl_post({"type": "metaAndAssetCtxs"})
             if isinstance(meta, list) and len(meta) >= 2:
                 universe = meta[0].get("universe", [])
@@ -231,8 +280,13 @@ class DataCache:
 
         return bool(self.prices)
 
+    def _track_api_call(self, call_type: str):
+        self.api_call_count += 1
+        self.api_calls_by_type[call_type] = self.api_calls_by_type.get(call_type, 0) + 1
+
     def _refresh_fear_greed(self):
         """Fetch fear & greed from alternative.me. Fallback to 50."""
+        self._track_api_call("fearGreed")
         try:
             req = urllib.request.Request(FG_URL, headers={"User-Agent": "zeroos/1.0"})
             raw = json.loads(urllib.request.urlopen(req, timeout=10).read())
@@ -283,6 +337,7 @@ class DataCache:
         if time.time() - cached_ts < 30:
             return self._book_cache.get(coin, (0.0, 0.0))
         try:
+            self._track_api_call("l2Book")
             data = _hl_post({"type": "l2Book", "coin": coin, "nSigFigs": 5})
             levels = data.get("levels", [[], []])
             bids = levels[0] if len(levels) > 0 else []
@@ -398,6 +453,11 @@ class Monitor:
         self._decisions_file = self._bus_dir / "decisions.jsonl"
         self._heartbeat_file = self._bus_dir / "heartbeat.json"
         self._near_miss_detector = NearMissDetector(self._bus_dir)
+        # B1: Approaching detection — dedup by tracking previous consensus per coin
+        self.approaching_states: dict[str, int] = {}
+        # B4: Metrics log
+        self._metrics_file = self._bus_dir / "metrics.jsonl"
+        self.last_cycle_metrics: CycleMetrics | None = None
 
     def run_cycle(self) -> dict:
         """
@@ -407,10 +467,14 @@ class Monitor:
         2. Get coins in scope
         3. Evaluate each coin through 7 layers
         4. Compare with previous, emit signals
+        4b. Check approaching detection (B1)
         5. Cross-check near misses
         6. Log to decisions.jsonl
-        7. Return cycle summary
+        7. Compute cycle metrics (B4)
+        8. Return cycle summary
         """
+        import resource
+
         self.cycle_count += 1
         cycle_start = time.time()
         summary = {
@@ -419,12 +483,15 @@ class Monitor:
             "coins_evaluated": 0,
             "signals_emitted": 0,
             "near_misses": 0,
+            "approaching": 0,
             "skipped": False,
             "skip_reason": "",
         }
 
         # 1. Refresh cache
+        t_fetch_start = time.time()
         ok = self.cache.refresh()
+        t_fetch_end = time.time()
         if not ok or self.cache.is_price_stale():
             age = self.cache.price_age_ms()
             _log(f"[CYCLE {self.cycle_count}] SKIP — price data stale ({age}ms)")
@@ -437,9 +504,14 @@ class Monitor:
         coins = self._get_coins()
 
         # 3+4. Evaluate + signals
+        t_eval_start = time.time()
         all_signals: list[Signal] = []
         all_near_misses: list[dict] = []
+        all_approaching: list[ApproachingSignal] = []
         results: list[EvaluationResult] = []
+        coins_passed = 0
+
+        threshold = self.strategy.evaluation.consensus_threshold
 
         for coin in coins:
             try:
@@ -449,6 +521,15 @@ class Monitor:
                 # Emit signals (state machine)
                 signals = self.check_signals(coin, result)
                 all_signals.extend(signals)
+
+                # Track passed coins
+                if result.consensus >= threshold and result.direction != "NONE":
+                    coins_passed += 1
+
+                # B1: Approaching detection
+                approaching = self._check_approaching(coin, result)
+                if approaching:
+                    all_approaching.append(approaching)
 
                 # Near miss detection
                 near_misses = self.check_near_misses(coin, result)
@@ -462,24 +543,63 @@ class Monitor:
             except Exception as e:
                 _log(f"  WARN: eval {coin} failed: {e}")
 
+        t_eval_end = time.time()
+
         # 5. Write near misses
         if all_near_misses:
             self._near_miss_detector.write(all_near_misses)
 
         # 6. Write signals to bus
+        t_signal_start = time.time()
         self._write_signals(all_signals)
 
+        # B1: Write approaching signals to bus + decisions log
+        if all_approaching:
+            self._write_approaching(all_approaching)
+        t_signal_end = time.time()
+
         # 7. Heartbeat + summary
+        cycle_end = time.time()
         summary["coins_evaluated"] = len(results)
         summary["signals_emitted"] = len(all_signals)
         summary["near_misses"] = len(all_near_misses)
-        summary["cycle_ms"] = int((time.time() - cycle_start) * 1000)
+        summary["approaching"] = len(all_approaching)
+        summary["cycle_ms"] = int((cycle_end - cycle_start) * 1000)
 
         self._write_heartbeat(summary)
+
+        # B4: Compute and log cycle metrics
+        data_sources_available = sum(1 for s in ("prices", "funding", "oi") if not self.cache.is_source_stale(s))
+        data_sources_stale = 3 - data_sources_available
+        try:
+            mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 * 1024)
+        except Exception:
+            mem_mb = 0.0
+
+        metrics = CycleMetrics(
+            cycle_number=self.cycle_count,
+            timestamp=_now_iso(),
+            cycle_duration_ms=int((cycle_end - cycle_start) * 1000),
+            data_fetch_duration_ms=int((t_fetch_end - t_fetch_start) * 1000),
+            evaluation_duration_ms=int((t_eval_end - t_eval_start) * 1000),
+            signal_emission_duration_ms=int((t_signal_end - t_signal_start) * 1000),
+            data_freshness_max_ms=self.cache.price_age_ms(),
+            data_sources_available=data_sources_available,
+            data_sources_stale=data_sources_stale,
+            coins_evaluated=len(results),
+            coins_passed=coins_passed,
+            coins_rejected=len(results) - coins_passed,
+            coins_approaching=len(all_approaching),
+            signals_emitted=len(all_signals),
+            memory_mb=round(mem_mb, 2),
+        )
+        self.last_cycle_metrics = metrics
+        self._log_metrics(metrics)
 
         _log(
             f"[CYCLE {self.cycle_count}] "
             f"coins={len(results)} signals={len(all_signals)} "
+            f"approaching={len(all_approaching)} "
             f"near_miss={len(all_near_misses)} "
             f"ms={summary['cycle_ms']}"
         )
@@ -993,6 +1113,92 @@ class Monitor:
     def check_near_misses(self, coin: str, result: EvaluationResult) -> list[dict]:
         """Cross-check against all strategies to find near-misses."""
         return self._near_miss_detector.check(coin, result, self.strategy)
+
+    # ── B1: Approaching Detection ─────────────────────────────────────────────
+
+    def _check_approaching(self, coin: str, result: EvaluationResult) -> ApproachingSignal | None:
+        """Detect coins approaching consensus threshold. Returns signal or None."""
+        threshold = self.strategy.evaluation.consensus_threshold
+        consensus = result.consensus
+        distance = threshold - consensus
+
+        # Only emit if within 2 of threshold and below it
+        if distance < 1 or distance > 2:
+            # If at or above threshold, clear approaching state
+            if distance <= 0:
+                self.approaching_states.pop(coin, None)
+            return None
+
+        # Dedup: only emit if consensus changed
+        prev_consensus = self.approaching_states.get(coin)
+        if prev_consensus == consensus:
+            return None
+
+        # Detect cooling: consensus dropped from closer to threshold
+        if prev_consensus is not None and consensus < prev_consensus:
+            urgency = "cooling"
+        elif distance == 1:
+            urgency = "high"
+        else:
+            urgency = "low"
+
+        self.approaching_states[coin] = consensus
+
+        # Bottleneck: find closest-to-passing failing layer
+        passing = [lr.layer for lr in result.layers if lr.passed]
+        failing = [lr for lr in result.layers if not lr.passed and lr.data_available]
+        bottleneck = failing[0].layer if failing else ""
+        bottleneck_detail = failing[0].detail if failing else ""
+
+        return ApproachingSignal(
+            coin=coin,
+            consensus=consensus,
+            threshold=threshold,
+            distance=distance,
+            passing_layers=passing,
+            failing_layers=[lr.layer for lr in failing],
+            bottleneck=bottleneck,
+            bottleneck_detail=bottleneck_detail,
+            direction=result.direction,
+            price=result.price,
+            timestamp=result.timestamp,
+            urgency=urgency,
+        )
+
+    def _write_approaching(self, signals: list[ApproachingSignal]):
+        """Write approaching signals to bus and decisions log."""
+        # Write to bus/approaching.json for MCP access
+        payload = {
+            "updated_at": _now_iso(),
+            "approaching": [s.to_dict() for s in signals],
+        }
+        _save_atomic(self._bus_dir / "approaching.json", payload)
+
+        # Log to decisions.jsonl and emit events
+        for sig in signals:
+            record = {
+                "type": "APPROACHING",
+                "coin": sig.coin,
+                "consensus": sig.consensus,
+                "threshold": sig.threshold,
+                "distance": sig.distance,
+                "urgency": sig.urgency,
+                "bottleneck": sig.bottleneck,
+                "direction": sig.direction,
+                "price": sig.price,
+                "timestamp": sig.timestamp,
+            }
+            self._decisions_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self._decisions_file, "a") as f:
+                f.write(json.dumps(record, default=str) + "\n")
+
+    # ── B4: Metrics Logging ──────────────────────────────────────────────────
+
+    def _log_metrics(self, metrics: CycleMetrics):
+        """Append cycle metrics to bus/metrics.jsonl."""
+        self._metrics_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(self._metrics_file, "a") as f:
+            f.write(json.dumps(metrics.to_dict(), default=str) + "\n")
 
     def _get_coins(self) -> list[str]:
         """Get coins in scope from strategy config."""

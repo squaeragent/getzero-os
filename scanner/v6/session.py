@@ -137,6 +137,22 @@ class TimelineEvent:
 
 
 @dataclass
+class SessionCost:
+    """B5: Session resource cost tracking."""
+    total_cycles: int = 0
+    total_evaluations: int = 0
+    hl_api_calls: int = 0
+    hl_api_calls_by_type: dict = field(default_factory=dict)
+    cpu_seconds: float = 0.0
+    peak_memory_mb: float = 0.0
+    decision_log_bytes: int = 0
+    estimated_cost_usd: float = 0.0
+
+    def to_dict(self) -> dict:
+        return self.__dict__.copy()
+
+
+@dataclass
 class SessionResult:
     """Final result card produced when a session completes."""
     session_id: str
@@ -162,6 +178,21 @@ class SessionResult:
     completed_at: str
     coins_in_scope: int
     ended_early: bool = False
+    # B2: Slippage aggregates
+    avg_slippage_bps: float = 0.0
+    max_slippage_bps: float = 0.0
+    avg_signal_to_fill_ms: float = 0.0
+    fills_by_order_type: dict = field(default_factory=dict)
+    # B3: Layer accuracy
+    layer_accuracy: dict = field(default_factory=dict)
+    # B4: Execution metrics aggregates
+    avg_cycle_duration_ms: float = 0.0
+    max_cycle_duration_ms: float = 0.0
+    total_cycles: int = 0
+    total_evaluations: int = 0
+    data_stale_cycles: int = 0
+    # B5: Cost
+    session_cost: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -188,6 +219,17 @@ class SessionResult:
             "completed_at": self.completed_at,
             "coins_in_scope": self.coins_in_scope,
             "ended_early": self.ended_early,
+            "avg_slippage_bps": round(self.avg_slippage_bps, 2),
+            "max_slippage_bps": round(self.max_slippage_bps, 2),
+            "avg_signal_to_fill_ms": round(self.avg_signal_to_fill_ms, 1),
+            "fills_by_order_type": self.fills_by_order_type,
+            "layer_accuracy": self.layer_accuracy,
+            "avg_cycle_duration_ms": round(self.avg_cycle_duration_ms, 1),
+            "max_cycle_duration_ms": round(self.max_cycle_duration_ms, 1),
+            "total_cycles": self.total_cycles,
+            "total_evaluations": self.total_evaluations,
+            "data_stale_cycles": self.data_stale_cycles,
+            "session_cost": self.session_cost,
         }
 
 

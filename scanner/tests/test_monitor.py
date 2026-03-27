@@ -166,6 +166,12 @@ def make_monitor(tmp_path: Path, strategy_name: str = "momentum", threshold: int
     monitor._near_miss_detector._bus_dir = bus_dir
     monitor._near_miss_detector._near_miss_file = bus_dir / "near_misses.jsonl"
 
+    # B1: Approaching detection state
+    monitor.approaching_states = {}
+    # B4: Execution metrics
+    monitor._metrics_file = bus_dir / "metrics.jsonl"
+    monitor.last_cycle_metrics = None
+
     return monitor
 
 

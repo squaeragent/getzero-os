@@ -1,8 +1,8 @@
 # ZERO BUGATTI ENGINE — V1 SPECIFICATION
 
 **Build:** v1.0.0-bugatti
-**Codebase:** 5,840 lines across 7 core files
-**Test suite:** 492 tests, 1 skipped, 0 failures
+**Codebase:** 6,315 lines across 8 core files
+**Test suite:** 506+ tests, 1 skipped, 0 failures
 **Exchange:** Hyperliquid (perpetuals, cross-margin)
 
 ---
@@ -47,13 +47,14 @@
 
 | File | Lines | Responsibility |
 |------|-------|----------------|
-| `controller.py` | 2,306 | Execution, risk, positions, hard caps, reconciliation, shutdown, event bus |
+| `controller.py` | 2,437 | Execution, risk, positions, trailing stops, hard caps, reconciliation, shutdown, event bus |
 | `monitor.py` | 1,309 | 7-layer evaluation, signal state machine, approaching detection, cycle metrics |
 | `session.py` | 861 | Lifecycle state machine, result cards, narrative builder, near miss, cost tracking |
 | `hl_client.py` | 340 | HL API adapter: orders, positions, balance, book, funding |
 | `strategy_loader.py` | 432 | YAML config loading, validation, 9 strategy definitions |
 | `smart_provider.py` | 349 | Raw market data → evaluation indicators |
 | `config.py` | 243 | Environment, paths, dynamic limits |
+| `immune_v2.py` | 344 | Independent position protection, stop verification, dead man's switch |
 
 ---
 
@@ -69,7 +70,7 @@ Every coin, every cycle, evaluated through 7 independent layers:
 | 4 | **Book** | Order book depth imbalance (bid vs ask) | HL L2 book |
 | 5 | **OI** | Open interest trend (rising/falling) | HL metaAndAssetCtxs |
 | 6 | **Macro** | Fear & Greed index extremes | Alternative.me API |
-| 7 | **Collective** | Cross-indicator agreement | Composite of above |
+| 7 | **Collective** | V1: cross-indicator composite score. Network agent consensus planned for V2 | Composite of above |
 
 **Consensus model:** Each layer votes pass/fail. Consensus = count of passes.
 Strategy threshold determines minimum consensus (5/7, 6/7, 7/7).
@@ -98,25 +99,25 @@ inactive ──[consensus ≥ threshold]──→ entry
 
 **Signal types:** ENTRY, ENTRY_END, EXIT
 **Deduplication:** No re-emit if state hasn't changed
-**Data freshness:** Price > 120s stale → skip cycle. Any source > 30s → flag.
+**Data freshness:** V1 uses REST polling (batch allMids). WebSocket planned for V2.
 
 ---
 
 ## 9 STRATEGIES
 
-| Strategy | Tier | Duration | Scope | Threshold | Risk | Character |
-|----------|------|----------|-------|-----------|------|-----------|
-| **Momentum Surf** | Free | 48h | Top 50 | 5/7 | Moderate | Follow trends |
-| **Defense Shield** | Free | 168h | Top 20 | 6/7 | Low | Conservative, tight filter |
-| **Watch Mode** | Free | 48h | Top 50 | 5/7 | Zero | Observe only, no execution |
-| **Degen Sprint** | Pro | 24h | Top 100 | 5/7 | High | Aggressive, wide universe |
-| **Funding Harvest** | Pro | 48h | — | 6/7 | Low | Exploit funding dislocations |
-| **Scout Run** | Pro | 72h | Top 200 | — | Moderate | Wide universe scan |
-| **Sniper Strike** | Scale | 72h | — | 7/7 | High | Maximum selectivity |
-| **Fade the Crowd** | Scale | 168h | — | — | Moderate | Contrarian mean-reversion |
-| **Apex Protocol** | Scale | 168h | — | — | Extreme | All levers open, score 7.0+ |
+| Strategy | Emoji | Duration | Scope | Threshold | MaxPos | Stop | Size | Risk |
+|----------|-------|----------|-------|-----------|--------|------|------|------|
+| Momentum | 🌊 | 48h | top 50 | 5/7 | 5 | 3% | 10% | moderate |
+| Degen | 🔥 | 24h | top 100 | 5/7 | 6 | 6% | 15% | high |
+| Defense | 🛡 | 7d | top 20 | 6/7 | 3 | 2% | 7% | low |
+| Sniper | 🎯 | 72h | top 20 | 7/7 | 3 | 4% | 20% | high |
+| Scout | 🔍 | 72h | top 200 | 5/7 | 5 | 3% | 10% | moderate |
+| Fade | 🔄 | 7d | top 50 | 5/7 | 4 | 3% | 10% | moderate |
+| Funding | 💰 | 48h | top 50 | 6/7 | 4 | 2% | 8% | low |
+| Watch | 👁 | 48h | top 50 | 5/7 | 0 | 0% | 0% | none |
+| Apex | ⚡ | 7d | top 100 | 6/7 | 8 | 8% | 20% | extreme |
 
-**YAML-enforced per strategy:** max_positions, max_daily_loss_pct, reserve_pct, max_hold_hours, entry_end_action, consensus_threshold, min_regime, position_size_pct, stop_loss_pct.
+**YAML-enforced per strategy:** max_positions, max_daily_loss_pct, reserve_pct, max_hold_hours, entry_end_action, consensus_threshold, min_regime, position_size_pct, stop_loss_pct, trailing_stop, trailing_activation_pct, trailing_distance_pct.
 
 ---
 
@@ -209,6 +210,55 @@ Estimated $/session based on compute model.
 ### B6. HL Testnet Verification
 Documented round-trip test: place order → verify → cancel → verify gone.
 Skip by default. Run manually with testnet credentials.
+
+---
+
+## IMMUNE SYSTEM (immune_v2.py)
+
+Independent position protection — runs every 60 seconds, cannot be disabled while positions are open.
+Completely independent of monitor and controller evaluation logic.
+
+**Core responsibilities:**
+1. **Stop Verification:** Query HL `get_open_orders()` for every open position. If any position is missing a stop order, auto-repair it immediately.
+2. **Stop Repair:** Place missing stops via `hl_client.place_stop_loss()` using the position's configured stop_loss_pct from entry.
+3. **Heartbeat:** Write `immune` timestamp to `bus/heartbeat.json` every cycle.
+4. **Dead Man's Switch:** If controller heartbeat age > 300s (5 minutes):
+   - Tighten ALL stops to 1% from current price
+   - Emit `IMMUNE_DEAD_MAN_TRIGGERED` event
+   - Alert: "Controller unresponsive. Immune protecting."
+5. **Event Logging:** All actions logged to `events.jsonl`.
+
+**Architecture:** `ImmuneSystem` class — reads `positions.json`, writes `heartbeat.json`, talks to HL directly.
+Launched by supervisor as a background daemon (`immune_v2.py --loop`).
+
+---
+
+## TRAILING STOP EXECUTION
+
+Per-cycle trailing stop logic in `controller.py` → `check_trailing_stops()`.
+
+**Per position, every cycle:**
+1. Get current price from HL
+2. Read strategy trailing config: `trailing_stop`, `trailing_activation_pct`, `trailing_distance_pct`
+3. If trailing enabled:
+   - **Activation:** price crosses entry × (1 + activation_pct/100) for LONG (or 1 - for SHORT)
+   - **Peak tracking:** `trailing_peak` = max(peak, current) for LONG, min(peak, current) for SHORT
+   - **Trigger:** peak × (1 - distance_pct/100) for LONG, peak × (1 + distance_pct/100) for SHORT
+   - **Close:** if current price crosses trigger → close with `exit_reason="trailing_stop"`
+4. `trailing_peak` persisted in `positions.json` — survives restart.
+
+**Strategy trailing configs (from YAML):**
+| Strategy | Activation | Distance |
+|----------|-----------|----------|
+| Momentum | +1.5% | 1.0% |
+| Degen | +2.0% | 1.5% |
+| Defense | +1.0% | 0.7% |
+| Sniper | +2.0% | 1.5% |
+| Scout | +1.5% | 1.0% |
+| Fade | +1.5% | 1.0% |
+| Funding | +1.0% | 0.7% |
+| Watch | disabled | — |
+| Apex | +2.5% | 2.0% |
 
 ---
 
@@ -398,8 +448,8 @@ Per 168-hour Apex session:
 
 - **No leverage management** — uses HL cross-margin defaults
 - **No adaptive consensus weighting** — data collected (B3) but V2 feature
-- **No WebSocket** — REST polling only (Tier 2 future)
-- **No concurrent sessions** — single session at a time (Tier 3 future)
+- **No WebSocket** — V1 uses REST polling (batch allMids). WebSocket planned for V2
+- **No concurrent sessions** — V1: single session. Concurrent sessions planned for Scale tier
 - **No Supabase** — all state is local files
 - **No cloud dependency** — runs on a single machine
 - **No backtesting** — forward-only evaluation

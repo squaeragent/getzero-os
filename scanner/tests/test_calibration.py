@@ -118,7 +118,7 @@ class TestDesyncDetection:
 
     def test_fires_on_mismatch(self, tmp_path):
         """CRITICAL alert when local=0 but HL has positions."""
-        from scanner.v6.immune import check_position_desync
+        from scanner.v6.immune_legacy import check_position_desync
 
         pos_file = tmp_path / "positions.json"
         pos_file.write_text(json.dumps({"positions": []}))
@@ -130,11 +130,11 @@ class TestDesyncDetection:
         mock_resp.__exit__ = MagicMock(return_value=False)
 
         state = {}
-        with patch("scanner.v6.immune.load_json_locked", return_value={"positions": []}), \
+        with patch("scanner.v6.immune_legacy.load_json_locked", return_value={"positions": []}), \
              patch("urllib.request.urlopen", return_value=mock_resp), \
-             patch("scanner.v6.immune.IMMUNE_STATE_FILE", tmp_path / "immune.json"), \
+             patch("scanner.v6.immune_legacy.IMMUNE_STATE_FILE", tmp_path / "immune.json"), \
              patch("scanner.v6.bus_io.save_json_atomic"), \
-             patch("scanner.v6.immune.POSITIONS_FILE", pos_file):
+             patch("scanner.v6.immune_legacy.POSITIONS_FILE", pos_file):
             alerts = check_position_desync(state)
 
         assert len(alerts) >= 1
@@ -142,7 +142,7 @@ class TestDesyncDetection:
 
     def test_no_false_positive(self, tmp_path):
         """No alert when local matches HL."""
-        from scanner.v6.immune import check_position_desync
+        from scanner.v6.immune_legacy import check_position_desync
 
         local_positions = [{"coin": "ETH", "direction": "LONG", "size_coins": 0.5}]
         hl_data = [{"coin": "ETH", "direction": "LONG", "size": 0.5, "entry_price": 2000}]
@@ -152,7 +152,7 @@ class TestDesyncDetection:
         mock_resp.__exit__ = MagicMock(return_value=False)
 
         state = {}
-        with patch("scanner.v6.immune.load_json_locked", return_value={"positions": local_positions}), \
+        with patch("scanner.v6.immune_legacy.load_json_locked", return_value={"positions": local_positions}), \
              patch("urllib.request.urlopen", return_value=mock_resp):
             alerts = check_position_desync(state)
 
@@ -162,7 +162,7 @@ class TestDesyncDetection:
 
     def test_reconcile_writes_correct_state(self, tmp_path):
         """Auto-reconcile rebuilds positions from HL truth."""
-        from scanner.v6.immune import check_position_desync
+        from scanner.v6.immune_legacy import check_position_desync
 
         hl_data = [
             {"coin": "BTC", "direction": "LONG", "size": 0.01, "entry_price": 50000},
@@ -180,9 +180,9 @@ class TestDesyncDetection:
 
         state = {}
         pos_file = tmp_path / "positions.json"
-        with patch("scanner.v6.immune.load_json_locked", return_value={"positions": []}), \
+        with patch("scanner.v6.immune_legacy.load_json_locked", return_value={"positions": []}), \
              patch("urllib.request.urlopen", return_value=mock_resp), \
-             patch("scanner.v6.immune.POSITIONS_FILE", pos_file), \
+             patch("scanner.v6.immune_legacy.POSITIONS_FILE", pos_file), \
              patch("scanner.v6.bus_io.save_json_atomic", side_effect=capture_save):
             alerts = check_position_desync(state)
 

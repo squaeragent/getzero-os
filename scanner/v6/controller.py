@@ -125,6 +125,7 @@ class Position:
     sl_order_id:        str
     peak_pnl_pct:       float = 0.0
     trailing_activated: bool  = False
+    trailing_peak:      float = 0.0
     # Extra metadata (optional)
     win_rate:           float = 0.0
     composite_score:    float = 0.0
@@ -133,6 +134,10 @@ class Position:
     max_hold_hours:     int   = 12
     dry:                bool  = False
     strategy_version:   int   = STRATEGY_VERSION
+    # B2: Slippage tracking
+    signal_price:       float = 0.0
+    signal_timestamp:   str   = ""
+    execution_quality:  dict  = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return self.__dict__.copy()
@@ -142,6 +147,25 @@ class Position:
         known = {f for f in cls.__dataclass_fields__}
         filtered = {k: v for k, v in d.items() if k in known}
         return cls(**filtered)
+
+
+@dataclass
+class ExecutionQuality:
+    """B2: Tracks execution quality — slippage and latency."""
+    signal_price: float
+    order_price: float
+    fill_price: float
+    signal_to_order_ms: float
+    order_to_fill_ms: float
+    signal_to_fill_ms: float
+    slippage_pct: float
+    slippage_bps: float
+    order_type: str
+    coin: str
+    direction: str
+
+    def to_dict(self) -> dict:
+        return self.__dict__.copy()
 
 
 @dataclass
@@ -170,6 +194,7 @@ class TradeResult:
     win_rate:           float
     zero_fee:           float = 0.0
     pnl_usd_net:        float = 0.0
+    execution_quality:  dict  = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return self.__dict__.copy()
@@ -458,6 +483,7 @@ def _reconcile_positions(client: HLClient) -> None:
             "sl_order_id":       local.get("sl_order_id", ""),
             "peak_pnl_pct":      local.get("peak_pnl_pct", 0.0),
             "trailing_activated": local.get("trailing_activated", False),
+            "trailing_peak":      local.get("trailing_peak", 0.0),
         })
 
     save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": new_positions})
@@ -1511,6 +1537,44 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
     # ── Build position record ─────────────────────────────────────────────────
     pos_id     = f"{coin}_{direction}_{int(time.time())}"
     entry_time = now_iso()
+    fill_time  = time.time()
+
+    # B2: Compute ExecutionQuality
+    signal_price_val = float(trade.get("signal_price", 0) or trade.get("price", 0) or 0)
+    signal_ts_str = trade.get("fired_at", trade.get("signal_time", trade.get("timestamp", "")))
+    signal_ts_epoch = 0.0
+    if signal_ts_str:
+        try:
+            signal_ts_epoch = datetime.fromisoformat(
+                signal_ts_str.replace("Z", "+00:00")
+            ).timestamp()
+        except Exception:
+            pass
+    order_ts_epoch = fill_time  # approximate: order placement time
+    signal_to_order_ms = (order_ts_epoch - signal_ts_epoch) * 1000 if signal_ts_epoch else 0.0
+    order_to_fill_ms = (fill_time - order_ts_epoch) * 1000 if order_ts_epoch else 0.0
+    signal_to_fill_ms = signal_to_order_ms + order_to_fill_ms
+
+    actual_fill = fill_px if not dry else price
+    if dry or signal_price_val <= 0:
+        slippage_pct_val = 0.0
+    else:
+        slippage_pct_val = abs(actual_fill - signal_price_val) / signal_price_val * 100
+
+    exec_quality = ExecutionQuality(
+        signal_price=signal_price_val,
+        order_price=price,
+        fill_price=actual_fill,
+        signal_to_order_ms=round(signal_to_order_ms, 1),
+        order_to_fill_ms=round(order_to_fill_ms, 1),
+        signal_to_fill_ms=round(signal_to_fill_ms, 1),
+        slippage_pct=round(slippage_pct_val, 4),
+        slippage_bps=round(slippage_pct_val * 100, 2),
+        order_type="GTC" if (not dry and use_gtc) else "IOC",
+        coin=coin,
+        direction=direction,
+    )
+
     pos = {
         "id":              pos_id,
         "coin":            coin,
@@ -1521,13 +1585,13 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
         "expression":      trade.get("expression", ""),
         "exit_expression": trade.get("exit_expression", ""),
         "max_hold_hours":  trade.get("max_hold_hours", 12),
-        "entry_price":     fill_px if not dry else price,
+        "entry_price":     actual_fill,
         "size_usd":        size_usd,
         "size_coins":      size_coins if not dry else round(size_usd / price, COIN_SZ_DECIMALS.get(coin, 2)) if price > 0 else 0,
         "stop_loss_pct":   stop_pct,
         "stop_loss_price": client.round_price(
-            (fill_px if not dry else price) * (1 - stop_pct) if is_buy
-            else (fill_px if not dry else price) * (1 + stop_pct)
+            actual_fill * (1 - stop_pct) if is_buy
+            else actual_fill * (1 + stop_pct)
         ),
         "entry_time":      entry_time,
         "sharpe":          trade.get("sharpe", 0),
@@ -1537,8 +1601,13 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
         "sl_order_id":     sl_oid if not dry else "",
         "peak_pnl_pct":    0.0,
         "trailing_activated": False,
+        "trailing_peak":    0.0,
         "dry":             dry,
         "strategy_version": STRATEGY_VERSION,
+        # B2: Slippage tracking
+        "signal_price":    signal_price_val,
+        "signal_timestamp": signal_ts_str,
+        "execution_quality": exec_quality.to_dict(),
     }
 
     pdata     = load_json_locked(POSITIONS_FILE, {})
@@ -1666,6 +1735,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
         "win_rate":        pos.get("win_rate") if pos.get("win_rate") is not None else 0,
         "zero_fee":        zero_fee,
         "pnl_usd_net":     pnl_usd,
+        "execution_quality": pos.get("execution_quality", {}),
     }
 
     append_jsonl(TRADES_FILE, trade_record)
@@ -1698,6 +1768,126 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
     )
     log(f"  Closed {direction} {coin}: P&L=${pnl_usd:+.2f} ({pnl_pct*100:+.2f}%) — {exit_reason}")
     return trade_record
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TRAILING STOP EXECUTION
+# ══════════════════════════════════════════════════════════════════════════════
+
+def check_trailing_stops(
+    client: HLClient | None,
+    positions: list[dict],
+    strategy: StrategyConfig | None,
+    dry: bool,
+    controller: "Controller | None" = None,
+) -> tuple[list[dict], list[dict]]:
+    """
+    Check trailing stops for all open positions every cycle.
+
+    For each position whose strategy has trailing_stop enabled:
+      1. Get current price
+      2. Check if activation threshold is reached
+      3. Track trailing peak (highest for LONG, lowest for SHORT)
+      4. If trailing activated and price retraces past distance → close
+
+    Returns (updated_positions, closed_positions) where closed_positions
+    are trade records from close_trade().
+    """
+    if not client or not strategy or not strategy.exits.trailing_stop:
+        return positions, []
+
+    activation_pct = strategy.exits.trailing_activation_pct
+    distance_pct   = strategy.exits.trailing_distance_pct
+
+    if activation_pct <= 0 or distance_pct <= 0:
+        return positions, []
+
+    updated   = []
+    closed    = []
+    closed_ids: set[str] = set()
+
+    for pos in positions:
+        coin        = pos["coin"]
+        direction   = pos.get("direction", "LONG")
+        entry_price = pos.get("entry_price", 0)
+        is_long     = direction == "LONG"
+
+        if entry_price <= 0:
+            updated.append(pos)
+            continue
+
+        try:
+            current_price = client.get_price(coin)
+        except Exception:
+            updated.append(pos)
+            continue
+
+        if current_price <= 0:
+            updated.append(pos)
+            continue
+
+        # Activation threshold
+        if is_long:
+            activation_threshold = entry_price * (1 + activation_pct / 100)
+        else:
+            activation_threshold = entry_price * (1 - activation_pct / 100)
+
+        trailing_activated = pos.get("trailing_activated", False)
+        trailing_peak      = pos.get("trailing_peak", 0.0)
+
+        # Check activation
+        if not trailing_activated:
+            if (is_long and current_price >= activation_threshold) or \
+               (not is_long and current_price <= activation_threshold):
+                trailing_activated = True
+                trailing_peak = current_price
+                log(f"  TRAILING ACTIVATED: {coin} {direction} entry=${entry_price:.4f} "
+                    f"current=${current_price:.4f} threshold=${activation_threshold:.4f}")
+
+        # Update peak
+        if trailing_activated:
+            if is_long:
+                trailing_peak = max(trailing_peak, current_price)
+            else:
+                if trailing_peak <= 0:
+                    trailing_peak = current_price
+                trailing_peak = min(trailing_peak, current_price)
+
+            # Calculate trigger
+            if is_long:
+                trigger = trailing_peak * (1 - distance_pct / 100)
+                should_close = current_price <= trigger
+            else:
+                trigger = trailing_peak * (1 + distance_pct / 100)
+                should_close = current_price >= trigger
+
+            if should_close:
+                log(f"  Trailing stop triggered: {coin} peak=${trailing_peak:.4f} "
+                    f"trigger=${trigger:.4f} current=${current_price:.4f}")
+                result = close_trade(client, pos, "trailing_stop", dry)
+                if result is not None:
+                    closed.append(result)
+                    closed_ids.add(pos.get("id", coin))
+                    if controller is not None:
+                        controller.emit("TRADE_EXITED", {
+                            "coin":        coin,
+                            "direction":   direction,
+                            "exit_reason": "trailing_stop",
+                            "pnl_usd":     result.get("pnl_usd", 0),
+                            "session_id":  pos.get("session_id", ""),
+                        })
+                        controller.add_timeline_event(
+                            f"Trailing stop {coin} {direction}",
+                            f"peak=${trailing_peak:.4f} trigger=${trigger:.4f}",
+                        )
+                    continue  # Don't add to updated — it's closed
+
+        # Persist trailing state back to position
+        pos["trailing_activated"] = trailing_activated
+        pos["trailing_peak"]      = trailing_peak
+        updated.append(pos)
+
+    return updated, closed
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1839,6 +2029,14 @@ def run_once(client: HLClient | None = None, dry: bool = False,
 
     # ── CHECK 5: ENTRY_END handler ────────────────────────────────────────────
     entry_end_exits = handle_entry_end_events(entry_end_signals, positions, params)
+
+    # ── CHECK 6: Trailing stops ──────────────────────────────────────────────
+    if positions and client:
+        positions, trailing_closed = check_trailing_stops(
+            client, positions, strategy, dry, controller,
+        )
+        if trailing_closed:
+            _safe_save_positions(client, positions, source="run_once/trailing_stop")
 
     # ── Merge exits ───────────────────────────────────────────────────────────
     all_new_exits = time_exit_signals + entry_end_exits
