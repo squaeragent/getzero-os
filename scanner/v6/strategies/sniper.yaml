@@ -16,9 +16,9 @@ evaluation:
 
 risk:
   max_positions: 3
-  position_size_pct: 20    # large position when all 7 agree — that's the edge
+  position_size_pct: 18    # large position when all 7 agree — that's the edge
   stop_loss_pct: 4         # wide enough to survive volatility on conviction trades
-  reserve_pct: 25
+  reserve_pct: 22          # 3×18%+22% = 76%. Under 80% hard cap.
   max_daily_loss_pct: 8
   max_hold_hours: 72
   entry_end_action: hold   # conviction trade — hold through signal pause

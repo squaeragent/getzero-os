@@ -14,10 +14,10 @@ evaluation:
   min_regime: [trending, stable, reverting]   # accept more regimes
 
 risk:
-  max_positions: 6
+  max_positions: 4
   position_size_pct: 15     # 15% — high risk, bigger bets
   stop_loss_pct: 6          # wider stop — expect volatility
-  reserve_pct: 10           # minimal reserve
+  reserve_pct: 15           # 4×15%+15% = 75%. Under 80% hard cap.
   max_daily_loss_pct: 10    # high daily loss tolerance
   max_hold_hours: 24
   entry_end_action: hold

@@ -215,12 +215,15 @@ def test_scout_top_200():
 
 
 def test_apex_extreme_risk():
-    """Apex has the most aggressive risk params."""
+    """Apex has the most aggressive risk params — within 80% hard cap."""
     cfg = load_strategy("apex")
-    assert cfg.risk.max_positions >= 6
+    assert cfg.risk.max_positions >= 3
     assert cfg.risk.position_size_pct >= 15
     assert cfg.risk.max_daily_loss_pct >= 12
     assert cfg.unlock.score_minimum == 7.0
+    # Verify total allocation stays within 80% hard cap
+    total = cfg.risk.max_positions * cfg.risk.position_size_pct + cfg.risk.reserve_pct
+    assert total <= 80, f"Apex over-allocated: {total}% > 80% hard cap"
 
 
 def test_funding_entry_end_close():
