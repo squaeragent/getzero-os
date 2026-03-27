@@ -1013,10 +1013,14 @@ try:
     from scanner.v6.cards.card_api import router as cards_router
     app.include_router(cards_router)
 
+    # ── Backtest endpoints ───────────────────────────────────────────────
+    from scanner.v6.backtest.backtest_api import router as backtest_router
+    app.include_router(backtest_router)
+
     # Mount MCP server at /mcp
     mount_on_fastapi(app, "/mcp")
 
-    print("[V6] Engine API mounted at /v6/* | Cards at /v6/cards/* | MCP at /mcp")
+    print("[V6] Engine API mounted at /v6/* | Cards at /v6/cards/* | Backtest at /v6/backtest/* | MCP at /mcp")
 except ImportError as e:
     print(f"[V6] Engine not available: {e}")
 except Exception as e:
