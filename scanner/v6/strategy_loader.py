@@ -95,7 +95,9 @@ class StrategyConfig:
         """Check if this strategy allows a given market regime."""
         if not self.evaluation.min_regime:
             return True
-        return regime.lower() in [r.lower() for r in self.evaluation.min_regime]
+        # Map detailed regime to category, fall back to exact match
+        category = _REGIME_MAP.get(regime.lower(), regime.lower())
+        return category in [r.lower() for r in self.evaluation.min_regime]
 
     def reserve_usd(self, equity: float) -> float:
         """Minimum cash reserve in USD that must remain uninvested."""
@@ -117,6 +119,23 @@ class StrategyConfig:
 # ─── VALIDATION ──────────────────────────────────────────────────────────────
 
 # Required top-level keys
+# Map detailed regime labels (13 from RegimeClassifier) to strategy-level categories (4)
+_REGIME_MAP: dict[str, str] = {
+    "strong_trend":      "trending",
+    "moderate_trend":    "trending",
+    "weak_trend":        "trending",
+    "transition":        "trending",
+    "strong_revert":     "reverting",
+    "moderate_revert":   "reverting",
+    "weak_revert":       "reverting",
+    "random_quiet":      "stable",
+    "random_volatile":   "chaotic",
+    "chaotic_trend":     "chaotic",
+    "chaotic_flat":      "chaotic",
+    "divergent":         "chaotic",
+    "insufficient_data": "stable",
+}
+
 _REQUIRED_TOP = {"name", "display", "session", "evaluation", "risk", "exits", "unlock", "tier"}
 
 # Required sub-keys per section

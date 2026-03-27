@@ -732,7 +732,7 @@ class Monitor:
 
         # Also check RSI value directly
         rsi_val = indicators.get("RSI_14", 50.0)
-        majority = agree > total / 2 if total > 0 else False
+        majority = agree >= total / 2 if total > 0 else False
 
         return LayerResult(
             layer="technical",
@@ -877,9 +877,9 @@ class Monitor:
             if not collective_file.exists():
                 return LayerResult(
                     layer="collective",
-                    passed=False,
+                    passed=True,
                     value=None,
-                    detail="collective: no data file",
+                    detail="collective: no network data — default pass (V1)",
                     data_available=False,
                 )
 
@@ -889,9 +889,9 @@ class Monitor:
             if not coin_data:
                 return LayerResult(
                     layer="collective",
-                    passed=False,
+                    passed=True,
                     value=None,
-                    detail=f"collective: no data for {coin}",
+                    detail=f"collective: no data for {coin} — default pass (V1)",
                     data_available=False,
                 )
 

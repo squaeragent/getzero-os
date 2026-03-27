@@ -627,13 +627,14 @@ class TestCycle:
 class TestEdgeCases:
 
     def test_zero_layers_pass(self, tmp_path):
-        """EvaluationResult with consensus=0 → direction=NONE."""
+        """EvaluationResult with NEUTRAL direction → no trade signal."""
         monitor = make_monitor(tmp_path)
         # SmartProvider returns NEUTRAL
         monitor.smart_provider.evaluate_coin.return_value = dict(SAMPLE_SP_NEUTRAL)
         result = monitor.evaluate_coin("BTC")
         assert result.direction == "NONE"
-        assert result.consensus == 0
+        # Collective defaults to pass (V1: no network), so consensus can be 0 or 1
+        assert result.consensus <= 1
 
     def test_all_layers_pass(self, tmp_path):
         """When all layers pass, consensus=6 (7 minus unavailable collective)."""
