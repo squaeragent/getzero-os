@@ -13,14 +13,16 @@ call `zero_get_heat`. if heat returns empty (count=0), fall back: call `zero_eva
 
 also call `zero_get_approaching` for coins near threshold.
 
-| fear & greed | regime | recommend |
-|---|---|---|
-| < 20 (extreme fear) + trending | fade or momentum | contrarian or trend |
-| < 20 + chaotic | defense | protect capital |
-| 20-40 + trending | momentum | default, bread and butter |
-| 40-60 (neutral) | momentum or watch | observe if unclear |
-| > 80 (extreme greed) | fade or defense | caution, reversals likely |
-| no clear trends | defense or watch | wait for setup |
+use CONSENSUS and DIRECTION from evaluations, not regime labels. the engine can show 5/7 SHORT even in "random_quiet" regime — trust the consensus number.
+
+| market signal | recommend |
+|---|---|
+| 3+ coins at 5/7+ with same direction | momentum (clear trend, bread and butter) |
+| 5+ coins at 4/7+ (many approaching) | scout (wide scan, patient) |
+| 1-2 coins at 6/7+ (rare setups only) | sniper (precision, few trades) |
+| 0 coins above 4/7 | defense or watch (nothing worth trading) |
+| fear & greed < 20 with 3+ coins SHORT | momentum or fade (fear = opportunity) |
+| fear & greed > 80 | defense (overheated, reversals likely) |
 
 ## 2. operator history
 

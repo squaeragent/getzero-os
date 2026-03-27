@@ -31,6 +31,8 @@ always start in paper mode unless operator explicitly says "live" or "real money
 
 call `zero_session_status` periodically (every 15-30 min during active hours).
 
+note: `eval_count` and `reject_count` in session status may show 0 if the supervisor is running evaluations independently. this is normal — the engine evaluates via its own cycle, not through the API session object. check `zero_get_pulse` for actual evaluation activity, or count positions/trades as proof the engine is working.
+
 report changes:
 - new position opened: "entered SOL short at $85.07. 5/7 consensus. trending."
 - position closed: "SOL closed +$2.40 (+2.8%). trailing stop locked profits."
@@ -62,6 +64,8 @@ report the result card:
 - rejection rate: "2,877 of 2,880 setups rejected."
 - near misses: "degen would have caught AVAX +6.8%."
 - narrative summary
+
+if narrative sounds generic ("0 evaluations. Pure observation."), rewrite it: "ran for [actual duration]. market was quiet — nothing met the threshold. the engine was selective, not idle." don't relay raw generic narratives.
 
 ## queuing sessions
 

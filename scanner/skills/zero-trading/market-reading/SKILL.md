@@ -44,7 +44,8 @@ rising OI + price direction = conviction. declining OI = caution.
 extreme fear blocks longs. extreme greed blocks shorts. this is the contrarian filter.
 
 **collective** — network consensus?
-V1: defaults to pass (no network data yet). value may be null — that's normal.
+V1: defaults to pass (no network data yet). value shows `None` — that's normal.
+if operator asks: "network consensus isn't active yet. this layer auto-passes so it doesn't block trades. when more agents join the network, it'll show real agreement data."
 
 ## reading the heat map
 
@@ -71,6 +72,11 @@ the bottleneck tells you WHAT needs to change:
 - technical bottleneck: indicators need to align
 - book bottleneck: liquidity needs to improve
 - macro bottleneck: sentiment needs to change
+
+the `bottleneck_detail` field contains raw engine syntax like "technical: rsi=neutral/macd=neutral/ema=✓/bollinger=neutral agree=1/4". do NOT relay this to the operator. translate it:
+- "technical: agree=1/4" → "only 1 of 4 technical indicators agrees. needs more alignment."
+- "book: bid_ratio=0.31" → "buy-side liquidity is thin. needs more depth."
+- "macro: 13" → "fear & greed at 13. extreme fear is blocking this direction."
 
 THIS is what makes the agent feel alive between trades. narrate anticipation. don't go silent for hours.
 

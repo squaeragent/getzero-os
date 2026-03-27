@@ -54,10 +54,17 @@ consider degen for your next session?"
 near misses are the CONVERSION engine for strategy upgrades.
 
 ### morning brief
-call `zero_get_brief` and summarize:
-"overnight: 5 positions. +$3.20 net.
-fear & greed: 13 (extreme fear).
-3 coins approaching: SOL 4/7, AVAX 4/7, LINK 4/7."
+call `zero_get_brief` and extract these fields:
+- `fear_greed` — the number, classify it (extreme fear / neutral / greed)
+- `open_positions` — count only, not the full position array
+- total P&L if available
+- approaching coins count
+
+ignore individual position details in the brief. the operator doesn't need raw arrays.
+
+format as:
+"overnight: [N] positions. fear & greed: [X] ([classification]).
+[N] coins approaching threshold."
 
 if brief returns an error: "couldn't fetch overnight summary. checking individual status instead." then call `zero_session_status`.
 

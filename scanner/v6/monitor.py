@@ -123,6 +123,20 @@ class EvaluationResult:
     data_age_ms: int
     data_complete: bool
 
+    def to_dict(self) -> dict:
+        return {
+            "coin": self.coin,
+            "timestamp": self.timestamp,
+            "layers": [{"layer": l.layer, "passed": l.passed, "value": l.value, "detail": l.detail} for l in self.layers],
+            "consensus": self.consensus,
+            "conviction": self.conviction,
+            "direction": self.direction,
+            "regime": self.regime,
+            "price": self.price,
+            "data_age_ms": self.data_age_ms,
+            "data_complete": self.data_complete,
+        }
+
 
 @dataclass
 class ApproachingSignal:

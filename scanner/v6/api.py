@@ -275,9 +275,26 @@ class ZeroAPI:
             return {"error": str(e), "coin": coin.upper()}
 
     def get_heat(self, operator_id: str) -> dict:
-        """Get all coins sorted by conviction (heat map)."""
+        """Get all coins sorted by conviction (heat map).
+        
+        If full scan returns empty (cold start / candle errors),
+        falls back to evaluating top 10 coins individually.
+        """
         monitor = self._get_monitor(operator_id)
         results = monitor.get_heat_state()
+
+        # Fallback: if full scan returned nothing, evaluate top coins on-demand
+        if not results:
+            fallback_coins = ["BTC", "ETH", "SOL", "DOGE", "AVAX",
+                              "LINK", "SUI", "NEAR", "ADA", "XRP"]
+            for coin in fallback_coins:
+                try:
+                    result = monitor.evaluate_coin(coin)
+                    results.append(result.to_dict())
+                except Exception:
+                    pass
+            results.sort(key=lambda r: r.get("conviction", 0), reverse=True)
+
         return {
             "coins": results,
             "count": len(results),

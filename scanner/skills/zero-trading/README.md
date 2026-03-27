@@ -33,7 +33,11 @@ it should return `"status": "operational"`.
 
 if it errors: check your MCP config, make sure the URL is correct, and that your agent supports MCP tool calls.
 
-## 4. start
+## 4. load the master skill first
+
+your agent must read `SKILL.md` (the root file) before any sub-skill. it contains the MCP config, tool list, voice rules, and error handling table. sub-skills assume this context.
+
+## 5. start
 
 tell your agent: **"set me up on zero"**
 
