@@ -27,10 +27,194 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from scanner.v6.session_manager_legacy import (
-    STRATEGIES, get_coins_for_scope, generate_result_card,
-)
-from scanner.v6.config import get_stop_pct, ALL_COINS
+from scanner.v6.bus_io import load_json_locked
+from scanner.v6.config import get_stop_pct, ALL_COINS, BUS_DIR
+
+# ─── STRATEGIES (inlined from session_manager_legacy) ────────────────────────
+
+STRATEGIES = {
+    'momentum': {
+        'name': 'momentum_surf', 'icon': '\U0001f3c4',
+        'duration_hours': 48, 'credit_cost': 400,
+        'consensus_threshold': 6,
+        'allowed_regimes': ['trending'],
+        'max_positions': 3, 'position_size_pct': 0.12,
+        'stop_pct': 0.035, 'trailing_stop_pct': 0.02,
+        'max_hold_hours': 12,
+        'directions': ['long', 'short'],
+        'funding_filter': 'moderate',
+        'fear_greed_filter': {'block_entry_above': 80, 'boost_conviction_below': 25},
+        'scope': 'top_20', 'kill_cooldown_min': 45, 'eval_interval_min': 30,
+    },
+    'degen': {
+        'name': 'degen_mode', 'icon': '\U0001f525',
+        'duration_hours': 24, 'credit_cost': 500,
+        'consensus_threshold': 5,
+        'allowed_regimes': ['trending', 'stable', 'reverting'],
+        'max_positions': 5, 'position_size_pct': 0.18,
+        'stop_pct': 0.06, 'trailing_stop_pct': 0.03,
+        'max_hold_hours': 24,
+        'directions': ['long', 'short'],
+        'funding_filter': 'off',
+        'fear_greed_filter': None,
+        'scope': 'all_40', 'kill_cooldown_min': 30, 'eval_interval_min': 2,
+    },
+    'defense': {
+        'name': 'defense_protocol', 'icon': '\U0001f6e1\ufe0f',
+        'duration_hours': 168, 'credit_cost': 200,
+        'consensus_threshold': 7,
+        'allowed_regimes': ['trending'],
+        'max_positions': 1, 'position_size_pct': 0.05,
+        'stop_pct': 0.015, 'trailing_stop_pct': None,
+        'max_hold_hours': 6,
+        'directions': ['long'],
+        'funding_filter': 'strict',
+        'fear_greed_filter': {'block_entry_above': 65},
+        'scope': 'top_3', 'kill_cooldown_min': 30, 'eval_interval_min': 60,
+        'circuit_breaker_daily_dd_pct': 0.02,
+    },
+    'sniper': {
+        'name': 'sniper', 'icon': '\U0001f3af',
+        'duration_hours': 72, 'credit_cost': 300,
+        'consensus_threshold': 7,
+        'allowed_regimes': ['trending'],
+        'max_positions': 1, 'position_size_pct': 0.22,
+        'stop_pct': 0.02, 'trailing_stop_pct': 0.015,
+        'max_hold_hours': 8,
+        'directions': ['long', 'short'],
+        'funding_filter': 'strict',
+        'fear_greed_filter': {'block_entry_above': 75},
+        'scope': 'top_10', 'kill_cooldown_min': 60, 'eval_interval_min': 30,
+        'max_trades_per_session': 1,
+        'enrichment_required': {'min_confirming_layers': 7, 'max_warning_layers': 0},
+    },
+    'scout': {
+        'name': 'scout_run', 'icon': '\U0001f3c3',
+        'duration_hours': 72, 'credit_cost': 600,
+        'consensus_threshold': 5,
+        'allowed_regimes': ['trending', 'stable', 'reverting'],
+        'max_positions': 8, 'position_size_pct': 0.04,
+        'stop_pct': 0.05, 'trailing_stop_pct': 0.03,
+        'max_hold_hours': 24,
+        'directions': ['long', 'short'],
+        'funding_filter': 'relaxed',
+        'fear_greed_filter': None,
+        'scope': 'all_40', 'kill_cooldown_min': 90, 'eval_interval_min': 2,
+        'trade_credit_bonus': 10,
+    },
+    'fade': {
+        'name': 'fade_the_crowd', 'icon': '\U0001f504',
+        'duration_hours': 168, 'credit_cost': 200,
+        'consensus_threshold': 5,
+        'allowed_regimes': ['trending', 'stable', 'reverting', 'chaotic'],
+        'max_positions': 2, 'position_size_pct': 0.17,
+        'stop_pct': 0.05, 'trailing_stop_pct': 0.025,
+        'max_hold_hours': 48,
+        'directions': ['long', 'short'],
+        'funding_filter': 'inverted',
+        'fear_greed_filter': 'inverted',
+        'scope': 'top_15', 'kill_cooldown_min': 120, 'eval_interval_min': 30,
+        'activation_conditions': {'fear_greed_below': 20, 'fear_greed_above': 80, 'funding_abs_above': 0.0003},
+        'end_conditions': {'fear_greed_normalized': [30, 70]},
+    },
+    'funding': {
+        'name': 'funding_farm', 'icon': '\U0001f4b0',
+        'duration_hours': 48, 'credit_cost': 150,
+        'consensus_threshold': None,
+        'allowed_regimes': ['trending', 'stable', 'reverting'],
+        'max_positions': 3, 'position_size_pct': 0.25,
+        'stop_pct': 0.03, 'trailing_stop_pct': None,
+        'max_hold_hours': 48,
+        'directions': ['funding_opposite'],
+        'funding_filter': None,
+        'fear_greed_filter': None,
+        'scope': 'funding_opportunities', 'kill_cooldown_min': 60, 'eval_interval_min': 60,
+        'entry_condition': {'min_funding_abs': 0.0002},
+        'exit_condition': {'funding_flipped': True, 'funding_below_abs': 0.00005},
+    },
+    'watch': {
+        'name': 'watch_mode', 'icon': '\U0001f441\ufe0f',
+        'duration_hours': 48, 'credit_cost': 100,
+        'consensus_threshold': 6,
+        'allowed_regimes': ['trending', 'stable', 'reverting'],
+        'max_positions': 0,
+        'position_size_pct': 0,
+        'directions': ['long', 'short'],
+        'scope': 'top_20', 'eval_interval_min': 30,
+        'paper_only': True,
+    },
+    'apex': {
+        'name': 'apex_adaptive', 'icon': '\u26a1',
+        'duration_hours': 168, 'credit_cost': 1000,
+        'min_score_required': 7.0,
+        'adaptive': True,
+    },
+}
+
+_TOP_COINS = [
+    "BTC", "ETH", "SOL", "XRP", "DOGE", "LINK", "AVAX", "SUI",
+    "ADA", "NEAR", "OP", "BNB", "AAVE", "SEI", "TIA", "INJ",
+    "DOT", "UNI", "LTC", "BCH", "WLD", "ONDO", "JUP", "TON",
+]
+
+
+def get_coins_for_scope(scope: str) -> list[str]:
+    if scope == 'top_3':
+        return _TOP_COINS[:3]
+    elif scope == 'top_10':
+        return _TOP_COINS[:10]
+    elif scope == 'top_15':
+        return _TOP_COINS[:15]
+    elif scope == 'top_20':
+        return _TOP_COINS[:20]
+    elif scope == 'all_40':
+        return list(ALL_COINS)
+    elif scope == 'funding_opportunities':
+        funding_file = BUS_DIR / "funding.json"
+        try:
+            data = load_json_locked(funding_file, {})
+            rates = data.get("rates", data.get("funding_rates", {}))
+            return [c for c, r in rates.items() if isinstance(r, (int, float)) and abs(r) > 0.0002] or _TOP_COINS[:10]
+        except Exception:
+            return _TOP_COINS[:10]
+    else:
+        return _TOP_COINS[:20]
+
+
+def generate_result_card(session: dict) -> dict:
+    strategy_key = session.get('strategy', '')
+    strategy = STRATEGIES.get(strategy_key, {})
+    trades = session.get('trades', [])
+    winning = [t for t in trades if t.get('pnl', 0) > 0]
+    losing = [t for t in trades if t.get('pnl', 0) < 0]
+    total_pnl = session.get('total_pnl', 0.0)
+    equity_start = session.get('paper_equity_start', 0)
+    equity_end = session.get('paper_equity_current', equity_start)
+    roi_pct = ((equity_end - equity_start) / equity_start * 100) if equity_start > 0 else 0
+    return {
+        'strategy': strategy_key,
+        'strategy_name': strategy.get('name', strategy_key),
+        'icon': strategy.get('icon', ''),
+        'session_id': session.get('session_id', ''),
+        'agent_id': session.get('agent_id', ''),
+        'started_at': session.get('started_at', ''),
+        'completed_at': session.get('completed_at', datetime.now(timezone.utc).isoformat()),
+        'reason': session.get('completion_reason', 'unknown'),
+        'duration_hours': strategy.get('duration_hours', 0),
+        'equity_start': round(equity_start, 2),
+        'equity_end': round(equity_end, 2),
+        'roi_pct': round(roi_pct, 2),
+        'total_pnl': round(total_pnl, 2),
+        'trade_count': len(trades),
+        'wins': len(winning),
+        'losses': len(losing),
+        'win_rate': round(len(winning) / len(trades) * 100, 1) if trades else 0,
+        'best_trade': round(max((t.get('pnl', 0) for t in trades), default=0), 2),
+        'worst_trade': round(min((t.get('pnl', 0) for t in trades), default=0), 2),
+        'eval_count': session.get('eval_count', 0),
+        'credits_used': session.get('credits_used', 0),
+        'credits_refunded': max(0, session.get('credits_reserved', 0) - session.get('credits_used', 0)),
+    }
 
 # ─── CONSTANTS ────────────────────────────────────────────────────────────────
 

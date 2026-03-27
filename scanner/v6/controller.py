@@ -1647,23 +1647,8 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
 
     exit_time = now_iso()
 
-    # ── Performance fee ────────────────────────────────────────────────────────
     zero_fee = 0.0
     fee_info = None
-    try:
-        from performance_fee import calculate_and_collect_fee
-        equity   = float(load_json(RISK_FILE, {}).get("peak_equity", 100))
-        fee_info = calculate_and_collect_fee(
-            trade_pnl=pnl_usd,
-            trade_id=pos.get("id", f"{coin}_{direction}"),
-            equity=equity,
-            dry=dry,
-        )
-        zero_fee = fee_info.get("zero_fee", 0)
-        if zero_fee > 0:
-            pnl_usd = round(pnl_usd - zero_fee, 4)
-    except Exception:
-        pass
 
     trade_record = {
         **pos,

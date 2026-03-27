@@ -124,12 +124,6 @@ class SmartProvider(SignalProvider):
         # Get weights (learned → blended with personal → hardcoded fallback)
         if self._learned_weights and regime in self._learned_weights:
             weights = self._learned_weights[regime]
-            # UPGRADE 4: Blend collective with personal weights (60/40)
-            try:
-                from reasoning_upgrades import blend_weights
-                weights = blend_weights(self._learned_weights, regime)
-            except Exception:
-                pass
         else:
             weights = self.regime_classifier.get_signal_weights(regime)
 
@@ -175,17 +169,6 @@ class SmartProvider(SignalProvider):
         penalty = REGIME_PENALTY.get(regime, 1.0)
         quality = raw_quality * penalty
 
-        # UPGRADE 3: Regime memory — adjust quality from history
-        regime_context_msg = ""
-        try:
-            from reasoning_upgrades import get_regime_context
-            ctx = get_regime_context(coin, regime)
-            if ctx.get("has_history"):
-                quality *= ctx.get("quality_multiplier", 1.0)
-                regime_context_msg = ctx.get("message", "")
-        except Exception:
-            pass
-
         # Scale to 0-10 (SmartProvider max is 7, or 8 with learned weights)
         max_quality = 8 if self._learned_weights else 7
         quality_10 = min(max_quality, round(quality * max_quality))
@@ -219,7 +202,7 @@ class SmartProvider(SignalProvider):
             "funding_rate": funding_data.get("current", 0),
             "funding_annualized": funding_data.get("annualized", 0),
             "source": "smart_local",
-            "regime_context": regime_context_msg,
+            "regime_context": "",
             "indicator_votes": {name: indicators[name].get("signal", "neutral") for name in directional},
             "regime_weights": weights,
             "reasons": reasons,
@@ -248,25 +231,6 @@ class SmartProvider(SignalProvider):
 
         # Shadow logging
         self._shadow_log(result)
-
-        # GEM 3: Record consensus velocity
-        try:
-            from hidden_gems import record_consensus
-            record_consensus(coin, max(long_pct, short_pct), direction.lower() if direction != "NEUTRAL" else "neutral")
-        except Exception:
-            pass
-
-        # GEM 1: Record rejections for rejection database
-        if direction == "NEUTRAL" or quality_10 < 6:
-            try:
-                from hidden_gems import record_rejection
-                consensus_pct = max(long_pct, short_pct)
-                reject_reason = "neutral" if direction == "NEUTRAL" else f"low_quality_{quality_10}"
-                record_rejection(coin, regime, consensus_pct, reject_reason,
-                                 direction.lower() if direction != "NEUTRAL" else "neutral",
-                                 result.get("indicator_votes"))
-            except Exception:
-                pass
 
         return result
 

@@ -5,10 +5,6 @@ V6 Supervisor — runs all components with health monitoring and auto-restart.
 Components:
   local_evaluator   — SmartProvider signal evaluation (continuous, HL public API)
   controller        — unified engine: risk checks + execution (every 5s)
-  market_monitor    — market regime tracking (every 5min)
-
-Session 8b: risk_guard + executor absorbed into controller.py.
-Legacy mode kept for emergency rollback only (--legacy flag).
 """
 
 import json
@@ -21,48 +17,15 @@ import threading
 from pathlib import Path
 from datetime import datetime, timezone
 
-# Supabase bridge — telemetry only
-try:
-    sys.path.insert(0, str(Path(__file__).parent))
-    from supabase_bridge import bridge as _sb
-except Exception:
-    _sb = None
-
 V6_DIR   = Path(__file__).parent
 BUS_DIR  = V6_DIR / "bus"
 PYTHON   = sys.executable
 LOG_FILE = V6_DIR / "supervisor.log"
 
-# Session expiry — graceful fallback
-try:
-    from scanner.v6.session_manager_legacy import check_session_expiry as _check_session_expiry
-    _SESSION_AVAILABLE = True
-except ImportError:
-    _SESSION_AVAILABLE = False
-
-# ── Supervisor mode ───────────────────────────────────────────────────────────
-# --controller : unified controller mode (replaces separate risk_guard + executor)
-#                Runs scanner/v6/controller.py which is the spec-compliant gate.
-# --legacy      : old mode — run risk_guard + executor as separate processes (default fallback)
-#
-# Controller mode is the preferred path for new sessions with YAML strategy configs.
-# Legacy mode is kept as a fallback for backward compatibility and hotfix scenarios.
-_USE_CONTROLLER = "--controller" in sys.argv
-
 # Component definitions: (name, script, cycle_seconds, stale_threshold_seconds)
-if _USE_CONTROLLER:
-    # Unified controller replaces risk_guard + executor
-    COMPONENTS = [
-        ("controller",     V6_DIR / "controller.py",           5,    60),  # 5s cycle, stale if >60s
-        ("market_monitor", V6_DIR / "market_monitor.py",      300,   600),  # 5min cycle, stale if >10min
-    ]
-else:
-    # Legacy: separate risk_guard + executor (default — always works)
-    COMPONENTS = [
-        ("risk_guard",       V6_DIR / "risk_guard_legacy.py",   5,    60),  # legacy — renamed
-        ("executor",         V6_DIR / "executor_v6_legacy.py",  5,    60),  # legacy — renamed
-        ("market_monitor",   V6_DIR / "market_monitor.py",    300,   600),  # 5min cycle, stale if >10min
-    ]
+COMPONENTS = [
+    ("controller",     V6_DIR / "controller.py",           5,    60),
+]
 
 processes = {}
 
@@ -158,7 +121,6 @@ def start_evaluator():
     """Start the monitor as a long-running background process.
 
     Session 9: replaced local_evaluator with monitor.py (7-layer evaluation, signal state machine).
-    Legacy evaluator preserved as local_evaluator_legacy.py.
     """
     name = "monitor"
     if name in processes:
@@ -230,9 +192,6 @@ def check_evaluator():
 
 def signal_handler(sig, frame):
     log("Shutting down...")
-    # Mark agent as stopped in Supabase
-    if _sb:
-        _sb.mark_stopped("signal_shutdown")
     for name, proc in processes.items():
         try:
             proc.terminate()
@@ -317,21 +276,10 @@ def main():
     (V6_DIR / "data").mkdir(parents=True, exist_ok=True)
 
     mode_label = "PAPER" if paper_mode else "LIVE"
-    ctrl_label = "CONTROLLER" if _USE_CONTROLLER else "LEGACY (risk_guard+executor)"
     log("=" * 60)
-    log(f"V6 Supervisor starting [{mode_label}] [{ctrl_label}]")
-    if _USE_CONTROLLER:
-        log("Controller mode: strategy YAML risk checks active")
-        log("  Use --legacy flag to fall back to risk_guard + executor")
-    else:
-        log("Legacy mode: risk_guard + executor running separately")
-        log("  Use --controller flag to enable unified controller mode")
+    log(f"V6 Supervisor starting [{mode_label}]")
     log(f"Python: {PYTHON}")
     log("=" * 60)
-
-    # Mark agent as running in Supabase
-    if _sb:
-        _sb.mark_running({"preset": "balanced", "version": "v6"})
 
     # Start local evaluator (SmartProvider loop)
     start_evaluator()
@@ -349,7 +297,7 @@ def main():
     while True:
         now = time.time()
 
-        # Run risk_guard, executor, market_monitor on their cycles
+        # Run components on their cycles
         for name, script, cycle_s, stale_thresh in COMPONENTS:
             if now - cycle_times.get(name, 0) >= cycle_s:
                 run_once(name, script)
@@ -358,13 +306,6 @@ def main():
         # Check local_evaluator and immune health
         check_evaluator()
         start_immune()  # restart if died
-
-        # Check session expiry — auto-completes expired sessions
-        if _SESSION_AVAILABLE:
-            try:
-                _check_session_expiry()
-            except Exception as e:
-                log(f"WARN: session expiry check failed: {e}")
 
         # REMOVED: export_portfolio.py wrote static JSON to wrong repo (getzero-os/public/).
         # Website (zeroos-app) fetches live data from api.getzero.dev → localhost:8420.
