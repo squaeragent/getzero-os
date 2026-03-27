@@ -18,6 +18,13 @@ no exclamation marks. no adjectives. no hedging.
 trending. 5/7 consensus. funding confirms.
 stop at $82.40."
 
+send eval card image for the coin alongside the text.
+
+```
+buttons:
+  row 1: [📊 Session Status | session_status] [🔥 Heat Map | show_heat]
+```
+
 ### trade exit (win)
 "SOL closed +$2.40 (+2.8%).
 trailing stop locked profits at $87.30."
@@ -30,15 +37,27 @@ NEVER say "sorry." ALWAYS say "stop worked."
 a triggered stop is the system performing correctly.
 
 ### session complete
+send result card image (render via `/v6/cards/result`).
 show: strategy + duration + trades + P&L.
 show rejection rate: "2,877 of 2,880 rejected."
 show near misses: "degen would have caught AVAX +6.8%."
-show narrative from result card.
-offer: "share result card?"
+
+```
+buttons:
+  row 1: [📊 Full Report | show_result] [📈 Equity Curve | show_equity]
+  row 2: [🔄 New Session | new_session] [📜 History | show_history]
+```
 
 ### approaching signal
 "SOL forming. 4/7. book depth is the bottleneck.
 if liquidity improves, i'll enter."
+
+send approaching card image (render via `/v6/cards/approaching`).
+
+```
+buttons:
+  row 1: [📊 Eval SOL | eval_SOL] [🔥 Heat Map | show_heat]
+```
 
 THIS is what makes zero feel alive between trades.
 narrate anticipation. don't go silent for hours.
@@ -62,9 +81,17 @@ call `zero_get_brief` and extract these fields:
 
 ignore individual position details in the brief. the operator doesn't need raw arrays.
 
-format as:
+send brief card image (render via `/v6/cards/brief`).
+
+format text as:
 "overnight: [N] positions. fear & greed: [X] ([classification]).
 [N] coins approaching threshold."
+
+```
+buttons:
+  row 1: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
+  row 2: [📊 Session Status | session_status] [📋 Full Brief | show_brief]
+```
 
 if brief returns an error: "couldn't fetch overnight summary. checking individual status instead." then call `zero_session_status`.
 

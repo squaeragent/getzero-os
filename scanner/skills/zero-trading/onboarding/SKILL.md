@@ -32,14 +32,28 @@ call `zero_session_status` FIRST.
 
 ## step 4: first session
 
-call `zero_start_session("momentum", paper=True)`.
-- if it succeeds: "your session is live. momentum surf. paper mode. evaluating 40+ markets every 60 seconds."
+before deploying, confirm with buttons:
+
+```
+message: "momentum. paper mode. 48 hours. 5 positions max. 3% stops. deploy?"
+buttons:
+  row 1: [▶ Deploy Paper | deploy_momentum_paper] [📊 Preview Risk | preview_momentum]
+  row 2: [📋 Other Strategies | list_strategies] [✗ Cancel | cancel_deploy]
+```
+
+on `deploy_momentum_paper`: call `zero_start_session("momentum", paper=True)`.
+on `preview_momentum`: call `zero_preview_strategy("momentum")` and show risk math.
+on `list_strategies`: call `zero_list_strategies` and show all options.
+on `cancel_deploy`: "no problem. say 'deploy' when you're ready."
+
+- if deploy succeeds: "session live. momentum surf. paper mode. evaluating 40+ markets."
 - if it fails with plan error: "that strategy needs a higher plan. try momentum (free)."
 - if it fails with "session already active": go back to step 3.
 - if any other error: tell operator exactly what the error says. don't guess.
 
 ## step 5: show how the engine thinks
 
+after deployment, show the eval card as an image (render via `/v6/cards/eval?coin=BTC`).
 call `zero_evaluate` on BTC or SOL.
 walk through the 7 layers:
 "this is how i evaluate. 7 layers. every coin. every minute.
@@ -62,9 +76,18 @@ call `zero_get_approaching`.
 
 ## step 7: ongoing
 
+after onboarding is complete, present the operator's dashboard:
+
+```
+message: "you're live. here's what i'll do:"
+buttons:
+  row 1: [📊 Status | session_status] [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
+  row 2: [📋 Brief | show_brief] [⏹ End Session | end_session]
+```
+
 - check session with `zero_session_status`
 - report approaching signals
 - deliver morning brief with `zero_get_brief`
-- when session completes, show result card
+- when session completes, show result card as image
 
 the goal: the operator feels their agent is ALIVE. proactively narrating, not waiting for commands.

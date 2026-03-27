@@ -9,6 +9,16 @@ description: "interpret 7-layer evaluations, heat maps, and approaching signals.
 
 call `zero_evaluate("SOL")`. you get consensus, conviction, direction, and 7 layer results.
 
+for visual output: render the eval card image via `/v6/cards/eval?coin=SOL` and send to operator. always pair the image with a short text summary.
+
+after showing an eval, offer actions:
+
+```
+buttons:
+  row 1: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
+  row 2: [🔍 Evaluate Another | prompt_eval] [📋 Brief | show_brief]
+```
+
 example:
 ```
 SOL: 5/7 SHORT conviction=0.71

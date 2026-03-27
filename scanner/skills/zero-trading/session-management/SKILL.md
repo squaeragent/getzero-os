@@ -16,14 +16,23 @@ ONE session at a time. attempting to start a second will be rejected.
 ## deploying a session
 
 1. call `zero_preview_strategy("momentum")` — show risk math to operator
-2. confirm: "momentum. 5 positions max. 3% stops. 48 hours. paper mode. proceed?"
-3. on approval: call `zero_start_session("momentum", paper=True)`
-4. if success: "session deployed. momentum surf. paper mode. ends in 48h."
-5. if plan error: "that strategy needs a higher plan. try momentum (free)."
-6. if already active: "a session is already running. end it first or queue this one."
-7. if any other error: report the exact error to operator. don't guess.
+2. confirm with buttons:
 
-never deploy without operator confirmation.
+```
+message: "momentum. 5 positions max. 3% stops. 48 hours. paper mode."
+buttons:
+  row 1: [▶ Deploy Paper | deploy_momentum_paper] [💰 Deploy Live | deploy_momentum_live]
+  row 2: [📊 Preview Risk | preview_momentum] [✗ Cancel | cancel_deploy]
+```
+
+3. on `deploy_*_paper`: call `zero_start_session("momentum", paper=True)`
+4. on `deploy_*_live`: call `zero_start_session("momentum", paper=False)` — warn first: "live mode. real money. confirm?"
+5. if success: "session deployed. momentum surf. paper mode. ends in 48h."
+6. if plan error: "that strategy needs a higher plan. try momentum (free)."
+7. if already active: "a session is already running. end it first or queue this one."
+8. if any other error: report the exact error to operator. don't guess.
+
+never deploy without operator confirmation via button or explicit text.
 always show risk parameters BEFORE deploying.
 always start in paper mode unless operator explicitly says "live" or "real money."
 
@@ -33,8 +42,17 @@ call `zero_session_status` periodically (every 15-30 min during active hours).
 
 note: `eval_count` and `reject_count` in session status may show 0 if the supervisor is running evaluations independently. this is normal — the engine evaluates via its own cycle, not through the API session object. check `zero_get_pulse` for actual evaluation activity, or count positions/trades as proof the engine is working.
 
+when reporting status, include buttons:
+
+```
+message: "[session status summary]"
+buttons:
+  row 1: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
+  row 2: [⏹ End Session | end_session] [📋 Queue Next | queue_session]
+```
+
 report changes:
-- new position opened: "entered SOL short at $85.07. 5/7 consensus. trending."
+- new position opened: "entered SOL short at $85.07. 5/7 consensus. trending." + eval card image
 - position closed: "SOL closed +$2.40 (+2.8%). trailing stop locked profits."
 - position stopped: "stop worked. SOL -$1.60 (-1.3%)."
 
@@ -59,11 +77,19 @@ call `zero_end_session` when:
 
 if no session is active: "no session running. nothing to end."
 
-report the result card:
+send the result card as an image (render via `/v6/cards/result`), then show buttons:
+
+```
+message: "[strategy] session complete. [trades] trades. [P&L]."
+buttons:
+  row 1: [📊 Full Report | show_result] [📈 Equity Curve | show_equity]
+  row 2: [🔄 New Session | new_session] [📜 History | show_history]
+```
+
+include:
 - strategy, duration, trades, P&L
 - rejection rate: "2,877 of 2,880 setups rejected."
 - near misses: "degen would have caught AVAX +6.8%."
-- narrative summary
 
 if narrative sounds generic ("0 evaluations. Pure observation."), rewrite it: "ran for [actual duration]. market was quiet — nothing met the threshold. the engine was selective, not idle." don't relay raw generic narratives.
 
