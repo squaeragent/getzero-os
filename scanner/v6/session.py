@@ -838,6 +838,49 @@ class SessionManager:
         except Exception:
             pass
 
+    # ── PUBLIC API METHODS ────────────────────────────────────────────────
+
+    def get_history(self, limit: int = 20) -> list[dict]:
+        """Read session history from JSONL file."""
+        if not self._history_file.exists():
+            return []
+        entries = []
+        try:
+            for line in self._history_file.read_text().strip().split("\n"):
+                if line.strip():
+                    entries.append(json.loads(line))
+        except Exception:
+            pass
+        return list(reversed(entries[-limit:]))
+
+    def get_result(self, session_id: str) -> dict | None:
+        """Get a specific session result by ID."""
+        for entry in self.get_history(limit=100):
+            if entry.get("session_id") == session_id:
+                return entry
+        return None
+
+    def get_status(self) -> dict:
+        """Get current session status."""
+        session = self.active_session()
+        if session is None:
+            return {"active": False, "session": None}
+        return {
+            "active": True,
+            "session": session.to_dict(),
+        }
+
+    def queue_session(self, strategy_name: str, paper: bool = True) -> dict:
+        """Queue a session to start after the current one ends."""
+        queue_file = self.bus_dir / "session_queue.json"
+        queued = {
+            "strategy": strategy_name,
+            "paper": paper,
+            "queued_at": _now_iso(),
+        }
+        _save_atomic(queue_file, queued)
+        return queued
+
 
 # ── Utility ──────────────────────────────────────────────────────────────────
 

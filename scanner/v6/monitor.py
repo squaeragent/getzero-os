@@ -1272,6 +1272,108 @@ class Monitor:
             _log(f"Heartbeat write failed: {e}")
 
 
+    # ── PUBLIC API METHODS (for MCP/API layer) ─────────────────────────────
+
+    def get_heat_state(self) -> list[dict]:
+        """Evaluate all coins in scope, return sorted by conviction (highest first)."""
+        self.cache.refresh()
+        coins = self._get_coins()
+        results = []
+        for coin in coins:
+            try:
+                result = self.evaluate_coin(coin)
+                results.append(result.to_dict())
+            except Exception:
+                pass
+        results.sort(key=lambda r: r.get("conviction", 0), reverse=True)
+        return results
+
+    def get_approaching(self) -> list[dict]:
+        """Get coins currently approaching consensus threshold."""
+        # Read from bus file (written by run_cycle) for speed, or compute fresh
+        approaching_file = self._bus_dir / "approaching.json"
+        if approaching_file.exists():
+            try:
+                data = json.loads(approaching_file.read_text())
+                return data.get("approaching", [])
+            except Exception:
+                pass
+        # Fallback: compute live
+        self.cache.refresh()
+        coins = self._get_coins()
+        approaching = []
+        for coin in coins:
+            try:
+                result = self.evaluate_coin(coin)
+                sig = self._check_approaching(coin, result)
+                if sig:
+                    approaching.append(sig.to_dict())
+            except Exception:
+                pass
+        return approaching
+
+    def get_pulse(self, limit: int = 20) -> list[dict]:
+        """Get recent market events from decisions log."""
+        events = []
+        decisions_file = self._bus_dir / "decisions.jsonl"
+        if not decisions_file.exists():
+            return events
+        try:
+            lines = decisions_file.read_text().strip().split("\n")
+            for line in reversed(lines[-limit:]):
+                if line.strip():
+                    events.append(json.loads(line))
+        except Exception:
+            pass
+        return events[:limit]
+
+    def get_brief(self) -> dict:
+        """Generate overnight briefing: positions, recent signals, approaching, metrics."""
+        self.cache.refresh()
+        # Positions from bus
+        positions_file = self._bus_dir / "positions.json"
+        positions = []
+        if positions_file.exists():
+            try:
+                data = json.loads(positions_file.read_text())
+                positions = data.get("positions", []) if isinstance(data, dict) else data
+            except Exception:
+                pass
+        # Recent signals
+        signals_file = self._bus_dir / "signals.json"
+        signals = []
+        if signals_file.exists():
+            try:
+                signals = json.loads(signals_file.read_text())
+                if isinstance(signals, dict):
+                    signals = signals.get("signals", [])
+            except Exception:
+                pass
+        # Approaching
+        approaching = self.get_approaching()
+        # Last cycle metrics
+        metrics = self.last_cycle_metrics.to_dict() if self.last_cycle_metrics else {}
+        # Fear & greed
+        fg = 0
+        try:
+            import urllib.request
+            resp = urllib.request.urlopen("https://api.alternative.me/fng/?limit=1", timeout=5)
+            fg_data = json.loads(resp.read())
+            fg = int(fg_data["data"][0]["value"])
+        except Exception:
+            pass
+
+        return {
+            "timestamp": _now_iso(),
+            "fear_greed": fg,
+            "open_positions": len(positions),
+            "positions": positions[:10],
+            "recent_signals": signals[:5],
+            "approaching": approaching[:5],
+            "last_cycle": metrics,
+        }
+
+
 # ─── Main loop ───────────────────────────────────────────────────────────────
 
 def main():

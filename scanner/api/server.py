@@ -914,6 +914,81 @@ def schemas():
     return json_schemas()
 
 
+# ─── V6 Engine API + MCP mount ───
+
+try:
+    from scanner.v6.api import ZeroAPI
+    from scanner.v6.mcp_server import mount_on_fastapi
+
+    _v6_api = ZeroAPI()
+
+    # REST endpoints for v6 engine (all under /v6/)
+    @app.get("/v6/strategies")
+    def v6_strategies():
+        return _v6_api.list_strategies("op_default")
+
+    @app.get("/v6/strategy/{name}")
+    def v6_strategy(name: str):
+        return _v6_api.preview_strategy("op_default", name)
+
+    @app.post("/v6/session/start")
+    def v6_start(strategy: str = "momentum", paper: bool = True):
+        return _v6_api.start_session("op_default", strategy, paper=paper)
+
+    @app.get("/v6/session/status")
+    def v6_session_status():
+        return _v6_api.session_status("op_default")
+
+    @app.post("/v6/session/end")
+    def v6_end():
+        return _v6_api.end_session("op_default")
+
+    @app.post("/v6/session/queue")
+    def v6_queue(strategy: str = "momentum", paper: bool = True):
+        return _v6_api.queue_session("op_default", strategy, paper=paper)
+
+    @app.get("/v6/session/history")
+    def v6_history(limit: int = 10):
+        return _v6_api.session_history("op_default", limit=limit)
+
+    @app.get("/v6/session/{session_id}")
+    def v6_result(session_id: str):
+        return _v6_api.session_result("op_default", session_id)
+
+    @app.get("/v6/evaluate/{coin}")
+    def v6_evaluate(coin: str):
+        return _v6_api.evaluate("op_default", coin)
+
+    @app.get("/v6/heat")
+    def v6_heat():
+        return _v6_api.get_heat("op_default")
+
+    @app.get("/v6/approaching")
+    def v6_approaching():
+        return _v6_api.get_approaching("op_default")
+
+    @app.get("/v6/pulse")
+    def v6_pulse(limit: int = 20):
+        return _v6_api.get_pulse("op_default", limit=limit)
+
+    @app.get("/v6/brief")
+    def v6_brief():
+        return _v6_api.get_brief("op_default")
+
+    @app.get("/v6/engine/health")
+    def v6_engine_health():
+        return _v6_api.get_engine_health("op_default")
+
+    # Mount MCP server at /mcp
+    mount_on_fastapi(app, "/mcp")
+
+    print("[V6] Engine API mounted at /v6/* | MCP at /mcp")
+except ImportError as e:
+    print(f"[V6] Engine not available: {e}")
+except Exception as e:
+    print(f"[V6] Engine mount failed: {e}")
+
+
 # ─── Run ───
 if __name__ == "__main__":
     import uvicorn
