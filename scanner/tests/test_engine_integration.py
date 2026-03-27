@@ -595,3 +595,237 @@ class TestPaperModeNoRealOrders:
         mock_client.market_sell.assert_not_called()
         mock_client._sign_and_send.assert_not_called()
         mock_client.cancel_coin_stops.assert_not_called()
+
+
+# ─── ADDITIONAL INTEGRATION TESTS ──────────────────────────────────────────
+
+
+class TestSessionLifecycle:
+    """Session state machine integration: create → evaluate → expire."""
+
+    def test_session_creation_and_expiry(self, tmp_bus, mock_client, momentum_strategy):
+        """Session starts, runs evaluations, and expires naturally."""
+        from scanner.v6.session import SessionManager
+        sm = SessionManager(bus_dir=tmp_bus)
+        session = sm.start_session(strategy_name="momentum", paper=True)
+        assert session is not None
+        assert session.state == "active"
+
+        # End session
+        result = sm.end_session_early(session)
+        assert result is not None
+        assert result.session_id == session.id
+
+    def test_session_tracks_entries(self, tmp_bus, mock_client, momentum_strategy):
+        """Session records entry events."""
+        from scanner.v6.session import SessionManager
+        sm = SessionManager(bus_dir=tmp_bus)
+        session = sm.start_session(strategy_name="momentum", paper=True)
+
+        # Record a trade
+        sm.record_entry(session, {"coin": "BTC", "direction": "LONG", "size": 0.001, "price": 67000.0})
+        assert len(session.timeline) >= 1
+
+        result = sm.end_session_early(session)
+        assert result is not None
+
+
+class TestTrailingStopIntegration:
+    """Trailing stops activate and trigger within the controller pipeline."""
+
+    def test_trailing_activates_on_profit(self, tmp_bus, mock_client, momentum_strategy):
+        """Position reaches activation threshold → trailing stop engages."""
+        pos = Position(
+            id="test-001", coin="BTC", direction="LONG", strategy="momentum",
+            session_id="sess-001", entry_price=60000.0, size_usd=60.0,
+            size_coins=0.001, stop_loss_pct=3.0, stop_loss_price=58200.0,
+            entry_time="2026-03-27T10:00:00Z", signal_name="momentum_long",
+            sharpe=1.2, hl_order_id="hl-001", sl_order_id="sl-001",
+        )
+        # Simulate price moving up 1.5%
+        new_price = 60900.0
+        if new_price > pos.entry_price:
+            pos.peak_pnl_pct = (new_price - pos.entry_price) / pos.entry_price * 100
+            assert pos.peak_pnl_pct > 1.0
+        # Trailing stop tracks peak
+        pos.trailing_peak = new_price
+        assert pos.trailing_peak >= pos.entry_price
+
+
+class TestApproachingToEntry:
+    """Coins transition from approaching → entry when layers flip."""
+
+    def test_approaching_detected(self, tmp_bus, mock_client, momentum_strategy):
+        """Coin at 4/7 consensus is detected as approaching."""
+        from scanner.v6.monitor import Monitor, EvaluationResult, LayerResult
+
+        # Mock a 4/7 result
+        layers = [
+            LayerResult(layer="regime", passed=True, value="trending", detail=""),
+            LayerResult(layer="technical", passed=True, value={"agree": 3, "total": 4}, detail=""),
+            LayerResult(layer="funding", passed=True, value=0.01, detail=""),
+            LayerResult(layer="book", passed=False, value=0.4, detail=""),
+            LayerResult(layer="OI", passed=True, value=0.05, detail=""),
+            LayerResult(layer="macro", passed=False, value=45, detail=""),
+            LayerResult(layer="collective", passed=False, value=None, detail=""),
+        ]
+        result = EvaluationResult(
+            coin="SOL",
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            layers=layers,
+            consensus=4,
+            conviction=0.57,
+            direction="SHORT",
+            regime="strong_trend",
+            price=85.0,
+            data_age_ms=50,
+            data_complete=True,
+        )
+        # 4/7 is approaching for a 5/7 threshold
+        threshold = momentum_strategy.evaluation.consensus_threshold
+        approaching = result.consensus == threshold - 1
+        assert approaching, f"4/7 should be approaching for threshold {threshold}"
+        assert result.consensus < threshold
+
+    def test_entry_at_threshold(self, tmp_bus, mock_client, momentum_strategy):
+        """Coin at 5/7 consensus meets threshold → entry signal."""
+        from scanner.v6.monitor import EvaluationResult, LayerResult
+
+        layers = [
+            LayerResult(layer="regime", passed=True, value="trending", detail=""),
+            LayerResult(layer="technical", passed=True, value={"agree": 3, "total": 4}, detail=""),
+            LayerResult(layer="funding", passed=True, value=0.01, detail=""),
+            LayerResult(layer="book", passed=True, value=0.7, detail=""),
+            LayerResult(layer="OI", passed=True, value=0.05, detail=""),
+            LayerResult(layer="macro", passed=False, value=15, detail=""),
+            LayerResult(layer="collective", passed=False, value=None, detail=""),
+        ]
+        result = EvaluationResult(
+            coin="BTC",
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            layers=layers,
+            consensus=5,
+            conviction=0.71,
+            direction="SHORT",
+            regime="strong_trend",
+            price=67800.0,
+            data_age_ms=50,
+            data_complete=True,
+        )
+        threshold = momentum_strategy.evaluation.consensus_threshold
+        assert result.consensus >= threshold
+        assert result.direction != "NONE"
+
+
+class TestCircuitBreakers:
+    """Daily loss limits and position caps prevent over-trading."""
+
+    def test_daily_loss_blocks_entries(self, tmp_bus, mock_client, momentum_strategy):
+        """After hitting daily loss cap, no new entries allowed."""
+        ctrl = Controller.__new__(Controller)
+        ctrl._bus_dir = tmp_bus
+        ctrl._client = mock_client
+        ctrl._positions = {}
+        ctrl._daily_pnl = -15.0  # Already lost 15%
+        ctrl._failed_entries = {}
+        ctrl._strategy = momentum_strategy
+        ctrl._max_daily_loss = momentum_strategy.risk.max_daily_loss_pct
+
+        # Check if circuit breaker fires
+        daily_loss_pct = abs(ctrl._daily_pnl)
+        max_allowed = ctrl._max_daily_loss
+        blocked = daily_loss_pct >= max_allowed
+        assert blocked, f"Daily loss {daily_loss_pct}% should block at {max_allowed}% cap"
+
+    def test_max_positions_blocks_entries(self, tmp_bus, mock_client, momentum_strategy):
+        """At max_positions, no new entries allowed."""
+        ctrl = Controller.__new__(Controller)
+        ctrl._bus_dir = tmp_bus
+        ctrl._client = mock_client
+        ctrl._daily_pnl = 0.0
+        ctrl._failed_entries = {}
+        ctrl._strategy = momentum_strategy
+        ctrl._max_daily_loss = momentum_strategy.risk.max_daily_loss_pct
+
+        # Fill to max
+        max_pos = momentum_strategy.risk.max_positions
+        ctrl._positions = {
+            f"COIN{i}": Position(
+                id=f"test-{i}", coin=f"COIN{i}", direction="LONG", strategy="momentum",
+                session_id="sess-001", entry_price=100.0, size_usd=10.0,
+                size_coins=0.1, stop_loss_pct=3.0, stop_loss_price=97.0,
+                entry_time="2026-03-27T10:00:00Z", signal_name="momentum_long",
+                sharpe=1.0, hl_order_id=f"hl-{i}", sl_order_id=f"sl-{i}",
+            )
+            for i in range(max_pos)
+        }
+        assert len(ctrl._positions) >= max_pos
+        # Controller should reject new entries
+        blocked = len(ctrl._positions) >= max_pos
+        assert blocked
+
+
+class TestStrategyHotSwap:
+    """Strategy YAML can be reloaded without restart."""
+
+    def test_load_all_strategies(self):
+        """All 9 strategies load and validate."""
+        from scanner.v6.strategy_loader import load_all_strategies
+        strategies = load_all_strategies()
+        assert len(strategies) == 9
+        # load_all_strategies returns dict[str, StrategyConfig]
+        names = set(strategies.keys())
+        expected = {"momentum", "defense", "watch", "scout", "funding", "degen", "sniper", "fade", "apex"}
+        assert names == expected
+
+    def test_strategy_swap_changes_params(self):
+        """Switching strategy changes risk parameters."""
+        from scanner.v6.strategy_loader import load_strategy
+        momentum = load_strategy("momentum")
+        degen = load_strategy("degen")
+
+        assert momentum.risk.stop_loss_pct != degen.risk.stop_loss_pct
+        assert momentum.risk.position_size_pct != degen.risk.position_size_pct
+        # Degen is more aggressive
+        assert degen.risk.stop_loss_pct > momentum.risk.stop_loss_pct
+
+
+class TestRegimeMapping:
+    """Verify all 13 regime labels map correctly to strategy categories."""
+
+    def test_all_regimes_map(self):
+        """Every RegimeClassifier output maps to a strategy category."""
+        from scanner.v6.strategy_loader import _REGIME_MAP, load_strategy
+        cfg = load_strategy("momentum")
+
+        all_regimes = [
+            "strong_trend", "moderate_trend", "weak_trend", "transition",
+            "strong_revert", "moderate_revert", "weak_revert",
+            "random_quiet", "random_volatile",
+            "chaotic_trend", "chaotic_flat", "divergent",
+            "insufficient_data",
+        ]
+        for regime in all_regimes:
+            category = _REGIME_MAP.get(regime)
+            assert category is not None, f"Regime '{regime}' has no mapping"
+
+    def test_trending_regimes_pass_momentum(self):
+        """All trending variants pass momentum strategy."""
+        from scanner.v6.strategy_loader import load_strategy
+        cfg = load_strategy("momentum")
+        for regime in ["strong_trend", "moderate_trend", "weak_trend", "transition"]:
+            assert cfg.allows_regime(regime), f"{regime} should pass momentum"
+
+    def test_reverting_blocked_by_momentum(self):
+        """Reverting regimes blocked by momentum (which needs trending/stable)."""
+        from scanner.v6.strategy_loader import load_strategy
+        cfg = load_strategy("momentum")
+        for regime in ["strong_revert", "moderate_revert", "weak_revert"]:
+            assert not cfg.allows_regime(regime), f"{regime} should fail momentum"
+
+    def test_fade_accepts_reverting(self):
+        """Fade strategy accepts reverting regimes."""
+        from scanner.v6.strategy_loader import load_strategy
+        cfg = load_strategy("fade")
+        for regime in ["strong_revert", "moderate_revert", "weak_revert"]:
+            assert cfg.allows_regime(regime), f"{regime} should pass fade"

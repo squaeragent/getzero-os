@@ -186,7 +186,7 @@ STRATEGY_VERSION       = 6
 
 # ─── HYPERLIQUID ──────────────────────────────────────────────────────────────
 HL_MAIN_ADDRESS  = os.environ.get("HYPERLIQUID_MAIN_ADDRESS", "0xCb842e38B510a855Ff4E5d65028247Bc8Fd16e5e")
-HL_API_WALLET    = "0xc7b52216e7bc13de0cd010aa12cacb6d774453a2"
+HL_API_WALLET    = os.environ.get("HYPERLIQUID_API_WALLET", "0xc7b52216e7bc13de0cd010aa12cacb6d774453a2")
 HL_INFO_URL      = "https://api.hyperliquid.xyz/info"
 HL_EXCHANGE_URL  = "https://api.hyperliquid.xyz/exchange"
 
