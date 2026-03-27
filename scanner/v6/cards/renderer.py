@@ -905,6 +905,12 @@ class CardRenderer:
         # Strip any remaining unreplaced placeholders
         html = re.sub(r"\{\{[a-z_]+\}\}", "---", html)
 
+        # Inject zero▮ brand signature into bottom-right of every card
+        _sig = ('<div style="position:absolute;bottom:12px;right:16px;'
+                "font-family:'JetBrains Mono',monospace;font-size:10px;"
+                'color:#666666;letter-spacing:0.02em;">zero \u25ae</div>')
+        html = html.replace("</body>", _sig + "</body>")
+
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page(viewport={"width": width, "height": height})
