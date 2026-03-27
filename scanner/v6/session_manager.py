@@ -56,7 +56,7 @@ STRATEGIES = {
         'directions': ['long', 'short'],
         'funding_filter': 'off',
         'fear_greed_filter': None,
-        'scope': 'all_40', 'kill_cooldown_min': 30, 'eval_interval_min': 15,
+        'scope': 'all_40', 'kill_cooldown_min': 30, 'eval_interval_min': 2,
     },
     'defense': {
         'name': 'defense_protocol', 'icon': '🛡️',
@@ -98,7 +98,7 @@ STRATEGIES = {
         'directions': ['long', 'short'],
         'funding_filter': 'relaxed',
         'fear_greed_filter': None,
-        'scope': 'all_40', 'kill_cooldown_min': 90, 'eval_interval_min': 20,
+        'scope': 'all_40', 'kill_cooldown_min': 90, 'eval_interval_min': 2,
         'trade_credit_bonus': 10,
     },
     'fade': {

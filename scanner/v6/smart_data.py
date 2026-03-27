@@ -36,8 +36,22 @@ def _log(msg: str):
     print(f"[{ts}] [SMART_DATA] {msg}", flush=True)
 
 
+import threading
+
+# Rate limiter: max 6 requests per second to avoid HL 429s
+_rl_lock = threading.Lock()
+_rl_last = 0.0
+_RL_MIN_INTERVAL = 0.17  # ~6 req/s
+
 def _hl_post(payload: dict, timeout: int = 20) -> any:
-    """POST to HL info API (free, no auth)."""
+    """POST to HL info API (free, no auth). Rate-limited."""
+    global _rl_last
+    with _rl_lock:
+        now = time.time()
+        wait = _RL_MIN_INTERVAL - (now - _rl_last)
+        if wait > 0:
+            time.sleep(wait)
+        _rl_last = time.time()
     req = urllib.request.Request(
         HL_INFO_URL,
         data=json.dumps(payload).encode(),
@@ -253,37 +267,82 @@ def fetch_book_depth(coin: str) -> tuple[float, float]:
         return 0.0, 0.0
 
 
+# ─── Bulk Data Cache ─────────────────────────────────────────
+
+_bulk_cache = {"mids": {}, "funding": {}, "oi": {}, "ts": 0.0}
+_BULK_TTL = 30  # refresh every 30s
+
+def _refresh_bulk():
+    """Fetch all prices + funding + OI in 2 API calls instead of 120."""
+    global _bulk_cache
+    if time.time() - _bulk_cache["ts"] < _BULK_TTL:
+        return
+
+    try:
+        mids = _hl_post({"type": "allMids"})
+        _bulk_cache["mids"] = mids if isinstance(mids, dict) else {}
+    except Exception as e:
+        _log(f"bulk allMids failed: {e}")
+
+    try:
+        meta = _hl_post({"type": "metaAndAssetCtxs"})
+        if isinstance(meta, list) and len(meta) >= 2:
+            universe = meta[0].get("universe", [])
+            contexts = meta[1] if isinstance(meta[1], list) else []
+            fm, om = {}, {}
+            for i, cm in enumerate(universe):
+                if i < len(contexts):
+                    ctx = contexts[i]
+                    fm[cm.get("name", "")] = float(ctx.get("funding", 0))
+                    om[cm.get("name", "")] = float(ctx.get("openInterest", 0))
+            _bulk_cache["funding"] = fm
+            _bulk_cache["oi"] = om
+    except Exception as e:
+        _log(f"bulk meta failed: {e}")
+
+    _bulk_cache["ts"] = time.time()
+    _log(f"bulk refresh: {len(_bulk_cache['mids'])} prices, {len(_bulk_cache['funding'])} funding")
+
+
 # ─── Main Entry Point ────────────────────────────────────────
 
 def get_market_data(coin: str) -> MarketData:
-    """Get complete market data for a coin. Main entry point for SmartProvider."""
+    """Get complete market data for a coin. Uses bulk cache for prices/funding."""
     md = MarketData(coin=coin)
 
-    # Multi-timeframe candles
+    # Bulk refresh: 2 API calls for ALL coins (cached 30s)
+    _refresh_bulk()
+
+    # Mid price from bulk (0 API calls)
+    mid = _bulk_cache["mids"].get(coin)
+    if mid:
+        md.mid_price = float(mid)
+
+    # Candles: only 15m + 1h (2 API calls per coin, cached)
     candles_15m = fetch_candles_cached(coin, "15m", 100)
     candles_1h = fetch_candles_cached(coin, "1h", 200)
-    candles_4h = fetch_candles_cached(coin, "4h", 200)
-    candles_1d = fetch_candles_cached(coin, "1d", 400)
 
-    # Primary data from 15m candles (for momentum indicators)
     if candles_15m:
         md.closes = [c["c"] for c in candles_15m]
         md.highs = [c["h"] for c in candles_15m]
         md.lows = [c["l"] for c in candles_15m]
         md.volumes = [c["v"] for c in candles_15m]
-        md.mid_price = md.closes[-1] if md.closes else 0
+        if not md.mid_price and md.closes:
+            md.mid_price = md.closes[-1]
 
-    # Long-timeframe closes for regime detection
     md.closes_1h = [c["c"] for c in candles_1h] if candles_1h else md.closes
-    md.closes_4h = [c["c"] for c in candles_4h] if candles_4h else md.closes
-    md.closes_1d = [c["c"] for c in candles_1d] if candles_1d else md.closes
+    md.closes_4h = md.closes_1h  # reuse 1h (skip 4h fetch)
+    md.closes_1d = md.closes_1h  # reuse 1h (skip 1d fetch)
 
-    # Funding
-    md.funding_current, md.funding_predicted = fetch_funding_current(coin)
-    md.funding_history = fetch_funding_history(coin, 7)
+    # Funding + OI from bulk (0 API calls)
+    md.funding_current = _bulk_cache["funding"].get(coin, 0.0)
+    md.funding_predicted = md.funding_current
+    md.open_interest = _bulk_cache["oi"].get(coin, 0.0)
 
-    # Book depth
-    md.book_depth_usd, md.spread_bps = fetch_book_depth(coin)
+    # Skip per-coin funding history + book depth (save API calls)
+    md.funding_history = []
+    md.book_depth_usd = 0.0
+    md.spread_bps = 0.0
 
     return md
 

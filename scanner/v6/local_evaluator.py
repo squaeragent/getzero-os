@@ -14,11 +14,39 @@ Usage:
 """
 
 import json
+import os
 import sys
 import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
+
+# ── Singleton guard: prevent duplicate evaluator processes ─────────────
+_LOCKFILE = Path("/tmp/local_evaluator.pid")
+
+def _check_singleton():
+    """Exit if another instance is already running."""
+    if _LOCKFILE.exists():
+        try:
+            old_pid = int(_LOCKFILE.read_text().strip())
+            # Check if process is still alive
+            os.kill(old_pid, 0)
+            print(f"[LOCAL_EVAL] Another instance running (PID {old_pid}). Exiting.")
+            sys.exit(0)
+        except (ProcessLookupError, ValueError):
+            pass  # stale lock — continue
+    _LOCKFILE.write_text(str(os.getpid()))
+
+import atexit
+def _remove_lock():
+    try:
+        if _LOCKFILE.exists() and _LOCKFILE.read_text().strip() == str(os.getpid()):
+            _LOCKFILE.unlink()
+    except Exception:
+        pass
+
+_check_singleton()
+atexit.register(_remove_lock)
 
 from scanner.v6.config import (
     BUS_DIR, ENTRIES_FILE, EXITS_FILE, POSITIONS_FILE, HEARTBEAT_FILE,

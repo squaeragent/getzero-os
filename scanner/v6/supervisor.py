@@ -65,11 +65,8 @@ def ts():
 def log(msg):
     line = f"[{ts()}] SUPERVISOR: {msg}"
     print(line, flush=True)
-    try:
-        with open(LOG_FILE, "a") as f:
-            f.write(line + "\n")
-    except Exception as _e:
-        pass  # swallowed: {_e}
+    # NOTE: don't also write to LOG_FILE — launchd already redirects stdout there
+    # Writing both causes every line to appear twice
 
 
 def load_heartbeat():
@@ -316,7 +313,7 @@ def main():
     time.sleep(3)  # Give them time to start
 
     last_health_check = time.time()
-    last_portfolio_export = 0  # export immediately on first cycle
+    # last_portfolio_export removed — static export killed (website uses live API)
     cycle_times = {name: 0 for name, _, _, _ in COMPONENTS}
 
     log("All components started. Entering main loop.")
@@ -341,20 +338,9 @@ def main():
             except Exception as e:
                 log(f"WARN: session expiry check failed: {e}")
 
-        # Export portfolio.json for the website every 2 minutes
-        if now - last_portfolio_export >= 120:
-            try:
-                result = subprocess.run(
-                    [PYTHON, "-m", "scanner.export_portfolio"],
-                    capture_output=True, text=True, timeout=30,
-                    cwd=str(V6_DIR.parent.parent)  # repo root
-                )
-                if result.returncode == 0:
-                    last_portfolio_export = now
-                else:
-                    log(f"  [export_portfolio] failed: {(result.stderr or '')[:200]}")
-            except Exception as e:
-                log(f"  [export_portfolio] error: {e}")
+        # REMOVED: export_portfolio.py wrote static JSON to wrong repo (getzero-os/public/).
+        # Website (zeroos-app) fetches live data from api.getzero.dev → localhost:8420.
+        # No static export needed.
 
         # Health check every 5 minutes
         if now - last_health_check >= 300:

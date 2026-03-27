@@ -258,9 +258,14 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float,
     dyn_daily_loss = limits["daily_loss_limit"]
     dyn_max_pos = limits["max_positions"]
 
-    # Session max_positions overrides dynamic limit (use the stricter)
+    # Session max_positions overrides dynamic limit
+    # Degen mode: session limit takes priority (user chose risk level)
+    # Other modes: use the stricter of dynamic vs session
     if session_params and session_params.get('max_positions') is not None:
-        dyn_max_pos = min(dyn_max_pos, session_params['max_positions'])
+        if session_params.get('name', '').startswith('degen'):
+            dyn_max_pos = session_params['max_positions']
+        else:
+            dyn_max_pos = min(dyn_max_pos, session_params['max_positions'])
 
     # Daily loss limit (dynamic: 7% of equity)
     if risk["daily_loss_usd"] >= dyn_daily_loss:
