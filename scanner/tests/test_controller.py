@@ -1172,3 +1172,126 @@ class TestGracefulShutdown:
 
         assert state_file.exists()
         mock_exit.assert_called_once_with(0)
+
+
+# ─── STOP VERIFICATION TESTS ─────────────────────────────────────────────────
+
+from scanner.v6.controller import open_trade, rotate_logs_start, rotate_logs_end
+
+
+class TestStopVerification:
+    """Stop verification after placement: confirms stop oid is in open orders."""
+
+    def _make_mock_client(self, stop_oid="12345", open_orders_returns=None):
+        """Build a mock HLClient that succeeds at placing a trade + stop."""
+        client = MagicMock()
+        client.get_price.return_value = 100.0
+        client.get_predicted_funding.return_value = 0.0
+        client.get_l2_book.return_value = {
+            "bids": [(99.9, 10.0)], "asks": [(100.1, 10.0)],
+            "bid_depth_usd": 999.0, "ask_depth_usd": 999.0,
+        }
+        client.get_fee_rates.return_value = {"taker": 0.00045, "maker": 0.00015}
+        client.round_price.side_effect = lambda x: round(x, 2)
+        client.market_buy.return_value = {
+            "status": "ok",
+            "response": {"data": {"statuses": [{"filled": {"avgPx": "100.0", "totalSz": "1.0", "oid": 99}}]}},
+        }
+        client.market_sell.return_value = {
+            "status": "ok",
+            "response": {"data": {"statuses": [{"filled": {"avgPx": "100.0", "totalSz": "1.0", "oid": 99}}]}},
+        }
+        client.place_stop_loss.return_value = {
+            "status": "ok",
+            "response": {"data": {"statuses": [{"resting": {"oid": int(stop_oid)}}]}},
+        }
+        if open_orders_returns is not None:
+            client.get_open_orders.side_effect = open_orders_returns
+        else:
+            client.get_open_orders.return_value = [{"oid": int(stop_oid), "coin": "BTC"}]
+        client._sign_and_send.return_value = {"status": "ok"}
+        return client
+
+    @patch("scanner.v6.controller.save_json_locked")
+    @patch("scanner.v6.controller.load_json_locked", return_value={"positions": []})
+    @patch("scanner.v6.controller.send_alert")
+    @patch("scanner.v6.controller.time")
+    @patch("scanner.v6.controller.COIN_TO_ASSET", {"BTC": 0})
+    @patch("scanner.v6.controller.COIN_SZ_DECIMALS", {"BTC": 5})
+    def test_stop_verified_after_placement(self, mock_time, mock_alert, mock_load, mock_save):
+        """After placing a stop and getting oid, verify it appears in open orders."""
+        mock_time.time.return_value = 1000000
+        mock_time.sleep = MagicMock()
+
+        client = self._make_mock_client(stop_oid="12345")
+        trade = {
+            "coin": "BTC", "direction": "LONG", "signal_name": "test",
+            "sharpe": 2.0, "win_rate": 55.0, "composite_score": 5.0,
+            "max_hold_hours": 12, "stop_loss_pct": 0.05,
+        }
+
+        result = open_trade(client, trade, dry=False)
+        assert result is True
+        # Verify get_open_orders was called (for stop verification)
+        assert client.get_open_orders.called
+
+    @patch("scanner.v6.controller.save_json_locked")
+    @patch("scanner.v6.controller.load_json_locked", return_value={"positions": []})
+    @patch("scanner.v6.controller.send_alert")
+    @patch("scanner.v6.controller.time")
+    @patch("scanner.v6.controller.COIN_TO_ASSET", {"BTC": 0})
+    @patch("scanner.v6.controller.COIN_SZ_DECIMALS", {"BTC": 5})
+    def test_stop_verification_fails_closes_position(self, mock_time, mock_alert, mock_load, mock_save):
+        """If stop oid is NOT in open orders after 2 attempts, position is closed."""
+        mock_time.time.return_value = 1000000
+        mock_time.sleep = MagicMock()
+
+        # get_open_orders returns empty list (stop not found) for both attempts
+        client = self._make_mock_client(
+            stop_oid="12345",
+            open_orders_returns=[[], []],
+        )
+        trade = {
+            "coin": "BTC", "direction": "LONG", "signal_name": "test",
+            "sharpe": 2.0, "win_rate": 55.0, "composite_score": 5.0,
+            "max_hold_hours": 12, "stop_loss_pct": 0.05,
+        }
+
+        result = open_trade(client, trade, dry=False)
+        assert result is False
+        # Should have called market_sell to close (LONG position → sell to close)
+        assert client.market_sell.called
+
+
+# ─── LOG ROTATION TESTS ──────────────────────────────────────────────────────
+
+class TestLogRotation:
+    """Log rotation creates per-session files and archives on end."""
+
+    def test_rotate_logs_start_archives_existing(self, tmp_path):
+        """rotate_logs_start renames existing log files."""
+        decisions = tmp_path / "decisions.jsonl"
+        decisions.write_text('{"test": true}\n')
+
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", decisions), \
+             patch("scanner.v6.controller.EVENTS_LOG_FILE", tmp_path / "events.jsonl"), \
+             patch("scanner.v6.controller.NEAR_MISS_LOG_FILE", tmp_path / "near_misses.jsonl"), \
+             patch("scanner.v6.controller._ROTATABLE_LOGS", [decisions]):
+            rotate_logs_start("test_session_123")
+
+        # Original file should have been renamed
+        assert not decisions.exists()
+        archived = tmp_path / "decisions_pre_test_session_123.jsonl"
+        assert archived.exists()
+
+    def test_rotate_logs_end_archives(self, tmp_path):
+        """rotate_logs_end renames active logs with session suffix."""
+        decisions = tmp_path / "decisions.jsonl"
+        decisions.write_text('{"test": true}\n')
+
+        with patch("scanner.v6.controller._ROTATABLE_LOGS", [decisions]):
+            rotate_logs_end("session_42")
+
+        assert not decisions.exists()
+        archived = tmp_path / "decisions_session_42.jsonl"
+        assert archived.exists()

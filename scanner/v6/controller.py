@@ -305,6 +305,50 @@ def update_heartbeat() -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# LOG ROTATION (per-session JSONL files — prevents unbounded growth)
+# ══════════════════════════════════════════════════════════════════════════════
+
+_ROTATABLE_LOGS = [DECISION_LOG_FILE, EVENTS_LOG_FILE, NEAR_MISS_LOG_FILE]
+
+
+def rotate_logs_start(session_id: str) -> dict[str, Path]:
+    """At session start: create per-session JSONL files.
+
+    Returns mapping of base name → session-specific path for reference.
+    """
+    session_files: dict[str, Path] = {}
+    for base_path in _ROTATABLE_LOGS:
+        stem = base_path.stem           # e.g. "decisions"
+        suffix = base_path.suffix       # e.g. ".jsonl"
+        session_path = base_path.parent / f"{stem}_{session_id}{suffix}"
+        session_files[stem] = session_path
+        # If the base file already has content, rotate it out of the way
+        if base_path.exists() and base_path.stat().st_size > 0:
+            archive_path = base_path.parent / f"{stem}_pre_{session_id}{suffix}"
+            try:
+                base_path.rename(archive_path)
+                log(f"  Log rotated: {base_path.name} → {archive_path.name}")
+            except Exception as e:
+                log(f"  WARN: log rotation failed for {base_path.name}: {e}")
+    return session_files
+
+
+def rotate_logs_end(session_id: str) -> None:
+    """At session end: rename active log files with session_id suffix."""
+    for base_path in _ROTATABLE_LOGS:
+        if not base_path.exists() or base_path.stat().st_size == 0:
+            continue
+        stem = base_path.stem
+        suffix = base_path.suffix
+        archive_path = base_path.parent / f"{stem}_{session_id}{suffix}"
+        try:
+            base_path.rename(archive_path)
+            log(f"  Log archived: {base_path.name} → {archive_path.name}")
+        except Exception as e:
+            log(f"  WARN: log archive failed for {base_path.name}: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # POSITION PERSISTENCE (with empty-write guard)
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -931,13 +975,15 @@ class Controller:
 _controller_instance: Controller | None = None
 
 
-def _make_shutdown_handler(ctrl: Controller):
+def _make_shutdown_handler(ctrl: Controller, session_id: str = ""):
     """Create a signal handler that writes state and exits gracefully."""
     def _handler(signum, frame):
         sig_name = "SIGTERM" if signum == signal.SIGTERM else "SIGINT"
         log(f"  Graceful shutdown received ({sig_name})")
         ctrl.write_state()
         ctrl.emit("SESSION_COMPLETED", {"reason": f"graceful_shutdown:{sig_name}"})
+        if session_id:
+            rotate_logs_end(session_id)
         log("  Graceful shutdown complete.")
         sys.exit(0)
     return _handler
@@ -1429,6 +1475,37 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
                 close_res = (client.market_sell(coin, filled_sz)
                              if is_buy else client.market_buy(coin, filled_sz))
                 log(f"  Emergency close: {close_res}")
+                return False
+
+        # ── Stop verification: confirm stop is on the book ─────────────────────
+        if sl_oid:
+            _stop_verified = False
+            for _attempt in range(2):
+                time.sleep(1)
+                try:
+                    open_orders = client.get_open_orders()
+                    if any(str(o.get("oid")) == sl_oid for o in open_orders):
+                        log(f"  Stop verified on book (oid={sl_oid}, attempt={_attempt+1})")
+                        _stop_verified = True
+                        break
+                    else:
+                        log(f"  Stop NOT found in open orders (attempt {_attempt+1}/2)")
+                except Exception as e:
+                    log(f"  Stop verification query failed (attempt {_attempt+1}/2): {e}")
+
+            if not _stop_verified:
+                log(f"  🚨 STOP VERIFICATION FAILED: oid={sl_oid} not in open orders after 2 attempts")
+                send_alert(
+                    f"🚨 STOP VERIFICATION FAILED for {coin} {direction}\n"
+                    f"Stop oid={sl_oid} not found on book. Closing position immediately."
+                )
+                try:
+                    close_res = (client.market_sell(coin, filled_sz)
+                                 if is_buy else client.market_buy(coin, filled_sz))
+                    log(f"  Emergency close (stop unverified): {close_res}")
+                except Exception as e:
+                    log(f"  Emergency close FAILED: {e}")
+                    send_alert(f"🚨🚨 EMERGENCY CLOSE FAILED for {coin}: {e}\nCLOSE MANUALLY NOW.")
                 return False
 
     # ── Build position record ─────────────────────────────────────────────────
@@ -2027,9 +2104,7 @@ def main() -> None:
     _controller_instance = ctrl
 
     # ── Register signal handlers for graceful shutdown ────────────────────────
-    handler = _make_shutdown_handler(ctrl)
-    signal.signal(signal.SIGTERM, handler)
-    signal.signal(signal.SIGINT,  handler)
+    # Re-registered after session_id is set (below)
 
     # ── State recovery ─────────────────────────────────────────────────────────
     if CONTROLLER_STATE_FILE.exists():
@@ -2062,8 +2137,19 @@ def main() -> None:
 
     mode_label = "DRY" if dry else "LIVE"
     log(f"=== V6 Controller [{mode_label}] starting ===")
-    ctrl.emit("SESSION_STARTED", {"mode": mode_label, "loop": loop})
+
+    # ── Log rotation: per-session files ─────────────────────────────────────────
+    _session_id = f"{mode_label.lower()}_{int(time.time())}"
+    rotate_logs_start(_session_id)
+    log(f"Session ID: {_session_id}")
+
+    ctrl.emit("SESSION_STARTED", {"mode": mode_label, "loop": loop, "session_id": _session_id})
     ctrl.add_timeline_event("Session started", f"mode={mode_label}")
+
+    # Register signal handlers with session_id for log rotation on shutdown
+    handler = _make_shutdown_handler(ctrl, session_id=_session_id)
+    signal.signal(signal.SIGTERM, handler)
+    signal.signal(signal.SIGINT,  handler)
 
     strategy = get_active_strategy()
     if strategy:

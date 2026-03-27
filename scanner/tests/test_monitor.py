@@ -846,3 +846,39 @@ def test_evaluation_result_data_complete(tmp_path):
 
     result = monitor.evaluate_coin("SOL")
     assert result.data_complete is False
+
+
+# ─── EVALUATION PURITY ───────────────────────────────────────────────────────
+
+def test_evaluate_coin_no_side_effects(tmp_path):
+    """evaluate_coin() must be pure: no writes to files, no state mutations."""
+    monitor = make_monitor(tmp_path)
+
+    # Snapshot mutable state before
+    states_before = dict(monitor.coin_states)
+    prev_before = dict(monitor.prev_results)
+    decisions_file = monitor._decisions_file
+    near_miss_file = monitor._near_miss_file
+    signals_file = monitor._signals_file
+
+    # Ensure files don't exist yet
+    for f in [decisions_file, near_miss_file, signals_file]:
+        if f.exists():
+            f.unlink()
+
+    # Call evaluate_coin — should be pure
+    result = monitor.evaluate_coin("SOL")
+
+    # Verify return type
+    from scanner.v6.monitor import EvaluationResult
+    assert isinstance(result, EvaluationResult)
+    assert result.coin == "SOL"
+
+    # Verify NO state mutations
+    assert monitor.coin_states == states_before, "evaluate_coin() mutated coin_states"
+    assert monitor.prev_results == prev_before, "evaluate_coin() mutated prev_results"
+
+    # Verify NO file writes
+    assert not decisions_file.exists(), "evaluate_coin() wrote to decisions.jsonl"
+    assert not near_miss_file.exists(), "evaluate_coin() wrote to near_misses.jsonl"
+    assert not signals_file.exists(), "evaluate_coin() wrote to signals.json"
