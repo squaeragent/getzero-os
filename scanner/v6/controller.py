@@ -90,6 +90,7 @@ NEAR_MISS_LOG_FILE  = BUS_DIR / "near_misses.jsonl"
 DECISION_LOG_FILE   = BUS_DIR / "decisions.jsonl"
 EVENTS_LOG_FILE     = BUS_DIR / "events.jsonl"
 CONTROLLER_STATE_FILE = BUS_DIR / "controller_state.json"
+SIGNALS_FILE        = BUS_DIR / "signals.json"   # Session 9: monitor signals
 
 # Failed entry cooldown — don't retry same coin+direction for 15 min after failure
 _failed_entries: dict[str, float] = {}
@@ -1684,10 +1685,61 @@ def run_once(client: HLClient | None = None, dry: bool = False,
     approved  = load_json(APPROVED_FILE, {}).get("approved", [])
     exits     = load_json(EXITS_FILE,    {}).get("exits",    [])
 
+    # Session 9: merge monitor signals from bus/signals.json
+    # ENTRY signals → treat like entries; EXIT signals → treat like exits
+    # ENTRY_END signals → check entry_end_action
+    _monitor_signals = load_json(SIGNALS_FILE, {}).get("signals", [])
+    if _monitor_signals:
+        for _sig in _monitor_signals:
+            _stype = _sig.get("type", "")
+            if _stype == "ENTRY":
+                # Convert monitor Signal → entry format (compatible with approve_entry)
+                _entry = {
+                    "coin":            _sig.get("coin"),
+                    "direction":       _sig.get("direction"),
+                    "signal_name":     f"MONITOR_{_sig.get('direction')}_{_sig.get('coin')}_{_sig.get('regime', '')}",
+                    "expression":      f"MONITOR_CONSENSUS={_sig.get('consensus', 0)}",
+                    "exit_expression": "",
+                    "max_hold_hours":  48,
+                    "sharpe":          round(_sig.get("conviction", 0.5) * 7, 2),
+                    "win_rate":        round(45 + _sig.get("conviction", 0.5) * 50, 1),
+                    "composite_score": round(_sig.get("conviction", 0.5) * 7, 2),
+                    "stop_loss_pct":   get_stop_pct(_sig.get("coin", "")),
+                    "priority":        1,
+                    "fired_at":        _sig.get("timestamp"),
+                    "source":          "monitor",
+                    "regime":          _sig.get("regime", ""),
+                    "consensus":       _sig.get("consensus", 0),
+                    "conviction":      _sig.get("conviction", 0),
+                    "event_type":      "ENTRY",
+                }
+                entries.append(_entry)
+            elif _stype == "EXIT":
+                _exit = {
+                    "coin":      _sig.get("coin"),
+                    "direction": _sig.get("direction"),
+                    "reason":    _sig.get("reason", "monitor_exit"),
+                    "timestamp": _sig.get("timestamp"),
+                    "source":    "monitor",
+                }
+                exits.append(_exit)
+            elif _stype == "ENTRY_END":
+                _ee = {
+                    "coin":       _sig.get("coin"),
+                    "direction":  _sig.get("direction"),
+                    "timestamp":  _sig.get("timestamp"),
+                    "event_type": "ENTRY_END",
+                    "source":     "monitor",
+                    "consensus":  _sig.get("consensus", 0),
+                    "conviction": _sig.get("conviction", 0),
+                    "layers_remaining": _sig.get("layers_remaining", 0),
+                }
+                entries.append(_ee)
+
     entry_signals     = [e for e in entries if e.get("event_type", "ENTRY") == "ENTRY"]
     entry_end_signals = [e for e in entries if e.get("event_type") == "ENTRY_END"]
     if not entry_signals and entries:
-        entry_signals     = entries
+        entry_signals     = [e for e in entries if e.get("event_type", "ENTRY") not in ("ENTRY_END",)]
         entry_end_signals = []
 
     risk["open_count"] = len(positions)
@@ -1955,7 +2007,7 @@ def main() -> None:
         apply_paper_isolation()
         import scanner.v6.config as _cfg
         global BUS_DIR, ENTRIES_FILE, APPROVED_FILE, POSITIONS_FILE, RISK_FILE, \
-               HEARTBEAT_FILE, EXITS_FILE, TRADES_FILE
+               HEARTBEAT_FILE, EXITS_FILE, TRADES_FILE, SIGNALS_FILE
         BUS_DIR        = _cfg.BUS_DIR
         ENTRIES_FILE   = _cfg.ENTRIES_FILE
         APPROVED_FILE  = _cfg.APPROVED_FILE
@@ -1964,6 +2016,7 @@ def main() -> None:
         HEARTBEAT_FILE = _cfg.HEARTBEAT_FILE
         EXITS_FILE     = _cfg.EXITS_FILE
         TRADES_FILE    = _cfg.TRADES_FILE
+        SIGNALS_FILE   = _cfg.BUS_DIR / "signals.json"
         log("=== PAPER MODE — controller using isolated bus ===")
 
     BUS_DIR.mkdir(parents=True, exist_ok=True)

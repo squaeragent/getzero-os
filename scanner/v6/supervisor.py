@@ -155,25 +155,26 @@ def run_once(name, script):
 
 
 def start_evaluator():
-    """Start the local evaluator as a long-running background process.
+    """Start the monitor as a long-running background process.
 
-    Runs SmartProvider-based evaluation — zero cost, HL public API only.
+    Session 9: replaced local_evaluator with monitor.py (7-layer evaluation, signal state machine).
+    Legacy evaluator preserved as local_evaluator_legacy.py.
     """
-    name = "local_evaluator"
+    name = "monitor"
     if name in processes:
         proc = processes[name]
         if proc.poll() is None:
             return  # Already running
         else:
-            log(f"local_evaluator exited with code {proc.returncode}, restarting")
+            log(f"monitor exited with code {proc.returncode}, restarting")
             del processes[name]
 
-    log("Starting local_evaluator (SmartProvider loop)...")
+    log("Starting monitor (7-layer evaluation, signal state machine)...")
     try:
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
         proc = subprocess.Popen(
-            [PYTHON, str(V6_DIR / "local_evaluator.py"), "--loop"],
+            [PYTHON, str(V6_DIR / "monitor.py"), "--loop"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -182,9 +183,9 @@ def start_evaluator():
         processes[name] = proc
         t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
         t.start()
-        log(f"local_evaluator PID: {proc.pid}")
+        log(f"monitor PID: {proc.pid}")
     except Exception as e:
-        log(f"Failed to start local_evaluator: {e}")
+        log(f"Failed to start monitor: {e}")
 
 
 def start_immune():
@@ -217,13 +218,13 @@ def start_immune():
 
 
 def check_evaluator():
-    """Check local_evaluator health and restart if needed."""
+    """Check monitor health and restart if needed. (Session 9: replaced local_evaluator)"""
     start_evaluator()  # start if not running
 
-    proc = processes.get("local_evaluator")
+    proc = processes.get("monitor")
     if proc and proc.poll() is not None:
-        log(f"local_evaluator died (code {proc.returncode}), restarting")
-        del processes["local_evaluator"]
+        log(f"monitor died (code {proc.returncode}), restarting")
+        del processes["monitor"]
         start_evaluator()
 
 
@@ -257,22 +258,22 @@ def run_health_check():
                 status.append(f"{name:20s}: parse error")
         else:
             status.append(f"{name:20s}: no heartbeat")
-    # Local evaluator (long-running)
-    proc = processes.get("local_evaluator")
+    # Monitor (long-running, Session 9: replaced local_evaluator)
+    proc = processes.get("monitor")
     if proc and proc.poll() is None:
-        ts_str = hb.get("local_evaluator")
+        ts_str = hb.get("monitor")
         if ts_str:
             try:
                 last = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
                 age = int((now - last).total_seconds())
                 flag = "✅" if age < 120 else "⚠️ STALE"
-                status.append(f"{'local_evaluator':20s}: {age:4d}s {flag}")
+                status.append(f"{'monitor':20s}: {age:4d}s {flag}")
             except Exception as _e:
-                status.append(f"{'local_evaluator':20s}: running (no hb)")
+                status.append(f"{'monitor':20s}: running (no hb)")
         else:
-            status.append(f"{'local_evaluator':20s}: running (no hb yet)")
+            status.append(f"{'monitor':20s}: running (no hb yet)")
     else:
-        status.append(f"{'local_evaluator':20s}: DEAD")
+        status.append(f"{'monitor':20s}: DEAD")
     log("Health: " + " | ".join(status))
 
 
