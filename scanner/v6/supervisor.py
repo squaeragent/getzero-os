@@ -37,12 +37,29 @@ try:
 except ImportError:
     _SESSION_AVAILABLE = False
 
+# ── Supervisor mode ───────────────────────────────────────────────────────────
+# --controller : unified controller mode (replaces separate risk_guard + executor)
+#                Runs scanner/v6/controller.py which is the spec-compliant gate.
+# --legacy      : old mode — run risk_guard + executor as separate processes (default fallback)
+#
+# Controller mode is the preferred path for new sessions with YAML strategy configs.
+# Legacy mode is kept as a fallback for backward compatibility and hotfix scenarios.
+_USE_CONTROLLER = "--controller" in sys.argv
+
 # Component definitions: (name, script, cycle_seconds, stale_threshold_seconds)
-COMPONENTS = [
-    ("risk_guard",       V6_DIR / "risk_guard.py",           5,    60),  # 5s cycle, stale if >60s
-    ("executor",         V6_DIR / "executor.py",              5,    60),  # 5s cycle, stale if >60s
-    ("market_monitor",   V6_DIR / "market_monitor.py",      300,   600),  # 5min cycle, stale if >10min
-]
+if _USE_CONTROLLER:
+    # Unified controller replaces risk_guard + executor
+    COMPONENTS = [
+        ("controller",     V6_DIR / "controller.py",           5,    60),  # 5s cycle, stale if >60s
+        ("market_monitor", V6_DIR / "market_monitor.py",      300,   600),  # 5min cycle, stale if >10min
+    ]
+else:
+    # Legacy: separate risk_guard + executor (default — always works)
+    COMPONENTS = [
+        ("risk_guard",       V6_DIR / "risk_guard.py",         5,    60),  # 5s cycle, stale if >60s
+        ("executor",         V6_DIR / "executor.py",            5,    60),  # 5s cycle, stale if >60s
+        ("market_monitor",   V6_DIR / "market_monitor.py",    300,   600),  # 5min cycle, stale if >10min
+    ]
 
 processes = {}
 
@@ -296,8 +313,15 @@ def main():
     (V6_DIR / "data").mkdir(parents=True, exist_ok=True)
 
     mode_label = "PAPER" if paper_mode else "LIVE"
+    ctrl_label = "CONTROLLER" if _USE_CONTROLLER else "LEGACY (risk_guard+executor)"
     log("=" * 60)
-    log(f"V6 Supervisor starting [{mode_label}]")
+    log(f"V6 Supervisor starting [{mode_label}] [{ctrl_label}]")
+    if _USE_CONTROLLER:
+        log("Controller mode: strategy YAML risk checks active")
+        log("  Use --legacy flag to fall back to risk_guard + executor")
+    else:
+        log("Legacy mode: risk_guard + executor running separately")
+        log("  Use --controller flag to enable unified controller mode")
     log(f"Python: {PYTHON}")
     log("=" * 60)
 

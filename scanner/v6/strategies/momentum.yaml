@@ -1,0 +1,33 @@
+# momentum.yaml — Momentum Surf
+# Free tier. Moderate risk. Follows trending markets.
+name: momentum
+display: "Momentum Surf"
+
+session:
+  duration_hours: 48
+
+evaluation:
+  scope: top_50
+  consensus_threshold: 5   # of 7 layers
+  directions: [long, short]
+  min_regime: [trending, stable]
+
+risk:
+  max_positions: 5
+  position_size_pct: 10     # 10% of equity per position
+  stop_loss_pct: 3          # 3% hard stop
+  reserve_pct: 20           # keep 20% equity uninvested
+  max_daily_loss_pct: 5     # halt if daily loss > 5% of equity
+  max_hold_hours: 48
+  entry_end_action: hold    # hold position when entry signal disappears
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 1.5   # activate after +1.5% move
+  trailing_distance_pct: 1.0     # trail 1.0% behind price
+  regime_shift_exit: true        # exit if regime changes to chaotic/reverting
+  time_exit: true                # force exit at max_hold_hours
+
+unlock:
+  score_minimum: 0
+tier: free

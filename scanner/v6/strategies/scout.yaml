@@ -1,0 +1,33 @@
+# scout.yaml — Scout Run
+# Pro tier. Moderate risk. Wide universe scan (top 200).
+name: scout
+display: "Scout Run"
+
+session:
+  duration_hours: 72
+
+evaluation:
+  scope: top_200
+  consensus_threshold: 5   # of 7 layers
+  directions: [long, short]
+  min_regime: [trending, stable]
+
+risk:
+  max_positions: 5
+  position_size_pct: 10
+  stop_loss_pct: 3
+  reserve_pct: 20
+  max_daily_loss_pct: 5
+  max_hold_hours: 72
+  entry_end_action: hold
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 1.5
+  trailing_distance_pct: 1.0
+  regime_shift_exit: true
+  time_exit: true
+
+unlock:
+  score_minimum: 4.0
+tier: pro

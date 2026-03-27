@@ -1,0 +1,33 @@
+# defense.yaml — Defense Shield
+# Free tier. Low risk. Tight consensus. Long hold, top-20 coins only.
+name: defense
+display: "Defense Shield"
+
+session:
+  duration_hours: 168       # 7 days
+
+evaluation:
+  scope: top_20
+  consensus_threshold: 6   # of 7 layers — stricter
+  directions: [long, short]
+  min_regime: [trending, stable]
+
+risk:
+  max_positions: 3
+  position_size_pct: 7      # 7% of equity per position — conservative
+  stop_loss_pct: 2          # 2% tight stop — low risk profile
+  reserve_pct: 35           # keep 35% equity uninvested
+  max_daily_loss_pct: 3     # low daily loss tolerance
+  max_hold_hours: 168       # matches session duration
+  entry_end_action: hold    # hold through signal pauses
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 1.0
+  trailing_distance_pct: 0.7
+  regime_shift_exit: true
+  time_exit: true
+
+unlock:
+  score_minimum: 0
+tier: free

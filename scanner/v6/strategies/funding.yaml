@@ -1,0 +1,34 @@
+# funding.yaml — Funding Harvest
+# Pro tier. Low risk. Exploits funding rate dislocations.
+# Requires 6/7 consensus — tight filter to avoid noise.
+name: funding
+display: "Funding Harvest"
+
+session:
+  duration_hours: 48
+
+evaluation:
+  scope: top_50
+  consensus_threshold: 6   # of 7 layers — stricter
+  directions: [long, short]
+  min_regime: [trending, stable]
+
+risk:
+  max_positions: 4
+  position_size_pct: 8      # smaller positions — funding edge, not momentum
+  stop_loss_pct: 2
+  reserve_pct: 30
+  max_daily_loss_pct: 3
+  max_hold_hours: 48
+  entry_end_action: close   # exit when funding signal disappears — not a hold strategy
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 1.0
+  trailing_distance_pct: 0.7
+  regime_shift_exit: true
+  time_exit: true
+
+unlock:
+  score_minimum: 5.0
+tier: pro

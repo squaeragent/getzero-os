@@ -1,0 +1,34 @@
+# watch.yaml — Watch Mode
+# Free tier. Zero risk — observe only, no positions taken.
+# Runs full evaluation pipeline without executing any trades.
+name: watch
+display: "Watch Mode"
+
+session:
+  duration_hours: 48
+
+evaluation:
+  scope: top_50
+  consensus_threshold: 5   # of 7 layers
+  directions: [long, short]
+  min_regime: [trending, stable, reverting, chaotic]   # observe all regimes
+
+risk:
+  max_positions: 0          # ZERO positions — observe only
+  position_size_pct: 0
+  stop_loss_pct: 0
+  reserve_pct: 100          # 100% reserve — never invest
+  max_daily_loss_pct: 0     # no loss possible
+  max_hold_hours: 48
+  entry_end_action: hold
+
+exits:
+  trailing_stop: false
+  trailing_activation_pct: 0
+  trailing_distance_pct: 0
+  regime_shift_exit: false
+  time_exit: false
+
+unlock:
+  score_minimum: 0
+tier: free

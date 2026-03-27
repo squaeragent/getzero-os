@@ -1,0 +1,34 @@
+# fade.yaml — Fade the Crowd
+# Scale tier. Moderate risk. Contrarian / mean-reversion strategy.
+# Fades overextended moves. Targets reverting regime.
+name: fade
+display: "Fade the Crowd"
+
+session:
+  duration_hours: 168       # 7 days — mean reversion takes time
+
+evaluation:
+  scope: top_50
+  consensus_threshold: 5   # of 7 layers
+  directions: [long, short]
+  min_regime: [reverting, stable]   # fade works in reverting markets
+
+risk:
+  max_positions: 4
+  position_size_pct: 10
+  stop_loss_pct: 3
+  reserve_pct: 25
+  max_daily_loss_pct: 5
+  max_hold_hours: 168
+  entry_end_action: hold    # hold — mean reversion takes time
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 1.5
+  trailing_distance_pct: 1.0
+  regime_shift_exit: true   # exit if regime shifts to trending (fade thesis broken)
+  time_exit: true
+
+unlock:
+  score_minimum: 6.0
+tier: scale

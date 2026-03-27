@@ -1,0 +1,34 @@
+# sniper.yaml — Sniper Strike
+# Scale tier. High risk. Maximum selectivity — 7/7 consensus required.
+# Very few trades; each one has the highest possible conviction.
+name: sniper
+display: "Sniper Strike"
+
+session:
+  duration_hours: 72
+
+evaluation:
+  scope: top_20             # narrow universe — only the deepest books
+  consensus_threshold: 7   # of 7 layers — ALL must agree
+  directions: [long, short]
+  min_regime: [trending]   # strictest regime filter
+
+risk:
+  max_positions: 3
+  position_size_pct: 20    # large position when all 7 agree — that's the edge
+  stop_loss_pct: 4         # wide enough to survive volatility on conviction trades
+  reserve_pct: 25
+  max_daily_loss_pct: 8
+  max_hold_hours: 72
+  entry_end_action: hold   # conviction trade — hold through signal pause
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 2.0
+  trailing_distance_pct: 1.5
+  regime_shift_exit: true
+  time_exit: true
+
+unlock:
+  score_minimum: 5.0
+tier: scale

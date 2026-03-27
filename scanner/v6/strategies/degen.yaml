@@ -1,0 +1,33 @@
+# degen.yaml — Degen Sprint
+# Pro tier. High risk. Aggressive 24h positions, wide universe.
+name: degen
+display: "Degen Sprint"
+
+session:
+  duration_hours: 24
+
+evaluation:
+  scope: top_100
+  consensus_threshold: 5   # of 7 layers — lower bar, more trades
+  directions: [long, short]
+  min_regime: [trending, stable, reverting]   # accept more regimes
+
+risk:
+  max_positions: 6
+  position_size_pct: 15     # 15% — high risk, bigger bets
+  stop_loss_pct: 6          # wider stop — expect volatility
+  reserve_pct: 10           # minimal reserve
+  max_daily_loss_pct: 10    # high daily loss tolerance
+  max_hold_hours: 24
+  entry_end_action: hold
+
+exits:
+  trailing_stop: true
+  trailing_activation_pct: 2.0
+  trailing_distance_pct: 1.5
+  regime_shift_exit: false  # degen rides through regime shifts
+  time_exit: true
+
+unlock:
+  score_minimum: 6.0
+tier: pro
