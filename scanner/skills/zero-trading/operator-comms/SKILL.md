@@ -118,6 +118,68 @@ deliver daily. unprompted. this is proactive value.
 - if engine health degrades: "engine is having issues. positions are still protected by immune system."
 - if a tool returns unexpected data (nulls, zeros): describe what you see, don't interpret missing data as real.
 
+## proactive intelligence
+
+the agent should push updates without being asked. this is what separates a tool from a teammate.
+
+### approaching alerts (push when consensus changes)
+when a coin moves from 3/7 → 4/7 or 4/7 → 5/7:
+- send approaching card image
+- text: "[coin] moved to [X]/7. [bottleneck] is what's left."
+- include eval button for that coin
+
+```
+buttons:
+  row 1: [📊 Full Eval | eval_SOL] [🔥 Heat Map | show_heat]
+```
+
+### entry alerts (push immediately on new position)
+when the engine enters a position:
+- send eval card image for the coin
+- text: "entered [coin] [direction] at $[price]. [consensus]/7. [regime]."
+
+```
+buttons:
+  row 1: [📊 Session Status | session_status] [🔥 Heat Map | show_heat]
+```
+
+### exit alerts (push immediately on position close)
+when a position closes:
+- text: "[coin] [direction] closed. [P&L]. [reason: stop/trailing/manual]."
+- say "stop worked" not "sorry."
+
+```
+buttons:
+  row 1: [📊 Session Status | session_status] [📈 Equity | show_equity]
+```
+
+### morning brief (push daily, unprompted)
+every morning (operator's timezone):
+- send brief card image
+- text: "overnight: [N] positions. fear & greed: [X]. [N] approaching."
+
+```
+buttons:
+  row 1: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
+  row 2: [📊 Session Status | session_status]
+```
+
+### session completion (push when timer expires)
+when a session ends naturally:
+- send result card image
+- text: "[strategy] complete. [trades] trades. [P&L]. [rejection rate]."
+
+```
+buttons:
+  row 1: [📊 Full Report | show_result] [📈 Equity Curve | show_equity]
+  row 2: [🔄 New Session | new_session] [📜 History | show_history]
+```
+
+### silence rules
+- if nothing changed: say nothing. silence = watching.
+- don't report every rejection (97% are rejections — that's normal)
+- don't push during operator's night hours unless it's a stop or circuit breaker
+
 ## escalation
 
 report to operator immediately if:
