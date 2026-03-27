@@ -35,7 +35,7 @@ from scanner.v6.config import (
 
 # Session-aware imports — graceful fallback to hardcoded behavior
 try:
-    from scanner.v6.session_manager import get_active_session, get_session_params
+    from scanner.v6.session_manager_legacy import get_active_session, get_session_params
     _SESSION_AVAILABLE = True
 except ImportError:
     _SESSION_AVAILABLE = False
@@ -232,7 +232,7 @@ def approve_entry(entry: dict, positions: list, risk: dict, equity: float,
         max_trades = session_params.get('max_trades_per_session')
         if max_trades is not None:
             try:
-                from scanner.v6.session_manager import SESSION_FILE
+                from scanner.v6.session_manager_legacy import SESSION_FILE
                 sess = load_json_locked(SESSION_FILE, {})
                 trade_count = len(sess.get('trades', []))
                 if trade_count >= max_trades:

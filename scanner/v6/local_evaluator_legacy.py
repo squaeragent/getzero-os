@@ -55,7 +55,7 @@ from scanner.v6.config import (
 
 # Session-aware imports — graceful fallback to hardcoded behavior
 try:
-    from scanner.v6.session_manager import (
+    from scanner.v6.session_manager_legacy import (
         get_active_session, get_session_params, check_session_expiry,
         get_coins_for_scope,
     )
@@ -234,7 +234,7 @@ def _increment_session_eval_count():
     """Bump eval_count on the active session."""
     try:
         from scanner.v6.bus_io import load_json_locked, save_json_locked
-        from scanner.v6.session_manager import SESSION_FILE
+        from scanner.v6.session_manager_legacy import SESSION_FILE
         session = load_json_locked(SESSION_FILE, None)
         if session and session.get('status') == 'active':
             session['eval_count'] = session.get('eval_count', 0) + 1

@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from scanner.v6.session_manager import (
+from scanner.v6.session_manager_legacy import (
     STRATEGIES, get_coins_for_scope, generate_result_card,
 )
 from scanner.v6.config import get_stop_pct, ALL_COINS

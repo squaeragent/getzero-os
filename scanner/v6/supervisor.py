@@ -35,7 +35,7 @@ LOG_FILE = V6_DIR / "supervisor.log"
 
 # Session expiry — graceful fallback
 try:
-    from scanner.v6.session_manager import check_session_expiry as _check_session_expiry
+    from scanner.v6.session_manager_legacy import check_session_expiry as _check_session_expiry
     _SESSION_AVAILABLE = True
 except ImportError:
     _SESSION_AVAILABLE = False
