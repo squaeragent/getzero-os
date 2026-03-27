@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.class-badge {
+  font-size: 16px; font-weight: 700; padding: 4px 14px;
+  border: 2px solid {{class_color}};
+  color: {{class_color}};
+  letter-spacing: 2px;
+}
+.center { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; gap: 16px; }
+.total-score { font-size: 56px; font-weight: 700; color: #c8ff00; }
+.total-label { font-size: 14px; color: #888; }
+.bars { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-label { width: 120px; font-size: 13px; color: #888; text-align: right; }
+.bar-track { flex: 1; height: 18px; background: #1a1a1a; position: relative; }
+.bar-fill { height: 100%; background: #c8ff00; transition: width 0.3s; }
+.bar-val { width: 50px; font-size: 13px; color: #e8e4df; font-weight: 700; }
+.bottom { display: flex; justify-content: space-between; margin-top: auto; padding-top: 8px; }
+.ts { font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">OPERATOR SCORE</span>
+  <span class="class-badge">{{class_upper}}</span>
+</div>
+<div class="center">
+  <div>
+    <div class="total-score">{{total}}</div>
+    <div class="total-label">TOTAL</div>
+  </div>
+</div>
+<div class="bars">
+  <div class="bar-row">
+    <span class="bar-label">PERFORMANCE</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{performance_pct}}%"></div></div>
+    <span class="bar-val">{{performance}}</span>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">DISCIPLINE</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{discipline_pct}}%"></div></div>
+    <span class="bar-val">{{discipline}}</span>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">PROTECTION</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{protection_pct}}%"></div></div>
+    <span class="bar-val">{{protection}}</span>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">CONSISTENCY</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{consistency_pct}}%"></div></div>
+    <span class="bar-val">{{consistency}}</span>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">ADAPTATION</span>
+    <div class="bar-track"><div class="bar-fill" style="width: {{adaptation_pct}}%"></div></div>
+    <span class="bar-val">{{adaptation}}</span>
+  </div>
+</div>
+<div class="bottom">
+  <span class="ts">ZERO v6</span>
+</div>
+</body>
+</html>

@@ -122,6 +122,16 @@ async def card_regime(operator_id: str = Query("op_default")):
     return Response(content=png, media_type="image/png")
 
 
+@router.get("/autopilot")
+async def card_autopilot(operator_id: str = Query("op_default")):
+    """Render auto-pilot recommendation card. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.auto_select(operator_id)
+    png = await _get_renderer().render_async("autopilot_card", data)
+    return Response(content=png, media_type="image/png")
+
+
 @router.get("/mode")
 async def card_mode(mode: str = Query("comfort")):
     """Render drive mode comparison card. Returns PNG."""
@@ -135,6 +145,64 @@ async def card_mode(mode: str = Query("comfort")):
         modes_dict[m] = mc.to_dict()
     data = {"active_mode": mode, "modes": modes_dict}
     png = await _get_renderer().render_async("mode_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/insights")
+async def card_insights(operator_id: str = Query("op_default")):
+    """Render insight card for top insight. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.get_insights(operator_id)
+    insights = data.get("insights", [])
+    if not insights:
+        # Render a placeholder
+        placeholder = {
+            "title": "BUILDING YOUR PROFILE",
+            "insight_type": "pending",
+            "description": data.get("message", "need more sessions for insights."),
+            "recommendation": "keep trading. patterns emerge after 5 sessions.",
+            "confidence": 0.0,
+            "data_points": data.get("sessions_analyzed", 0),
+        }
+        png = await _get_renderer().render_async("insight_card", placeholder)
+        return Response(content=png, media_type="image/png")
+    # Render top insight
+    top = insights[0]
+    png = await _get_renderer().render_async("insight_card", top)
+    return Response(content=png, media_type="image/png")
+
+
+# ── Progression card endpoints ─────────────────────────────────────
+
+
+@router.get("/score")
+async def card_score(operator_id: str = Query("op_default")):
+    """Render operator score card — 5 dimension bars + class. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.get_score(operator_id)
+    png = await _get_renderer().render_async("score_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/milestones")
+async def card_milestones(operator_id: str = Query("op_default")):
+    """Render milestones card — earned/unearned grid. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.get_achievements(operator_id)
+    png = await _get_renderer().render_async("milestone_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/streak")
+async def card_streak(operator_id: str = Query("op_default")):
+    """Render streak card — current, best, badge. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.get_streak(operator_id)
+    png = await _get_renderer().render_async("streak_card", data)
     return Response(content=png, media_type="image/png")
 
 

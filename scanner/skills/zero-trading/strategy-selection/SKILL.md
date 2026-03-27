@@ -73,3 +73,25 @@ never just say "use momentum." explain WHY for this operator, this market, right
 | sniper | high | 4% | 3 max | perfect setups only (7/7) |
 | degen | high | 6% | 4 max | fast moves, short hold |
 | apex | extreme | 8% | 4 max | maximum conviction, expert only |
+
+## auto-pilot recommendation
+
+before manual recommendation, offer auto-pilot as first option:
+
+"based on current regime and your history, engine recommends [strategy]. [reason]."
+
+call `zero_auto_select` to get the engine's recommendation. show:
+- recommended strategy with confidence score
+- regime context (what the market looks like)
+- operator stats (their WR with this strategy)
+- alternatives with scores
+
+if operator accepts: deploy via `zero_start_session`.
+if operator overrides: proceed with manual strategy selection above.
+
+auto-pilot uses:
+1. regime direction (SHORT/LONG/MIXED/QUIET) -> strategy affinity
+2. fear & greed modifiers (extreme fear boosts degen, extreme greed boosts defense)
+3. volatility modifiers (extreme vol boosts defense, low vol boosts funding)
+4. operator history (WR > 65% boosts, WR < 35% penalizes)
+5. plan gating (free/pro/scale limits available strategies)

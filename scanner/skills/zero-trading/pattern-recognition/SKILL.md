@@ -5,40 +5,71 @@ description: "use discovered patterns from operator history to improve future se
 
 # pattern recognition
 
-## ⚠️ not yet active — Phase 4
+## status: active
 
-requires 10+ completed sessions and scoring system. load this skill after Phase 4 ships and the operator has history. core engine and intelligence tools are fully operational now.
+pattern engine analyzes operator session history for personalized insights. requires 5+ completed sessions for insight generation, 3+ for strategy profiles.
 
-## what to look for (when active)
+## after every session ends
 
-call `zero_session_history(limit=20)` and analyze:
+call `PatternEngine.compare_session()` to generate a `SessionComparison`. include in the session result narration:
 
-### strategy performance
-which strategies have the best win rate for THIS operator?
-"your momentum sessions: 72% win rate, avg +2.1%.
-your degen sessions: 58% win rate, avg +4.3%."
+"momentum session #8. +$3.40 (avg: +$2.10). your best yet."
 
-### time-of-day patterns
-do sessions started in certain hours perform better?
+the comparison includes:
+- session number for this strategy
+- P&L vs average
+- win rate vs average
+- rank (top 20%, average, bottom 20%)
+- is_best / is_worst flags
+- personalized narrative
 
-### regime sensitivity
-does the operator perform differently in different market conditions?
-call `zero_get_brief` for current regime context.
+## insights (5+ sessions)
 
-### near miss analysis
-track near misses across sessions.
-"degen would have caught 3 trades your momentum missed."
+call `zero_get_insights` to discover operator patterns:
+
+### regime affinity
+"you're a trending market trader. WR: 74% in trending, 48% in mixed."
+- groups sessions by regime at time of session
+- triggers when WR spread across regimes is 15%+
+
+### strategy edge
+"momentum is your edge. 72% WR vs 58% average."
+- groups by strategy, compares WR
+- triggers when one strategy WR is 10%+ above average
+
+### time patterns
+"your evening sessions outperform morning by 40%."
+- groups by start hour bucket (morning/afternoon/evening/night)
+- triggers when $1+ spread in avg PnL
+
+### hold duration
+"your 24h sessions outperform 48h. consider degen."
+- compares short (<36h) vs long (>=36h) sessions
+- triggers when $1+ spread in avg PnL
+
+### loss recovery
+"you recover well. sessions after a loss: +$2.40 avg."
+- or: "after losses, your next session drops. consider defense."
+- tracks performance after losing sessions
+
+## building profile message
+
+when < 5 sessions: "building your profile. [N] more sessions until insights."
+
+## every 5th session
+
+include an insight in the session complete message:
+"insight: you're a fear trader. WR is 74% when F&G < 30."
 
 ## how to present patterns
 
 don't dump statistics. tell a story:
-
 "i've noticed something across your last 15 sessions.
 you're a fear trader. your best results come when everyone else is scared."
 
 ## evolving recommendations
 
 as patterns emerge, adjust strategy selection:
-- operator consistently profitable with degen → recommend more degen
-- operator loses on fade → stop recommending fade
+- operator consistently profitable with degen -> recommend more degen
+- operator loses on fade -> stop recommending fade
 - patterns are personal. the engine is the same. the operator's edge is their own.

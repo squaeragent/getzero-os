@@ -77,8 +77,11 @@ call `zero_end_session` when:
 
 if no session is active: "no session running. nothing to end."
 
-send the result card image with caption:
+send the result card image with caption that includes session comparison data:
+"momentum session #8. +$3.40 (avg: +$2.10). your best yet."
 "[strategy] complete. [trades] trades. [P&L]. [rejection_rate]% rejected."
+
+session_result is enhanced with comparison data from PatternEngine.compare_session().
 
 delete the "deploy?" confirmation message if it still exists (cleanup stale buttons).
 
@@ -88,11 +91,35 @@ poll:
   question: "what next?"
   options:
     - "momentum (trend following)"
-    - "defense (capital protection)"  
+    - "defense (capital protection)"
     - "degen (high conviction)"
     - "let the engine decide"
   anonymous: false
 ```
+
+## auto-pilot (let the engine decide)
+
+when operator picks "let the engine decide" in post-session poll:
+
+1. call `zero_auto_select`
+2. show the decision with explanation:
+   "engine recommends [strategy]. [reason]. confidence: [confidence]%."
+3. show autopilot card image
+4. deploy with buttons:
+
+```
+message: "engine recommends [strategy]. [reason]."
+buttons:
+  row 1: [▶ Deploy | deploy_auto] [✗ Override | list_strategies]
+```
+
+on `deploy_auto`: call `zero_start_session(decision.strategy, paper=True)`
+on `list_strategies`: show full strategy list for manual selection.
+
+if `auto_rotate` is enabled on the session config, skip the poll and auto-deploy:
+- call `zero_auto_select`
+- auto-deploy the recommended strategy (paper mode)
+- push result to operator: "auto-rotating to [strategy]. [reason]."
 
 also show buttons for report actions:
 ```

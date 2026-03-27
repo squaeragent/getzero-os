@@ -99,6 +99,18 @@ def zero_session_result(session_id: str) -> dict:
     return _api.session_result(_get_operator_id(), session_id)
 
 
+# ── AUTO-PILOT (1) ──────────────────────────────────────────────────────────
+
+@mcp.tool()
+def zero_auto_select() -> dict:
+    """Let the engine choose the best strategy for current conditions.
+
+    Uses regime analysis, operator history, and backtest data
+    to pick the optimal strategy. Shows reasoning.
+    """
+    return _api.auto_select(_get_operator_id())
+
+
 # ── DRIVE MODE (1) ──────────────────────────────────────────────────────────
 
 @mcp.tool()
@@ -171,29 +183,46 @@ def zero_get_brief() -> dict:
     return _api.get_brief(_get_operator_id())
 
 
-# ── PROGRESSION TOOLS (4) — Phase 4 ─────────────────────────────────────────
+# ── PATTERN RECOGNITION (1) ─────────────────────────────────────────────────
+
+@mcp.tool()
+def zero_get_insights() -> dict:
+    """Get personalized trading insights based on your history.
+
+    Discovers patterns: regime affinity, strategy edge, time patterns.
+    Needs 5+ completed sessions to generate insights.
+    """
+    return _api.get_insights(_get_operator_id())
+
+
+# ── PROGRESSION TOOLS (4) ───────────────────────────────────────────────────
 
 @mcp.tool()
 def zero_get_score() -> dict:
-    """Get operator score: 5 dimensions, class, tier. (Phase 4 — placeholder)"""
+    """Get your 5-dimension operator score.
+    Performance, discipline, protection, consistency, adaptation.
+    Class: novice → apprentice → operator → veteran → elite.
+    """
     return _api.get_score(_get_operator_id())
 
 
 @mcp.tool()
 def zero_get_achievements() -> dict:
-    """Get earned achievements, closest unearned, and rarest. (Phase 4 — placeholder)"""
+    """Get your earned milestones and progress toward unearned ones."""
     return _api.get_achievements(_get_operator_id())
 
 
 @mcp.tool()
 def zero_get_streak() -> dict:
-    """Get daily, session, and immune streaks. (Phase 4 — placeholder)"""
+    """Get your current streak and all-time best.
+    Badges: bronze (3), silver (5), gold (10), diamond (20).
+    """
     return _api.get_streak(_get_operator_id())
 
 
 @mcp.tool()
 def zero_get_reputation() -> dict:
-    """Get reputation: 5 trust dimensions and star rating. (Phase 4 — placeholder)"""
+    """Get your full reputation: score + streak + milestones + stats."""
     return _api.get_reputation(_get_operator_id())
 
 

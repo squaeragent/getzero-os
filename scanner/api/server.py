@@ -997,6 +997,10 @@ try:
     ):
         return _v6_api.set_mode(operator_id, mode)
 
+    @app.get("/v6/session/auto-select")
+    def v6_auto_select(operator_id: str = Query("op_default")):
+        return _v6_api.auto_select(operator_id)
+
     @app.get("/v6/session/history")
     def v6_history(limit: int = 10, operator_id: str = Query("op_default")):
         return _v6_api.session_history(operator_id, limit=limit)

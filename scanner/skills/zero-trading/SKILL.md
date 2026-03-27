@@ -56,8 +56,11 @@ it rejects 97% of setups. the 3% that pass: those are the trades.
 ### engine health (LIVE)
 - `zero_get_engine_health` — cycle time, data freshness, immune status
 
-### Phase 4 stubs (return placeholder data)
-- `zero_get_score`, `zero_get_achievements`, `zero_get_streak`, `zero_get_reputation`
+### progression tools (LIVE)
+- `zero_get_score` — 5-dimension operator score (performance, discipline, protection, consistency, adaptation)
+- `zero_get_achievements` — milestones earned + progress toward unearned
+- `zero_get_streak` — current/best streak, badge (bronze/silver/gold/diamond)
+- `zero_get_reputation` — full reputation: score + streak + milestones + stats
 - `zero_get_arena`, `zero_get_rivalry`, `zero_get_chain`
 - `zero_get_credits`, `zero_get_energy`
 
@@ -84,6 +87,9 @@ card endpoints (render via API, send as image to operator):
 - `/v6/cards/result?session_id=X` — session complete summary
 - `/v6/cards/regime` — global market regime state
 - `/v6/cards/mode?mode=comfort` — drive mode comparison
+- `/v6/cards/score` — operator score (5 dimension bars + class)
+- `/v6/cards/milestones` — milestone grid (earned/unearned)
+- `/v6/cards/streak` — streak card (current, best, badge)
 
 always pair a visual card with a short text summary. the card is the data, the text is the interpretation.
 
@@ -113,6 +119,9 @@ when you receive a callback_data value, execute the corresponding action:
 | `show_result` | render result card image, send to operator |
 | `show_history` | `zero_session_history` |
 | `show_regime` | render regime card image, send to operator |
+| `show_score` | render score card image, send to operator |
+| `show_milestones` | render milestone card image, send to operator |
+| `show_streak` | render streak card image, send to operator |
 | `set_mode_comfort` | `zero_set_mode("comfort")` |
 | `set_mode_sport` | `zero_set_mode("sport")` |
 | `set_mode_track` | `zero_set_mode("track")` |

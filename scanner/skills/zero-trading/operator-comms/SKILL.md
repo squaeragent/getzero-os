@@ -34,8 +34,12 @@ NEVER say "sorry." ALWAYS say "stop worked."
 a triggered stop is the system performing correctly.
 
 ### session complete
-send result card image with caption:
+send result card image with caption that includes session comparison:
+"momentum session #8. +$3.40 (avg: +$2.10). your best yet."
 "[strategy] complete. [trades] trades. [P&L]. [rejection rate]%% rejected."
+
+every 5th session, include an insight:
+"insight: you're a fear trader. WR is 74% when F&G < 30."
 
 ```
 buttons:

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.strategy-name {
+  font-size: 42px;
+  font-weight: 700;
+  color: #c8ff00;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.reason {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.confidence-section { margin-bottom: 16px; }
+.confidence-label { font-size: 11px; color: #555; letter-spacing: 1px; margin-bottom: 6px; }
+.confidence-bar-bg {
+  width: 100%;
+  height: 20px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  overflow: hidden;
+}
+.confidence-bar-fill {
+  height: 100%;
+  background: {{confidence_color}};
+  width: {{confidence_pct}}%;
+}
+.confidence-value {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+.context {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 16px;
+}
+.context-item { display: flex; flex-direction: column; }
+.context-label { font-size: 11px; color: #555; letter-spacing: 1px; margin-bottom: 4px; }
+.context-value { font-size: 16px; font-weight: 700; }
+.regime-value { color: {{regime_color}}; }
+.wr-value { color: {{wr_color}}; }
+.alternatives-section { flex: 1; }
+.alt-label { font-size: 11px; color: #555; letter-spacing: 1px; margin-bottom: 8px; }
+.alt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #111;
+}
+.alt-name { color: #888; }
+.alt-score { color: #555; }
+.ts { font-size: 11px; color: #555; text-align: right; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">AUTO-PILOT</span>
+  <span class="title">ENGINE RECOMMENDATION</span>
+</div>
+<div class="strategy-name">{{strategy}}</div>
+<div class="reason">{{reason}}</div>
+<div class="confidence-section">
+  <div class="confidence-label">CONFIDENCE</div>
+  <div class="confidence-bar-bg">
+    <div class="confidence-bar-fill"></div>
+  </div>
+  <div class="confidence-value">{{confidence_pct}}%</div>
+</div>
+<div class="context">
+  <div class="context-item">
+    <span class="context-label">REGIME</span>
+    <span class="context-value regime-value">{{regime}}</span>
+  </div>
+  <div class="context-item">
+    <span class="context-label">YOUR WR</span>
+    <span class="context-value wr-value">{{operator_wr_display}}</span>
+  </div>
+</div>
+<div class="alternatives-section">
+  <div class="alt-label">ALTERNATIVES</div>
+  {{alternatives_html}}
+</div>
+<div class="ts">ZERO v6</div>
+</body>
+</html>

@@ -483,6 +483,33 @@ def _gauge_needle_xy(value: int) -> tuple:
     return f"{nx:.1f}", f"{ny:.1f}"
 
 
+def _build_milestones_grid(milestones: list) -> str:
+    """Build grid cells for milestone card."""
+    cells = []
+    # Find the last earned milestone for highlighting
+    earned_ids = [m["id"] for m in milestones if m.get("achieved")]
+    latest_id = earned_ids[-1] if earned_ids else None
+
+    for m in milestones:
+        achieved = m.get("achieved", False)
+        is_latest = m.get("id") == latest_id
+        icon = "\u2713" if achieved else "\u25CB"
+        icon_color = "#c8ff00" if achieved else "#444"
+        cls = "milestone"
+        if is_latest:
+            cls += " latest earned"
+        elif achieved:
+            cls += " earned"
+        name_cls = "m-name earned" if achieved else "m-name"
+        cells.append(
+            f'<div class="{cls}">'
+            f'<span class="m-icon" style="color:{icon_color}">{icon}</span>'
+            f'<span class="{name_cls}">{m.get("name", "?")}</span>'
+            f'</div>'
+        )
+    return "\n".join(cells)
+
+
 def _preprocess(template_name: str, data: dict) -> dict:
     """Expand data dict with pre-built HTML snippets for template injection."""
     out = {}
@@ -587,6 +614,48 @@ def _preprocess(template_name: str, data: dict) -> dict:
         vol_colors = {"LOW": "#666", "NORMAL": "#e8e4df", "HIGH": "#ffb000", "EXTREME": "#ff3333"}
         out["vol_color"] = vol_colors.get(vol, "#e8e4df")
 
+    elif template_name == "autopilot_card":
+        # Strategy name (uppercase)
+        out["strategy"] = data.get("strategy", "---").upper()
+        out["reason"] = data.get("reason", "---")
+        # Confidence bar
+        conf = data.get("confidence", 0)
+        conf_pct = int(conf * 100) if isinstance(conf, (int, float)) else 0
+        out["confidence_pct"] = str(conf_pct)
+        if conf_pct >= 70:
+            out["confidence_color"] = "#c8ff00"
+        elif conf_pct >= 40:
+            out["confidence_color"] = "#ffb000"
+        else:
+            out["confidence_color"] = "#ff3333"
+        # Regime color
+        regime = data.get("regime", "MIXED")
+        regime_colors = {"SHORT": "#ff3333", "LONG": "#c8ff00", "MIXED": "#ffb000", "QUIET": "#666"}
+        out["regime_color"] = regime_colors.get(regime, "#e8e4df")
+        out["regime"] = regime
+        # Operator WR
+        wr = data.get("operator_wr")
+        if wr is not None:
+            out["operator_wr_display"] = f"{wr}%"
+            out["wr_color"] = "#c8ff00" if wr >= 55 else "#ffb000" if wr >= 45 else "#ff3333"
+        else:
+            out["operator_wr_display"] = "---"
+            out["wr_color"] = "#666"
+        # Alternatives HTML
+        alts = data.get("alternatives", [])
+        alt_rows = []
+        for alt in alts[:3]:
+            name = alt.get("strategy", "?").upper()
+            score = alt.get("score", 0)
+            reason = alt.get("reason", "")
+            alt_rows.append(
+                f'<div class="alt-row">'
+                f'<span class="alt-name">{name}</span>'
+                f'<span class="alt-score">{score}</span>'
+                f'</div>'
+            )
+        out["alternatives_html"] = "\n".join(alt_rows) if alt_rows else '<div class="alt-row"><span class="alt-name">---</span></div>'
+
     elif template_name == "mode_card":
         active = data.get("active_mode", "comfort")
         out["active_mode"] = active.upper()
@@ -617,6 +686,11 @@ def _preprocess(template_name: str, data: dict) -> dict:
             heat_h = mc.get("heat_push_interval_hours")
             out[f"{prefix}_heat_interval"] = f"{heat_h}h" if heat_h else "---"
 
+    elif template_name == "insight_card":
+        conf = data.get("confidence", 0)
+        out["confidence_pct"] = str(int(conf * 100))
+        out["confidence_display"] = f"{conf * 100:.0f}%"
+
     elif template_name == "backtest_summary_card":
         strategies = data.get("strategies", [])
         out["strategy_rows"] = _build_backtest_summary_rows(strategies)
@@ -646,6 +720,79 @@ def _preprocess(template_name: str, data: dict) -> dict:
         out["b_dd"] = f"{b.get('max_drawdown_pct', 0):.1f}%"
         out["a_sharpe"] = f"{a.get('sharpe_ratio', 0):.2f}"
         out["b_sharpe"] = f"{b.get('sharpe_ratio', 0):.2f}"
+
+    elif template_name == "score_card":
+        perf = data.get("performance", 0)
+        disc = data.get("discipline", 0)
+        prot = data.get("protection", 0)
+        cons = data.get("consistency", 0)
+        adapt = data.get("adaptation", 0)
+        total = data.get("total", 0)
+        cls = data.get("class_name", "novice")
+        out["performance"] = f"{perf:.1f}"
+        out["discipline"] = f"{disc:.1f}"
+        out["protection"] = f"{prot:.1f}"
+        out["consistency"] = f"{cons:.1f}"
+        out["adaptation"] = f"{adapt:.1f}"
+        out["total"] = f"{total:.1f}"
+        out["performance_pct"] = str(int(perf))
+        out["discipline_pct"] = str(int(disc))
+        out["protection_pct"] = str(int(prot))
+        out["consistency_pct"] = str(int(cons))
+        out["adaptation_pct"] = str(int(adapt))
+        out["class_upper"] = cls.upper()
+        class_colors = {
+            "novice": "#666", "apprentice": "#888",
+            "operator": "#ffb000", "veteran": "#c8ff00", "elite": "#ff3333",
+        }
+        out["class_color"] = class_colors.get(cls, "#888")
+
+    elif template_name == "milestone_card":
+        milestones = data.get("milestones", [])
+        earned = data.get("earned", 0)
+        total = data.get("total", len(milestones))
+        out["earned"] = str(earned)
+        out["total"] = str(total)
+        out["milestones_grid"] = _build_milestones_grid(milestones)
+        # Latest earned milestone
+        earned_list = [m for m in milestones if m.get("achieved")]
+        if earned_list:
+            latest = earned_list[-1]
+            out["latest_label"] = f"latest: {latest.get('name', '?')} — {latest.get('description', '')}"
+        else:
+            out["latest_label"] = "no milestones earned yet"
+
+    elif template_name == "streak_card":
+        current = data.get("current", 0)
+        best = data.get("best", 0)
+        stype = data.get("streak_type", "none")
+        badge = data.get("badge") or "---"
+        sessions_to_next = data.get("sessions_to_next", 0)
+        out["current"] = str(current)
+        out["best"] = str(best)
+        out["streak_type_upper"] = stype.upper()
+        out["badge_upper"] = badge.upper() if badge != "---" else "---"
+        # Colors
+        streak_colors = {"winning": "#c8ff00", "losing": "#ff3333", "none": "#666"}
+        out["streak_color"] = streak_colors.get(stype, "#666")
+        badge_colors = {
+            "bronze": "#cd7f32", "silver": "#c0c0c0",
+            "gold": "#ffd700", "diamond": "#b9f2ff", "---": "#555",
+        }
+        out["badge_color"] = badge_colors.get(badge, "#555")
+        # Next badge text
+        if sessions_to_next > 0:
+            next_badges = {"bronze": 3, "silver": 5, "gold": 10, "diamond": 20}
+            # Find what the next badge is
+            current_winning = current if stype == "winning" else 0
+            next_name = "bronze"
+            for threshold_name, threshold_val in [("bronze", 3), ("silver", 5), ("gold", 10), ("diamond", 20)]:
+                if current_winning < threshold_val:
+                    next_name = threshold_name
+                    break
+            out["next_badge_text"] = f"{sessions_to_next} more win{'s' if sessions_to_next != 1 else ''} until {next_name}"
+        else:
+            out["next_badge_text"] = "diamond achieved" if badge == "diamond" else ""
 
     return out
 

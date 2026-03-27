@@ -165,6 +165,67 @@ def detect_position_changes(api: ZeroAPI, state: dict) -> tuple:
     )
 
 
+def _check_progression_changes(
+    api: ZeroAPI, renderer: CardRenderer, state: dict,
+    pushes: list, force: bool, dry_run: bool,
+):
+    """Check for new milestones earned or streak badge changes since last run."""
+    # Get current progression state
+    achievements = api.get_achievements(OPERATOR_ID)
+    streak_data = api.get_streak(OPERATOR_ID)
+
+    current_earned_ids = {
+        m["id"] for m in achievements.get("milestones", []) if m.get("achieved")
+    }
+    last_earned_ids = set(state.get("last_milestone_ids", []))
+
+    # New milestones
+    new_milestones = current_earned_ids - last_earned_ids
+    if new_milestones and can_push(state, force):
+        new_names = []
+        for m in achievements.get("milestones", []):
+            if m["id"] in new_milestones:
+                new_names.append(m.get("name", m["id"]))
+        detail = f"new: {', '.join(new_names)} ({achievements.get('earned', 0)}/{achievements.get('total', 0)})"
+        card_path = None
+        if not dry_run:
+            card_path = str(PUSH_DIR / "zero_push_milestones.png")
+            renderer.render_to_file("milestone_card", achievements, card_path)
+            state = record_push(state)
+        emit("milestone_earned", detail, card_path)
+        log_push({
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "type": "milestone_earned",
+            "new_milestones": list(new_milestones),
+            "dry_run": dry_run,
+        })
+        pushes.append(("milestone_earned", card_path))
+
+    state["last_milestone_ids"] = list(current_earned_ids)
+
+    # Streak badge change
+    current_badge = streak_data.get("badge")
+    last_badge = state.get("last_streak_badge")
+    if current_badge and current_badge != last_badge and can_push(state, force):
+        detail = f"{last_badge or 'none'} → {current_badge} (streak: {streak_data.get('current', 0)})"
+        card_path = None
+        if not dry_run:
+            card_path = str(PUSH_DIR / "zero_push_streak.png")
+            renderer.render_to_file("streak_card", streak_data, card_path)
+            state = record_push(state)
+        emit("streak_badge", detail, card_path)
+        log_push({
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "type": "streak_badge",
+            "from": last_badge,
+            "to": current_badge,
+            "dry_run": dry_run,
+        })
+        pushes.append(("streak_badge", card_path))
+
+    state["last_streak_badge"] = current_badge
+
+
 def run(morning: bool = False, force: bool = False, dry_run: bool = False):
     """Main push logic."""
     api = ZeroAPI()
@@ -358,6 +419,9 @@ def run(morning: bool = False, force: bool = False, dry_run: bool = False):
                 })
                 pushes.append(("regime_shift", card_path))
         state["last_regime"] = current_regime.to_dict()
+
+        # --- Progression: milestone & streak changes after session end ---
+        _check_progression_changes(api, renderer, state, pushes, force, dry_run)
 
     if not pushes and not morning:
         print("[QUIET] no changes detected")

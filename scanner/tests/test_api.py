@@ -277,23 +277,23 @@ class TestGetBrief:
 
 # ── PROGRESSION STUBS ────────────────────────────────────────────────────────
 
-class TestProgressionStubs:
-    def test_score_stub(self, api):
+class TestProgressionLive:
+    def test_score_returns_dimensions(self, api):
         result = api.get_score(OP)
-        assert "phase" in result
-        assert result["score"] == 0.0
+        assert "performance" in result
+        assert "class_name" in result
 
-    def test_achievements_stub(self, api):
+    def test_achievements_returns_milestones(self, api):
         result = api.get_achievements(OP)
-        assert result["count"] == 0
+        assert "milestones" in result
 
-    def test_streak_stub(self, api):
+    def test_streak_returns_current(self, api):
         result = api.get_streak(OP)
-        assert result["daily_streak"] == 0
+        assert "current" in result
 
-    def test_reputation_stub(self, api):
+    def test_reputation_returns_aggregate(self, api):
         result = api.get_reputation(OP)
-        assert result["stars"] == 0
+        assert "score" in result or "sessions_completed" in result
 
 
 # ── COMPETITION STUBS ────────────────────────────────────────────────────────

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.badge-label {
+  font-size: 16px; font-weight: 700; padding: 4px 14px;
+  border: 2px solid {{badge_color}};
+  color: {{badge_color}};
+  letter-spacing: 2px;
+}
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 48px;
+}
+.streak-block { text-align: center; }
+.streak-num { font-size: 80px; font-weight: 700; color: {{streak_color}}; line-height: 1; }
+.streak-label { font-size: 14px; color: #888; margin-top: 4px; }
+.streak-type { font-size: 16px; font-weight: 700; color: {{streak_color}}; letter-spacing: 1px; }
+.best-block { text-align: center; }
+.best-num { font-size: 40px; font-weight: 700; color: #888; line-height: 1; }
+.best-label { font-size: 12px; color: #555; margin-top: 4px; }
+.next-badge {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid #1a1a1a;
+}
+.next-badge span { color: #c8ff00; font-weight: 700; }
+.bottom { display: flex; justify-content: space-between; margin-top: auto; padding-top: 8px; }
+.ts { font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">STREAK</span>
+  <span class="badge-label">{{badge_upper}}</span>
+</div>
+<div class="center">
+  <div class="streak-block">
+    <div class="streak-num">{{current}}</div>
+    <div class="streak-label">CURRENT</div>
+    <div class="streak-type">{{streak_type_upper}}</div>
+  </div>
+  <div class="best-block">
+    <div class="best-num">{{best}}</div>
+    <div class="best-label">ALL-TIME BEST</div>
+  </div>
+</div>
+<div class="next-badge">{{next_badge_text}}</div>
+<div class="bottom">
+  <span class="ts">ZERO v6</span>
+</div>
+</body>
+</html>

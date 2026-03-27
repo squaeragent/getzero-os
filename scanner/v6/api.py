@@ -346,50 +346,70 @@ class ZeroAPI:
         monitor = self._get_monitor(operator_id)
         return monitor.get_brief()
 
-    # ── PROGRESSION (4 tools) — Phase 4 stubs ────────────────────────────
+    # ── AUTO-PILOT ─────────────────────────────────────────────────────
+
+    def auto_select(self, operator_id: str) -> dict:
+        """Let the engine choose the best strategy for current conditions."""
+        from scanner.v6.autopilot import AutoPilot
+        pilot = AutoPilot(self)
+        decision = pilot.decide(operator_id)
+        return decision.to_dict()
+
+    # ── PATTERN RECOGNITION ─────────────────────────────────────────────
+
+    def get_insights(self, operator_id: str) -> dict:
+        """Get personalized trading insights from session history."""
+        from scanner.v6.pattern_engine import PatternEngine
+        engine = PatternEngine(self)
+        history = self.session_history(operator_id, limit=100)
+        session_count = len(history.get("sessions", []))
+        if session_count < 5:
+            return {
+                "insights": [],
+                "sessions_analyzed": session_count,
+                "sessions_needed": 5,
+                "message": f"building your profile. {5 - session_count} more sessions until insights.",
+            }
+        insights = engine.get_insights(operator_id)
+        return {
+            "insights": [i.to_dict() for i in insights],
+            "sessions_analyzed": session_count,
+        }
+
+    # ── PROGRESSION (4 tools) ────────────────────────────────────────────
+
+    def _get_progression(self, operator_id: str):
+        from scanner.v6.progression import ProgressionEngine
+        return ProgressionEngine(self, operator_id)
 
     def get_score(self, operator_id: str) -> dict:
-        """Get operator score. Phase 4 — returns placeholder."""
-        return {
-            "score": 0.0,
-            "class": "unranked",
-            "tier": "apprentice",
-            "dimensions": {
-                "performance": 0.0,
-                "discipline": 0.0,
-                "protection": 0.0,
-                "consistency": 0.0,
-                "adaptation": 0.0,
-            },
-            "phase": "coming in Phase 4",
-        }
+        """Get operator score: 5 dimensions, class, total."""
+        from dataclasses import asdict
+        engine = self._get_progression(operator_id)
+        return asdict(engine.get_score())
 
     def get_achievements(self, operator_id: str) -> dict:
-        """Get operator achievements. Phase 4 — returns placeholder."""
-        return {"achievements": [], "count": 0, "phase": "coming in Phase 4"}
+        """Get earned milestones and progress toward unearned ones."""
+        from dataclasses import asdict
+        engine = self._get_progression(operator_id)
+        milestones = engine.get_milestones()
+        return {
+            "milestones": [asdict(m) for m in milestones],
+            "earned": sum(1 for m in milestones if m.achieved),
+            "total": len(milestones),
+        }
 
     def get_streak(self, operator_id: str) -> dict:
-        """Get operator streaks. Phase 4 — returns placeholder."""
-        return {
-            "daily_streak": 0,
-            "session_streak": 0,
-            "immune_uptime_pct": 100.0,
-            "phase": "coming in Phase 4",
-        }
+        """Get current streak, best streak, badge, and sessions to next badge."""
+        from dataclasses import asdict
+        engine = self._get_progression(operator_id)
+        return asdict(engine.get_streak())
 
     def get_reputation(self, operator_id: str) -> dict:
-        """Get operator reputation. Phase 4 — returns placeholder."""
-        return {
-            "stars": 0,
-            "dimensions": {
-                "accuracy": 0.0,
-                "discipline": 0.0,
-                "longevity": 0.0,
-                "diversity": 0.0,
-                "contribution": 0.0,
-            },
-            "phase": "coming in Phase 4",
-        }
+        """Get full reputation: score + streak + milestones + stats."""
+        from dataclasses import asdict
+        engine = self._get_progression(operator_id)
+        return asdict(engine.get_reputation())
 
     # ── COMPETITION (3 tools) — Phase 4 stubs ────────────────────────────
 

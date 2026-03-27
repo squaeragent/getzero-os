@@ -28,7 +28,7 @@ def tmp_state(tmp_path):
 
 @pytest.fixture
 def mock_api():
-    api = MagicMock(spec=["get_heat", "get_approaching", "get_brief"])
+    api = MagicMock(spec=["get_heat", "get_approaching", "get_brief", "get_achievements", "get_streak", "session_history"])
     api.get_heat.return_value = {
         "coins": [
             {"coin": "SOL", "consensus": 5, "conviction": 0.833, "direction": "SHORT", "price": 82.95, "regime": "strong_trend"},
@@ -52,6 +52,17 @@ def mock_api():
             {"coin": "APT", "direction": "SHORT", "entry_price": 1.03, "size_usd": 20.0},
             {"coin": "LINK", "direction": "LONG", "entry_price": 14.5, "size_usd": 15.0},
         ],
+    }
+    api.get_achievements.return_value = {
+        "milestones": [],
+        "earned": 0,
+        "total": 15,
+    }
+    api.get_streak.return_value = {
+        "current": 0,
+        "best": 0,
+        "streak_type": "none",
+        "badge": None,
     }
     return api
 
