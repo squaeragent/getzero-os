@@ -35,6 +35,8 @@ from scanner.v6.strategy_loader import (
     load_all_strategies,
     list_strategies,
     StrategyConfig,
+    ModeConfig,
+    VALID_MODES,
     _REGIME_MAP,
 )
 
@@ -193,7 +195,7 @@ class ZeroAPI:
             return {"active": False, "session": None}
 
         session_data = status["session"]
-        # Add position data
+        # Add position data + mode
         positions = self._read_positions(operator_id)
         session_data["open_positions"] = len(positions)
         session_data["positions"] = positions
@@ -243,6 +245,24 @@ class ZeroAPI:
         if result is None:
             return {"error": f"Session {session_id} not found"}
         return result
+
+    # ── DRIVE MODE ────────────────────────────────────────────────────
+
+    def set_mode(self, operator_id: str, mode: str) -> dict:
+        """Set the drive mode for the active session."""
+        if mode not in VALID_MODES:
+            return {"error": f"Invalid mode '{mode}'. Valid: {sorted(VALID_MODES)}"}
+
+        sm = self._get_session_mgr(operator_id)
+        session = sm.active_session
+        if session is None:
+            return {"error": "No active session"}
+
+        try:
+            result = sm.set_mode(session, mode)
+            return result
+        except Exception as e:
+            return {"error": str(e)}
 
     # ── INTELLIGENCE (5 tools) ───────────────────────────────────────────
 

@@ -99,6 +99,22 @@ def zero_session_result(session_id: str) -> dict:
     return _api.session_result(_get_operator_id(), session_id)
 
 
+# ── DRIVE MODE (1) ──────────────────────────────────────────────────────────
+
+@mcp.tool()
+def zero_set_mode(mode: str) -> dict:
+    """Set the drive mode for the active session.
+
+    Modes control how you experience trading:
+    - comfort: autonomous, minimal alerts (entry/exit/brief only)
+    - sport: autonomous with full narration (approaching, heat shifts, regime)
+    - track: manual approval required for every trade
+
+    Does NOT change strategy logic — only push frequency and approval flow.
+    """
+    return _api.set_mode(_get_operator_id(), mode)
+
+
 # ── INTELLIGENCE TOOLS (5) ──────────────────────────────────────────────────
 
 @mcp.tool()
@@ -115,14 +131,38 @@ def zero_get_heat() -> dict:
 
 @mcp.tool()
 def zero_get_approaching() -> dict:
-    """Get coins near consensus threshold with bottleneck analysis. Shows what's forming."""
-    return _api.get_approaching(_get_operator_id())
+    """Get coins near consensus threshold with bottleneck analysis and conviction velocity. Shows what's forming and how fast."""
+    from scanner.v6.conviction_history import ConvictionTracker
+    result = _api.get_approaching(_get_operator_id())
+    tracker = ConvictionTracker()
+    for coin_entry in result.get("approaching", []):
+        coin = coin_entry.get("coin", "")
+        data = tracker.get_coin_data(coin)
+        coin_entry["velocity"] = data["velocity"]
+        coin_entry["velocity_label"] = data["velocity_label"]
+        coin_entry["time_to_threshold"] = data["time_to_threshold"]
+    return result
 
 
 @mcp.tool()
 def zero_get_pulse(limit: int = 20) -> dict:
     """Get recent market events: entries, exits, approaching signals, rejections."""
     return _api.get_pulse(_get_operator_id(), limit=limit)
+
+
+@mcp.tool()
+def zero_get_regime() -> dict:
+    """Get the global market regime state.
+
+    Shows: dominant direction, coin distribution, fear/greed,
+    funding bias, volatility. This is the "road surface" —
+    how the market feels right now.
+    """
+    from scanner.v6.regime import RegimeState
+    heat_data = _api.get_heat(_get_operator_id())
+    brief_data = _api.get_brief(_get_operator_id())
+    regime = RegimeState.from_heat(heat_data, brief_data)
+    return regime.to_dict()
 
 
 @mcp.tool()

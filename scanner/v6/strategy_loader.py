@@ -74,6 +74,53 @@ class UnlockConfig:
     score_minimum: float
 
 
+VALID_MODES = {"comfort", "sport", "track"}
+
+
+@dataclass
+class ModeConfig:
+    push_on: list[str]
+    approval_required: bool
+    approval_timeout_seconds: int  # 0 means no timeout (only relevant when approval_required)
+    heat_push_interval_hours: Optional[float]  # None = no heat pushes
+    approaching_push: bool
+
+    def to_dict(self) -> dict:
+        return {
+            "push_on": self.push_on,
+            "approval_required": self.approval_required,
+            "approval_timeout_seconds": self.approval_timeout_seconds,
+            "heat_push_interval_hours": self.heat_push_interval_hours,
+            "approaching_push": self.approaching_push,
+        }
+
+
+# Default mode configs (used when YAML doesn't define modes section)
+_DEFAULT_MODES: dict[str, ModeConfig] = {
+    "comfort": ModeConfig(
+        push_on=["entry", "exit", "brief", "circuit_breaker"],
+        approval_required=False,
+        approval_timeout_seconds=0,
+        heat_push_interval_hours=None,
+        approaching_push=False,
+    ),
+    "sport": ModeConfig(
+        push_on=["entry", "exit", "brief", "approaching", "heat_shift", "regime_shift", "circuit_breaker"],
+        approval_required=False,
+        approval_timeout_seconds=0,
+        heat_push_interval_hours=2,
+        approaching_push=True,
+    ),
+    "track": ModeConfig(
+        push_on=["entry", "exit", "brief", "approaching", "heat_shift", "regime_shift", "eval_candidate", "circuit_breaker"],
+        approval_required=True,
+        approval_timeout_seconds=300,
+        heat_push_interval_hours=1,
+        approaching_push=True,
+    ),
+}
+
+
 @dataclass
 class StrategyConfig:
     name: str
@@ -84,6 +131,7 @@ class StrategyConfig:
     exits: ExitsConfig
     unlock: UnlockConfig
     tier: str                     # "free" | "pro" | "scale"
+    modes: dict[str, ModeConfig] = field(default_factory=lambda: dict(_DEFAULT_MODES))
 
     # ── convenience helpers ────────────────────────────────────────────────
 
@@ -114,6 +162,12 @@ class StrategyConfig:
     def is_watch_only(self) -> bool:
         """True for Watch strategy — no positions, observe only."""
         return self.risk.max_positions == 0
+
+    def get_mode_config(self, mode: str) -> ModeConfig:
+        """Get ModeConfig for a drive mode. Raises ValueError for invalid mode."""
+        if mode not in VALID_MODES:
+            raise ValueError(f"Invalid mode '{mode}'. Valid: {sorted(VALID_MODES)}")
+        return self.modes.get(mode, _DEFAULT_MODES[mode])
 
 
 # ─── VALIDATION ──────────────────────────────────────────────────────────────
@@ -243,6 +297,29 @@ def _check_section(section: dict, required: set, label: str, section_name: str) 
 
 # ─── PARSING ─────────────────────────────────────────────────────────────────
 
+def _parse_modes(raw_modes: Optional[dict]) -> dict[str, ModeConfig]:
+    """Parse modes section from YAML. Returns defaults if not present."""
+    if not raw_modes:
+        return dict(_DEFAULT_MODES)
+    modes = {}
+    for mode_name in VALID_MODES:
+        if mode_name in raw_modes:
+            m = raw_modes[mode_name]
+            heat_interval = m.get("heat_push_interval_hours")
+            if heat_interval is not None:
+                heat_interval = float(heat_interval)
+            modes[mode_name] = ModeConfig(
+                push_on=list(m.get("push_on", [])),
+                approval_required=bool(m.get("approval_required", False)),
+                approval_timeout_seconds=int(m.get("approval_timeout_seconds", 0)),
+                heat_push_interval_hours=heat_interval,
+                approaching_push=bool(m.get("approaching_push", False)),
+            )
+        else:
+            modes[mode_name] = _DEFAULT_MODES[mode_name]
+    return modes
+
+
 def _parse(raw: dict) -> StrategyConfig:
     """Convert raw YAML dict → StrategyConfig dataclass (after validation)."""
     ev = raw["evaluation"]
@@ -286,6 +363,7 @@ def _parse(raw: dict) -> StrategyConfig:
         unlock = UnlockConfig(
             score_minimum = float(raw["unlock"]["score_minimum"]),
         ),
+        modes = _parse_modes(raw.get("modes")),
     )
 
 
@@ -324,6 +402,17 @@ def list_strategies(strategies_dir: Optional[Path] = None) -> list[str]:
     if not dir_.exists():
         return []
     return sorted(p.stem for p in dir_.glob("*.yaml"))
+
+
+def get_mode_config(strategy: str, mode: str, strategies_dir: Optional[Path] = None) -> ModeConfig:
+    """Load a strategy and return its ModeConfig for the given drive mode.
+
+    Raises:
+        FileNotFoundError: Strategy doesn't exist.
+        ValueError:        Invalid mode name or YAML is malformed.
+    """
+    cfg = load_strategy(strategy, strategies_dir=strategies_dir)
+    return cfg.get_mode_config(mode)
 
 
 def load_all_strategies(strategies_dir: Optional[Path] = None) -> dict[str, StrategyConfig]:

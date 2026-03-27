@@ -33,3 +33,21 @@ exits:
 unlock:
   score_minimum: 5.0
 tier: scale
+
+modes:
+  comfort:
+    push_on: [entry, exit, brief, circuit_breaker]
+    approval_required: false
+    heat_push_interval_hours: null
+    approaching_push: false
+  sport:
+    push_on: [entry, exit, brief, approaching, heat_shift, regime_shift, circuit_breaker]
+    approval_required: false
+    heat_push_interval_hours: 2
+    approaching_push: true
+  track:
+    push_on: [entry, exit, brief, approaching, heat_shift, regime_shift, eval_candidate, circuit_breaker]
+    approval_required: true
+    approval_timeout_seconds: 300
+    heat_push_interval_hours: 1
+    approaching_push: true

@@ -80,8 +80,20 @@ def _build_heat_grid(coins: list) -> str:
     return "\n".join(cells)
 
 
+def _velocity_arrow(label: str) -> tuple[str, str]:
+    """Return (arrow_html, color) for a velocity label."""
+    mapping = {
+        "ACCELERATING": ("\u2191\u2191", "#c8ff00"),
+        "BUILDING": ("\u2191", "#c8ff00"),
+        "STEADY": ("\u2192", "#888"),
+        "DECELERATING": ("\u2193", "#ff3333"),
+        "RETREATING": ("\u2193\u2193", "#ff3333"),
+    }
+    return mapping.get(label, ("\u2192", "#888"))
+
+
 def _build_approaching_rows(approaching: list) -> str:
-    """Build rows for approaching coins."""
+    """Build rows for approaching coins with optional velocity data."""
     rows = []
     for a in approaching[:5]:
         cons = a.get("consensus", 0)
@@ -89,15 +101,30 @@ def _build_approaching_rows(approaching: list) -> str:
         pct = int((cons / thresh) * 100) if thresh else 0
         dir_color = "#ff3333" if a.get("direction") == "SHORT" else "#c8ff00"
         bn = a.get("bottleneck", "---")
+
+        # Velocity arrow (present when conviction tracker data is available)
+        vel_html = ""
+        vel_label = a.get("velocity_label")
+        if vel_label:
+            arrow, arrow_color = _velocity_arrow(vel_label)
+            vel_html = f'<span class="ap-vel" style="color:{arrow_color}">{arrow}</span>'
+
+        # Time to threshold
+        ttt = a.get("time_to_threshold")
+        ttt_html = ""
+        if ttt:
+            ttt_html = f'<span class="ap-ttt">{ttt} to {thresh}/7</span>'
+
         rows.append(
             f'<div class="ap-row">'
             f'<div class="ap-top">'
             f'<span class="ap-coin">{a.get("coin", "?")}</span>'
+            f'{vel_html}'
             f'<span class="ap-dir" style="color:{dir_color}">{a.get("direction", "---")}</span>'
             f'<span class="ap-frac">{cons}/{thresh}</span>'
             f'</div>'
             f'<div class="ap-bar"><div class="ap-fill" style="width:{pct}%"></div></div>'
-            f'<div class="ap-bn">bottleneck: <span style="color:#ffb000">{bn}</span></div>'
+            f'<div class="ap-bn">bottleneck: <span style="color:#ffb000">{bn}</span>{ttt_html}</div>'
             f'</div>'
         )
     return "\n".join(rows)
@@ -541,6 +568,54 @@ def _preprocess(template_name: str, data: dict) -> dict:
         out["trades_bar_pct"] = str(max(3, int((tc / ec) * 100))) if ec else "0"
         rate = (rc / ec * 100) if ec else 0
         out["reject_rate"] = f"{rate:.1f}%"
+
+    elif template_name == "regime_card":
+        # Direction color
+        dom = data.get("dominant_direction", "MIXED")
+        dir_colors = {"SHORT": "#ff3333", "LONG": "#c8ff00", "MIXED": "#ffb000", "QUIET": "#666"}
+        out["direction_color"] = dir_colors.get(dom, "#e8e4df")
+        # Distribution bar percentages
+        total = data.get("total", 0) or 1
+        out["short_pct"] = str(int((data.get("trending_short", 0) / total) * 100))
+        out["long_pct"] = str(int((data.get("trending_long", 0) / total) * 100))
+        out["neutral_pct"] = str(int((data.get("neutral", 0) / total) * 100))
+        # Fear & greed color
+        fg = data.get("fear_greed", 50)
+        out["fg_color"] = _fg_color(int(fg) if isinstance(fg, (int, float)) else 50)
+        # Volatility color
+        vol = data.get("volatility", "NORMAL")
+        vol_colors = {"LOW": "#666", "NORMAL": "#e8e4df", "HIGH": "#ffb000", "EXTREME": "#ff3333"}
+        out["vol_color"] = vol_colors.get(vol, "#e8e4df")
+
+    elif template_name == "mode_card":
+        active = data.get("active_mode", "comfort")
+        out["active_mode"] = active.upper()
+        modes_data = data.get("modes", {})
+        for mode_name in ("comfort", "sport", "track"):
+            prefix = mode_name
+            mc = modes_data.get(mode_name, {})
+            is_active = mode_name == active
+            out[f"{prefix}_border"] = "#c8ff00" if is_active else "#333"
+            out[f"{prefix}_bg"] = "#1a1a0a" if is_active else "#111"
+            out[f"{prefix}_label_color"] = "#c8ff00" if is_active else "#888"
+            push_on = mc.get("push_on", [])
+            all_types = ["entry", "exit", "brief", "approaching", "heat_shift",
+                         "regime_shift", "eval_candidate", "circuit_breaker"]
+            marks = []
+            for pt in all_types:
+                icon = "\u2713" if pt in push_on else "\u2717"
+                color = "#c8ff00" if pt in push_on else "#444"
+                label = pt.replace("_", " ")
+                marks.append(
+                    f'<div class="push-row">'
+                    f'<span style="color:{color}">{icon}</span> '
+                    f'<span class="push-label">{label}</span></div>'
+                )
+            out[f"{prefix}_pushes"] = "\n".join(marks)
+            out[f"{prefix}_approval"] = "YES" if mc.get("approval_required") else "NO"
+            out[f"{prefix}_approval_color"] = "#ffb000" if mc.get("approval_required") else "#666"
+            heat_h = mc.get("heat_push_interval_hours")
+            out[f"{prefix}_heat_interval"] = f"{heat_h}h" if heat_h else "---"
 
     elif template_name == "backtest_summary_card":
         strategies = data.get("strategies", [])

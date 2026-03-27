@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #e8e4df;
+      font-family: 'JetBrains Mono', monospace;
+      width: 800px;
+      height: 400px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #c8ff00;
+    }
+    .active-badge {
+      font-size: 12px;
+      color: #888;
+    }
+    .active-badge span {
+      color: #c8ff00;
+      font-weight: 700;
+    }
+    .columns {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+    }
+    .mode-col {
+      flex: 1;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .mode-name {
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .section-label {
+      font-size: 9px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+    .push-row {
+      display: flex;
+      gap: 4px;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+    .push-label {
+      color: #888;
+    }
+    .approval-row {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .heat-row {
+      font-size: 10px;
+      color: #888;
+      margin-top: 2px;
+    }
+    .footer {
+      font-size: 9px;
+      color: #555;
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">DRIVE MODES</div>
+    <div class="active-badge">active: <span>{{active_mode}}</span></div>
+  </div>
+
+  <div class="columns">
+    <!-- COMFORT -->
+    <div class="mode-col" style="border-color:{{comfort_border}};background:{{comfort_bg}}">
+      <div class="mode-name" style="color:{{comfort_label_color}}">comfort</div>
+      <div class="section-label">pushes</div>
+      {{comfort_pushes}}
+      <div class="section-label">approval</div>
+      <div class="approval-row" style="color:{{comfort_approval_color}}">{{comfort_approval}}</div>
+      <div class="section-label">heat interval</div>
+      <div class="heat-row">{{comfort_heat_interval}}</div>
+    </div>
+
+    <!-- SPORT -->
+    <div class="mode-col" style="border-color:{{sport_border}};background:{{sport_bg}}">
+      <div class="mode-name" style="color:{{sport_label_color}}">sport</div>
+      <div class="section-label">pushes</div>
+      {{sport_pushes}}
+      <div class="section-label">approval</div>
+      <div class="approval-row" style="color:{{sport_approval_color}}">{{sport_approval}}</div>
+      <div class="section-label">heat interval</div>
+      <div class="heat-row">{{sport_heat_interval}}</div>
+    </div>
+
+    <!-- TRACK -->
+    <div class="mode-col" style="border-color:{{track_border}};background:{{track_bg}}">
+      <div class="mode-name" style="color:{{track_label_color}}">track</div>
+      <div class="section-label">pushes</div>
+      {{track_pushes}}
+      <div class="section-label">approval</div>
+      <div class="approval-row" style="color:{{track_approval_color}}">{{track_approval}}</div>
+      <div class="section-label">heat interval</div>
+      <div class="heat-row">{{track_heat_interval}}</div>
+    </div>
+  </div>
+
+  <div class="footer">mode controls experience only &mdash; strategy logic unchanged</div>
+</body>
+</html>

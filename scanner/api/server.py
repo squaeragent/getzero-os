@@ -243,6 +243,18 @@ def regime():
     }
 
 
+@app.get("/v6/regime")
+def v6_regime():
+    """Global market regime state from v6 engine — the road surface."""
+    from scanner.v6.api import ZeroAPI
+    from scanner.v6.regime import RegimeState
+    api = ZeroAPI()
+    heat_data = api.get_heat("op_default")
+    brief_data = api.get_brief("op_default")
+    regime = RegimeState.from_heat(heat_data, brief_data)
+    return regime.to_dict()
+
+
 @app.get("/signals")
 def signals():
     """Active signals: candidates, approved, and adversary kill stats."""
@@ -977,6 +989,13 @@ try:
         operator_id: str = Query("op_default"),
     ):
         return _v6_api.queue_session(operator_id, strategy, paper=paper)
+
+    @app.post("/v6/session/mode")
+    def v6_set_mode(
+        mode: str = "comfort",
+        operator_id: str = Query("op_default"),
+    ):
+        return _v6_api.set_mode(operator_id, mode)
 
     @app.get("/v6/session/history")
     def v6_history(limit: int = 10, operator_id: str = Query("op_default")):

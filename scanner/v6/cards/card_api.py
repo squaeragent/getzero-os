@@ -109,6 +109,35 @@ async def card_funnel(session_id: str = Query("latest"), operator_id: str = Quer
     return Response(content=png, media_type="image/png")
 
 
+@router.get("/regime")
+async def card_regime(operator_id: str = Query("op_default")):
+    """Render regime card — global market state. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    from scanner.v6.regime import RegimeState
+    api = ZeroAPI()
+    heat_data = api.get_heat(operator_id)
+    brief_data = api.get_brief(operator_id)
+    regime = RegimeState.from_heat(heat_data, brief_data)
+    png = await _get_renderer().render_async("regime_card", regime.to_dict())
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/mode")
+async def card_mode(mode: str = Query("comfort")):
+    """Render drive mode comparison card. Returns PNG."""
+    from scanner.v6.strategy_loader import load_strategy, VALID_MODES
+    if mode not in VALID_MODES:
+        mode = "comfort"
+    cfg = load_strategy("momentum")
+    modes_dict = {}
+    for m in sorted(VALID_MODES):
+        mc = cfg.get_mode_config(m)
+        modes_dict[m] = mc.to_dict()
+    data = {"active_mode": mode, "modes": modes_dict}
+    png = await _get_renderer().render_async("mode_card", data)
+    return Response(content=png, media_type="image/png")
+
+
 # ── Backtest card endpoints ────────────────────────────────────────
 
 def _load_backtest(strategy: str, days: int) -> dict | None:

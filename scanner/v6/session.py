@@ -33,7 +33,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
-from scanner.v6.strategy_loader import load_strategy, StrategyConfig
+from scanner.v6.strategy_loader import load_strategy, StrategyConfig, VALID_MODES
 
 # ── Paths (defaults, overridable via bus_dir) ─────────────────────────────────
 V6_DIR = Path(__file__).parent
@@ -243,6 +243,7 @@ class Session:
     started_at: datetime
     ends_at: datetime
     paper: bool
+    mode: str = "comfort"  # drive mode: comfort | sport | track
     trades: list = field(default_factory=list)
     active_positions: list = field(default_factory=list)
     eval_count: int = 0
@@ -273,6 +274,7 @@ class Session:
             "started_at": self.started_at.isoformat(),
             "ends_at": self.ends_at.isoformat(),
             "paper": self.paper,
+            "mode": self.mode,
             "trades": self.trades,
             "active_positions": self.active_positions,
             "eval_count": self.eval_count,
@@ -775,6 +777,37 @@ class SessionManager:
 
         # Clear active session
         self._active_session = None
+
+    # ── MODE ──────────────────────────────────────────────────────────
+
+    def set_mode(self, session: Session, mode: str) -> dict:
+        """Change the drive mode for an active session.
+
+        Returns dict with new mode config.
+        Raises ValueError for invalid mode, RuntimeError if no active session.
+        """
+        if mode not in VALID_MODES:
+            raise ValueError(f"Invalid mode '{mode}'. Valid: {sorted(VALID_MODES)}")
+        if session.state not in ("active", "pending"):
+            raise RuntimeError(f"Cannot change mode in state '{session.state}'")
+
+        old_mode = session.mode
+        session.mode = mode
+        mode_config = session.strategy_config.get_mode_config(mode)
+
+        self._persist_session(session)
+        self._emit_event(session, "MODE_CHANGED", {
+            "old_mode": old_mode,
+            "new_mode": mode,
+            "mode_config": mode_config.to_dict(),
+        })
+
+        _log(f"Mode changed: {old_mode} → {mode}")
+        return {
+            "mode": mode,
+            "previous_mode": old_mode,
+            "config": mode_config.to_dict(),
+        }
 
     # ── TRACKING (called by controller integration) ──────────────────────────
 

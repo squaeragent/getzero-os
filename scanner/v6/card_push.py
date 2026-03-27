@@ -27,6 +27,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from scanner.v6.api import ZeroAPI
 from scanner.v6.cards.renderer import CardRenderer
+from scanner.v6.conviction_history import ConvictionTracker
+from scanner.v6.regime import RegimeState, detect_shift
 
 STATE_FILE = Path(__file__).resolve().parent / "data" / "card_push_state.json"
 LOG_FILE = Path(__file__).resolve().parent / "data" / "card_push_log.jsonl"
@@ -231,6 +233,42 @@ def run(morning: bool = False, force: bool = False, dry_run: bool = False):
                 })
                 pushes.append(("heat_shift", card_path))
 
+        # --- Conviction velocity tracking ---
+        conviction_tracker = ConvictionTracker()
+        for coin_info in heat_data.get("coins", []):
+            conviction_tracker.record(
+                coin_info["coin"],
+                coin_info.get("consensus", 0),
+                coin_info.get("direction", "NONE"),
+                coin_info.get("conviction", 0),
+            )
+
+        accel_alerts = conviction_tracker.get_acceleration_alerts()
+        if accel_alerts and can_push(state, force):
+            for alert in accel_alerts:
+                # Find old consensus from state for display
+                old_cons = state.get("last_heat", {}).get(alert["coin"], {}).get("consensus", "?")
+                detail = (
+                    f"{alert['coin']} {old_cons}→{alert['consensus']}/7 "
+                    f"velocity={alert['velocity']}/h"
+                )
+                card_path = None
+                if not dry_run:
+                    card_path = str(PUSH_DIR / "zero_push_approaching.png")
+                    approaching_data = api.get_approaching(OPERATOR_ID)
+                    renderer.render_to_file("approaching_card", approaching_data, card_path)
+                    state = record_push(state)
+                emit("conviction_acceleration", detail, card_path)
+                log_push({
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                    "type": "conviction_acceleration",
+                    "coin": alert["coin"],
+                    "velocity": alert["velocity"],
+                    "consensus": alert["consensus"],
+                    "dry_run": dry_run,
+                })
+                pushes.append(("conviction_acceleration", card_path))
+
         # --- Approaching changes ---
         new_approaching, approaching_data = detect_approaching_changes(api, state)
         if new_approaching and can_push(state, force):
@@ -292,6 +330,34 @@ def run(morning: bool = False, force: bool = False, dry_run: bool = False):
                     "coin": coin,
                     "dry_run": dry_run,
                 })
+
+        # --- Regime shift detection ---
+        current_regime = RegimeState.from_heat(heat_data, brief_data)
+        last_regime_data = state.get("last_regime")
+        if last_regime_data:
+            previous_regime = RegimeState(**last_regime_data)
+            shift = detect_shift(previous_regime, current_regime)
+            if shift and can_push(state, force):
+                detail = (
+                    f"{shift['from_direction']}\u2192{shift['to_direction']} | "
+                    f"{shift['summary']}"
+                )
+                card_path = None
+                if not dry_run:
+                    card_path = str(PUSH_DIR / "zero_push_regime.png")
+                    renderer.render_to_file("regime_card", current_regime.to_dict(), card_path)
+                    state = record_push(state)
+                emit("regime_shift", detail, card_path)
+                log_push({
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                    "type": "regime_shift",
+                    "from": shift["from_direction"],
+                    "to": shift["to_direction"],
+                    "summary": shift["summary"],
+                    "dry_run": dry_run,
+                })
+                pushes.append(("regime_shift", card_path))
+        state["last_regime"] = current_regime.to_dict()
 
     if not pushes and not morning:
         print("[QUIET] no changes detected")
