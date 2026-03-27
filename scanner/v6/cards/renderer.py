@@ -762,6 +762,99 @@ def _preprocess(template_name: str, data: dict) -> dict:
         else:
             out["latest_label"] = "no milestones earned yet"
 
+    elif template_name == "leaderboard_card":
+        leaderboard = data.get("leaderboard", [])
+        stats = data.get("stats", {})
+        out["total_agents"] = str(stats.get("total_agents", 0))
+        out["active_this_week"] = str(stats.get("active_this_week", 0))
+
+        # Build leaderboard rows HTML
+        rows = []
+        for entry in leaderboard:
+            is_you = entry.get("is_you", False)
+            rank = entry.get("rank", 0)
+            row_cls = "row you" if is_you else "row"
+            rank_cls = f"rank rank-{rank}" if rank <= 3 else "rank"
+            cls = entry.get("class_name", "novice")
+            class_tag_cls = f"class-tag class-{cls}"
+            wr = entry.get("win_rate", 0)
+            streak = entry.get("streak_current", 0)
+            rows.append(
+                f'<div class="{row_cls}">'
+                f'<span class="{rank_cls}">#{rank}</span>'
+                f'<span class="name">{entry.get("display_name", "?")}</span>'
+                f'<span class="{class_tag_cls}">{cls.upper()}</span>'
+                f'<span class="score">{entry.get("total_score", 0):.1f}</span>'
+                f'<span class="wr">{wr:.1f}%</span>'
+                f'<span class="streak">{streak}</span>'
+                f'</div>'
+            )
+        out["leaderboard_rows"] = "\n".join(rows)
+
+        your_rank = stats.get("your_rank", 0)
+        total = stats.get("total_agents", 0)
+        out["your_rank_label"] = f"you are #{your_rank} of {total} agents" if total else ""
+
+    elif template_name == "rivalry_card":
+        rival = data.get("rival") or {}
+        you = data.get("you") or {}
+        gap = data.get("gap", 0)
+        message = data.get("message", "")
+
+        out["gap_label"] = f"{gap} PTS GAP" if gap else "---"
+        out["message"] = message
+
+        # You side
+        out["you_rank"] = str(you.get("rank", "?"))
+        out["you_name"] = you.get("display_name", "YOU")
+        you_cls = you.get("class_name", "novice")
+        out["you_class"] = you_cls.upper()
+        class_colors = {
+            "novice": "#666", "apprentice": "#888",
+            "operator": "#ffb000", "veteran": "#c8ff00", "elite": "#ff3333",
+        }
+        out["you_class_color"] = class_colors.get(you_cls, "#888")
+        out["you_score"] = f"{you.get('total_score', 0):.1f}"
+        out["you_wr"] = f"{you.get('win_rate', 0):.1f}"
+        out["you_sessions"] = str(you.get("sessions_completed", 0))
+        out["you_streak"] = str(you.get("streak_current", 0))
+        out["you_strategy"] = you.get("best_strategy", "none").upper()
+
+        # Rival side
+        out["rival_rank"] = str(rival.get("rank", "?"))
+        out["rival_name"] = rival.get("display_name", "---")
+        rival_cls = rival.get("class_name", "novice")
+        out["rival_class"] = rival_cls.upper()
+        out["rival_class_color"] = class_colors.get(rival_cls, "#888")
+        out["rival_score"] = f"{rival.get('total_score', 0):.1f}"
+        out["rival_wr"] = f"{rival.get('win_rate', 0):.1f}"
+        out["rival_sessions"] = str(rival.get("sessions_completed", 0))
+        out["rival_streak"] = str(rival.get("streak_current", 0))
+        out["rival_strategy"] = rival.get("best_strategy", "none").upper()
+
+        # Comparison classes (ahead/behind/tied)
+        def _cmp_cls(you_val, rival_val, label):
+            yv = you.get(you_val, 0)
+            rv = rival.get(rival_val, 0) if rival else 0
+            if yv > rv:
+                return "ahead", "behind"
+            elif yv < rv:
+                return "behind", "ahead"
+            return "tied", "tied"
+
+        s_y, s_r = _cmp_cls("total_score", "total_score", "score")
+        out["score_you_cls"] = s_y
+        out["score_rival_cls"] = s_r
+        w_y, w_r = _cmp_cls("win_rate", "win_rate", "wr")
+        out["wr_you_cls"] = w_y
+        out["wr_rival_cls"] = w_r
+        se_y, se_r = _cmp_cls("sessions_completed", "sessions_completed", "sess")
+        out["sess_you_cls"] = se_y
+        out["sess_rival_cls"] = se_r
+        st_y, st_r = _cmp_cls("streak_current", "streak_current", "streak")
+        out["streak_you_cls"] = st_y
+        out["streak_rival_cls"] = st_r
+
     elif template_name == "streak_card":
         current = data.get("current", 0)
         best = data.get("best", 0)

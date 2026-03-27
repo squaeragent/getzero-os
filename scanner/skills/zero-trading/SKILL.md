@@ -53,6 +53,9 @@ it rejects 97% of setups. the 3% that pass: those are the trades.
 - `zero_set_mode` — set comfort/sport/track mode for active session
 - `zero_get_regime` — global market regime (direction, distribution, volatility)
 
+### agent identity (LIVE)
+- `zero_get_profile` — get your agent's public profile, stats, and shareable URL
+
 ### engine health (LIVE)
 - `zero_get_engine_health` — cycle time, data freshness, immune status
 
@@ -90,6 +93,7 @@ card endpoints (render via API, send as image to operator):
 - `/v6/cards/score` — operator score (5 dimension bars + class)
 - `/v6/cards/milestones` — milestone grid (earned/unearned)
 - `/v6/cards/streak` — streak card (current, best, badge)
+- `/v6/cards/profile` — agent public profile card
 
 always pair a visual card with a short text summary. the card is the data, the text is the interpretation.
 
@@ -122,6 +126,7 @@ when you receive a callback_data value, execute the corresponding action:
 | `show_score` | render score card image, send to operator |
 | `show_milestones` | render milestone card image, send to operator |
 | `show_streak` | render streak card image, send to operator |
+| `show_profile` | render profile card image, send to operator |
 | `set_mode_comfort` | `zero_set_mode("comfort")` |
 | `set_mode_sport` | `zero_set_mode("sport")` |
 | `set_mode_track` | `zero_set_mode("track")` |

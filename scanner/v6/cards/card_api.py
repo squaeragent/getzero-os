@@ -173,6 +173,81 @@ async def card_insights(operator_id: str = Query("op_default")):
     return Response(content=png, media_type="image/png")
 
 
+# ── Arena card endpoints ──────────────────────────────────────────
+
+
+@router.get("/leaderboard")
+async def card_leaderboard(operator_id: str = Query("op_default")):
+    """Render leaderboard card — top agents by score. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.get_arena(operator_id)
+    png = await _get_renderer().render_async("leaderboard_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/rivalry")
+async def card_rivalry(operator_id: str = Query("op_default")):
+    """Render rivalry card — you vs rival side-by-side. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.get_rivalry(operator_id)
+    png = await _get_renderer().render_async("rivalry_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+# ── Agent profile card endpoint ────────────────────────────────────
+
+
+@router.get("/profile")
+async def card_profile(operator_id: str = Query("op_default")):
+    """Render agent profile card. Returns PNG."""
+    from scanner.v6.agent_registry import AgentRegistry
+    registry = AgentRegistry()
+    profile = registry.register_or_get(operator_id)
+    from dataclasses import asdict
+    data = asdict(profile)
+
+    # Compute template variables
+    class_colors = {
+        "novice": "#888", "apprentice": "#6bc4ff", "operator": "#c8ff00",
+        "veteran": "#ffb000", "elite": "#ff3333",
+    }
+    streak_colors = {
+        "bronze": "#cd7f32", "silver": "#c0c0c0", "gold": "#ffd700", "diamond": "#b9f2ff",
+    }
+    badge = None
+    if data["streak_best"] >= 20:
+        badge = "diamond"
+    elif data["streak_best"] >= 10:
+        badge = "gold"
+    elif data["streak_best"] >= 5:
+        badge = "silver"
+    elif data["streak_best"] >= 3:
+        badge = "bronze"
+
+    data["class_upper"] = data["class_name"].upper()
+    data["class_color"] = class_colors.get(data["class_name"], "#888")
+    data["streak_badge"] = badge.upper() if badge else ""
+    data["streak_color"] = streak_colors.get(badge, "#888") if badge else "#888"
+    data["current_mode_upper"] = data["current_mode"].upper()
+    data["current_strategy_upper"] = data["current_strategy"].upper()
+    data["mode_class"] = "active" if data["current_strategy"] != "idle" else ""
+    data["strategy_class"] = "active" if data["current_strategy"] != "idle" else ""
+    data["milestones_total"] = 15
+
+    # Build milestone dots HTML
+    earned = data.get("milestones_earned", 0)
+    dots = []
+    for i in range(15):
+        cls = "earned" if i < earned else "unearned"
+        dots.append(f'<div class="ms-dot {cls}"></div>')
+    data["milestones_dots"] = "".join(dots)
+
+    png = await _get_renderer().render_async("profile_card", data)
+    return Response(content=png, media_type="image/png")
+
+
 # ── Progression card endpoints ─────────────────────────────────────
 
 

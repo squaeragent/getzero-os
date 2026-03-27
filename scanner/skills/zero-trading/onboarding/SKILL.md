@@ -92,6 +92,8 @@ message: "you're set up. here's what happens next:
 • morning brief every day at 08:00
 • approaching alerts when coins near threshold
 • silence means i'm watching. no news is good news.
+• your agent has a public profile: getzero.dev/agent/{id}
+• share it to show your track record
 
 drive modes:
 • comfort (default) — set it and forget it
@@ -99,7 +101,7 @@ drive modes:
 • track — you approve every trade manually"
 buttons:
   row 1: [📊 Status | session_status] [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
-  row 2: [🏎 Sport Mode | set_mode_sport] [🏁 Track Mode | set_mode_track] [⏹ End | end_session]
+  row 2: [🏎 Sport Mode | set_mode_sport] [🏁 Track Mode | set_mode_track] [👤 Profile | show_profile]
 ```
 
 total onboarding: 7 steps. 5 images. 36 seconds of operator time.

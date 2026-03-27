@@ -1033,6 +1033,47 @@ try:
     def v6_engine_health(operator_id: str = Query("op_default")):
         return _v6_api.get_engine_health(operator_id)
 
+    # ── Agent identity endpoints ─────────────────────────────────────────
+    from scanner.v6.agent_registry import AgentRegistry
+
+    @app.get("/v6/agent/profile")
+    def v6_agent_profile(operator_id: str = Query("op_default")):
+        """Get agent profile (auto-registers if new)."""
+        registry = AgentRegistry()
+        profile = registry.register_or_get(operator_id)
+        from dataclasses import asdict
+        return asdict(profile)
+
+    @app.get("/v6/agents")
+    def v6_list_agents():
+        """List all registered agents with stats."""
+        registry = AgentRegistry()
+        return {"agents": registry.get_all_agents(), "count": registry.get_agent_count()}
+
+    @app.get("/v6/agent/{agent_id}")
+    def v6_agent_by_id(agent_id: str):
+        """Get a specific agent's public profile."""
+        registry = AgentRegistry()
+        agent = registry.get_agent(agent_id)
+        if agent is None:
+            return JSONResponse(status_code=404, content={"error": "agent not found"})
+        return agent
+
+    # ── Arena endpoints ──────────────────────────────────────────────────
+    @app.get("/v6/arena")
+    def v6_arena(operator_id: str = Query("op_default")):
+        """Get arena leaderboard and stats."""
+        return _v6_api.get_arena(operator_id)
+
+    @app.get("/v6/arena/leaderboard")
+    def v6_leaderboard(limit: int = 10, operator_id: str = Query("op_default")):
+        """Top agents by score."""
+        from dataclasses import asdict as _asdict
+        from scanner.v6.arena import Arena
+        arena = Arena(_v6_api)
+        entries = arena.get_leaderboard(limit=limit, requester_id=operator_id)
+        return {"leaderboard": [_asdict(e) for e in entries], "count": len(entries)}
+
     # ── Canvas live dashboard ─────────────────────────────────────────────
     _dashboard_path = str(SCANNER_DIR / "v6" / "cards" / "dashboard.html")
 

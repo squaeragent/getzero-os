@@ -411,15 +411,27 @@ class ZeroAPI:
         engine = self._get_progression(operator_id)
         return asdict(engine.get_reputation())
 
-    # ── COMPETITION (3 tools) — Phase 4 stubs ────────────────────────────
+    # ── COMPETITION (3 tools) ─────────────────────────────────────────────
+
+    def _get_arena(self):
+        from scanner.v6.arena import Arena
+        return Arena(self)
 
     def get_arena(self, operator_id: str) -> dict:
-        """Get arena leaderboard. Phase 4 — returns placeholder."""
-        return {"leaderboard": [], "season": None, "phase": "coming in Phase 4"}
+        """Get arena leaderboard and stats."""
+        from dataclasses import asdict
+        arena = self._get_arena()
+        stats = arena.get_stats(operator_id)
+        leaderboard = arena.get_leaderboard(limit=10, requester_id=operator_id)
+        return {
+            "stats": asdict(stats),
+            "leaderboard": [asdict(e) for e in leaderboard],
+        }
 
     def get_rivalry(self, operator_id: str) -> dict:
-        """Get rivalry stats. Phase 4 — returns placeholder."""
-        return {"rival": None, "h2h": None, "phase": "coming in Phase 4"}
+        """Get rival stats — the agent ranked just above you."""
+        arena = self._get_arena()
+        return arena.get_rivalry(operator_id)
 
     def get_chain(self, operator_id: str) -> dict:
         """Get active chain progress. Phase 4 — returns placeholder."""

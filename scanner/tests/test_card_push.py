@@ -267,8 +267,11 @@ class TestQuietOutput:
         }
         card_push.save_state(state)
 
+        mock_tracker = MagicMock()
+        mock_tracker.get_acceleration_alerts.return_value = []
         with patch.object(card_push, "ZeroAPI", return_value=mock_api), \
-             patch.object(card_push, "CardRenderer"):
+             patch.object(card_push, "CardRenderer"), \
+             patch.object(card_push, "ConvictionTracker", return_value=mock_tracker):
             card_push.run()
         captured = capsys.readouterr()
         assert "[QUIET] no changes detected" in captured.out

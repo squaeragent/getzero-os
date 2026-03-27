@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.gap-badge { font-size: 14px; color: #ffb000; font-weight: 700; letter-spacing: 1px; }
+.versus { display: flex; gap: 24px; flex: 1; }
+.col {
+  flex: 1; display: flex; flex-direction: column; gap: 10px;
+  padding: 16px; background: #111;
+}
+.col.you { border: 1px solid #c8ff00; background: #1a1a0a; }
+.col.rival { border: 1px solid #ff3333; background: #1a0a0a; }
+.col-header { font-size: 11px; letter-spacing: 2px; margin-bottom: 4px; }
+.col-header.you-label { color: #c8ff00; }
+.col-header.rival-label { color: #ff3333; }
+.agent-name { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.class-tag {
+  display: inline-block; font-size: 10px; padding: 1px 8px;
+  border: 1px solid; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px;
+}
+.stat-row { display: flex; justify-content: space-between; font-size: 12px; }
+.stat-label { color: #888; }
+.stat-val { font-weight: 700; }
+.stat-val.ahead { color: #c8ff00; }
+.stat-val.behind { color: #ff3333; }
+.stat-val.tied { color: #888; }
+.bottom { display: flex; justify-content: space-between; margin-top: auto; padding-top: 8px; }
+.ts { font-size: 11px; color: #555; }
+.message { font-size: 11px; color: #ffb000; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">RIVALRY</span>
+  <span class="gap-badge">{{gap_label}}</span>
+</div>
+<div class="versus">
+  <div class="col you">
+    <div class="col-header you-label">YOU — #{{you_rank}}</div>
+    <div class="agent-name">{{you_name}}</div>
+    <span class="class-tag" style="border-color:{{you_class_color}};color:{{you_class_color}}">{{you_class}}</span>
+    <div class="stat-row"><span class="stat-label">SCORE</span><span class="stat-val {{score_you_cls}}">{{you_score}}</span></div>
+    <div class="stat-row"><span class="stat-label">WIN RATE</span><span class="stat-val {{wr_you_cls}}">{{you_wr}}%</span></div>
+    <div class="stat-row"><span class="stat-label">SESSIONS</span><span class="stat-val {{sess_you_cls}}">{{you_sessions}}</span></div>
+    <div class="stat-row"><span class="stat-label">STREAK</span><span class="stat-val {{streak_you_cls}}">{{you_streak}}</span></div>
+    <div class="stat-row"><span class="stat-label">STRATEGY</span><span class="stat-val">{{you_strategy}}</span></div>
+  </div>
+  <div class="col rival">
+    <div class="col-header rival-label">RIVAL — #{{rival_rank}}</div>
+    <div class="agent-name">{{rival_name}}</div>
+    <span class="class-tag" style="border-color:{{rival_class_color}};color:{{rival_class_color}}">{{rival_class}}</span>
+    <div class="stat-row"><span class="stat-label">SCORE</span><span class="stat-val {{score_rival_cls}}">{{rival_score}}</span></div>
+    <div class="stat-row"><span class="stat-label">WIN RATE</span><span class="stat-val {{wr_rival_cls}}">{{rival_wr}}%</span></div>
+    <div class="stat-row"><span class="stat-label">SESSIONS</span><span class="stat-val {{sess_rival_cls}}">{{rival_sessions}}</span></div>
+    <div class="stat-row"><span class="stat-label">STREAK</span><span class="stat-val {{streak_rival_cls}}">{{rival_streak}}</span></div>
+    <div class="stat-row"><span class="stat-label">STRATEGY</span><span class="stat-val">{{rival_strategy}}</span></div>
+  </div>
+</div>
+<div class="bottom">
+  <span class="ts">ZERO v6</span>
+  <span class="message">{{message}}</span>
+</div>
+</body>
+</html>

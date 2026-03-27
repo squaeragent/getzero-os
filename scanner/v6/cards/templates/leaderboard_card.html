@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.stats-badge { font-size: 12px; color: #c8ff00; letter-spacing: 1px; }
+.lb { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 10px; background: #111; font-size: 12px;
+}
+.row.you { border: 1px solid #c8ff00; background: #1a1a0a; }
+.row.separator { background: transparent; justify-content: center; color: #555; font-size: 10px; padding: 2px; }
+.rank { width: 28px; font-weight: 700; color: #888; text-align: right; }
+.rank-1 { color: #ffd700; }
+.rank-2 { color: #c0c0c0; }
+.rank-3 { color: #cd7f32; }
+.name { flex: 1; color: #e8e4df; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.class-tag {
+  font-size: 10px; padding: 1px 6px; border: 1px solid;
+  letter-spacing: 1px; font-weight: 700;
+}
+.class-novice { border-color: #666; color: #666; }
+.class-apprentice { border-color: #888; color: #888; }
+.class-operator { border-color: #ffb000; color: #ffb000; }
+.class-veteran { border-color: #c8ff00; color: #c8ff00; }
+.class-elite { border-color: #ff3333; color: #ff3333; }
+.score { width: 44px; text-align: right; font-weight: 700; color: #c8ff00; }
+.wr { width: 48px; text-align: right; color: #888; }
+.streak { width: 24px; text-align: right; color: #ffb000; }
+.bottom { display: flex; justify-content: space-between; margin-top: auto; padding-top: 6px; }
+.ts { font-size: 11px; color: #555; }
+.your-rank { font-size: 11px; color: #c8ff00; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title">ARENA LEADERBOARD</span>
+  <span class="stats-badge">{{total_agents}} AGENTS | {{active_this_week}} ACTIVE</span>
+</div>
+<div class="lb">
+  <div class="row" style="background:transparent;color:#555;font-size:10px;padding:2px 10px;">
+    <span class="rank">#</span>
+    <span class="name">AGENT</span>
+    <span class="class-tag" style="border:none;padding:0;">CLASS</span>
+    <span class="score">SCORE</span>
+    <span class="wr">WR</span>
+    <span class="streak">W</span>
+  </div>
+  {{leaderboard_rows}}
+</div>
+<div class="bottom">
+  <span class="ts">ZERO v6</span>
+  <span class="your-rank">{{your_rank_label}}</span>
+</div>
+</body>
+</html>

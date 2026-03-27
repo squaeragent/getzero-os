@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.agent-name { font-size: 22px; font-weight: 700; color: #c8ff00; }
+.agent-id { font-size: 12px; color: #555; margin-left: 8px; }
+.class-badge {
+  font-size: 16px; font-weight: 700; padding: 4px 14px;
+  border: 2px solid {{class_color}};
+  color: {{class_color}};
+  letter-spacing: 2px;
+}
+.body { display: flex; flex: 1; gap: 24px; }
+.left { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1a1a1a; }
+.stat-label { font-size: 12px; color: #888; letter-spacing: 1px; }
+.stat-value { font-size: 16px; font-weight: 700; color: #e8e4df; }
+.stat-value.highlight { color: #c8ff00; }
+.score-block { text-align: center; padding: 12px 0; }
+.score-big { font-size: 48px; font-weight: 700; color: #c8ff00; }
+.score-label { font-size: 11px; color: #888; letter-spacing: 2px; }
+.streak-badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 700; padding: 2px 10px;
+  border: 1px solid {{streak_color}};
+  color: {{streak_color}};
+  letter-spacing: 1px;
+}
+.milestones-bar { display: flex; gap: 3px; margin-top: 4px; }
+.ms-dot {
+  width: 14px; height: 14px; border-radius: 2px;
+}
+.ms-dot.earned { background: #c8ff00; }
+.ms-dot.unearned { background: #1a1a1a; }
+.bottom { display: flex; justify-content: space-between; margin-top: auto; padding-top: 8px; align-items: center; }
+.url { font-size: 11px; color: #c8ff00; letter-spacing: 1px; }
+.ts { font-size: 11px; color: #555; }
+.strategy-tag {
+  font-size: 11px; padding: 2px 8px;
+  background: #1a1a1a; color: #888;
+  letter-spacing: 1px;
+}
+.strategy-tag.active { background: #1a2600; color: #c8ff00; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <span class="agent-name">{{display_name}}</span>
+    <span class="agent-id">#{{agent_id}}</span>
+  </div>
+  <span class="class-badge">{{class_upper}}</span>
+</div>
+
+<div class="body">
+  <div class="left">
+    <div class="score-block">
+      <div class="score-big">{{total_score}}</div>
+      <div class="score-label">SCORE</div>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">SESSIONS</span>
+      <span class="stat-value">{{sessions_completed}}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">TRADES</span>
+      <span class="stat-value">{{total_trades}}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">WIN RATE</span>
+      <span class="stat-value">{{win_rate}}%</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">BEST STRATEGY</span>
+      <span class="stat-value">{{best_strategy}}</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="stat-row">
+      <span class="stat-label">STREAK</span>
+      <span class="stat-value highlight">{{streak_current}}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">BEST STREAK</span>
+      <div>
+        <span class="stat-value">{{streak_best}}</span>
+        {{#streak_badge}}<span class="streak-badge">{{streak_badge}}</span>{{/streak_badge}}
+      </div>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">MODE</span>
+      <span class="strategy-tag {{mode_class}}">{{current_mode_upper}}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">STRATEGY</span>
+      <span class="strategy-tag {{strategy_class}}">{{current_strategy_upper}}</span>
+    </div>
+    <div style="margin-top: auto;">
+      <div class="stat-label" style="margin-bottom: 6px;">MILESTONES {{milestones_earned}}/{{milestones_total}}</div>
+      <div class="milestones-bar">
+        {{milestones_dots}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <span class="url">{{public_url}}</span>
+  <span class="ts">ZERO v6</span>
+</div>
+</body>
+</html>

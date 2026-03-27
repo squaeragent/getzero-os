@@ -226,17 +226,23 @@ def zero_get_reputation() -> dict:
     return _api.get_reputation(_get_operator_id())
 
 
-# ── COMPETITION TOOLS (3) — Phase 4 ─────────────────────────────────────────
+# ── COMPETITION TOOLS (3) ───────────────────────────────────────────────────
 
 @mcp.tool()
 def zero_get_arena() -> dict:
-    """Get arena leaderboard and seasonal standings. (Phase 4 — placeholder)"""
+    """Get arena leaderboard and your ranking.
+
+    Shows: top 10 agents by score, your rank, network stats.
+    """
     return _api.get_arena(_get_operator_id())
 
 
 @mcp.tool()
 def zero_get_rivalry() -> dict:
-    """Get rival stats and head-to-head comparison. (Phase 4 — placeholder)"""
+    """Get your closest rival -- the agent ranked just above you.
+
+    Shows their stats vs yours. Beat them to move up.
+    """
     return _api.get_rivalry(_get_operator_id())
 
 
@@ -258,6 +264,23 @@ def zero_get_credits() -> dict:
 def zero_get_energy() -> dict:
     """Get energy percentage, recovery time, and projected. (Phase 4 — placeholder)"""
     return _api.get_energy(_get_operator_id())
+
+
+# ── AGENT IDENTITY (1) ─────────────────────────────────────────────────────
+
+@mcp.tool()
+def zero_get_profile() -> dict:
+    """Get your agent's public profile and stats.
+
+    Returns: agent ID, public URL, score, class, milestones,
+    streak, sessions, win rate, best strategy.
+    Share your profile: getzero.dev/agent/{id}
+    """
+    from dataclasses import asdict
+    from scanner.v6.agent_registry import AgentRegistry
+    registry = AgentRegistry()
+    profile = registry.register_or_get(_get_operator_id())
+    return asdict(profile)
 
 
 # ── ENGINE HEALTH (1 bonus) ─────────────────────────────────────────────────

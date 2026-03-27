@@ -299,12 +299,14 @@ class TestProgressionLive:
 # ── COMPETITION STUBS ────────────────────────────────────────────────────────
 
 class TestCompetitionStubs:
-    def test_arena_stub(self, api):
+    def test_arena(self, api):
         result = api.get_arena(OP)
-        assert "phase" in result
+        assert "stats" in result
+        assert "leaderboard" in result
 
-    def test_rivalry_stub(self, api):
+    def test_rivalry(self, api):
         result = api.get_rivalry(OP)
+        # Single agent = you're #1, no rival
         assert result["rival"] is None
 
     def test_chain_stub(self, api):
