@@ -1,15 +1,17 @@
 ---
 name: zero-strategy-selection
-description: "choose the right trading strategy based on market conditions, operator history, energy, and score."
+description: "choose the right trading strategy based on market conditions and operator history."
 ---
 
 # strategy selection
 
-before recommending a strategy, check 4 inputs:
+before recommending a strategy, check 2 inputs:
 
 ## 1. market conditions
 
-call `zero_get_heat` + `zero_get_approaching`.
+call `zero_get_heat`. if heat returns empty (count=0), fall back: call `zero_evaluate` on BTC, ETH, SOL, AVAX, DOGE individually.
+
+also call `zero_get_approaching` for coins near threshold.
 
 | fear & greed | regime | recommend |
 |---|---|---|
@@ -22,34 +24,37 @@ call `zero_get_heat` + `zero_get_approaching`.
 
 ## 2. operator history
 
-call `zero_session_history` + `zero_get_score`.
+call `zero_session_history`.
 - which strategies performed best for this operator?
 - win rate by strategy?
 - favor what works for THEM, not what's theoretically optimal.
+- if no history: recommend momentum (default, most forgiving).
 
-## 3. energy
+## handling errors
 
-call `zero_get_energy`.
-- above 60%: any strategy
-- 30-60%: moderate only (momentum, defense, scout)
-- below 30%: rest or defense (recovery mode)
+- if `zero_get_heat` returns `count: 0`: evaluate BTC, ETH, SOL, AVAX, DOGE individually. use those results.
+- if `zero_session_history` returns `count: 0`: no history yet. recommend momentum.
+- if any tool returns an error: tell the operator what failed. do not guess or hallucinate data.
 
-## 4. score and unlocks
+## plan gating
 
-call `zero_get_score`.
-- below 4.0: only momentum, defense, watch available
-- 4.0-5.0: +scout unlocked
-- 5.0-6.0: +sniper, +funding unlocked
-- 6.0-7.0: +fade, +degen unlocked
-- 7.0+: +apex unlocked (full access)
+not all strategies are available on all plans:
+
+| plan | strategies |
+|---|---|
+| free | momentum, defense, watch |
+| pro | + degen, scout, funding |
+| scale | + sniper, fade, apex (all 9) |
+
+if the operator asks for a locked strategy: "Degen needs Pro plan. try Momentum (free) or upgrade."
 
 ## recommendation format
 
 always give: recommendation + reasoning + alternative.
 
-"market favors momentum. fear 18, 6 coins trending, shorts paying.
-your momentum win rate: 72%. energy 78%.
-alternative: fade if you want contrarian exposure."
+"market favors momentum. 6 coins trending short, funding shorts pay.
+your momentum win rate: 72%.
+alternative: defense if you want to protect capital."
 
 never just say "use momentum." explain WHY for this operator, this market, right now.
 

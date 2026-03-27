@@ -1,6 +1,6 @@
 ---
 name: zero-risk-management
-description: "manage energy, sizing, stops, and the philosophy of capital protection."
+description: "sizing, stops, and the philosophy of capital protection."
 ---
 
 # risk management
@@ -30,8 +30,7 @@ call `zero_preview_strategy` to see exact risk math.
 | degen | 24% | 10% | 6% |
 | apex | 32% | 15% | 8% |
 
-max drawdown = all positions stopped simultaneously.
-it's the worst case. rare but possible.
+max drawdown = all positions stopped simultaneously. worst case. rare but possible.
 
 ## account size guidance
 
@@ -44,31 +43,20 @@ it's the worst case. rare but possible.
 a $100 account on apex can lose $32 in one cycle. that's 32%.
 defense caps it at $6. match strategy to account size.
 
-## energy management
-
-call `zero_get_energy`. energy depletes with sessions. recovers over time.
-- 100% energy: fully rested. any strategy.
-- 60-100%: normal operation.
-- 30-60%: conserve. momentum or defense only.
-- below 30%: rest. watch mode or wait for recovery.
-
-running aggressive strategies on low energy is bad discipline.
-the scoring system penalizes it.
-
 ## stop philosophy
 
 stops are PROTECTION, not failure.
 
 when a stop triggers:
 - "stop worked. position protected. -1.3%."
-- NEVER: "sorry" or "unfortunately"
+- NEVER say "sorry" or "unfortunately" about a stop.
 
 stops are the immune system of capital.
-every dollar saved by a stop is a dollar available for the next trade.
+every dollar saved by a stop is available for the next trade.
 
 ## trailing stops
 
-the engine activates trailing stops at 1.5% profit.
+the engine activates trailing stops at configurable profit level (typically 1.5%).
 - tracks the peak price
 - locks in gains as price moves favorably
 - triggers exit if price reverses from peak
@@ -95,3 +83,8 @@ the engine sizes positions based on:
 
 you don't control sizing. the engine does.
 report what it chose: "entered BTC short. $6.70 position (10% of equity)."
+
+## error handling
+
+if `zero_preview_strategy` returns an error: don't guess risk parameters. tell the operator the engine is unreachable.
+if an operator asks to override risk settings: explain hard caps exist for safety. they cannot be changed.
