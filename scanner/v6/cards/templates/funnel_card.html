@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.title { font-size: 14px; color: #888; letter-spacing: 2px; }
+.strategy { font-size: 22px; font-weight: 700; color: #c8ff00; }
+.meta { font-size: 12px; color: #666; text-align: right; }
+.funnel { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 0 24px; }
+.stage { display: flex; align-items: center; gap: 16px; }
+.stage-label { width: 100px; font-size: 13px; color: #888; text-transform: uppercase; text-align: right; }
+.stage-bar-wrap { flex: 1; height: 40px; position: relative; }
+.stage-bar {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.stage-count { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #e8e4df; }
+.bottom { display: flex; justify-content: space-between; margin-top: auto; padding-top: 8px; }
+.reject-rate { font-size: 14px; color: #ff3333; }
+.ts { font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <div class="title">REJECTION FUNNEL</div>
+    <div class="strategy">{{strategy}}</div>
+  </div>
+  <div class="meta">
+    <div>{{duration_hours}}h session</div>
+  </div>
+</div>
+<div class="funnel">
+  <div class="stage">
+    <div class="stage-label">evaluated</div>
+    <div class="stage-bar-wrap">
+      <div class="stage-bar" style="width:{{eval_bar_pct}}%;background:#c8ff00;color:#0a0a0a;">{{eval_count}}</div>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="stage-label">rejected</div>
+    <div class="stage-bar-wrap">
+      <div class="stage-bar" style="width:{{reject_bar_pct}}%;background:#666;color:#e8e4df;">{{reject_count}}</div>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="stage-label">trades</div>
+    <div class="stage-bar-wrap">
+      <div class="stage-bar" style="width:{{trades_bar_pct}}%;background:#c8ff00;color:#0a0a0a;min-width:48px;">{{trades}}</div>
+    </div>
+  </div>
+</div>
+<div class="bottom">
+  <span class="reject-rate">{{reject_rate}} rejection rate</span>
+  <span class="ts">ZERO v6</span>
+</div>
+</body>
+</html>

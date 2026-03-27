@@ -64,3 +64,41 @@ async def card_result(session_id: str = None, operator_id: str = Query("op_defau
     result = api.session_result(operator_id, session_id or "latest")
     png = await _get_renderer().render_async("result_card", result)
     return Response(content=png, media_type="image/png")
+
+
+@router.get("/equity")
+async def card_equity(session_id: str = Query("latest"), operator_id: str = Query("op_default")):
+    """Render equity curve card. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.session_result(operator_id, session_id)
+    png = await _get_renderer().render_async("equity_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/radar")
+async def card_radar(coin: str, operator_id: str = Query("op_default")):
+    """Render radar/spider card for a coin. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.evaluate(operator_id, coin)
+    png = await _get_renderer().render_async("radar_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/gauge")
+async def card_gauge(value: int = Query(50)):
+    """Render Fear & Greed gauge card. Returns PNG."""
+    data = {"value": value, "label": "Fear & Greed"}
+    png = await _get_renderer().render_async("gauge_card", data)
+    return Response(content=png, media_type="image/png")
+
+
+@router.get("/funnel")
+async def card_funnel(session_id: str = Query("latest"), operator_id: str = Query("op_default")):
+    """Render rejection funnel card. Returns PNG."""
+    from scanner.v6.api import ZeroAPI
+    api = ZeroAPI()
+    data = api.session_result(operator_id, session_id)
+    png = await _get_renderer().render_async("funnel_card", data)
+    return Response(content=png, media_type="image/png")

@@ -1,6 +1,7 @@
 """Card renderer — turns HTML templates into PNG via Playwright."""
 
 import asyncio
+import math
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor
@@ -139,6 +140,169 @@ def _fg_label(val: int) -> str:
     return "EXTREME GREED"
 
 
+def _build_equity_svg(points: list) -> dict:
+    """Build SVG elements for equity curve chart.
+
+    Returns dict with equity_segments, marker_elements, y_max, y_min,
+    y_zero_pct, final_pnl, pnl_color.
+    """
+    if not points:
+        return {
+            "equity_segments": "", "marker_elements": "",
+            "y_max": "0", "y_min": "0", "y_zero_pct": "50",
+            "final_pnl": "$0.00", "pnl_color": "#666",
+        }
+
+    pnls = [p.get("pnl", 0) for p in points]
+    y_max = max(max(pnls), 0)
+    y_min = min(min(pnls), 0)
+    y_range = y_max - y_min if y_max != y_min else 1
+
+    n = len(points)
+    svg_w, svg_h = 740, 280
+
+    def to_xy(i, pnl):
+        x = (i / max(n - 1, 1)) * svg_w
+        y = svg_h - ((pnl - y_min) / y_range) * svg_h
+        return x, y
+
+    # Zero line position (percentage from top)
+    y_zero_pct = ((y_max - 0) / y_range) * 100 if y_range else 50
+
+    # Build line segments colored green/red
+    segments = []
+    for i in range(len(points) - 1):
+        x1, y1 = to_xy(i, pnls[i])
+        x2, y2 = to_xy(i + 1, pnls[i + 1])
+        color = "#c8ff00" if pnls[i + 1] >= 0 else "#ff3333"
+        segments.append(
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+            f'stroke="{color}" stroke-width="2.5" />'
+        )
+
+    # Entry/exit markers
+    markers = []
+    for i, p in enumerate(points):
+        ev = p.get("event")
+        if ev in ("entry", "exit"):
+            x, y = to_xy(i, pnls[i])
+            if ev == "entry":
+                markers.append(
+                    f'<text x="{x:.1f}" y="{y - 8:.1f}" fill="#c8ff00" '
+                    f'font-size="14" text-anchor="middle">&#9650;</text>'
+                )
+            else:
+                markers.append(
+                    f'<text x="{x:.1f}" y="{y + 16:.1f}" fill="#ff3333" '
+                    f'font-size="14" text-anchor="middle">&#9660;</text>'
+                )
+
+    final_pnl = pnls[-1]
+    return {
+        "equity_segments": "\n".join(segments),
+        "marker_elements": "\n".join(markers),
+        "y_max": f"${y_max:.2f}",
+        "y_min": f"${y_min:.2f}",
+        "y_zero_pct": f"{y_zero_pct:.0f}",
+        "final_pnl": f"${final_pnl:+.2f}",
+        "pnl_color": "#c8ff00" if final_pnl >= 0 else "#ff3333",
+    }
+
+
+def _build_radar_svg(layers: list) -> dict:
+    """Build SVG elements for 7-axis radar chart.
+
+    Returns dict with web_rings, axis_lines, data_points, axis_labels.
+    """
+    n = len(layers) if layers else 7
+    cx, cy = 250, 170
+    max_r = 120
+
+    def polar(angle_idx, radius):
+        angle = (2 * math.pi * angle_idx / n) - (math.pi / 2)
+        return cx + radius * math.cos(angle), cy + radius * math.sin(angle)
+
+    # Concentric web rings (3 levels)
+    rings = []
+    for level in (0.33, 0.66, 1.0):
+        r = max_r * level
+        pts = " ".join(f"{polar(i, r)[0]:.1f},{polar(i, r)[1]:.1f}" for i in range(n))
+        rings.append(f'<polygon class="web-ring" points="{pts}" />')
+
+    # Axis lines
+    lines = []
+    for i in range(n):
+        ex, ey = polar(i, max_r)
+        lines.append(f'<line class="axis-line" x1="{cx}" y1="{cy}" x2="{ex:.1f}" y2="{ey:.1f}" />')
+
+    # Data polygon (passed = full radius, failed = 30% radius)
+    data_pts = []
+    for i, layer in enumerate(layers or []):
+        r = max_r if layer.get("passed") else max_r * 0.3
+        px, py = polar(i, r)
+        data_pts.append(f"{px:.1f},{py:.1f}")
+
+    # Labels
+    labels = []
+    label_r = max_r + 24
+    for i, layer in enumerate(layers or []):
+        lx, ly = polar(i, label_r)
+        name = layer.get("layer", f"L{i+1}")
+        css = "label-pass" if layer.get("passed") else "label-fail"
+        anchor = "middle"
+        if lx < cx - 10:
+            anchor = "end"
+        elif lx > cx + 10:
+            anchor = "start"
+        labels.append(
+            f'<text class="label-text {css}" x="{lx:.1f}" y="{ly:.1f}" '
+            f'text-anchor="{anchor}">{name}</text>'
+        )
+
+    return {
+        "web_rings": "\n".join(rings),
+        "axis_lines": "\n".join(lines),
+        "data_points": " ".join(data_pts) if data_pts else "",
+        "axis_labels": "\n".join(labels),
+    }
+
+
+def _build_gauge_arcs() -> str:
+    """Build SVG arc paths for the 5 color zones of the gauge."""
+    cx, cy = 250, 220
+    r = 160
+    zones = [
+        (0, 20, "#ff3333"),
+        (20, 40, "#ffb000"),
+        (40, 60, "#e8e4df"),
+        (60, 80, "#ffb000"),
+        (80, 100, "#ff3333"),
+    ]
+    arcs = []
+    for start_pct, end_pct, color in zones:
+        a1 = math.pi + (start_pct / 100) * math.pi
+        a2 = math.pi + (end_pct / 100) * math.pi
+        x1 = cx + r * math.cos(a1)
+        y1 = cy + r * math.sin(a1)
+        x2 = cx + r * math.cos(a2)
+        y2 = cy + r * math.sin(a2)
+        arcs.append(
+            f'<path class="zone-arc" stroke="{color}" '
+            f'd="M {x1:.1f} {y1:.1f} A {r} {r} 0 0 1 {x2:.1f} {y2:.1f}" />'
+        )
+    return "\n".join(arcs)
+
+
+def _gauge_needle_xy(value: int) -> tuple:
+    """Calculate needle endpoint for gauge value 0-100."""
+    cx, cy = 250, 220
+    needle_len = 130
+    angle = math.pi + (value / 100) * math.pi
+    nx = cx + needle_len * math.cos(angle)
+    ny = cy + needle_len * math.sin(angle)
+    return f"{nx:.1f}", f"{ny:.1f}"
+
+
 def _preprocess(template_name: str, data: dict) -> dict:
     """Expand data dict with pre-built HTML snippets for template injection."""
     out = {}
@@ -193,6 +357,37 @@ def _preprocess(template_name: str, data: dict) -> dict:
         rc = data.get("reject_count", 0)
         tc = data.get("trades", 0)
         out["funnel"] = f"{ec} evaluated  {rc} rejected  {tc} trades"
+
+    elif template_name == "equity_card":
+        points = data.get("points", [])
+        eq = _build_equity_svg(points)
+        out.update(eq)
+
+    elif template_name == "radar_card":
+        layers = data.get("layers", [])
+        radar = _build_radar_svg(layers)
+        out.update(radar)
+
+    elif template_name == "gauge_card":
+        val = int(data.get("value", 50))
+        out["value"] = str(val)
+        out["fg_color"] = _fg_color(val)
+        out["fg_label"] = _fg_label(val)
+        out["zone_arcs"] = _build_gauge_arcs()
+        nx, ny = _gauge_needle_xy(val)
+        out["needle_x"] = nx
+        out["needle_y"] = ny
+
+    elif template_name == "funnel_card":
+        ec = data.get("eval_count", 0)
+        rc = data.get("reject_count", 0)
+        tc = data.get("trades", 0)
+        # Bar widths proportional to eval_count (max = 100%)
+        out["eval_bar_pct"] = "100"
+        out["reject_bar_pct"] = str(int((rc / ec) * 100)) if ec else "0"
+        out["trades_bar_pct"] = str(max(3, int((tc / ec) * 100))) if ec else "0"
+        rate = (rc / ec * 100) if ec else 0
+        out["reject_rate"] = f"{rate:.1f}%"
 
     return out
 

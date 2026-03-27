@@ -203,3 +203,179 @@ class TestCustomDimensions:
         w, h = _png_dimensions(png)
         assert w == 1200
         assert h == 600
+
+
+# ── S16 Chart templates ─────────────────────────────────────────────
+
+EQUITY_DATA = {
+    "strategy": "momentum",
+    "duration_hours": 24,
+    "points": [
+        {"ts": "00:00", "pnl": 0.0},
+        {"ts": "02:00", "pnl": 1.20, "event": "entry"},
+        {"ts": "04:00", "pnl": 2.50},
+        {"ts": "06:00", "pnl": 1.80},
+        {"ts": "08:00", "pnl": 3.10, "event": "exit"},
+        {"ts": "10:00", "pnl": 3.00},
+        {"ts": "12:00", "pnl": -0.50},
+        {"ts": "14:00", "pnl": -1.20, "event": "entry"},
+        {"ts": "16:00", "pnl": 0.80},
+        {"ts": "18:00", "pnl": 2.40, "event": "exit"},
+        {"ts": "20:00", "pnl": 2.20},
+        {"ts": "22:00", "pnl": 3.50},
+    ],
+}
+
+RADAR_DATA = {
+    "coin": "SOL",
+    "consensus": 5,
+    "layers": [
+        {"layer": "regime", "passed": True},
+        {"layer": "technical", "passed": False},
+        {"layer": "funding", "passed": True},
+        {"layer": "book", "passed": True},
+        {"layer": "OI", "passed": True},
+        {"layer": "macro", "passed": False},
+        {"layer": "collective", "passed": True},
+    ],
+}
+
+GAUGE_DATA = {
+    "value": 13,
+    "label": "Fear & Greed",
+}
+
+FUNNEL_DATA = {
+    "strategy": "momentum",
+    "duration_hours": 48,
+    "eval_count": 2880,
+    "reject_count": 2877,
+    "trades": 3,
+}
+
+
+class TestEquityCard:
+    def test_renders(self, renderer):
+        png = renderer.render("equity_card", EQUITY_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("equity_card", EQUITY_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_empty_points(self, renderer):
+        png = renderer.render("equity_card", {"strategy": "test", "duration_hours": 1, "points": []})
+        assert _is_png(png)
+
+    def test_single_point(self, renderer):
+        png = renderer.render("equity_card", {"strategy": "x", "duration_hours": 1,
+                                               "points": [{"ts": "0", "pnl": 5.0}]})
+        assert _is_png(png)
+
+    def test_negative_pnl(self, renderer):
+        pts = [{"ts": str(i), "pnl": -float(i)} for i in range(5)]
+        png = renderer.render("equity_card", {"strategy": "down", "duration_hours": 5, "points": pts})
+        assert _is_png(png)
+
+
+class TestRadarCard:
+    def test_renders(self, renderer):
+        png = renderer.render("radar_card", RADAR_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("radar_card", RADAR_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_all_passing(self, renderer):
+        data = {**RADAR_DATA, "layers": [{"layer": f"L{i}", "passed": True} for i in range(7)]}
+        png = renderer.render("radar_card", data)
+        assert _is_png(png)
+
+    def test_all_failing(self, renderer):
+        data = {**RADAR_DATA, "consensus": 0,
+                "layers": [{"layer": f"L{i}", "passed": False} for i in range(7)]}
+        png = renderer.render("radar_card", data)
+        assert _is_png(png)
+
+
+class TestGaugeCard:
+    def test_renders(self, renderer):
+        png = renderer.render("gauge_card", GAUGE_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("gauge_card", GAUGE_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_extreme_fear(self, renderer):
+        png = renderer.render("gauge_card", {"value": 5, "label": "Fear & Greed"})
+        assert _is_png(png)
+
+    def test_extreme_greed(self, renderer):
+        png = renderer.render("gauge_card", {"value": 95, "label": "Fear & Greed"})
+        assert _is_png(png)
+
+    def test_neutral(self, renderer):
+        png = renderer.render("gauge_card", {"value": 50, "label": "Fear & Greed"})
+        assert _is_png(png)
+
+
+class TestFunnelCard:
+    def test_renders(self, renderer):
+        png = renderer.render("funnel_card", FUNNEL_DATA)
+        assert _is_png(png)
+        assert len(png) > 1000
+
+    def test_dimensions(self, renderer):
+        png = renderer.render("funnel_card", FUNNEL_DATA)
+        w, h = _png_dimensions(png)
+        assert w == 800
+        assert h == 400
+
+    def test_zero_evals(self, renderer):
+        png = renderer.render("funnel_card", {"strategy": "x", "duration_hours": 1,
+                                               "eval_count": 0, "reject_count": 0, "trades": 0})
+        assert _is_png(png)
+
+    def test_high_trade_rate(self, renderer):
+        png = renderer.render("funnel_card", {"strategy": "aggressive", "duration_hours": 24,
+                                               "eval_count": 100, "reject_count": 50, "trades": 50})
+        assert _is_png(png)
+
+
+class TestSamplePNGs:
+    """Generate sample PNGs to /tmp for visual inspection."""
+
+    def test_equity_png(self, renderer):
+        path = renderer.render_to_file("equity_card", EQUITY_DATA, "/tmp/test_equity.png")
+        assert path == "/tmp/test_equity.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())
+
+    def test_radar_png(self, renderer):
+        path = renderer.render_to_file("radar_card", RADAR_DATA, "/tmp/test_radar.png")
+        assert path == "/tmp/test_radar.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())
+
+    def test_gauge_png(self, renderer):
+        path = renderer.render_to_file("gauge_card", GAUGE_DATA, "/tmp/test_gauge.png")
+        assert path == "/tmp/test_gauge.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())
+
+    def test_funnel_png(self, renderer):
+        path = renderer.render_to_file("funnel_card", FUNNEL_DATA, "/tmp/test_funnel.png")
+        assert path == "/tmp/test_funnel.png"
+        with open(path, "rb") as f:
+            assert _is_png(f.read())

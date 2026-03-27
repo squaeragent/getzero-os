@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.title { font-size: 14px; color: #888; letter-spacing: 2px; margin-bottom: 8px; }
+.gauge-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
+.gauge-svg { width: 500px; height: 280px; }
+.zone-arc { fill: none; stroke-width: 28; stroke-linecap: butt; }
+.needle { stroke: #e8e4df; stroke-width: 3; stroke-linecap: round; }
+.needle-dot { fill: #e8e4df; }
+.big-num { font-size: 48px; font-weight: 700; text-anchor: middle; font-family: 'JetBrains Mono', monospace; }
+.gauge-label { font-size: 16px; font-weight: 700; text-anchor: middle; letter-spacing: 2px; font-family: 'JetBrains Mono', monospace; }
+.bottom { font-size: 11px; color: #555; align-self: flex-end; margin-top: auto; }
+</style>
+</head>
+<body>
+<div class="title">FEAR &amp; GREED INDEX</div>
+<div class="gauge-wrap">
+  <svg class="gauge-svg" viewBox="0 0 500 280">
+    <!-- color zone arcs -->
+    {{zone_arcs}}
+    <!-- needle -->
+    <line class="needle" x1="250" y1="220" x2="{{needle_x}}" y2="{{needle_y}}" />
+    <circle class="needle-dot" cx="250" cy="220" r="6" />
+    <!-- value -->
+    <text class="big-num" x="250" y="210" fill="{{fg_color}}">{{value}}</text>
+    <!-- label -->
+    <text class="gauge-label" x="250" y="265" fill="{{fg_color}}">{{fg_label}}</text>
+    <!-- scale marks -->
+    <text x="75" y="235" fill="#555" font-size="10" text-anchor="middle" font-family="JetBrains Mono">0</text>
+    <text x="250" y="60" fill="#555" font-size="10" text-anchor="middle" font-family="JetBrains Mono">50</text>
+    <text x="425" y="235" fill="#555" font-size="10" text-anchor="middle" font-family="JetBrains Mono">100</text>
+  </svg>
+</div>
+<div class="bottom">ZERO v6</div>
+</body>
+</html>

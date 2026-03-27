@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.title { font-size: 14px; color: #888; letter-spacing: 2px; margin-bottom: 4px; }
+.radar-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
+.radar-svg { width: 500px; height: 340px; }
+.center-coin { font-size: 22px; font-weight: 700; fill: #c8ff00; text-anchor: middle; }
+.center-cons { font-size: 14px; fill: #888; text-anchor: middle; }
+.axis-line { stroke: #333; stroke-width: 1; }
+.web-ring { fill: none; stroke: #222; stroke-width: 1; }
+.data-poly { stroke: #c8ff00; stroke-width: 2; }
+.label-text { font-size: 11px; fill: #888; font-family: 'JetBrains Mono', monospace; }
+.label-pass { fill: #c8ff00; }
+.label-fail { fill: #ff3333; }
+.bottom { font-size: 11px; color: #555; align-self: flex-end; }
+</style>
+</head>
+<body>
+<div class="title">LAYER ANALYSIS</div>
+<div class="radar-wrap">
+  <svg class="radar-svg" viewBox="0 0 500 340">
+    <!-- web rings -->
+    {{web_rings}}
+    <!-- axis lines -->
+    {{axis_lines}}
+    <!-- data polygon -->
+    <polygon class="data-poly" points="{{data_points}}" fill="rgba(200,255,0,0.15)" />
+    <!-- axis labels -->
+    {{axis_labels}}
+    <!-- center -->
+    <text class="center-coin" x="250" y="166">{{coin}}</text>
+    <text class="center-cons" x="250" y="184">{{consensus}}/7</text>
+  </svg>
+</div>
+<div class="bottom">ZERO v6</div>
+</body>
+</html>
