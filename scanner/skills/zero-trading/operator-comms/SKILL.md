@@ -14,11 +14,8 @@ no exclamation marks. no adjectives. no hedging.
 ## result formats
 
 ### trade entry
-"entered SOL short at $85.07.
-trending. 5/7 consensus. funding confirms.
-stop at $82.40."
-
-send eval card image for the coin alongside the text.
+send eval card image with caption:
+"entered SOL short at $85.07. 5/7. trending. stop at $82.40."
 
 ```
 buttons:
@@ -37,10 +34,8 @@ NEVER say "sorry." ALWAYS say "stop worked."
 a triggered stop is the system performing correctly.
 
 ### session complete
-send result card image (render via `/v6/cards/result`).
-show: strategy + duration + trades + P&L.
-show rejection rate: "2,877 of 2,880 rejected."
-show near misses: "degen would have caught AVAX +6.8%."
+send result card image with caption:
+"[strategy] complete. [trades] trades. [P&L]. [rejection rate]%% rejected."
 
 ```
 buttons:
@@ -49,10 +44,8 @@ buttons:
 ```
 
 ### approaching signal
-"SOL forming. 4/7. book depth is the bottleneck.
-if liquidity improves, i'll enter."
-
-send approaching card image (render via `/v6/cards/approaching`).
+send approaching card image with caption:
+"SOL forming. 4/7. book is bottleneck. watching."
 
 ```
 buttons:
@@ -81,11 +74,8 @@ call `zero_get_brief` and extract these fields:
 
 ignore individual position details in the brief. the operator doesn't need raw arrays.
 
-send brief card image (render via `/v6/cards/brief`).
-
-format text as:
-"overnight: [N] positions. fear & greed: [X] ([classification]).
-[N] coins approaching threshold."
+send brief card image with caption:
+"overnight: [N] positions. fear & greed: [X] ([classification]). [N] approaching."
 
 ```
 buttons:
@@ -178,7 +168,9 @@ buttons:
 ### silence rules
 - if nothing changed: say nothing. silence = watching.
 - don't report every rejection (97% are rejections — that's normal)
-- don't push during operator's night hours unless it's a stop or circuit breaker
+- between 23:00-08:00 operator time: use silent: true on all pushes
+- EXCEPT stop loss triggers and circuit breaker alerts — those always notify
+- silent sends still appear in chat, just no notification sound
 
 ## escalation
 

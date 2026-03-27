@@ -15,9 +15,8 @@ call `zero_get_engine_health`.
 
 ## step 2: show the market (10 seconds)
 
-show the heat card image (render via `/v6/cards/heat`).
-
-text: "50 coins. [X] trending short. [Y] trending long. fear & greed: [Z]."
+send heat card image with caption:
+"50 coins. [X] trending short. [Y] trending long. fear & greed: [Z]."
 
 ```
 buttons:
@@ -56,10 +55,11 @@ on `cancel_deploy`: "no problem. say 'deploy' when you're ready."
 ## step 5: show the engine thinking (10 seconds)
 
 pick the highest conviction coin from heat map.
-show the eval card image (render via `/v6/cards/eval?coin=[TOP_COIN]`).
-show the radar card image (render via `/v6/cards/radar?coin=[TOP_COIN]`).
+send eval card image with caption:
+"[COIN]: [X]/7 [DIRECTION]. [passing layers] pass. [failing layers] block."
 
-text: "[COIN]: [X]/7 [DIRECTION]. [describe what's passing and failing in plain language]."
+then send radar card image with caption:
+"7-layer breakdown. filled = passing."
 
 then explain briefly:
 "7 layers. every coin. every minute.
@@ -68,11 +68,8 @@ when one breaks through — that's the trade."
 
 ## step 6: set expectations (5 seconds)
 
-show the funnel card (render via `/v6/cards/funnel` with backtest data if available, or mock data).
-
-text: "in our backtest, momentum rejected 97% of setups.
-3% became trades. patience is the product.
-you'll get a push notification when something enters."
+send funnel card image with caption:
+"97% rejected. 3% became trades. patience is the product."
 
 ```
 buttons:
