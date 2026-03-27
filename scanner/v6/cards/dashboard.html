@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=600, initial-scale=1">
+<title>ZERO — Live Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e4df;
+  font-family: 'JetBrains Mono', monospace;
+  width: 600px;
+  min-height: 800px;
+  overflow-y: auto;
+  padding: 16px;
+}
+.panel {
+  border: 1px solid #333;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.panel-title {
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.badge-active { background: #c8ff00; color: #0a0a0a; }
+.badge-inactive { background: #333; color: #888; }
+.badge-paper { background: transparent; border: 1px solid #ffb000; color: #ffb000; }
+.badge-live { background: transparent; border: 1px solid #ff3333; color: #ff3333; }
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.strategy-name { font-size: 14px; font-weight: 700; color: #c8ff00; }
+.time-remaining { font-size: 11px; color: #888; }
+.pnl { font-size: 16px; font-weight: 700; margin-top: 6px; }
+.pnl-pos { color: #c8ff00; }
+.pnl-neg { color: #ff3333; }
+.pnl-zero { color: #888; }
+
+/* Heat map */
+.heat-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 12px;
+}
+.heat-row:last-child { border-bottom: none; }
+.heat-coin { width: 50px; font-weight: 700; }
+.heat-consensus { width: 50px; text-align: center; color: #888; }
+.heat-dir { width: 55px; font-weight: 700; font-size: 10px; }
+.heat-dir-long { color: #c8ff00; }
+.heat-dir-short { color: #ff3333; }
+.heat-bar-wrap { flex: 1; height: 12px; background: #1a1a1a; }
+.heat-bar { height: 100%; background: #c8ff00; }
+
+/* Gauge */
+.gauge-wrap { display: flex; align-items: center; justify-content: center; }
+.gauge-svg { width: 280px; height: 160px; }
+.gauge-value { font-size: 11px; color: #888; margin-top: 4px; text-align: center; }
+
+/* Activity */
+.event-row {
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.event-row:last-child { border-bottom: none; }
+.event-time { color: #555; white-space: nowrap; width: 50px; flex-shrink: 0; }
+.event-type { color: #c8ff00; width: 60px; flex-shrink: 0; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+.event-coin { color: #ffb000; width: 40px; flex-shrink: 0; }
+.event-detail { color: #888; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Offline */
+.offline-banner {
+  background: #ff3333;
+  color: #0a0a0a;
+  text-align: center;
+  padding: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+  display: none;
+}
+.offline-banner.visible { display: block; }
+
+/* Footer */
+.footer {
+  font-size: 10px;
+  color: #333;
+  text-align: right;
+  margin-top: 4px;
+}
+.refresh-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #333;
+  margin-right: 4px;
+}
+.refresh-dot.live { background: #c8ff00; }
+</style>
+</head>
+<body>
+
+<div id="offline-banner" class="offline-banner">ENGINE OFFLINE</div>
+
+<!-- PANEL 1: SESSION STATUS -->
+<div class="panel" id="session-panel">
+  <div class="panel-title">SESSION STATUS</div>
+  <div class="session-row">
+    <span id="session-badge" class="badge badge-inactive">INACTIVE</span>
+    <span id="session-strategy" class="strategy-name">—</span>
+    <span id="session-mode" class="badge badge-paper" style="display:none">PAPER</span>
+    <span id="session-time" class="time-remaining"></span>
+  </div>
+  <div id="session-pnl" class="pnl" style="display:none"></div>
+</div>
+
+<!-- PANEL 2: MINI HEAT MAP -->
+<div class="panel" id="heat-panel">
+  <div class="panel-title">TOP CONVICTION</div>
+  <div id="heat-rows"></div>
+</div>
+
+<!-- PANEL 3: FEAR & GREED -->
+<div class="panel" id="gauge-panel">
+  <div class="panel-title">FEAR &amp; GREED</div>
+  <div class="gauge-wrap">
+    <svg class="gauge-svg" viewBox="0 0 280 160">
+      <!-- 5 zone arcs -->
+      <path id="gz1" d="M 30 140 A 110 110 0 0 1 57.77 62.36" fill="none" stroke="#ff3333" stroke-width="14" stroke-linecap="butt"/>
+      <path id="gz2" d="M 57.77 62.36 A 110 110 0 0 1 118.23 34.05" fill="none" stroke="#ff6633" stroke-width="14" stroke-linecap="butt"/>
+      <path id="gz3" d="M 118.23 34.05 A 110 110 0 0 1 161.77 34.05" fill="none" stroke="#e8e4df" stroke-width="14" stroke-linecap="butt"/>
+      <path id="gz4" d="M 161.77 34.05 A 110 110 0 0 1 222.23 62.36" fill="none" stroke="#88cc00" stroke-width="14" stroke-linecap="butt"/>
+      <path id="gz5" d="M 222.23 62.36 A 110 110 0 0 1 250 140" fill="none" stroke="#c8ff00" stroke-width="14" stroke-linecap="butt"/>
+      <!-- needle -->
+      <line id="gauge-needle" x1="140" y1="140" x2="30" y2="140" stroke="#e8e4df" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="140" cy="140" r="4" fill="#e8e4df"/>
+      <!-- value text -->
+      <text id="gauge-num" x="140" y="128" fill="#e8e4df" font-size="28" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">—</text>
+      <text id="gauge-label" x="140" y="155" fill="#888" font-size="9" font-weight="700" text-anchor="middle" letter-spacing="2" font-family="JetBrains Mono"></text>
+    </svg>
+  </div>
+</div>
+
+<!-- PANEL 4: RECENT ACTIVITY -->
+<div class="panel" id="activity-panel">
+  <div class="panel-title">RECENT ACTIVITY</div>
+  <div id="activity-rows"></div>
+</div>
+
+<div class="footer">
+  <span id="refresh-dot" class="refresh-dot"></span>
+  ZERO v6 — <span id="last-update">—</span>
+</div>
+
+<script>
+const API_BASE = '';
+
+function fgLabel(val) {
+  if (val <= 20) return 'EXTREME FEAR';
+  if (val <= 40) return 'FEAR';
+  if (val <= 60) return 'NEUTRAL';
+  if (val <= 80) return 'GREED';
+  return 'EXTREME GREED';
+}
+
+function fgColor(val) {
+  if (val <= 20) return '#ff3333';
+  if (val <= 40) return '#ff6633';
+  if (val <= 60) return '#e8e4df';
+  if (val <= 80) return '#88cc00';
+  return '#c8ff00';
+}
+
+function setNeedle(val) {
+  const clamped = Math.max(0, Math.min(100, val));
+  const angle = Math.PI - (clamped / 100) * Math.PI;
+  const r = 100;
+  const nx = 140 + r * Math.cos(angle);
+  const ny = 140 - r * Math.sin(angle);
+  document.getElementById('gauge-needle').setAttribute('x2', nx.toFixed(1));
+  document.getElementById('gauge-needle').setAttribute('y2', ny.toFixed(1));
+  const col = fgColor(val);
+  document.getElementById('gauge-num').textContent = val;
+  document.getElementById('gauge-num').setAttribute('fill', col);
+  document.getElementById('gauge-label').textContent = fgLabel(val);
+  document.getElementById('gauge-label').setAttribute('fill', col);
+}
+
+function updateSession(data) {
+  const badge = document.getElementById('session-badge');
+  const strat = document.getElementById('session-strategy');
+  const mode = document.getElementById('session-mode');
+  const time = document.getElementById('session-time');
+  const pnl = document.getElementById('session-pnl');
+
+  if (data.active && data.session) {
+    const s = data.session;
+    badge.className = 'badge badge-active';
+    badge.textContent = 'ACTIVE';
+    strat.textContent = (s.strategy || '—').toUpperCase();
+    if (s.paper !== undefined) {
+      mode.style.display = 'inline-block';
+      mode.className = s.paper ? 'badge badge-paper' : 'badge badge-live';
+      mode.textContent = s.paper ? 'PAPER' : 'LIVE';
+    }
+    if (s.time_remaining) {
+      time.textContent = s.time_remaining;
+    } else if (s.end_time) {
+      const remaining = new Date(s.end_time) - new Date();
+      if (remaining > 0) {
+        const mins = Math.floor(remaining / 60000);
+        time.textContent = mins + 'm remaining';
+      }
+    }
+    // P&L from positions
+    if (s.positions && s.positions.length > 0) {
+      let totalPnl = 0;
+      s.positions.forEach(p => { totalPnl += (p.pnl || p.unrealized_pnl || 0); });
+      pnl.style.display = 'block';
+      const sign = totalPnl >= 0 ? '+' : '';
+      pnl.textContent = sign + totalPnl.toFixed(2) + ' USD';
+      pnl.className = 'pnl ' + (totalPnl > 0 ? 'pnl-pos' : totalPnl < 0 ? 'pnl-neg' : 'pnl-zero');
+    } else {
+      pnl.style.display = 'none';
+    }
+  } else {
+    badge.className = 'badge badge-inactive';
+    badge.textContent = 'INACTIVE';
+    strat.textContent = '—';
+    mode.style.display = 'none';
+    time.textContent = '';
+    pnl.style.display = 'none';
+  }
+}
+
+function updateHeat(data) {
+  const container = document.getElementById('heat-rows');
+  const coins = (data.coins || []).slice(0, 5);
+  if (coins.length === 0) {
+    container.innerHTML = '<div style="color:#555;font-size:11px">No coins evaluated</div>';
+    return;
+  }
+  let html = '';
+  coins.forEach(c => {
+    const dirClass = c.direction === 'LONG' ? 'heat-dir-long' : 'heat-dir-short';
+    const barWidth = Math.round((c.conviction || 0) * 100);
+    const barColor = c.direction === 'LONG' ? '#c8ff00' : '#ff3333';
+    const opacity = 0.4 + (c.conviction || 0) * 0.6;
+    html += '<div class="heat-row" style="opacity:' + opacity.toFixed(2) + '">'
+      + '<span class="heat-coin">' + c.coin + '</span>'
+      + '<span class="heat-consensus">' + (c.consensus || 0) + '/7</span>'
+      + '<span class="heat-dir ' + dirClass + '">' + (c.direction || '—') + '</span>'
+      + '<span class="heat-bar-wrap"><span class="heat-bar" style="width:' + barWidth + '%;background:' + barColor + '"></span></span>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function updateGauge(data) {
+  const val = data.fear_greed;
+  if (val !== undefined && val !== null) {
+    setNeedle(val);
+  }
+}
+
+function updateActivity(data) {
+  const container = document.getElementById('activity-rows');
+  const events = (data.events || data || []).slice(-5);
+  if (events.length === 0) {
+    container.innerHTML = '<div style="color:#555;font-size:11px">No recent events</div>';
+    return;
+  }
+  let html = '';
+  events.forEach(e => {
+    const ts = e.timestamp || e.time || '';
+    let timeStr = '';
+    if (ts) {
+      try {
+        const d = new Date(ts);
+        timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      } catch (_) { timeStr = ts.slice(11, 16); }
+    }
+    const type = e.event || e.type || e.action || '—';
+    const coin = e.coin || e.symbol || '';
+    const detail = e.detail || e.message || e.reason || '';
+    html += '<div class="event-row">'
+      + '<span class="event-time">' + timeStr + '</span>'
+      + '<span class="event-type">' + type + '</span>'
+      + '<span class="event-coin">' + coin + '</span>'
+      + '<span class="event-detail">' + detail + '</span>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+async function fetchJSON(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(resp.status);
+  return resp.json();
+}
+
+let failCount = 0;
+
+async function refresh() {
+  const dot = document.getElementById('refresh-dot');
+  dot.classList.add('live');
+
+  try {
+    const [session, heat, brief, pulse] = await Promise.allSettled([
+      fetchJSON(API_BASE + '/v6/session/status'),
+      fetchJSON(API_BASE + '/v6/heat'),
+      fetchJSON(API_BASE + '/v6/brief'),
+      fetchJSON(API_BASE + '/v6/pulse?limit=5'),
+    ]);
+
+    let anyOk = false;
+
+    if (session.status === 'fulfilled') { updateSession(session.value); anyOk = true; }
+    if (heat.status === 'fulfilled') { updateHeat(heat.value); anyOk = true; }
+    if (brief.status === 'fulfilled') { updateGauge(brief.value); anyOk = true; }
+    if (pulse.status === 'fulfilled') { updateActivity(pulse.value); anyOk = true; }
+
+    if (anyOk) {
+      failCount = 0;
+      document.getElementById('offline-banner').classList.remove('visible');
+    } else {
+      throw new Error('all failed');
+    }
+
+    document.getElementById('last-update').textContent =
+      new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch (e) {
+    failCount++;
+    if (failCount >= 2) {
+      document.getElementById('offline-banner').classList.add('visible');
+    }
+  }
+
+  setTimeout(() => { dot.classList.remove('live'); }, 500);
+}
+
+// Initial load + 60s interval
+refresh();
+setInterval(refresh, 60000);
+</script>
+</body>
+</html>

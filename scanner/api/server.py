@@ -31,6 +31,7 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.responses import FileResponse
 
 # ─── Paths ───
 SCANNER_DIR = Path(__file__).parent.parent
@@ -1008,6 +1009,13 @@ try:
     @app.get("/v6/engine/health")
     def v6_engine_health(operator_id: str = Query("op_default")):
         return _v6_api.get_engine_health(operator_id)
+
+    # ── Canvas live dashboard ─────────────────────────────────────────────
+    _dashboard_path = str(SCANNER_DIR / "v6" / "cards" / "dashboard.html")
+
+    @app.get("/v6/dashboard")
+    def v6_dashboard():
+        return FileResponse(_dashboard_path, media_type="text/html")
 
     # ── Card PNG endpoints ──────────────────────────────────────────────
     from scanner.v6.cards.card_api import router as cards_router
