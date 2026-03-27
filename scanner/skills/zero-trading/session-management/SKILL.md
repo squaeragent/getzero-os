@@ -77,19 +77,31 @@ call `zero_end_session` when:
 
 if no session is active: "no session running. nothing to end."
 
-send the result card as an image (render via `/v6/cards/result`), then show buttons:
+send the result card image with caption:
+"[strategy] complete. [trades] trades. [P&L]. [rejection_rate]% rejected."
 
+delete the "deploy?" confirmation message if it still exists (cleanup stale buttons).
+
+then ask what's next using a poll:
 ```
-message: "[strategy] session complete. [trades] trades. [P&L]."
+poll:
+  question: "what next?"
+  options:
+    - "momentum (trend following)"
+    - "defense (capital protection)"  
+    - "degen (high conviction)"
+    - "let the engine decide"
+  anonymous: false
+```
+
+also show buttons for report actions:
+```
 buttons:
   row 1: [📊 Full Report | show_result] [📈 Equity Curve | show_equity]
-  row 2: [🔄 New Session | new_session] [📜 History | show_history]
+  row 2: [📜 History | show_history]
 ```
 
-include:
-- strategy, duration, trades, P&L
-- rejection rate: "2,877 of 2,880 setups rejected."
-- near misses: "degen would have caught AVAX +6.8%."
+include near misses: "degen would have caught AVAX +6.8%."
 
 if narrative sounds generic ("0 evaluations. Pure observation."), rewrite it: "ran for [actual duration]. market was quiet — nothing met the threshold. the engine was selective, not idle." don't relay raw generic narratives.
 

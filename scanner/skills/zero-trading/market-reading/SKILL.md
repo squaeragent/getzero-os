@@ -11,13 +11,17 @@ call `zero_evaluate("SOL")`. you get consensus, conviction, direction, and 7 lay
 
 for visual output: send eval card image with caption summarizing the result. one message, not image + separate text.
 
-after showing an eval, offer actions:
+after showing an eval, offer progressive disclosure + actions:
 
 ```
 buttons:
-  row 1: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
-  row 2: [🔍 Evaluate Another | prompt_eval] [📋 Brief | show_brief]
+  row 1: [🔍 Layer Breakdown | radar_COIN] [📊 Full Details | eval_detail_COIN]
+  row 2: [🔥 Heat Map | show_heat] [📡 Approaching | show_approaching]
 ```
+
+tier 1 (default): eval card with caption — consensus, direction, conviction
+tier 2 (on tap): radar chart — visual 7-layer polygon
+tier 3 (on tap): full text breakdown — every layer explained
 
 example:
 ```

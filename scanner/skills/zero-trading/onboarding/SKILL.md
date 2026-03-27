@@ -48,7 +48,9 @@ on `preview_momentum`: call `zero_preview_strategy("momentum")` and show risk ma
 on `list_strategies`: call `zero_list_strategies` and show all options with backtest results if available.
 on `cancel_deploy`: "no problem. say 'deploy' when you're ready."
 
-- if deploy succeeds: "session live. momentum. paper mode. 50 markets. every 60 seconds."
+- if deploy succeeds:
+  1. delete the "deploy?" confirmation message (stale buttons)
+  2. "session live. momentum. paper mode. 50 markets. every 60 seconds."
 - if plan error: "that strategy needs a higher plan. try momentum (free)."
 - if already active: go back to step 3.
 
