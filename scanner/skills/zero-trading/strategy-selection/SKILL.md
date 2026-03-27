@@ -1,58 +1,68 @@
 ---
-name: strategy-selection
-description: 'Select the right trading strategy based on market conditions, operator history, energy, and credits.'
+name: zero-strategy-selection
+description: "choose the right trading strategy based on market conditions, operator history, energy, and score."
 ---
 
 # strategy selection
 
-pick the right strategy. wrong strategy in right market still loses.
+before recommending a strategy, check 4 inputs:
 
-## 4-input decision framework
+## 1. market conditions
 
-every recommendation requires 4 inputs. no exceptions.
+call `zero_get_heat` + `zero_get_approaching`.
 
-### 1. market conditions (heat + pulse)
-- call `zero_evaluate()` on target coins
-- read regime: trending, chaotic, stable, mean-reverting
-- check consensus direction and conviction level
-- high conviction trending → momentum or sniper
-- chaotic regime → watch or scout. never momentum in chaos
+| fear & greed | regime | recommend |
+|---|---|---|
+| < 20 (extreme fear) + trending | fade or momentum | contrarian or trend |
+| < 20 + chaotic | defense | protect capital |
+| 20-40 + trending | momentum | default, bread and butter |
+| 40-60 (neutral) | momentum or watch | observe if unclear |
+| > 80 (extreme greed) | fade or defense | caution, reversals likely |
+| no clear trends | defense or watch | wait for setup |
 
-### 2. operator history (score + session_history)
-- call `zero_score()` and `zero_session_history()`
-- new operator (< 5 sessions) → conservative strategies only
-- losing streak (3+ red sessions) → watch or scout. rebuild confidence
-- winning streak → allow higher risk but warn about overconfidence
+## 2. operator history
 
-### 3. energy level
-- low energy → watch, scout, or funding. passive strategies
-- medium energy → momentum, fade, defense
-- high energy → sniper, apex, degen (if operator is experienced)
+call `zero_session_history` + `zero_get_score`.
+- which strategies performed best for this operator?
+- win rate by strategy?
+- favor what works for THEM, not what's theoretically optimal.
 
-### 4. credit balance
-- call `zero_credits()` before every recommendation
-- never recommend a strategy the operator can't afford
-- if balance < 500, recommend watch (50) or scout (100)
-- always state the cost upfront
+## 3. energy
 
-## strategy-condition mapping
+call `zero_get_energy`.
+- above 60%: any strategy
+- 30-60%: moderate only (momentum, defense, scout)
+- below 30%: rest or defense (recovery mode)
 
-| strategy | best regime    | min sessions | cost | when to use                        |
-|----------|---------------|-------------|------|------------------------------------|
-| watch    | any           | 0           | 50   | observation. first session. unsure |
-| scout    | any           | 0           | 100  | build intelligence. no risk        |
-| defense  | chaotic/down  | 3           | 200  | hedge. fear spike. protect gains   |
-| funding  | stable        | 5           | 300  | exploit funding imbalance          |
-| fade     | mean-reverting| 5           | 400  | counter-trend at exhaustion        |
-| momentum | trending      | 3           | 500  | ride confirmed directional move    |
-| sniper   | any           | 10          | 750  | precision entry at key level       |
-| apex     | trending      | 15          | 800  | multi-layer advanced strategy      |
-| degen    | volatile      | 20          | 1000 | aggressive. experienced only       |
+## 4. score and unlocks
 
-## rules
+call `zero_get_score`.
+- below 4.0: only momentum, defense, watch available
+- 4.0-5.0: +scout unlocked
+- 5.0-6.0: +sniper, +funding unlocked
+- 6.0-7.0: +fade, +degen unlocked
+- 7.0+: +apex unlocked (full access)
 
-- never recommend degen to operators with < 20 sessions
-- never recommend apex to operators with < 15 sessions
-- if unsure, recommend watch. observation is free intelligence
-- always preview with `zero_preview_strategy()` before starting
-- state the cost and risk level before the operator confirms
+## recommendation format
+
+always give: recommendation + reasoning + alternative.
+
+"market favors momentum. fear 18, 6 coins trending, shorts paying.
+your momentum win rate: 72%. energy 78%.
+alternative: fade if you want contrarian exposure."
+
+never just say "use momentum." explain WHY for this operator, this market, right now.
+
+## the 9 strategies
+
+| strategy | risk | stops | positions | best when |
+|---|---|---|---|---|
+| watch | none | — | 0 | uncertain, learning |
+| defense | low | 2% | 3 max | protecting capital |
+| funding | low | 2% | 4 max | funding rates are paying |
+| momentum | medium | 3% | 5 max | clear trends, default choice |
+| scout | medium | 3% | 5 max | wide scan, patient |
+| fade | medium | 3% | 4 max | mean reversion, contrarian |
+| sniper | high | 4% | 3 max | perfect setups only (7/7) |
+| degen | high | 6% | 4 max | fast moves, short hold |
+| apex | extreme | 8% | 4 max | maximum conviction, expert only |

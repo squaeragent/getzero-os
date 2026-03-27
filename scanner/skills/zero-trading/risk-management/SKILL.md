@@ -1,66 +1,97 @@
 ---
-name: risk-management
-description: 'Credit budgets, energy system, position sizing, stop behavior, and capital preservation.'
+name: zero-risk-management
+description: "manage energy, sizing, stops, and the philosophy of capital protection."
 ---
 
 # risk management
 
-capital preservation is the first job. profit is the second.
+## hard caps (non-negotiable, compiled into engine)
 
-## credit budget management
+- 25% max single position size
+- 80% max total exposure
+- 10 max simultaneous positions
+- stop loss required on EVERY position
 
-- credits are finite. every session costs credits.
-- call `zero_credits()` before recommending any strategy
-- never deploy a session that uses > 25% of remaining credits
-- reserve buffer: always keep 200+ credits for watch/scout
-- if balance < 300, only recommend watch (50) or scout (100)
+these cannot be changed. not by config. not by the operator. not by you.
+they exist to prevent catastrophic loss.
 
-## energy system
+## per-strategy risk
 
-energy represents the agent's confidence and operational readiness.
+call `zero_preview_strategy` to see exact risk math.
 
-- high energy → full strategy catalog available
-- medium energy → avoid degen and apex
-- low energy → watch and scout only
-- energy recovers over time. forcing trades in low energy = bad outcomes
-- a losing session drains energy. a winning session restores it
+| strategy | max drawdown | daily loss cap | stop size |
+|---|---|---|---|
+| defense | 6% | 3% | 2% |
+| funding | 8% | 3% | 2% |
+| momentum | 15% | 5% | 3% |
+| scout | 15% | 5% | 3% |
+| fade | 12% | 5% | 3% |
+| sniper | 12% | 8% | 4% |
+| degen | 24% | 10% | 6% |
+| apex | 32% | 15% | 8% |
+
+max drawdown = all positions stopped simultaneously.
+it's the worst case. rare but possible.
+
+## account size guidance
+
+| account | recommended | acceptable | avoid |
+|---|---|---|---|
+| $100 | defense, funding | momentum, scout | degen, apex |
+| $500 | momentum, scout | fade, sniper | apex |
+| $1,000+ | any | any | — |
+
+a $100 account on apex can lose $32 in one cycle. that's 32%.
+defense caps it at $6. match strategy to account size.
+
+## energy management
+
+call `zero_get_energy`. energy depletes with sessions. recovers over time.
+- 100% energy: fully rested. any strategy.
+- 60-100%: normal operation.
+- 30-60%: conserve. momentum or defense only.
+- below 30%: rest. watch mode or wait for recovery.
+
+running aggressive strategies on low energy is bad discipline.
+the scoring system penalizes it.
+
+## stop philosophy
+
+stops are PROTECTION, not failure.
+
+when a stop triggers:
+- "stop worked. position protected. -1.3%."
+- NEVER: "sorry" or "unfortunately"
+
+stops are the immune system of capital.
+every dollar saved by a stop is a dollar available for the next trade.
+
+## trailing stops
+
+the engine activates trailing stops at 1.5% profit.
+- tracks the peak price
+- locks in gains as price moves favorably
+- triggers exit if price reverses from peak
+
+"trailing stop activated at $152.30. locking gains."
+"trailing stop triggered at $151.80. +2.8% secured."
+
+## circuit breakers
+
+if daily loss hits the strategy's cap:
+- all entries blocked for remainder of day
+- existing positions kept (stops still active)
+- "circuit breaker triggered. -5.2% today. no new entries until tomorrow."
+
+this is correct behavior. the engine is protecting the operator.
 
 ## position sizing
 
-the immune system handles sizing automatically. but understand the logic:
+the engine sizes positions based on:
+1. strategy config (position_size_pct)
+2. conviction (higher consensus = sized closer to max)
+3. available equity (after reserve)
+4. hard caps (never exceeds 25%)
 
-- max single position: 5% of available capital
-- max total exposure: 15% of available capital
-- scaling: higher conviction = larger position (up to max)
-- new operators start at 50% of normal sizing until 5+ sessions
-
-## stop loss behavior
-
-stops are managed by the immune system. you do not override stops.
-
-- stops are set on entry. always.
-- immune system adjusts stops based on volatility profile
-- if a stop triggers: 'stops worked correctly.' not 'sorry for the loss.'
-- trailing stops activate in momentum and apex strategies
-- hard stops protect against black swan moves
-
-## when to end a session early
-
-call `zero_end_session()` when:
-
-- regime shifts from trending to chaotic mid-session
-- consensus flips direction after entry
-- operator requests it (always honor immediately)
-- 3+ stops triggered in one session (immune system may auto-end)
-- energy drops to critical during session
-
-## capital preservation priority
-
-in order of importance:
-
-1. protect the principal
-2. protect session gains
-3. seek new gains
-4. optimize for score
-
-never sacrifice #1 for #4. ever.
+you don't control sizing. the engine does.
+report what it chose: "entered BTC short. $6.70 position (10% of equity)."

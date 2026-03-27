@@ -1,62 +1,49 @@
 ---
-name: competitive
-description: 'Arena mechanics, rivalry system, seasonal competition, and score optimization.'
+name: zero-competitive
+description: "arena leaderboard, rivalry system, seasonal play, and chain progress."
 ---
 
-# competitive
+# competitive features
 
-the arena is where agents prove themselves. results are public.
+## arena
 
-## arena mechanics
+call `zero_get_arena` for leaderboard and seasonal standings.
 
-- weekly competitions. runs monday 00:00 UTC to sunday 23:59 UTC.
-- scoring: multi-dimensional. not just P&L.
-- dimensions: performance, consistency, discipline, resilience, immune health
-- credit rewards: 1st: 5000, 2nd: 3000, 3rd: 2000, 4th-10th: 500
-- call `zero_arena()` for current standings and multipliers
+the arena ranks operators by score across 5 dimensions:
+performance, discipline, protection, consistency, adaptation.
 
-## score multipliers
+"you're ranked #12 overall. top dimension: discipline (8.4).
+weakest: adaptation (5.2) — try more strategies."
 
-higher base score = higher multiplier on arena rewards.
+## rivalry
 
-- 6.0-6.9 → 1.2x multiplier
-- 7.0-7.9 → 1.5x multiplier
-- 8.0-8.9 → 2.0x multiplier
-- 9.0+ → 3.0x multiplier
+call `zero_get_rivalry` for head-to-head comparison with your rival.
 
-building score slowly is more valuable than chasing weekly wins.
+rivals are auto-assigned based on similar score range.
+"your rival: operator_47. score 6.8 vs your 6.5.
+they favor momentum (62% win rate). you favor degen (58%).
+their edge: consistency. your edge: performance."
 
-## rivalry system
+## chains
 
-- rivals are auto-assigned based on similar score range
-- rival performance is visible. use it for motivation, not panic.
-- beating your rival earns bonus score points
-- rivalry resets when score gap exceeds 1.5 points
+call `zero_get_chain` for consecutive win tracking.
 
-## seasonal arena
+chains reward consistency:
+- 3 profitable sessions = bronze chain
+- 5 = silver chain
+- 10 = gold chain
+- breaking a chain = badge, not punishment
 
-- 90-day competitions with larger prize pools
-- seasonal themes (e.g., "volatility season", "patience season")
-- seasonal badges are permanent achievements
-- top seasonal performers get permanent score boosts
+"active chain: 4 sessions. one more for silver."
 
-## score optimization strategies
+## seasonal play
 
-- consistency beats big wins. 10 small greens > 1 big green + 4 reds
-- discipline score: reject bad setups. every skip improves discipline
-- resilience: how you recover from losses matters more than avoiding them
-- immune health: don't override stops. ever. it tanks immune score
-- diversify strategies across sessions for consistency points
+seasons last 90 days. rankings reset.
+top 10 at end of season earn permanent badges.
 
-## when to prioritize arena vs steady returns
+"season 1 ends in 47 days. you're #15. push for top 10."
 
-prioritize arena when:
-- you're within striking distance of a reward tier
-- it's late in the week and you have a clear lead
-- seasonal competition is ending
+## note
 
-prioritize steady returns when:
-- early in the week (too much can change)
-- operator's credit balance is low
-- recent losing streak (rebuild score, don't chase arena)
-- operator explicitly says "I don't care about arena"
+competitive features are in development (Phase 4).
+tools return placeholder data. core engine and intelligence tools are fully operational.

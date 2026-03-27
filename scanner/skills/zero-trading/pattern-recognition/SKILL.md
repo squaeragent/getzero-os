@@ -1,66 +1,57 @@
 ---
-name: pattern-recognition
-description: 'Discovered patterns from collective intelligence. Confidence thresholds. Pattern categories.'
+name: zero-pattern-recognition
+description: "use discovered patterns from operator history to improve future sessions."
 ---
 
 # pattern recognition
 
-patterns emerge from the collective. individual agents contribute.
-the network surfaces what no single agent could find.
+load this skill after the operator has 10+ completed sessions.
+before that, there isn't enough data for patterns.
 
-## discovered patterns
+## what to look for
 
-patterns are tagged by the network when multiple agents observe
-the same setup leading to the same outcome.
+call `zero_session_history(limit=20)` and analyze:
 
-common pattern types:
-- regime shift precursors (volatility compression → breakout)
-- funding rate extremes (> 0.1% → mean reversion likely)
-- correlation breaks (alt decouples from BTC → momentum opportunity)
-- volume anomalies (sudden spike in thin markets → sniper setup)
-- time-of-day edges (asian session vs US session behavior)
+### strategy performance
+which strategies have the best win rate for THIS operator?
+"your momentum sessions: 72% win rate, avg +2.1%.
+your degen sessions: 58% win rate, avg +4.3%.
+momentum is safer. degen is more profitable when it works."
 
-## using patterns in strategy selection
+### time-of-day patterns
+do sessions started in certain hours perform better?
+"your morning sessions (UTC 6-12) average +3.2%.
+evening sessions (UTC 18-24) average -0.8%.
+consider deploying in the morning."
 
-1. check if current conditions match a known pattern
-2. verify pattern confidence meets threshold
-3. select strategy that historically performs best with that pattern
-4. deploy only if all 4 inputs from strategy-selection also align
+### regime sensitivity
+does the operator perform differently in different market conditions?
+call `zero_get_brief` for current fear & greed.
+"your sessions during extreme fear: 80% win rate.
+during neutral sentiment: 45% win rate.
+you perform best in fear. contrarian edge."
 
-patterns are supplementary. never override the 4-input framework.
+### near miss analysis
+track near misses across sessions.
+"degen would have caught 3 trades your momentum missed last week.
+total missed upside: +$18.40. consider a degen session."
 
-## confidence thresholds
+## how to present patterns
 
-- pattern confidence < 0.5 → ignore. noise.
-- 0.5-0.65 → note it. don't act on it alone.
-- 0.65-0.8 → strong enough to influence strategy choice.
-- 0.8+ → high confidence. use as primary signal.
+don't dump statistics. tell a story:
 
-confidence is based on:
-- sample size (how many times observed)
-- recency (recent observations weighted more)
-- diversity (confirmed across multiple agents)
+"i've noticed something across your last 15 sessions.
+you're a fear trader. your best results come when everyone else is scared.
+momentum during extreme fear: 80% win rate.
+momentum during neutral: 45%.
+right now fear is at 13. this is your zone."
 
-## pattern categories
+## evolving recommendations
 
-### regime shifts
-- volatility compression precedes breakout 73% of the time
-- chaotic regimes last 6-18 hours on average. patience.
-- stable → trending transition: look for volume confirmation
+as patterns emerge, adjust strategy selection:
+- operator consistently profitable with degen → recommend more degen
+- operator loses on fade → stop recommending fade
+- operator's timing matches certain markets → highlight those
 
-### funding spikes
-- funding > 0.05% → crowded trade. fade potential.
-- funding > 0.1% → strong mean reversion signal.
-- negative funding in uptrend → contrarian long setup.
-
-### correlation breaks
-- alt/BTC correlation drop > 0.3 in 4h → isolated momentum play
-- sector rotation visible when 3+ alts break correlation simultaneously
-- BTC dominance spike + alt weakness → defense or watch mode
-
-## rules
-
-- patterns decay. a 30-day-old pattern needs reconfirmation.
-- never use patterns from < 10 observations.
-- patterns from chaotic regimes are unreliable. discard them.
-- always cross-reference pattern with live evaluation data.
+patterns are personal. what works for one operator fails for another.
+the engine is the same. the operator's edge is their own.

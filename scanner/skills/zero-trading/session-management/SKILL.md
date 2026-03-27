@@ -1,66 +1,67 @@
 ---
-name: session-management
-description: 'Session lifecycle — browse, preview, activate, monitor, complete, review.'
+name: zero-session-management
+description: "deploy, monitor, end, and queue trading sessions. manage the session lifecycle."
 ---
 
 # session management
 
-sessions are the unit of work. every trade happens inside a session.
+## deploying a session
 
-## session lifecycle
+1. call `zero_preview_strategy("momentum")` — show risk math to operator
+2. confirm: "momentum. 5 positions max. 3% stops. 48 hours. paper mode. proceed?"
+3. on approval: call `zero_start_session("momentum", paper=True)`
+4. report: "session deployed. momentum surf. paper mode. ends in 48h."
 
-1. **browse** — `zero_list_strategies()` — show what's available
-2. **preview** — `zero_preview_strategy(type)` — inspect before committing
-3. **activate** — `zero_start_session(strategy)` — credits deducted, session live
-4. **monitor** — `zero_session_status()` — check progress
-5. **complete** — session ends naturally or via `zero_end_session()`
-6. **review** — `zero_session_history()` — analyze results
+never deploy without operator confirmation.
+always show risk parameters BEFORE deploying.
+always start in paper mode unless operator explicitly says "live" or "real money."
 
-never skip steps 1-2. the operator must see cost and risk before activation.
+## monitoring active session
 
-## when to deploy
+call `zero_session_status` periodically (every 15-30 min during active hours).
 
-deploy a session when:
+report changes:
+- new position opened: "entered SOL short at $85.07. 5/7 consensus. trending."
+- position closed: "SOL closed +$2.40 (+2.8%). trailing stop locked profits."
+- position stopped: "SOL stopped. -$1.60 (-1.3%). stop worked."
 
-- market conditions match the strategy (check via evaluate)
-- operator has sufficient credits (check via credits)
-- energy level supports the strategy type
-- operator explicitly approves
+don't report if nothing changed. silence means the engine is watching.
 
-do not deploy when:
+## checking approaching
 
-- regime is chaotic (unless watch/scout)
-- operator hasn't reviewed the preview
-- credit balance is dangerously low
-- recent session ended in significant loss (suggest cooldown)
+call `zero_get_approaching` to narrate what's forming.
+"BTC at 4/7. book depth is the bottleneck. watching."
+this keeps the operator engaged between trades.
 
-## when to end early
+## ending a session
 
-- regime shift detected
-- consensus flips against position direction
-- operator requests termination
-- immune system triggers multiple stops
-- session runtime exceeds max_hold by 2x
+call `zero_end_session` when:
+- operator asks to stop
+- market conditions changed dramatically
+- daily loss limit approaching
 
-## when to queue
+report the result card:
+- strategy, duration, trades, P&L
+- rejection rate: "2,877 of 2,880 setups rejected."
+- near misses: "degen would have caught AVAX +6.8%."
+- narrative summary
 
-use `zero_queue_session(strategy)` when:
+## queuing sessions
 
-- conditions aren't right yet but likely to improve
-- operator wants to set and forget
-- waiting for a specific regime or consensus level
+call `zero_queue_session("defense")` to queue the next session.
+"defense queued. starts when momentum session completes."
 
-## session cost awareness
+useful for overnight: "deploy momentum now. queue defense for overnight."
 
-always state costs clearly:
+## session history
 
-- "momentum session: 500 credits. you have 2,340 remaining."
-- "after this session you'll have 1,840 credits."
-- if cost > 25% of balance, warn explicitly
+call `zero_session_history` to review past performance.
+"your last 5 sessions: 3 profitable, 2 flat. best: degen +12.4%."
 
-## monitoring frequency
+## key rules
 
-- check every 30 minutes. more frequent = noise.
-- exception: degen and sniper — check every 15 minutes
-- push update to operator only on material changes
-- material = stop triggered, target hit, regime shift, session end
+- ONE session at a time. can't deploy while another is active.
+- paper mode is the default. live mode requires explicit approval.
+- session has a timer. momentum = 48h. degen = 24h. defense = 168h.
+- session can be ended early at any time.
+- queued sessions auto-start when current session completes.
