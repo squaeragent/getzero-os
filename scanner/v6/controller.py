@@ -59,6 +59,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import signal
 import sys
 import time
 import urllib.request
@@ -86,6 +87,9 @@ CYCLE_SECONDS = 5
 
 REJECTION_LOG_FILE  = BUS_DIR / "rejections.jsonl"
 NEAR_MISS_LOG_FILE  = BUS_DIR / "near_misses.jsonl"
+DECISION_LOG_FILE   = BUS_DIR / "decisions.jsonl"
+EVENTS_LOG_FILE     = BUS_DIR / "events.jsonl"
+CONTROLLER_STATE_FILE = BUS_DIR / "controller_state.json"
 
 # Failed entry cooldown — don't retry same coin+direction for 15 min after failure
 _failed_entries: dict[str, float] = {}
@@ -188,6 +192,7 @@ class SessionState:
     trades:        list  = field(default_factory=list)
     completed_at:  str   = ""
     reason:        str   = ""
+    narrative:     str   = ""
 
     def result_card(self) -> dict:
         roi_pct = (
@@ -210,6 +215,7 @@ class SessionState:
             "losses":       self.losses,
             "win_rate":     round(self.wins / self.trade_count * 100, 1) if self.trade_count else 0,
             "near_misses":  self.near_misses,
+            "narrative":    self.narrative,
         }
 
 
@@ -579,6 +585,32 @@ def log_near_miss(entry: dict, reason: str, params: "_StrategyParams") -> None:
         pass
 
 
+def log_decision(
+    coin: str,
+    strategy: str,
+    layers_passed: int,
+    verdict: str,
+    price: float,
+    reason: str,
+    session_id: str = "",
+) -> None:
+    """Decision log — every evaluation verdict (approved, rejected, near_miss)."""
+    try:
+        record = {
+            "ts":           now_iso(),
+            "coin":         coin,
+            "strategy":     strategy,
+            "layers_passed": layers_passed,
+            "verdict":      verdict,     # approved | rejected | near_miss
+            "price":        price,
+            "reason":       reason,
+            "session_id":   session_id,
+        }
+        append_jsonl(DECISION_LOG_FILE, record)
+    except Exception:
+        pass
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # STRATEGY PARAMS (unified accessor — YAML or config.py fallback)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -673,6 +705,244 @@ class _StrategyParams:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# CONTROLLER (stateful — hard caps, event bus, rejection counter, heartbeat)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class Controller:
+    """
+    Stateful controller shell for systems that need in-process state.
+
+    Embeds:
+      - Hard caps (unconfigurable safety limits)
+      - Event bus (in-process + events.jsonl)
+      - Rejection counter + session timeline + narrative builder
+      - Dead man's switch heartbeat writer
+      - Position reconciliation timer
+      - Graceful shutdown state writer
+
+    The controller instance is created in main() and passed around as needed.
+    All approve_entry calls that need hard-cap enforcement should use
+    controller.check_hard_caps() BEFORE calling approve_entry().
+    """
+
+    def __init__(self) -> None:
+        # ── Hard caps — CANNOT be overridden by YAML or session params ─────────
+        self.HARD_MAX_POSITION_PCT    = 25    # max 25% of equity per position
+        self.HARD_MAX_EXPOSURE_PCT    = 80    # max 80% of equity in open positions
+        self.HARD_MAX_ORDERS_PER_MIN  = 10    # rate limit per minute
+        self.HARD_MAX_ORDERS_PER_SESSION = 100
+        self._orders_this_session: int       = 0
+        self._orders_this_minute:  list[float] = []   # timestamps
+
+        # ── Event bus ──────────────────────────────────────────────────────────
+        self.events: list[dict] = []
+
+        # ── Rejection counter + timeline ────────────────────────────────────────
+        self.eval_count:       int        = 0
+        self.reject_count:     int        = 0
+        self.session_timeline: list[dict] = []
+        self._session_start:   float      = time.time()
+
+        # ── Periodic timers ─────────────────────────────────────────────────────
+        self._last_reconcile_time:  float = 0.0
+        self._last_heartbeat_write: float = 0.0
+        self.RECONCILE_INTERVAL   = 300   # 5 minutes
+        self.HEARTBEAT_INTERVAL   = 60    # 1 minute
+
+    # ── EVENT BUS ─────────────────────────────────────────────────────────────
+
+    def emit(self, event_type: str, data: dict) -> None:
+        """Emit an event: store in-process + append to events.jsonl."""
+        event = {"type": event_type, "ts": now_iso(), **data}
+        self.events.append(event)
+        try:
+            append_jsonl(EVENTS_LOG_FILE, event)
+        except Exception:
+            pass
+
+    # ── TIMELINE HELPER ───────────────────────────────────────────────────────
+
+    def _session_hour(self) -> int:
+        return int((time.time() - self._session_start) / 3600)
+
+    def add_timeline_event(self, event: str, detail: str = "") -> None:
+        """Record a significant event with the hour number since session start."""
+        self.session_timeline.append({
+            "hour":   self._session_hour(),
+            "event":  event,
+            "detail": detail,
+            "ts":     now_iso(),
+        })
+
+    def build_narrative(self) -> str:
+        """Build human-readable session narrative from timeline."""
+        parts = []
+        for item in self.session_timeline:
+            h = item["hour"]
+            e = item["event"]
+            d = item.get("detail", "")
+            parts.append(f"Hour {h}: {e}" + (f" ({d})" if d else "") + ".")
+        selectivity = (
+            f"{self.reject_count / self.eval_count * 100:.1f}%"
+            if self.eval_count > 0 else "n/a"
+        )
+        parts.append(
+            f"{self.eval_count} evaluations, {self.reject_count} rejected "
+            f"({selectivity} selectivity)."
+        )
+        return " ".join(parts)
+
+    # ── HARD CAPS ─────────────────────────────────────────────────────────────
+
+    def check_hard_caps(
+        self,
+        entry: dict,
+        positions: list,
+        equity: float,
+    ) -> tuple[bool, str]:
+        """
+        Pre-flight hard-cap checks. Run BEFORE strategy YAML checks.
+        Returns (passed, reason).
+        """
+        coin      = entry.get("coin", "")
+        direction = entry.get("direction", "LONG")
+
+        # ── Order rate: per minute ────────────────────────────────────────────
+        now_ts = time.time()
+        self._orders_this_minute = [
+            t for t in self._orders_this_minute if now_ts - t < 60
+        ]
+        if len(self._orders_this_minute) >= self.HARD_MAX_ORDERS_PER_MIN:
+            return False, (
+                f"hard_cap:orders_per_min: {len(self._orders_this_minute)} >= "
+                f"{self.HARD_MAX_ORDERS_PER_MIN}"
+            )
+
+        # ── Order rate: per session ───────────────────────────────────────────
+        if self._orders_this_session >= self.HARD_MAX_ORDERS_PER_SESSION:
+            return False, (
+                f"hard_cap:orders_per_session: {self._orders_this_session} >= "
+                f"{self.HARD_MAX_ORDERS_PER_SESSION}"
+            )
+
+        if equity <= 0:
+            return True, "ok"   # can't compute pct with 0 equity, let other gates decide
+
+        # ── Position size cap ─────────────────────────────────────────────────
+        from scanner.v6.config import get_dynamic_limits
+        limits = get_dynamic_limits(equity)
+        # Estimate what size this entry would get
+        size_pct_estimate = entry.get("strategy_size_pct", None)
+        if size_pct_estimate is None:
+            # Use max_position_usd as the ceiling estimate
+            max_pos_usd = limits.get("max_position_usd", equity)
+            size_pct_estimate = max_pos_usd / equity * 100
+        if size_pct_estimate > self.HARD_MAX_POSITION_PCT:
+            return False, (
+                f"hard_cap:position_size: {size_pct_estimate:.1f}% > "
+                f"{self.HARD_MAX_POSITION_PCT}% of equity"
+            )
+
+        # ── Total exposure cap ────────────────────────────────────────────────
+        open_positions = [p for p in positions if not p.get("_pending")]
+        total_invested = sum(float(p.get("size_usd", 0)) for p in open_positions)
+        exposure_pct   = total_invested / equity * 100
+        if exposure_pct >= self.HARD_MAX_EXPOSURE_PCT:
+            return False, (
+                f"hard_cap:exposure: {exposure_pct:.1f}% >= "
+                f"{self.HARD_MAX_EXPOSURE_PCT}% of equity"
+            )
+
+        return True, "ok"
+
+    def record_order(self) -> None:
+        """Call when an order is actually sent to HL."""
+        now_ts = time.time()
+        self._orders_this_minute.append(now_ts)
+        self._orders_this_session += 1
+
+    # ── DEAD MAN'S SWITCH ─────────────────────────────────────────────────────
+
+    def maybe_write_heartbeat(self) -> None:
+        """Write controller heartbeat if >60s since last write."""
+        now_ts = time.time()
+        if now_ts - self._last_heartbeat_write >= self.HEARTBEAT_INTERVAL:
+            try:
+                hb = load_json(HEARTBEAT_FILE, {})
+                hb["controller"] = now_iso()
+                save_json_atomic(HEARTBEAT_FILE, hb)
+                self._last_heartbeat_write = now_ts
+                self.emit("HEARTBEAT", {"heartbeat_ts": hb["controller"]})
+            except Exception as e:
+                log(f"WARN: heartbeat write failed: {e}")
+
+    # ── PERIODIC RECONCILIATION ───────────────────────────────────────────────
+
+    def maybe_reconcile(self, client) -> None:
+        """Run position reconciliation if >5min since last run."""
+        now_ts = time.time()
+        if client and (now_ts - self._last_reconcile_time >= self.RECONCILE_INTERVAL):
+            log("  [RECONCILE] Periodic position reconciliation (5min timer)")
+            try:
+                _reconcile_positions(client)
+                self._last_reconcile_time = now_ts
+            except Exception as e:
+                log(f"WARN: periodic reconciliation failed: {e}")
+
+    # ── GRACEFUL SHUTDOWN ─────────────────────────────────────────────────────
+
+    def write_state(self, session: "SessionState | None" = None) -> None:
+        """Write controller state to bus/controller_state.json for recovery."""
+        try:
+            positions = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
+            state = {
+                "ts":                   now_iso(),
+                "positions":            positions,
+                "orders_this_session":  self._orders_this_session,
+                "eval_count":           self.eval_count,
+                "reject_count":         self.reject_count,
+                "session_timeline":     self.session_timeline,
+            }
+            if session:
+                state["session"] = {
+                    "session_id":  session.session_id,
+                    "strategy":    session.strategy,
+                    "status":      session.status,
+                    "started_at":  session.started_at,
+                    "expires_at":  session.expires_at,
+                    "equity_start": session.equity_start,
+                    "equity_end":  session.equity_end,
+                    "total_pnl":   session.total_pnl,
+                    "trade_count": session.trade_count,
+                    "wins":        session.wins,
+                    "losses":      session.losses,
+                    "near_misses": session.near_misses,
+                    "completed_at": session.completed_at,
+                    "reason":      session.reason,
+                }
+            save_json_atomic(CONTROLLER_STATE_FILE, state)
+            log(f"  State written to {CONTROLLER_STATE_FILE}")
+        except Exception as e:
+            log(f"WARN: could not write controller state: {e}")
+
+
+# Singleton controller instance (created in main, accessible module-wide for signal handlers)
+_controller_instance: Controller | None = None
+
+
+def _make_shutdown_handler(ctrl: Controller):
+    """Create a signal handler that writes state and exits gracefully."""
+    def _handler(signum, frame):
+        sig_name = "SIGTERM" if signum == signal.SIGTERM else "SIGINT"
+        log(f"  Graceful shutdown received ({sig_name})")
+        ctrl.write_state()
+        ctrl.emit("SESSION_COMPLETED", {"reason": f"graceful_shutdown:{sig_name}"})
+        log("  Graceful shutdown complete.")
+        sys.exit(0)
+    return _handler
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # RISK CHECKS (all 9 — the gate)
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -682,10 +952,55 @@ def approve_entry(
     risk: dict,
     equity: float,
     params: _StrategyParams,
+    controller: "Controller | None" = None,
 ) -> tuple[bool, str]:
     """Run all 9 risk checks. Returns (approved, reason)."""
+    if controller is not None:
+        controller.eval_count += 1
+    ok, reason = _approve_entry_inner(entry, positions, risk, equity, params, controller)
+    if controller is not None:
+        if not ok:
+            controller.reject_count += 1
+        # Log to decision log
+        price = 0.0
+        try:
+            portfolio = load_json(BUS_DIR / "portfolio.json", {})
+            price = float(portfolio.get("last_price", {}).get(entry.get("coin", ""), 0))
+        except Exception:
+            pass
+        layers_passed = entry.get("consensus_layers", 0) or 0
+        session_id = entry.get("session_id", "")
+        near = not ok and "consensus_threshold" in reason and layers_passed >= params.consensus_threshold - 2
+        verdict = "approved" if ok else ("near_miss" if near else "rejected")
+        log_decision(
+            coin=entry.get("coin", ""),
+            strategy=params.name,
+            layers_passed=int(layers_passed),
+            verdict=verdict,
+            price=price,
+            reason=reason,
+            session_id=session_id,
+        )
+    return ok, reason
+
+
+def _approve_entry_inner(
+    entry: dict,
+    positions: list,
+    risk: dict,
+    equity: float,
+    params: _StrategyParams,
+    controller: "Controller | None" = None,
+) -> tuple[bool, str]:
+    """Inner logic for approve_entry — all 9 risk checks."""
     coin      = entry.get("coin", "")
     direction = entry.get("direction", "LONG")
+
+    # ── HARD CAPS (pre-flight, unconfigurable) ─────────────────────────────────
+    if controller is not None:
+        caps_ok, caps_reason = controller.check_hard_caps(entry, positions, equity)
+        if not caps_ok:
+            return False, caps_reason
 
     # ── Watch-only mode ──────────────────────────────────────────────────────
     if params.is_watch_only:
@@ -1326,7 +1641,8 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
 # MAIN CYCLE
 # ══════════════════════════════════════════════════════════════════════════════
 
-def run_once(client: HLClient | None = None, dry: bool = False) -> None:
+def run_once(client: HLClient | None = None, dry: bool = False,
+             controller: "Controller | None" = None) -> None:
     """
     One controller cycle:
       1. Check circuit breaker
@@ -1435,6 +1751,19 @@ def run_once(client: HLClient | None = None, dry: bool = False) -> None:
             result = close_trade(client, pos, ex.get("reason", "exit_signal"), dry)
             if result is not None:
                 closed_ids.add(pos.get("id", coin))
+                if controller is not None:
+                    controller.emit("TRADE_EXITED", {
+                        "coin":        coin,
+                        "direction":   pos.get("direction"),
+                        "exit_reason": ex.get("reason", "exit_signal"),
+                        "pnl_usd":     result.get("pnl_usd", 0),
+                        "session_id":  pos.get("session_id", ""),
+                    })
+                    pnl = result.get("pnl_usd", 0)
+                    controller.add_timeline_event(
+                        f"Exited {coin} {pos.get('direction')}",
+                        f"pnl=${pnl:+.2f}",
+                    )
         save_json_atomic(EXITS_FILE, {"updated_at": now_iso(), "exits": []})
 
     if closed_ids:
@@ -1449,7 +1778,7 @@ def run_once(client: HLClient | None = None, dry: bool = False) -> None:
     working_positions = list(positions)
 
     for entry in entry_signals:
-        ok, reason = approve_entry(entry, working_positions, risk, equity, params)
+        ok, reason = approve_entry(entry, working_positions, risk, equity, params, controller)
         if ok:
             enriched = inject_strategy_params(entry, params)
             new_approved.append(enriched)
@@ -1475,6 +1804,17 @@ def run_once(client: HLClient | None = None, dry: bool = False) -> None:
                 if int(consensus) >= threshold - 2:
                     log_near_miss(entry, reason, params)
                     log(f"  NEAR MISS: {coin} consensus={consensus}/{threshold} (within 2 of passing)")
+                    if controller is not None:
+                        controller.emit("NEAR_MISS", {
+                            "coin": coin,
+                            "consensus": consensus,
+                            "threshold": threshold,
+                            "strategy": params.name,
+                        })
+                        controller.add_timeline_event(
+                            "Near miss",
+                            f"{coin} consensus={consensus}/{threshold}",
+                        )
 
     # ── Combine with any pre-approved entries from bus ────────────────────────
     # (legacy: approved.json may have entries from previous gate pass)
@@ -1489,6 +1829,14 @@ def run_once(client: HLClient | None = None, dry: bool = False) -> None:
         risk["halt_reason"] = f"daily_loss_circuit_breaker [strategy={params.name}]"
         risk["halt_until"]  = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
         all_approved = []
+        if controller is not None:
+            controller.emit("RISK_BREACH", {
+                "breach_type": "daily_loss_circuit_breaker",
+                "daily_loss": risk["daily_loss_usd"],
+                "limit": params.max_daily_loss_usd,
+                "strategy": params.name,
+            })
+            controller.add_timeline_event("Risk breach", "daily_loss_circuit_breaker")
 
     # ── Capital floor halt ────────────────────────────────────────────────────
     dynamic_floor = peak * CAPITAL_FLOOR_PCT
@@ -1499,6 +1847,13 @@ def run_once(client: HLClient | None = None, dry: bool = False) -> None:
         risk["halt_until"]        = None
         risk["capital_floor_hit"] = True
         all_approved = []
+        if controller is not None:
+            controller.emit("RISK_BREACH", {
+                "breach_type": "capital_floor",
+                "equity": equity,
+                "floor": dynamic_floor,
+            })
+            controller.add_timeline_event("Risk breach", f"capital_floor ${equity:.0f}")
 
     # ── Execute approved entries on HL ────────────────────────────────────────
     if client and all_approved:
@@ -1516,12 +1871,26 @@ def run_once(client: HLClient | None = None, dry: bool = False) -> None:
             )
             if success:
                 open_coins.add(trade["coin"])
+                if controller is not None:
+                    controller.record_order()
+                    controller.emit("TRADE_ENTERED", {
+                        "coin":      trade["coin"],
+                        "direction": trade.get("direction"),
+                        "strategy":  strat_name,
+                        "session_id": trade.get("session_id", ""),
+                    })
+                    controller.add_timeline_event(
+                        f"Entered {trade['coin']} {trade.get('direction')}",
+                        f"strategy={strat_name}",
+                    )
 
     # ── Write bus outputs ─────────────────────────────────────────────────────
     save_json_atomic(ENTRIES_FILE,  {"updated_at": now_iso(), "entries": []})
     save_json_atomic(APPROVED_FILE, {"updated_at": now_iso(), "approved": all_approved})
     save_risk(risk)
     update_heartbeat()
+    if controller is not None:
+        controller.maybe_write_heartbeat()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1570,6 +1939,8 @@ def print_status() -> None:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
+    global _controller_instance
+
     loop   = "--loop"   in sys.argv
     dry    = "--dry"    in sys.argv or "--paper" in sys.argv
     status = "--status" in sys.argv
@@ -1598,11 +1969,48 @@ def main() -> None:
     BUS_DIR.mkdir(parents=True, exist_ok=True)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+    # ── Create controller instance ────────────────────────────────────────────
+    ctrl = Controller()
+    _controller_instance = ctrl
+
+    # ── Register signal handlers for graceful shutdown ────────────────────────
+    handler = _make_shutdown_handler(ctrl)
+    signal.signal(signal.SIGTERM, handler)
+    signal.signal(signal.SIGINT,  handler)
+
+    # ── State recovery ─────────────────────────────────────────────────────────
+    if CONTROLLER_STATE_FILE.exists():
+        log(f"  RECOVERY: found {CONTROLLER_STATE_FILE} — loading previous state")
+        try:
+            saved_state = load_json(CONTROLLER_STATE_FILE, {})
+            # Restore counters
+            ctrl._orders_this_session = saved_state.get("orders_this_session", 0)
+            ctrl.eval_count           = saved_state.get("eval_count", 0)
+            ctrl.reject_count         = saved_state.get("reject_count", 0)
+            ctrl.session_timeline     = saved_state.get("session_timeline", [])
+            # Restore positions to positions.json if they were saved
+            saved_positions = saved_state.get("positions", [])
+            if saved_positions:
+                log(f"  RECOVERY: restoring {len(saved_positions)} saved positions")
+                save_json_locked(POSITIONS_FILE, {
+                    "updated_at": now_iso(),
+                    "positions":  saved_positions,
+                })
+            log(f"  RECOVERY: orders_this_session={ctrl._orders_this_session}, "
+                f"eval_count={ctrl.eval_count}")
+            # Delete state file after successful load
+            CONTROLLER_STATE_FILE.unlink()
+            log(f"  RECOVERY: state file deleted — recovery complete")
+        except Exception as e:
+            log(f"WARN: state recovery failed: {e}")
+
     # Load HL metadata (needed for coin sizing even in paper mode)
     load_hl_meta()
 
     mode_label = "DRY" if dry else "LIVE"
     log(f"=== V6 Controller [{mode_label}] starting ===")
+    ctrl.emit("SESSION_STARTED", {"mode": mode_label, "loop": loop})
+    ctrl.add_timeline_event("Session started", f"mode={mode_label}")
 
     strategy = get_active_strategy()
     if strategy:
@@ -1653,6 +2061,7 @@ def main() -> None:
                         send_alert("⚠️ V6 Controller startup: positions.json was empty. Reconciling from HL.")
                         startup_flag.write_text(now_iso())
                     _reconcile_positions(client)
+                    ctrl._last_reconcile_time = time.time()
                 except Exception as exc:
                     log(f"WARN: HL client init failed: {exc} — gate-only mode")
 
@@ -1666,7 +2075,7 @@ def main() -> None:
             except Exception as exc:
                 log(f"WARN: dry client init failed: {exc}")
 
-    run_once(client, dry)
+    run_once(client, dry, controller=ctrl)
 
     if loop:
         last_meta_refresh    = time.time()
@@ -1680,7 +2089,7 @@ def main() -> None:
                     load_hl_meta()
                     last_meta_refresh = time.time()
 
-                # Update balance + reconcile every cycle
+                # Update balance every cycle
                 if client and not dry:
                     try:
                         equity = client.get_balance()
@@ -1693,9 +2102,11 @@ def main() -> None:
                         log(f"🚨 Balance fetch FAILED: {e} — skipping cycle")
                         send_alert(f"🚨 HL API DOWN: get_balance failed: {e}")
                         continue
-                    _reconcile_positions(client)
 
-                run_once(client, dry)
+                # Periodic reconciliation (timer-based, not every cycle)
+                ctrl.maybe_reconcile(client if not dry else None)
+
+                run_once(client, dry, controller=ctrl)
             except Exception as exc:
                 log(f"ERROR in cycle: {exc}")
 

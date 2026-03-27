@@ -832,3 +832,343 @@ class TestSessionStateDataclass:
         for state in ["pending", "active", "completing", "completed", "expired"]:
             ss = self._make_session(status=state)
             assert ss.status == state
+
+
+# ─── SESSION 8c: ROLLS ROYCE TESTS ───────────────────────────────────────────
+
+import json
+import tempfile
+import time
+from pathlib import Path
+from unittest.mock import patch, MagicMock
+
+
+# Re-import Controller and new symbols
+from scanner.v6.controller import (
+    Controller,
+    log_decision,
+    DECISION_LOG_FILE,
+    EVENTS_LOG_FILE,
+    CONTROLLER_STATE_FILE,
+    append_jsonl,
+    save_json_atomic,
+    load_json,
+    now_iso,
+    _make_shutdown_handler,
+)
+
+
+# ─── DECISION LOG ────────────────────────────────────────────────────────────
+
+class TestDecisionLog:
+    """Decision log writes correct format."""
+
+    def test_writes_correct_format(self, tmp_path):
+        decision_file = tmp_path / "decisions.jsonl"
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+            log_decision(
+                coin="BTC",
+                strategy="momentum",
+                layers_passed=5,
+                verdict="approved",
+                price=65000.0,
+                reason="ok",
+                session_id="abc123",
+            )
+        lines = decision_file.read_text().strip().split("\n")
+        assert len(lines) == 1
+        record = json.loads(lines[0])
+        assert record["coin"] == "BTC"
+        assert record["strategy"] == "momentum"
+        assert record["layers_passed"] == 5
+        assert record["verdict"] == "approved"
+        assert record["price"] == 65000.0
+        assert record["reason"] == "ok"
+        assert record["session_id"] == "abc123"
+        assert "ts" in record
+
+    def test_rejected_verdict_written(self, tmp_path):
+        decision_file = tmp_path / "decisions.jsonl"
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+            log_decision(
+                coin="ETH", strategy="defense", layers_passed=2,
+                verdict="rejected", price=3000.0, reason="max_positions",
+            )
+        record = json.loads(decision_file.read_text().strip())
+        assert record["verdict"] == "rejected"
+
+    def test_approve_entry_writes_decision_log(self, tmp_path):
+        """approve_entry with a controller should write to decision log."""
+        decision_file = tmp_path / "decisions.jsonl"
+        ctrl = Controller()
+        params = params_from_strategy("momentum")
+        entry = make_entry(consensus_layers=5)
+        risk  = make_risk(peak_equity=1000.0)
+
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file), \
+             patch("scanner.v6.controller.BUS_DIR", tmp_path), \
+             patch("scanner.v6.controller.load_json", return_value={}):
+            ok, reason = approve_entry(entry, [], risk, 1000.0, params, ctrl)
+        assert decision_file.exists()
+        record = json.loads(decision_file.read_text().strip())
+        assert record["verdict"] in ("approved", "rejected", "near_miss")
+
+
+# ─── HARD CAPS ───────────────────────────────────────────────────────────────
+
+class TestHardCaps:
+    """Hard caps enforce absolute safety limits."""
+
+    def _make_ctrl(self) -> Controller:
+        return Controller()
+
+    def test_rejects_oversized_position(self):
+        """Position size > 25% of equity → reject."""
+        ctrl  = self._make_ctrl()
+        entry = make_entry()
+        entry["strategy_size_pct"] = 30.0   # 30% > HARD_MAX_POSITION_PCT (25%)
+        ok, reason = ctrl.check_hard_caps(entry, [], equity=1000.0)
+        assert not ok
+        assert "hard_cap:position_size" in reason
+
+    def test_allows_position_within_cap(self):
+        ctrl  = self._make_ctrl()
+        entry = make_entry()
+        entry["strategy_size_pct"] = 20.0   # 20% <= 25%
+        ok, reason = ctrl.check_hard_caps(entry, [], equity=1000.0)
+        assert ok
+
+    def test_rejects_when_exposure_limit_exceeded(self):
+        """Total exposure >= 80% of equity → reject."""
+        ctrl = self._make_ctrl()
+        # 3 positions × $300 = $900 of $1000 = 90% → over limit
+        positions = [make_position(f"COIN{i}", size_usd=300.0) for i in range(3)]
+        entry = make_entry()
+        # Set strategy_size_pct within hard cap so only exposure fires
+        entry["strategy_size_pct"] = 10.0
+        ok, reason = ctrl.check_hard_caps(entry, positions, equity=1000.0)
+        assert not ok
+        assert "hard_cap:exposure" in reason
+
+    def test_allows_exposure_under_cap(self):
+        ctrl = self._make_ctrl()
+        # $500 / $1000 = 50% → under 80% limit
+        positions = [make_position("ETH", size_usd=500.0)]
+        entry = make_entry()
+        entry["strategy_size_pct"] = 10.0   # within size cap
+        ok, _  = ctrl.check_hard_caps(entry, positions, equity=1000.0)
+        assert ok
+
+    def test_rejects_when_order_rate_exceeded(self):
+        """More than 10 orders per minute → reject."""
+        ctrl = self._make_ctrl()
+        # Fill up the per-minute bucket
+        now_ts = time.time()
+        ctrl._orders_this_minute = [now_ts] * ctrl.HARD_MAX_ORDERS_PER_MIN
+        entry = make_entry()
+        ok, reason = ctrl.check_hard_caps(entry, [], equity=1000.0)
+        assert not ok
+        assert "hard_cap:orders_per_min" in reason
+
+    def test_rejects_when_session_order_cap_hit(self):
+        """100 orders in session → reject."""
+        ctrl = self._make_ctrl()
+        ctrl._orders_this_session = ctrl.HARD_MAX_ORDERS_PER_SESSION
+        entry = make_entry()
+        ok, reason = ctrl.check_hard_caps(entry, [], equity=1000.0)
+        assert not ok
+        assert "hard_cap:orders_per_session" in reason
+
+    def test_approve_entry_applies_hard_caps(self):
+        """approve_entry with controller should reject on hard cap breach."""
+        ctrl  = self._make_ctrl()
+        ctrl._orders_this_session = ctrl.HARD_MAX_ORDERS_PER_SESSION
+        params = params_from_strategy("momentum")
+        entry  = make_entry(consensus_layers=5)
+        risk   = make_risk(peak_equity=1000.0)
+        ok, reason = approve_entry(entry, [], risk, 1000.0, params, ctrl)
+        assert not ok
+        assert "hard_cap" in reason
+
+
+# ─── REJECTION COUNTER ────────────────────────────────────────────────────────
+
+class TestRejectionCounter:
+    """Rejection counter increments correctly."""
+
+    def test_eval_count_increments(self):
+        ctrl   = Controller()
+        params = params_from_strategy("momentum")
+        entry  = make_entry(consensus_layers=5)
+        risk   = make_risk(peak_equity=1000.0)
+        assert ctrl.eval_count == 0
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
+             patch("scanner.v6.controller.load_json", return_value={}):
+            approve_entry(entry, [], risk, 1000.0, params, ctrl)
+        assert ctrl.eval_count == 1
+
+    def test_reject_count_increments_on_rejection(self):
+        ctrl   = Controller()
+        params = params_from_strategy("momentum")
+        # 5 positions fills max_positions=5
+        positions = [make_position(f"C{i}", size_usd=10.0) for i in range(5)]
+        entry  = make_entry(consensus_layers=5)
+        risk   = make_risk(peak_equity=1000.0)
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
+             patch("scanner.v6.controller.load_json", return_value={}):
+            ok, _ = approve_entry(entry, positions, risk, 1000.0, params, ctrl)
+        assert not ok
+        assert ctrl.reject_count == 1
+
+    def test_reject_count_not_incremented_on_approval(self):
+        ctrl   = Controller()
+        params = params_from_strategy("momentum")
+        entry  = make_entry(consensus_layers=5)
+        entry["strategy_size_pct"] = 10.0   # within hard cap (10% < 25%)
+        risk   = make_risk(peak_equity=1000.0)
+        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
+             patch("scanner.v6.controller.load_json", return_value={}):
+            ok, _ = approve_entry(entry, [], risk, 1000.0, params, ctrl)
+        assert ok
+        assert ctrl.reject_count == 0
+
+    def test_narrative_built_from_timeline(self):
+        ctrl = Controller()
+        ctrl.add_timeline_event("Session started", "momentum")
+        ctrl.add_timeline_event("Entered BTC LONG", "strategy=momentum")
+        ctrl.eval_count   = 47
+        ctrl.reject_count = 45
+        narrative = ctrl.build_narrative()
+        assert "Session started" in narrative
+        assert "47 evaluations" in narrative
+        assert "45 rejected" in narrative
+        assert "selectivity" in narrative
+
+
+# ─── EVENT BUS ───────────────────────────────────────────────────────────────
+
+class TestEventBus:
+    """Event bus emits correct event types."""
+
+    def test_emit_stores_in_process(self, tmp_path):
+        ctrl = Controller()
+        events_file = tmp_path / "events.jsonl"
+        with patch("scanner.v6.controller.EVENTS_LOG_FILE", events_file):
+            ctrl.emit("SESSION_STARTED", {"mode": "DRY"})
+        assert len(ctrl.events) == 1
+        assert ctrl.events[0]["type"] == "SESSION_STARTED"
+        assert ctrl.events[0]["mode"] == "DRY"
+        assert "ts" in ctrl.events[0]
+
+    def test_emit_writes_to_file(self, tmp_path):
+        ctrl = Controller()
+        events_file = tmp_path / "events.jsonl"
+        with patch("scanner.v6.controller.EVENTS_LOG_FILE", events_file):
+            ctrl.emit("TRADE_ENTERED", {"coin": "BTC", "direction": "LONG"})
+        lines = events_file.read_text().strip().split("\n")
+        assert len(lines) == 1
+        record = json.loads(lines[0])
+        assert record["type"] == "TRADE_ENTERED"
+        assert record["coin"] == "BTC"
+
+    def test_emit_multiple_event_types(self, tmp_path):
+        ctrl = Controller()
+        events_file = tmp_path / "events.jsonl"
+        event_types = [
+            "SESSION_STARTED", "TRADE_ENTERED", "TRADE_EXITED",
+            "NEAR_MISS", "SESSION_COMPLETED", "RISK_BREACH", "HEARTBEAT",
+        ]
+        with patch("scanner.v6.controller.EVENTS_LOG_FILE", events_file):
+            for et in event_types:
+                ctrl.emit(et, {"test": True})
+        assert len(ctrl.events) == len(event_types)
+        written_types = [
+            json.loads(l)["type"]
+            for l in events_file.read_text().strip().split("\n")
+        ]
+        assert written_types == event_types
+
+
+# ─── GRACEFUL SHUTDOWN ────────────────────────────────────────────────────────
+
+class TestGracefulShutdown:
+    """Graceful shutdown writes state file; recovery loads it."""
+
+    def test_write_state_creates_file(self, tmp_path):
+        ctrl = Controller()
+        ctrl._orders_this_session = 5
+        ctrl.eval_count   = 10
+        ctrl.reject_count = 8
+
+        state_file    = tmp_path / "controller_state.json"
+        positions_file = tmp_path / "positions.json"
+        # Write dummy positions
+        save_json_atomic(positions_file, {"positions": [{"coin": "BTC", "size_usd": 500.0}]})
+
+        with patch("scanner.v6.controller.CONTROLLER_STATE_FILE", state_file), \
+             patch("scanner.v6.controller.POSITIONS_FILE", positions_file), \
+             patch("scanner.v6.controller.load_json_locked",
+                   return_value={"positions": [{"coin": "BTC"}]}):
+            ctrl.write_state()
+
+        assert state_file.exists()
+        state = json.loads(state_file.read_text())
+        assert state["orders_this_session"] == 5
+        assert state["eval_count"] == 10
+        assert state["reject_count"] == 8
+        assert "ts" in state
+
+    def test_write_state_includes_positions(self, tmp_path):
+        ctrl = Controller()
+        state_file = tmp_path / "controller_state.json"
+        mock_positions = [{"coin": "ETH", "direction": "SHORT", "size_usd": 200.0}]
+
+        with patch("scanner.v6.controller.CONTROLLER_STATE_FILE", state_file), \
+             patch("scanner.v6.controller.load_json_locked",
+                   return_value={"positions": mock_positions}):
+            ctrl.write_state()
+
+        state = json.loads(state_file.read_text())
+        assert len(state["positions"]) == 1
+        assert state["positions"][0]["coin"] == "ETH"
+
+    def test_write_state_includes_session(self, tmp_path):
+        ctrl = Controller()
+        state_file = tmp_path / "controller_state.json"
+        session = SessionState(
+            session_id="sess_recovery",
+            strategy="momentum",
+            status="active",
+            started_at=now_iso(),
+            expires_at=now_iso(),
+            equity_start=1000.0,
+            total_pnl=50.0,
+        )
+        with patch("scanner.v6.controller.CONTROLLER_STATE_FILE", state_file), \
+             patch("scanner.v6.controller.load_json_locked",
+                   return_value={"positions": []}):
+            ctrl.write_state(session=session)
+
+        state = json.loads(state_file.read_text())
+        assert "session" in state
+        assert state["session"]["session_id"] == "sess_recovery"
+        assert state["session"]["total_pnl"] == 50.0
+
+    def test_shutdown_handler_writes_state(self, tmp_path):
+        """Signal handler writes state file before exit."""
+        import signal as _signal
+        ctrl = Controller()
+        ctrl.eval_count = 42
+        state_file  = tmp_path / "controller_state.json"
+        events_file = tmp_path / "events.jsonl"
+
+        with patch("scanner.v6.controller.CONTROLLER_STATE_FILE", state_file), \
+             patch("scanner.v6.controller.EVENTS_LOG_FILE", events_file), \
+             patch("scanner.v6.controller.load_json_locked",
+                   return_value={"positions": []}), \
+             patch("sys.exit") as mock_exit:
+            handler = _make_shutdown_handler(ctrl)
+            handler(_signal.SIGTERM, None)
+
+        assert state_file.exists()
+        mock_exit.assert_called_once_with(0)
