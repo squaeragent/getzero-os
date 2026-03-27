@@ -1085,6 +1085,10 @@ try:
     from scanner.v6.cards.card_api import router as cards_router
     app.include_router(cards_router)
 
+    # ── Public API endpoints (collective, arena, agent profiles) ────────
+    from scanner.v6.public_api import router as public_router
+    app.include_router(public_router)
+
     # ── Backtest endpoints ───────────────────────────────────────────────
     from scanner.v6.backtest.backtest_api import router as backtest_router
     app.include_router(backtest_router)
