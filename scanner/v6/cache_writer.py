@@ -48,7 +48,8 @@ def write_cache():
     failed = []
     
     for key, endpoint in ENDPOINTS.items():
-        data = fetch(endpoint)
+        timeout = 30.0 if key in ('heat', 'regime') else 3.0
+        data = fetch(endpoint, timeout=timeout)
         if data is None:
             failed.append(key)
             continue
