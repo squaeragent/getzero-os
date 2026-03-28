@@ -28,6 +28,7 @@ ENDPOINTS = {
     "health": "/health",
     "sessions": "/v6/session/status",
     "collective": "/v6/collective",
+    "engine_stats": "/v6/engine/stats",
 }
 
 def log(msg: str):
