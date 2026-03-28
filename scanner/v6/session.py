@@ -871,8 +871,8 @@ class SessionManager:
         session.events.append(event)
         try:
             _append_jsonl(self.bus_dir / "events.jsonl", event)
-        except Exception:
-            pass
+        except OSError as e:
+            _log(f"WARN: failed to write event: {e}")
 
     # ── PUBLIC API METHODS ────────────────────────────────────────────────
 
@@ -885,7 +885,7 @@ class SessionManager:
             for line in self._history_file.read_text().strip().split("\n"):
                 if line.strip():
                     entries.append(json.loads(line))
-        except Exception:
+        except (json.JSONDecodeError, OSError):
             pass
         return list(reversed(entries[-limit:]))
 

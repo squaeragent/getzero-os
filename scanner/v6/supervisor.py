@@ -58,8 +58,8 @@ def load_heartbeat():
         try:
             with open(hb_file) as f:
                 return json.load(f)
-        except Exception as _e:
-            pass  # swallowed: {_e}
+        except (json.JSONDecodeError, OSError) as e:
+            log(f"WARN: heartbeat read failed: {e}")
     return {}
 
 
@@ -72,7 +72,7 @@ def is_stale(name, threshold_seconds):
         last = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         age = (datetime.now(timezone.utc) - last).total_seconds()
         return age > threshold_seconds
-    except Exception as _e:
+    except (ValueError, TypeError) as _e:
         return True
 
 
@@ -85,7 +85,7 @@ def write_heartbeat(name: str):
             try:
                 with open(hb_file) as f:
                     hb = json.load(f)
-            except Exception:
+            except (json.JSONDecodeError, OSError):
                 pass
         hb[name] = datetime.now(timezone.utc).isoformat()
         tmp = hb_file.with_suffix(".tmp")
@@ -112,7 +112,7 @@ def run_once(name, script):
     except subprocess.TimeoutExpired as _e:
         log(f"  [{name}] TIMEOUT after 300s")
         return False
-    except Exception as e:
+    except OSError as e:
         log(f"  [{name}] FAILED: {e}")
         return False
 
@@ -146,7 +146,7 @@ def start_evaluator():
         t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
         t.start()
         log(f"monitor PID: {proc.pid}")
-    except Exception as e:
+    except OSError as e:
         log(f"Failed to start monitor: {e}")
 
 
@@ -175,7 +175,7 @@ def start_immune():
         t = threading.Thread(target=_drain_output, args=(proc, name), daemon=True)
         t.start()
         log(f"immune PID: {proc.pid}")
-    except Exception as e:
+    except OSError as e:
         log(f"Failed to start immune: {e}")
 
 
@@ -196,8 +196,8 @@ def signal_handler(sig, frame):
         try:
             proc.terminate()
             log(f"Terminated {name} (PID {proc.pid})")
-        except Exception as _e:
-            pass  # swallowed: {_e}
+        except OSError:
+            pass
     sys.exit(0)
 
 
@@ -213,7 +213,7 @@ def run_health_check():
                 age = int((now - last).total_seconds())
                 flag = "✅" if age < stale_thresh else "⚠️ STALE"
                 status.append(f"{name:20s}: {age:4d}s {flag}")
-            except Exception as _e:
+            except (ValueError, TypeError):
                 status.append(f"{name:20s}: parse error")
         else:
             status.append(f"{name:20s}: no heartbeat")
@@ -227,7 +227,7 @@ def run_health_check():
                 age = int((now - last).total_seconds())
                 flag = "✅" if age < 120 else "⚠️ STALE"
                 status.append(f"{'monitor':20s}: {age:4d}s {flag}")
-            except Exception as _e:
+            except (ValueError, TypeError):
                 status.append(f"{'monitor':20s}: running (no hb)")
         else:
             status.append(f"{'monitor':20s}: running (no hb yet)")
@@ -324,8 +324,8 @@ def main():
                 # Keep last 1000 lines
                 log_file.write_text("\n".join(lines[-1000:]) + "\n")
                 log(f"Log rotated: kept last 1000 lines")
-        except Exception as _e:
-            pass
+        except OSError as e:
+            log(f"WARN: log rotation failed: {e}")
 
         time.sleep(5)
 

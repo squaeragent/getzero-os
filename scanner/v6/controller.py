@@ -62,6 +62,7 @@ import os
 import signal
 import sys
 import time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -80,6 +81,7 @@ from scanner.v6.config import (
     get_env, get_stop_pct, get_dynamic_limits, get_slippage, get_leverage,
     HL_MAIN_ADDRESS,
 )
+from scanner.exceptions import APIError, InsufficientFundsError, DesyncError, OrderError, StopLossError, BusIOError
 from scanner.v6.strategy_loader import StrategyConfig, get_active_strategy
 from scanner.v6.hl_client import HLClient, load_hl_meta, COIN_TO_ASSET, COIN_SZ_DECIMALS
 
@@ -287,7 +289,7 @@ def send_alert(message: str) -> None:
             url, data=payload, headers={"Content-Type": "application/json"}
         )
         urllib.request.urlopen(req, timeout=10)
-    except Exception as e:
+    except (urllib.error.URLError, OSError) as e:
         log(f"WARN: Telegram failed: {e}")
 
 
@@ -353,7 +355,7 @@ def rotate_logs_start(session_id: str) -> dict[str, Path]:
             try:
                 base_path.rename(archive_path)
                 log(f"  Log rotated: {base_path.name} → {archive_path.name}")
-            except Exception as e:
+            except OSError as e:
                 log(f"  WARN: log rotation failed for {base_path.name}: {e}")
     return session_files
 
@@ -369,7 +371,7 @@ def rotate_logs_end(session_id: str) -> None:
         try:
             base_path.rename(archive_path)
             log(f"  Log archived: {base_path.name} → {archive_path.name}")
-        except Exception as e:
+        except OSError as e:
             log(f"  WARN: log archive failed for {base_path.name}: {e}")
 
 
@@ -402,7 +404,7 @@ def _safe_save_positions(client: HLClient | None, new_positions: list[dict],
                 )
                 _reconcile_positions(client)
                 return
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             log(f"WARN: HL check failed during empty-write guard ({source}): {e}")
             return  # When in doubt, don't overwrite with empty
 
@@ -422,7 +424,7 @@ def _reconcile_positions(client: HLClient) -> None:
     """
     try:
         hl_positions = client.get_positions()
-    except Exception as e:
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
         log(f"WARN: reconciliation skipped — HL query failed: {e}")
         return
 
@@ -527,12 +529,12 @@ def _reconcile_positions(client: HLClient) -> None:
                         else:
                             log(f"  Cannot place emergency stop for {coin} — size=0")
                             send_alert(f"🚨 Cannot place stop for {coin} — size unknown. CLOSE MANUALLY.")
-                    except Exception as e:
+                    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, StopLossError, APIError) as e:
                         log(f"  Emergency stop FAILED: {e}")
                         send_alert(f"🚨🚨 EMERGENCY STOP FAILED for {coin}: {e}\nCLOSE MANUALLY NOW.")
 
             save_json_locked(POSITIONS_FILE, {"updated_at": now_iso(), "positions": new_positions})
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, ValueError) as e:
             log(f"  WARN: stop verification failed: {e}")
 
 
@@ -584,8 +586,8 @@ def get_equity() -> float:
             equity = p.get("account_value") or p.get("equity_usd")
             if equity:
                 return float(equity)
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError, ValueError, TypeError) as e:
+            log(f"WARN: get_equity failed reading portfolio.json: {e}")
     return CAPITAL
 
 
@@ -605,8 +607,8 @@ def check_halt(risk: dict) -> tuple[bool, str]:
                 risk["halt_reason"] = None
                 risk["halt_until"]  = None
                 return False, ""
-        except Exception:
-            pass
+        except (ValueError, TypeError, KeyError) as e:
+            log(f"WARN: halt_until parsing failed: {e}")
     return True, risk.get("halt_reason", "unknown")
 
 
@@ -619,8 +621,8 @@ def _get_current_regime() -> str:
             try:
                 data = load_json(candidate, {})
                 return data.get("regime", data.get("current", "unknown"))
-            except Exception:
-                pass
+            except (json.JSONDecodeError, OSError) as e:
+                log(f"WARN: failed to read regime from {candidate}: {e}")
     return "unknown"
 
 
@@ -633,8 +635,8 @@ def log_rejection(coin: str, direction: str, reason: str,
         }
         with open(REJECTION_LOG_FILE, "a") as f:
             f.write(json.dumps(entry) + "\n")
-    except Exception:
-        pass
+    except (json.JSONDecodeError, OSError) as e:
+        log(f"WARN: failed to write rejection log: {e}")
 
 
 def log_near_miss(entry: dict, reason: str, params: "_StrategyParams") -> None:
@@ -652,8 +654,8 @@ def log_near_miss(entry: dict, reason: str, params: "_StrategyParams") -> None:
         }
         with open(NEAR_MISS_LOG_FILE, "a") as f:
             f.write(json.dumps(record) + "\n")
-    except Exception:
-        pass
+    except (json.JSONDecodeError, OSError) as e:
+        log(f"WARN: failed to write near miss log: {e}")
 
 
 def log_decision(
@@ -678,8 +680,8 @@ def log_decision(
             "session_id":   session_id,
         }
         append_jsonl(DECISION_LOG_FILE, record)
-    except Exception:
-        pass
+    except (json.JSONDecodeError, OSError) as e:
+        log(f"WARN: failed to write decision log: {e}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -828,8 +830,8 @@ class Controller:
         self.events.append(event)
         try:
             append_jsonl(EVENTS_LOG_FILE, event)
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            log(f"WARN: failed to write event log: {e}")
 
     # ── TIMELINE HELPER ───────────────────────────────────────────────────────
 
@@ -944,7 +946,7 @@ class Controller:
                 save_json_atomic(HEARTBEAT_FILE, hb)
                 self._last_heartbeat_write = now_ts
                 self.emit("HEARTBEAT", {"heartbeat_ts": hb["controller"]})
-            except Exception as e:
+            except (json.JSONDecodeError, OSError) as e:
                 log(f"WARN: heartbeat write failed: {e}")
 
     # ── PERIODIC RECONCILIATION ───────────────────────────────────────────────
@@ -957,7 +959,7 @@ class Controller:
             try:
                 _reconcile_positions(client)
                 self._last_reconcile_time = now_ts
-            except Exception as e:
+            except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, ValueError) as e:
                 log(f"WARN: periodic reconciliation failed: {e}")
 
     # ── GRACEFUL SHUTDOWN ─────────────────────────────────────────────────────
@@ -993,7 +995,7 @@ class Controller:
                 }
             save_json_atomic(CONTROLLER_STATE_FILE, state)
             log(f"  State written to {CONTROLLER_STATE_FILE}")
-        except Exception as e:
+        except (json.JSONDecodeError, OSError) as e:
             log(f"WARN: could not write controller state: {e}")
 
 
@@ -1039,8 +1041,8 @@ def approve_entry(
         try:
             portfolio = load_json(BUS_DIR / "portfolio.json", {})
             price = float(portfolio.get("last_price", {}).get(entry.get("coin", ""), 0))
-        except Exception:
-            pass
+        except (ValueError, TypeError, KeyError) as e:
+            log(f"WARN: failed to read price for decision log: {e}")
         layers_passed = entry.get("consensus_layers", 0) or 0
         session_id = entry.get("session_id", "")
         near = not ok and "consensus_threshold" in reason and layers_passed >= params.consensus_threshold - 2
@@ -1196,7 +1198,8 @@ def check_time_exits(positions: list, params: _StrategyParams) -> list[dict]:
             continue
         try:
             entry_time = datetime.fromisoformat(entry_time_str.replace("Z", "+00:00"))
-        except Exception:
+        except (ValueError, TypeError) as e:
+            log(f"WARN: failed to parse entry_time for {pos.get('coin', '?')}: {e}")
             continue
         hold_hours = (now - entry_time).total_seconds() / 3600.0
         if hold_hours >= max_hours:
@@ -1240,7 +1243,8 @@ def compute_size_usd(trade: dict) -> float:
     """Compute position size. Strategy YAML → conviction-based fallback."""
     try:
         equity = float(load_json(BUS_DIR / "portfolio.json", {}).get("account_value", 0))
-    except Exception:
+    except (ValueError, TypeError, KeyError) as e:
+        log(f"WARN: failed to read equity for position sizing: {e}")
         equity = 0
 
     if not equity:
@@ -1321,7 +1325,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
                 }
                 lev_result = client._sign_and_send(lev_action)
                 log(f"  Leverage set: {coin} → {target_lev}x cross")
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, APIError) as e:
             log(f"  ❌ Leverage set FAILED for {coin}: {e}. Aborting trade.")
             log_rejection(coin, direction, "leverage_failed", {"error": str(e)})
             return False
@@ -1391,8 +1395,8 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
             try:
                 st = datetime.fromisoformat(signal_time.replace("Z", "+00:00"))
                 signal_age_min = (datetime.now(timezone.utc) - st).total_seconds() / 60
-            except Exception:
-                pass
+            except (ValueError, TypeError) as e:
+                log(f"WARN: failed to parse signal_time for {coin}: {e}")
 
         if signal_age_min > 30:
             log(f"  SKIP {coin}: signal too stale ({signal_age_min:.0f}m old)")
@@ -1449,7 +1453,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
                 for oo in open_orders:
                     if oo.get("coin") == coin:
                         client.cancel_order(coin, oo["oid"])
-            except Exception as e:
+            except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, APIError) as e:
                 log(f"  Warning: failed to cancel orphaned orders: {e}")
             return False
 
@@ -1495,7 +1499,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
                                      if is_buy else client.market_buy(coin, filled_sz))
                         log(f"  Emergency close: {close_res}")
                         return False
-            except Exception as e:
+            except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, StopLossError, APIError) as e:
                 log(f"  Stop retry error: {e}")
                 send_alert(f"❌ Stop loss failed for {coin} {direction}. Closing immediately.")
                 close_res = (client.market_sell(coin, filled_sz)
@@ -1516,7 +1520,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
                         break
                     else:
                         log(f"  Stop NOT found in open orders (attempt {_attempt+1}/2)")
-                except Exception as e:
+                except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, APIError) as e:
                     log(f"  Stop verification query failed (attempt {_attempt+1}/2): {e}")
 
             if not _stop_verified:
@@ -1529,7 +1533,7 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
                     close_res = (client.market_sell(coin, filled_sz)
                                  if is_buy else client.market_buy(coin, filled_sz))
                     log(f"  Emergency close (stop unverified): {close_res}")
-                except Exception as e:
+                except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, APIError) as e:
                     log(f"  Emergency close FAILED: {e}")
                     send_alert(f"🚨🚨 EMERGENCY CLOSE FAILED for {coin}: {e}\nCLOSE MANUALLY NOW.")
                 return False
@@ -1548,8 +1552,8 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
             signal_ts_epoch = datetime.fromisoformat(
                 signal_ts_str.replace("Z", "+00:00")
             ).timestamp()
-        except Exception:
-            pass
+        except (ValueError, TypeError) as e:
+            log(f"WARN: failed to parse signal timestamp for {coin}: {e}")
     order_ts_epoch = fill_time  # approximate: order placement time
     signal_to_order_ms = (order_ts_epoch - signal_ts_epoch) * 1000 if signal_ts_epoch else 0.0
     order_to_fill_ms = (fill_time - order_ts_epoch) * 1000 if order_ts_epoch else 0.0
@@ -1674,7 +1678,7 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
                     log(f"  Retry filled: {retry_filled.get('totalSz')} @ ${retry_filled.get('avgPx')}")
                 else:
                     send_alert(f"🚨 FAILED to close remaining {remaining} {coin} — CHECK HL MANUALLY")
-            except Exception as e:
+            except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, APIError) as e:
                 log(f"  RETRY ERROR: {e}")
                 send_alert(f"🚨 RETRY ERROR closing {coin}: {e}")
         elif filled_sz == 0 and not dry:
@@ -1689,7 +1693,8 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
     try:
         fee_rates = client.get_fee_rates()
         fee_rate  = fee_rates["taker"]
-    except Exception:
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+        log(f"WARN: fee rate query failed in close_trade: {e}")
         fee_rate = FEE_RATE
 
     exit_fee   = round(actual_exit_notional * fee_rate, 4)
@@ -1707,8 +1712,8 @@ def close_trade(client: HLClient, pos: dict, exit_reason: str, dry: bool) -> dic
     mid_at_close = 0
     try:
         mid_at_close = client.get_price(coin)
-    except Exception:
-        pass
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+        log(f"WARN: failed to get mid price at close for {coin}: {e}")
     slippage_pct = (
         round(abs(exit_price - mid_at_close) / mid_at_close * 100, 4)
         if mid_at_close > 0 and exit_price > 0 else 0
@@ -1818,7 +1823,8 @@ def check_trailing_stops(
 
         try:
             current_price = client.get_price(coin)
-        except Exception:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+            log(f"WARN: failed to get price for trailing stop on {coin}: {e}")
             updated.append(pos)
             continue
 
@@ -2312,7 +2318,7 @@ def main() -> None:
             # Delete state file after successful load
             CONTROLLER_STATE_FILE.unlink()
             log(f"  RECOVERY: state file deleted — recovery complete")
-        except Exception as e:
+        except (json.JSONDecodeError, OSError, KeyError, ValueError) as e:
             log(f"WARN: state recovery failed: {e}")
 
     # Load HL metadata (needed for coin sizing even in paper mode)
@@ -2368,12 +2374,12 @@ def main() -> None:
                     try:
                         fees = client.get_fee_rates()
                         log(f"Fee rates: taker={fees['taker']*100:.3f}% maker={fees['maker']*100:.3f}%")
-                    except Exception as e:
+                    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
                         log(f"WARN: fee rate query failed: {e}")
                     try:
                         rl = client.get_rate_limit()
                         log(f"Rate limit: {rl['used']}/{rl['cap']} used")
-                    except Exception as e:
+                    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
                         log(f"WARN: rate limit query failed: {e}")
                     # Startup reconciliation
                     local_pos = load_json_locked(POSITIONS_FILE, {}).get("positions", [])
@@ -2385,7 +2391,7 @@ def main() -> None:
                     _reconcile_positions(client)
                     ctrl._last_reconcile_time = time.time()
                 except Exception as exc:
-                    log(f"WARN: HL client init failed: {exc} — gate-only mode")
+                    log(f"WARN: HL client init failed ({type(exc).__name__}): {exc} — gate-only mode")
 
     elif dry:
         # Dry mode: we still need a client for price queries
@@ -2395,7 +2401,7 @@ def main() -> None:
                 client = HLClient(hl_key, HL_MAIN_ADDRESS)
                 log("Dry mode client ready (price queries only)")
             except Exception as exc:
-                log(f"WARN: dry client init failed: {exc}")
+                log(f"WARN: dry client init failed ({type(exc).__name__}): {exc}")
 
     run_once(client, dry, controller=ctrl)
 
@@ -2420,7 +2426,7 @@ def main() -> None:
                             "account_value":    equity,
                             "strategy_version": STRATEGY_VERSION,
                         })
-                    except Exception as e:
+                    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
                         log(f"🚨 Balance fetch FAILED: {e} — skipping cycle")
                         send_alert(f"🚨 HL API DOWN: get_balance failed: {e}")
                         continue
@@ -2430,7 +2436,7 @@ def main() -> None:
 
                 run_once(client, dry, controller=ctrl)
             except Exception as exc:
-                log(f"ERROR in cycle: {exc}")
+                log(f"ERROR in cycle ({type(exc).__name__}): {exc}")
 
 
 if __name__ == "__main__":

@@ -20,13 +20,17 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
+import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from scanner.utils import load_json as _load_json, save_json_atomic, append_jsonl, make_logger
+
+_log = make_logger("IMMUNE")
 
 V6_DIR  = Path(__file__).parent
 BUS_DIR = V6_DIR / "bus"
@@ -44,36 +48,15 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _log(msg: str):
-    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
-    print(f"[{ts}] [IMMUNE] {msg}", flush=True)
-
-
-def _load_json(path: Path, default=None):
-    if default is None:
-        default = {}
-    if not path.exists():
-        return default
-    try:
-        return json.loads(path.read_text())
-    except (json.JSONDecodeError, OSError):
-        return default
-
-
 def _save_json_atomic(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, indent=2, default=str))
-    tmp.replace(path)
+    save_json_atomic(str(path), data)
 
 
 def _append_event(event: dict):
     try:
-        EVENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(EVENTS_FILE, "a") as f:
-            f.write(json.dumps(event, default=str) + "\n")
-    except Exception:
-        pass
+        append_jsonl(str(EVENTS_FILE), event)
+    except OSError as e:
+        _log(f"WARN: failed to write event: {e}")
 
 
 class ImmuneSystem:
@@ -106,7 +89,7 @@ class ImmuneSystem:
 
         try:
             open_orders = self.hl_client.get_open_orders()
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, OSError) as e:
             _log(f"WARN: get_open_orders failed: {e}")
             return []
 
@@ -169,7 +152,7 @@ class ImmuneSystem:
                 "stop_price": stop_price,
             })
             return True
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, OSError, ValueError) as e:
             _log(f"STOP REPAIR FAILED: {coin} — {e}")
             _append_event({
                 "type": "IMMUNE_REPAIR_FAILED",
@@ -244,8 +227,8 @@ class ImmuneSystem:
                 # Cancel existing stops and place tighter one
                 try:
                     self.hl_client.cancel_coin_stops(coin)
-                except Exception:
-                    pass
+                except (urllib.error.URLError, json.JSONDecodeError, OSError) as e:
+                    _log(f"WARN: cancel stops for {coin} failed: {e}")
 
                 self.hl_client.place_stop_loss(
                     coin=coin,
@@ -254,7 +237,7 @@ class ImmuneSystem:
                     trigger=tight_stop,
                 )
                 _log(f"TIGHTENED: {coin} stop → ${tight_stop:.4f} (1% from ${current_price:.4f})")
-            except Exception as e:
+            except (urllib.error.URLError, json.JSONDecodeError, OSError, ValueError) as e:
                 _log(f"TIGHTEN FAILED: {coin} — {e}")
 
         _append_event({

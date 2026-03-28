@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import time
+import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch, PropertyMock
@@ -240,7 +241,7 @@ class TestDataCache:
         cache = DataCache()
         assert cache.fear_greed == 50  # default
 
-        with patch("urllib.request.urlopen", side_effect=Exception("timeout")):
+        with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("timeout")):
             cache._refresh_fear_greed()
 
         # Should still be 50 (fallback)

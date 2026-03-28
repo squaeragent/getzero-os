@@ -18,6 +18,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from scanner.v6.config import HL_MAIN_ADDRESS, HL_INFO_URL, HL_EXCHANGE_URL
+from scanner.exceptions import APIError, InsufficientFundsError, OrderError
+from scanner.utils import make_logger
+
+log = make_logger("HL")
 
 
 # ─── COIN METADATA ────────────────────────────────────────────────────────────
@@ -25,11 +29,6 @@ from scanner.v6.config import HL_MAIN_ADDRESS, HL_INFO_URL, HL_EXCHANGE_URL
 COIN_TO_ASSET    : dict[str, int] = {}
 COIN_SZ_DECIMALS : dict[str, int] = {}
 COIN_MAX_LEV     : dict[str, int] = {}
-
-
-def log(msg: str) -> None:
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [HL] {msg}", flush=True)
 
 
 def load_hl_meta() -> None:
@@ -47,7 +46,7 @@ def load_hl_meta() -> None:
             COIN_SZ_DECIMALS[u["name"]] = u["szDecimals"]
             COIN_MAX_LEV[u["name"]]     = u.get("maxLeverage", 10)
         log(f"Loaded {len(COIN_TO_ASSET)} coins from HL meta")
-    except Exception as e:
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
         log(f"WARN: HL meta fetch failed: {e} — using hardcoded fallback")
         COIN_TO_ASSET.update({
             "BTC": 0,  "ETH": 1,  "SOL": 5,  "DOGE": 12, "AVAX": 6,
@@ -112,8 +111,8 @@ class HLClient:
                 if bal.get("coin") == "USDC":
                     spot_usdc = float(bal.get("total", 0))
                     break
-        except Exception:
-            pass
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+            log(f"WARN: spot balance fetch failed: {e} — using perp equity only")
 
         result     = self._info_post({"type": "clearinghouseState", "user": self.main_address})
         perp_equity = float(result.get("marginSummary", {}).get("accountValue", 0))
@@ -127,10 +126,16 @@ class HLClient:
         elif perp_equity > 0:
             equity = perp_equity
         else:
-            raise ValueError(f"get_balance: no funds found (spot={spot_usdc}, perp={perp_equity})")
+            raise InsufficientFundsError(
+                f"get_balance: no funds found (spot={spot_usdc}, perp={perp_equity})",
+                required=0, available=0,
+            )
 
         if equity <= 0:
-            raise ValueError(f"get_balance: equity is {equity} — refusing to return")
+            raise InsufficientFundsError(
+                f"get_balance: equity is {equity} — refusing to return",
+                required=0, available=equity,
+            )
         return equity
 
     def get_positions(self) -> list:
@@ -154,7 +159,7 @@ class HLClient:
             taker = float(resp.get("userCrossRate", 0.00045))
             maker = float(resp.get("userAddRate",   0.00015))
             return {"taker": taker, "maker": maker}
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             log(f"WARN: fee rate query failed: {e}")
             return {"taker": 0.00045, "maker": 0.00015}
 
@@ -167,7 +172,7 @@ class HLClient:
                         if venue[0] == "HlPerp":
                             return float(venue[1].get("fundingRate", 0))
             return 0.0
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             log(f"WARN: funding query failed for {coin}: {e}")
             return 0.0
 
@@ -183,7 +188,7 @@ class HLClient:
                 "bid_depth_usd": sum(px * sz for px, sz in bids),
                 "ask_depth_usd": sum(px * sz for px, sz in asks),
             }
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             log(f"WARN: l2Book failed for {coin}: {e}")
             return {"bids": [], "asks": [], "bid_depth_usd": 0, "ask_depth_usd": 0, "api_error": str(e)}
 
@@ -195,7 +200,7 @@ class HLClient:
                 "cap":        resp.get("nRequestsCap", 10000),
                 "cum_volume": float(resp.get("cumVlm", 0)),
             }
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             log(f"WARN: rate limit query failed: {e}")
             return {"used": 0, "cap": 10000, "cum_volume": 0}
 
@@ -336,5 +341,5 @@ class HLClient:
         }
         try:
             self._sign_and_send(action)
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, OSError) as e:
             log(f"WARN: cancel stops for {coin}: {e}")

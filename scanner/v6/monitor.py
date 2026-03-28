@@ -43,6 +43,8 @@ import json
 import os
 import sys
 import time
+import traceback
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -263,7 +265,7 @@ class DataCache:
             if isinstance(mids, dict):
                 self.prices = {k: float(v) for k, v in mids.items()}
                 self.prices_ts = time.time()
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             _log(f"allMids failed: {e}")
             # Keep old prices — caller will check staleness
 
@@ -285,7 +287,7 @@ class DataCache:
                 self.oi = om
                 self.funding_ts = time.time()
                 self.oi_ts = time.time()
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
             _log(f"metaAndAssetCtxs failed: {e}")
 
         # 3. Fear & Greed (every 5 min)
@@ -307,7 +309,8 @@ class DataCache:
             value = int(raw["data"][0]["value"])
             self.fear_greed = value
             self.fear_greed_ts = time.time()
-        except Exception:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, ValueError, OSError) as e:
+            _log(f"Fear & Greed fetch failed: {e}")
             # Keep last value (or 50 if never fetched)
             if self.fear_greed_ts == 0:
                 self.fear_greed = 50
@@ -361,7 +364,8 @@ class DataCache:
             self._book_cache[coin] = (bid_depth, ask_depth)
             self._book_ts[coin] = time.time()
             return bid_depth, ask_depth
-        except Exception:
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+            _log(f"L2 book fetch failed for {coin}: {e}")
             return 0.0, 0.0
 
     def data_complete(self) -> bool:
@@ -386,7 +390,7 @@ class NearMissDetector:
     def _load_strategies(self):
         try:
             self._all_strategies = load_all_strategies()
-        except Exception as e:
+        except (json.JSONDecodeError, OSError) as e:
             _log(f"Could not load all strategies: {e}")
             self._all_strategies = {}
 
@@ -555,7 +559,7 @@ class Monitor:
                 self.prev_results[coin] = result
 
             except Exception as e:
-                _log(f"  WARN: eval {coin} failed: {e}")
+                _log(f"  WARN: eval {coin} failed: {e}\n{traceback.format_exc()}")
 
         t_eval_end = time.time()
 
@@ -587,7 +591,8 @@ class Monitor:
         data_sources_stale = 3 - data_sources_available
         try:
             mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 * 1024)
-        except Exception:
+        except (ValueError, TypeError, OSError) as e:
+            _log(f"Memory usage check failed: {e}")
             mem_mb = 0.0
 
         metrics = CycleMetrics(
@@ -634,8 +639,8 @@ class Monitor:
         sp_result: dict = {}
         try:
             sp_result = self.smart_provider.evaluate_coin(coin)
-        except Exception as e:
-            _log(f"SmartProvider.evaluate_coin({coin}) failed: {e}")
+        except (ValueError, TypeError, KeyError, OSError) as e:
+            _log(f"SmartProvider.evaluate_coin({coin}) failed: {e}\n{traceback.format_exc()}")
             sp_result = {
                 "signal": "NEUTRAL", "direction": "NEUTRAL",
                 "confidence": 0, "quality": 0, "regime": "insufficient_data",
@@ -937,7 +942,7 @@ class Monitor:
                 value={"agreement_pct": round(agreement_pct, 3), "direction": consensus_dir},
                 detail=f"collective: direction={consensus_dir} agreement={agreement_pct:.1%}",
             )
-        except Exception as e:
+        except (json.JSONDecodeError, OSError, ValueError, TypeError) as e:
             return LayerResult(
                 layer="collective",
                 passed=False,
@@ -1120,8 +1125,8 @@ class Monitor:
                     and strat.allows_regime(result.regime)
                 ):
                     passing.append(name)
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            _log(f"Failed to load strategies for cross-check: {e}")
         return passing
 
     def check_near_misses(self, coin: str, result: EvaluationResult) -> list[dict]:
@@ -1227,8 +1232,8 @@ class Monitor:
                 coins = data.get("active_coins", [])
                 if coins:
                     return coins[:n]
-            except Exception:
-                pass
+            except (json.JSONDecodeError, OSError) as e:
+                _log(f"Failed to load strategies.json for coin scope: {e}")
 
         # Fallback: hardcoded top coins
         all_coins = [
@@ -1276,13 +1281,13 @@ class Monitor:
             if self._heartbeat_file.exists():
                 try:
                     hb = json.loads(self._heartbeat_file.read_text())
-                except Exception:
+                except (json.JSONDecodeError, OSError):
                     pass
             hb["monitor"] = _now_iso()
             hb["monitor_cycle"] = self.cycle_count
             hb["monitor_summary"] = summary
             _save_atomic(self._heartbeat_file, hb)
-        except Exception as e:
+        except OSError as e:
             _log(f"Heartbeat write failed: {e}")
 
 
@@ -1297,8 +1302,8 @@ class Monitor:
             try:
                 result = self.evaluate_coin(coin)
                 results.append(result.to_dict())
-            except Exception:
-                pass
+            except (ValueError, TypeError, KeyError, OSError) as e:
+                _log(f"get_heat_state: eval {coin} failed: {e}")
         results.sort(key=lambda r: r.get("conviction", 0), reverse=True)
         return results
 
@@ -1310,8 +1315,8 @@ class Monitor:
             try:
                 data = json.loads(approaching_file.read_text())
                 return data.get("approaching", [])
-            except Exception:
-                pass
+            except (json.JSONDecodeError, OSError) as e:
+                _log(f"Failed to read approaching.json: {e}")
         # Fallback: compute live
         self.cache.refresh()
         coins = self._get_coins()
@@ -1322,8 +1327,8 @@ class Monitor:
                 sig = self._check_approaching(coin, result)
                 if sig:
                     approaching.append(sig.to_dict())
-            except Exception:
-                pass
+            except (ValueError, TypeError, KeyError, OSError) as e:
+                _log(f"get_approaching: eval {coin} failed: {e}")
         return approaching
 
     def get_pulse(self, limit: int = 20) -> list[dict]:
@@ -1337,8 +1342,8 @@ class Monitor:
             for line in reversed(lines[-limit:]):
                 if line.strip():
                     events.append(json.loads(line))
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            _log(f"Failed to read decisions log: {e}")
         return events[:limit]
 
     def get_brief(self) -> dict:
@@ -1351,8 +1356,8 @@ class Monitor:
             try:
                 data = json.loads(positions_file.read_text())
                 positions = data.get("positions", []) if isinstance(data, dict) else data
-            except Exception:
-                pass
+            except (json.JSONDecodeError, OSError) as e:
+                _log(f"Failed to read positions.json: {e}")
         # Recent signals
         signals_file = self._bus_dir / "signals.json"
         signals = []
@@ -1361,8 +1366,8 @@ class Monitor:
                 signals = json.loads(signals_file.read_text())
                 if isinstance(signals, dict):
                     signals = signals.get("signals", [])
-            except Exception:
-                pass
+            except (json.JSONDecodeError, OSError) as e:
+                _log(f"Failed to read signals.json: {e}")
         # Approaching
         approaching = self.get_approaching()
         # Last cycle metrics
@@ -1374,8 +1379,8 @@ class Monitor:
             resp = urllib.request.urlopen("https://api.alternative.me/fng/?limit=1", timeout=5)
             fg_data = json.loads(resp.read())
             fg = int(fg_data["data"][0]["value"])
-        except Exception:
-            pass
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+            _log(f"Fear & Greed fetch in get_brief failed: {e}")
 
         return {
             "timestamp": _now_iso(),
@@ -1409,7 +1414,7 @@ def main():
                 summary = monitor.run_cycle()
                 _log(f"Cycle complete: {summary}")
             except Exception as e:
-                _log(f"Cycle error: {e}")
+                _log(f"Cycle error: {e}\n{traceback.format_exc()}")
 
             # Sleep until next 60s mark
             elapsed = time.time() - cycle_start
