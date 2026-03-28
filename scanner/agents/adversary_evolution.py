@@ -17,18 +17,19 @@ Usage:
   python3 scanner/agents/adversary_evolution.py --loop # continuous 7200s cycle
 """
 
-import json
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, read_jsonl, make_logger, update_heartbeat,
+    BUS_DIR, MEMORY_DIR,
+)
+
+log = make_logger("EVOLUTION")
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-MEMORY_DIR = SCANNER_DIR / "memory"
-BUS_DIR = SCANNER_DIR / "bus"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 COUNTERFACTUAL_LOG = MEMORY_DIR / "counterfactual_log.jsonl"
 EVOLVED_WEIGHTS_FILE = BUS_DIR / "evolved_weights.json"
 
@@ -52,50 +53,10 @@ DEFAULT_WEIGHTS = {
 }
 
 
-# ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [EVOLUTION] {msg}")
-
-
-# ─── FILE HELPERS ───
-def load_json_safe(path, default=None):
-    if default is None:
-        default = {}
-    path = Path(path)
-    if not path.exists():
-        return default
-    try:
-        with open(path) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return default
-
-
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
 # ─── LOAD COUNTERFACTUAL LOG ───
 def load_counterfactual_log():
     """Load all resolved counterfactual records from JSONL."""
-    if not COUNTERFACTUAL_LOG.exists():
-        return []
-    records = []
-    try:
-        with open(COUNTERFACTUAL_LOG) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        records.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        pass
-    except OSError:
-        pass
-    return records
+    return read_jsonl(COUNTERFACTUAL_LOG)
 
 
 # ─── COMPUTE ATTACK PRECISION ───
@@ -196,15 +157,6 @@ def evolve_weights(attack_stats):
     return evolved
 
 
-# ─── WRITE HEARTBEAT ───
-def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    hb = load_json_safe(HEARTBEAT_FILE, {})
-    hb["adversary_evolution"] = ts
-    save_json(HEARTBEAT_FILE, hb)
-
-
 # ─── MAIN RUN CYCLE ───
 def run_cycle():
     ts = datetime.now(timezone.utc)
@@ -217,7 +169,7 @@ def run_cycle():
 
     if not records:
         log("No counterfactual data yet — nothing to evolve")
-        write_heartbeat()
+        update_heartbeat("adversary_evolution")
         return
 
     attack_stats = compute_attack_stats(records)
@@ -263,7 +215,7 @@ def run_cycle():
     else:
         log("No weight changes (insufficient data or all neutral)")
 
-    write_heartbeat()
+    update_heartbeat("adversary_evolution")
     log("=" * 60)
 
 
@@ -280,7 +232,7 @@ def main():
                 log(f"Cycle failed: {e}")
                 import traceback
                 traceback.print_exc()
-                write_heartbeat()
+                update_heartbeat("adversary_evolution")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle()

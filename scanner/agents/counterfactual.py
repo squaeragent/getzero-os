@@ -28,13 +28,12 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, append_jsonl, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, MEMORY_DIR, EPISODES_DIR, HEARTBEAT_FILE,
+)
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-MEMORY_DIR = SCANNER_DIR / "memory"
-EPISODES_DIR = MEMORY_DIR / "episodes"
-BUS_DIR = SCANNER_DIR / "bus"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 COUNTERFACTUAL_LOG = MEMORY_DIR / "counterfactual_log.jsonl"
 
 HL_API_URL = "https://api.hyperliquid.xyz/info"
@@ -59,35 +58,7 @@ DEFAULT_WEIGHTS = {
 
 
 # ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [COUNTERFACTUAL] {msg}")
-
-
-# ─── FILE HELPERS ───
-def load_json_safe(path, default=None):
-    if default is None:
-        default = {}
-    path = Path(path)
-    if not path.exists():
-        return default
-    try:
-        with open(path) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return default
-
-
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def append_jsonl(path, record):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(record) + "\n")
+log = make_logger("COUNTERFACTUAL")
 
 
 # ─── FILENAME PARSING ───
@@ -186,7 +157,7 @@ def find_killed_episodes():
     candidates = []
     for ep_path in sorted(EPISODES_DIR.glob("hyp_*.json")):
         try:
-            data = load_json_safe(ep_path, {})
+            data = load_json(ep_path, {})
         except Exception:
             continue
 
@@ -326,11 +297,7 @@ def resolve_episode(ep_path, episode):
 
 # ─── WRITE HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    hb = load_json_safe(HEARTBEAT_FILE, {})
-    hb["counterfactual"] = ts
-    save_json(HEARTBEAT_FILE, hb)
+    update_heartbeat("counterfactual")
 
 
 # ─── MAIN RUN CYCLE ───

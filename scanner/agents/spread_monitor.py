@@ -17,10 +17,15 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-BUS_DIR = Path(__file__).resolve().parent.parent / "bus"
+from scanner.utils import (
+    load_json, save_json, append_jsonl, make_logger, update_heartbeat,
+    BUS_DIR,
+)
+
+log = make_logger("SPREAD")
+
 SPREAD_FILE = BUS_DIR / "spread.json"
 SPREAD_HISTORY = BUS_DIR / "spread_history.jsonl"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 FUNDING_FILE = BUS_DIR / "funding.json"
 
 CYCLE_SECONDS = 120
@@ -84,11 +89,7 @@ def fetch_hl_data():
 
 def load_spread_state():
     """Load previous spread state for velocity calculation."""
-    try:
-        with open(SPREAD_FILE) as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {"coins": {}, "alerts": [], "timestamp": None}
+    return load_json(SPREAD_FILE, {"coins": {}, "alerts": [], "timestamp": None})
 
 
 def compute_spread_velocity(coin, current_spread, prev_state):
@@ -138,13 +139,8 @@ def run_cycle():
     prev_state = load_spread_state()
     
     # Load funding data for convergence
-    funding_convergence = {}
-    try:
-        with open(FUNDING_FILE) as f:
-            fd = json.load(f)
-            funding_convergence = fd.get("coins", {})
-    except (FileNotFoundError, json.JSONDecodeError):
-        pass
+    fd = load_json(FUNDING_FILE)
+    funding_convergence = fd.get("coins", {})
     
     coins_output = {}
     alerts = []
@@ -219,15 +215,12 @@ def run_cycle():
         }
     }
     
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(SPREAD_FILE, "w") as f:
-        json.dump(output, f, indent=2)
-    
+    save_json(SPREAD_FILE, output)
+
     # Append alerts to history
     if alerts:
-        with open(SPREAD_HISTORY, "a") as f:
-            for a in alerts:
-                f.write(json.dumps(a) + "\n")
+        for a in alerts:
+            append_jsonl(SPREAD_HISTORY, a)
     
     write_heartbeat()
     
@@ -244,16 +237,7 @@ def run_cycle():
 
 
 def write_heartbeat():
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists():
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["spread_monitor"] = datetime.now(timezone.utc).isoformat()
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
+    update_heartbeat("spread_monitor")
 
 
 def main():

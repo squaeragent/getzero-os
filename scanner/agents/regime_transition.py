@@ -15,21 +15,21 @@ Output: scanner/bus/regime_predictions.json
 """
 
 import json
-import os
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    save_json, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR,
+)
 
 # ─── PATHS ───
 AGENT_DIR   = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR     = SCANNER_DIR / "bus"
 
 REGIME_HISTORY_FILE    = BUS_DIR / "regime_history.jsonl"
 REGIME_PREDICTIONS_FILE = BUS_DIR / "regime_predictions.json"
-HEARTBEAT_FILE         = BUS_DIR / "heartbeat.json"
 
 CYCLE_SECONDS = 300   # 5 minutes
 LOOKBACK      = 20    # entries to analyse per coin
@@ -37,30 +37,12 @@ TAIL_LINES    = 50    # only read last N lines from potentially large file
 
 
 # ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [REGIME_TRANSITION] {msg}")
+log = make_logger("REGIME_TRANSITION")
 
 
-# ─── FILE HELPERS ───
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
+# ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists():
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["regime_transition"] = ts
-    save_json(HEARTBEAT_FILE, heartbeat)
+    update_heartbeat("regime_transition")
 
 
 # ─── READ REGIME HISTORY (EFFICIENTLY) ───

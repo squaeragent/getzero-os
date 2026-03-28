@@ -20,7 +20,6 @@ Usage:
 """
 
 import json
-import os
 import re
 import sys
 import time
@@ -30,16 +29,19 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
-# ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
+from scanner.utils import (
+    load_json, save_json, append_jsonl, read_jsonl,
+    make_logger, load_api_key, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, DATA_DIR, CANDIDATES_FILE,
+    REGIMES_FILE, WORLD_STATE_FILE,
+)
+
+# ─── LOGGER ───
+log = make_logger("HARVEST")
+
+# ─── PATHS (agent-specific) ───
 SIGNALS_CACHE_DIR = DATA_DIR / "signals_cache"
 CLOSED_FILE = DATA_DIR / "closed.jsonl"
-REGIMES_FILE = BUS_DIR / "regimes.json"
-CANDIDATES_FILE = BUS_DIR / "candidates.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 # ─── CONFIG ───
 BASE_URL = "https://gate.getzero.dev/api/claw"
@@ -59,19 +61,6 @@ REVERSAL_KEYWORDS = {"REVERSAL", "REVERT", "RSI", "BB", "BOUNCE", "OVERSOLD", "O
 
 
 # ─── API ───
-def load_api_key():
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    with open(env_path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:]
-            if line.startswith("ENVY_API_KEY="):
-                val = line.split("=", 1)[1]
-                return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
-
-
 def api_get(path, params, api_key):
     url = f"{BASE_URL}{path}"
     if params:
@@ -195,8 +184,7 @@ def refresh_signal_cache(api_key):
 
         if all_signals:
             cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
-            with open(cache_file, "w") as f:
-                json.dump(all_signals, f, indent=2)
+            save_json(cache_file, all_signals)
             refreshed += 1
 
     print(f"  Refreshed {refreshed}/{len(SIGNAL_COINS)} coins")
@@ -210,11 +198,11 @@ def load_signal_packs():
         return packs
     for f in SIGNALS_CACHE_DIR.glob("*.json"):
         coin = f.stem
-        try:
-            with open(f) as fh:
-                packs[coin] = json.load(fh)
-        except (json.JSONDecodeError, OSError) as e:
-            print(f"  [warn] Failed to load {f.name}: {e}")
+        data = load_json(f, default=None)
+        if data is None:
+            print(f"  [warn] Failed to load {f.name}")
+        else:
+            packs[coin] = data
     return packs
 
 
@@ -235,31 +223,13 @@ def extract_indicators_from_packs(packs):
 # ─── REGIME ───
 def load_regimes():
     """Load current regime state from Agent 1."""
-    if REGIMES_FILE.exists() and REGIMES_FILE.stat().st_size > 0:
-        try:
-            with open(REGIMES_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
+    return load_json(REGIMES_FILE, {})
 
 
 # ─── SIGNAL HEAT ───
 def load_closed_trades(max_lines=500):
     """Load recent closed trades from closed.jsonl (tail)."""
-    trades = []
-    if not CLOSED_FILE.exists():
-        return trades
-    try:
-        with open(CLOSED_FILE) as f:
-            lines = f.readlines()
-        for line in lines[-max_lines:]:
-            line = line.strip()
-            if line:
-                trades.append(json.loads(line))
-    except (OSError, json.JSONDecodeError):
-        pass
-    return trades
+    return read_jsonl(CLOSED_FILE, max_lines=max_lines)
 
 
 def compute_signal_heat(signal_name, closed_trades):
@@ -474,18 +444,7 @@ def compute_composite_score(sharpe, win_rate, signal_heat, regime_match):
 
 # ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["harvester"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
+    update_heartbeat("signal_harvester")
 
 
 # ─── ARCHETYPE SIGNALS ───
@@ -884,41 +843,24 @@ def run_cycle(api_key):
     print(f"  Loaded {len(closed_trades)} closed trades for heat scoring")
 
     # Load cross-timeframe signals (from Agent 7)
-    timeframe_data = {}
-    tf_file = BUS_DIR / "timeframe_signals.json"
-    if tf_file.exists():
-        try:
-            with open(tf_file) as f:
-                tf_raw = json.load(f)
-            timeframe_data = tf_raw.get("coins", {})
-            print(f"  Loaded timeframe signals for {len(timeframe_data)} coins")
-        except Exception:
-            pass
+    tf_raw = load_json(BUS_DIR / "timeframe_signals.json", {})
+    timeframe_data = tf_raw.get("coins", {})
+    if timeframe_data:
+        print(f"  Loaded timeframe signals for {len(timeframe_data)} coins")
 
     # Load signal weights (from Agent 8)
-    signal_weights = {}
-    sw_file = BUS_DIR / "signal_weights.json"
-    if sw_file.exists():
-        try:
-            with open(sw_file) as f:
-                sw_raw = json.load(f)
-            signal_weights = sw_raw.get("weights", {})
-            print(f"  Loaded signal weights for {len(signal_weights)} signals")
-        except Exception:
-            pass
+    sw_raw = load_json(BUS_DIR / "signal_weights.json", {})
+    signal_weights = sw_raw.get("weights", {})
+    if signal_weights:
+        print(f"  Loaded signal weights for {len(signal_weights)} signals")
 
     # Load funding data for convergence scoring
     funding_data = {}
-    funding_file = BUS_DIR / "funding.json"
-    if funding_file.exists():
-        try:
-            with open(funding_file) as f:
-                fd_raw = json.load(f)
-            for cs in fd_raw.get("convergence_signals", []):
-                funding_data[cs["coin"]] = cs
-            print(f"  Loaded funding convergence for {len(funding_data)} coins")
-        except Exception:
-            pass
+    fd_raw = load_json(BUS_DIR / "funding.json", {})
+    for cs in fd_raw.get("convergence_signals", []):
+        funding_data[cs["coin"]] = cs
+    if funding_data:
+        print(f"  Loaded funding convergence for {len(funding_data)} coins")
 
     # Extract all indicators needed from expressions
     # Also request volume profile + VWAP for scoring
@@ -1057,14 +999,12 @@ def run_cycle(api_key):
 
     # ─── Merge ENVY indicators from world_state into indicator_data ───
     try:
-        ws_path = Path(__file__).parent.parent / "bus" / "world_state.json"
-        if ws_path.exists():
-            with open(ws_path) as _f:
-                ws = json.load(_f)
-            for coin, coin_ws in ws.get("coins", {}).items():
-                envy_inds = coin_ws.get("indicators", {})
-                if envy_inds:
-                    indicator_data.setdefault(coin, {}).update(envy_inds)
+        ws = load_json(WORLD_STATE_FILE, {})
+        for coin, coin_ws in ws.get("coins", {}).items():
+            envy_inds = coin_ws.get("indicators", {})
+            if envy_inds:
+                indicator_data.setdefault(coin, {}).update(envy_inds)
+        if ws.get("coins"):
             print(f"  Merged ENVY indicators from world_state ({len(ws.get('coins', {}))} coins)")
     except Exception as e:
         print(f"  WARN: Could not merge ENVY data: {e}")
@@ -1092,9 +1032,7 @@ def run_cycle(api_key):
         "timestamp": ts_iso,
         "candidates": candidates,
     }
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(CANDIDATES_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    save_json(CANDIDATES_FILE, output)
 
     write_heartbeat()
 
@@ -1122,7 +1060,7 @@ def run_cycle(api_key):
 
 
 def main():
-    api_key = load_api_key()
+    api_key = load_api_key("ENVY_API_KEY")
     loop_mode = "--loop" in sys.argv
 
     if loop_mode:

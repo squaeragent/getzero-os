@@ -20,22 +20,20 @@ Usage:
   python3 scanner/agents/taapi_fetcher.py --loop    # continuous 900s cycle
 """
 
-import json
 import sys
 import time
 from datetime import datetime, timezone
-from pathlib import Path
+
+from scanner.utils import (
+    save_json, make_logger, update_heartbeat,
+    BUS_DIR,
+)
+
+log = make_logger("TAAPI_FETCHER")
 
 CYCLE_SECONDS = 900  # 15 minutes
 
-# ─── PATH SETUP ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
 SNAPSHOT_FILE = BUS_DIR / "taapi_snapshot.json"
-
-# Add project root to path so scanner.* imports work
-sys.path.insert(0, str(SCANNER_DIR.parent))
 
 CORE_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI", "INJ"]
 
@@ -49,11 +47,6 @@ TARGET_INDICATORS = [
     "BB_POS_24H",
     "ROC_24H",
 ]
-
-
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [TAAPI_FETCHER] {msg}")
 
 
 def extract_indicators_from_observations(observations) -> dict[str, dict[str, float]]:
@@ -117,9 +110,7 @@ def main():
             "coins": {},
             "error": "No observations returned",
         }
-        BUS_DIR.mkdir(parents=True, exist_ok=True)
-        with open(SNAPSHOT_FILE, "w") as f:
-            json.dump(snapshot, f, indent=2)
+        save_json(SNAPSHOT_FILE, snapshot)
         log(f"Wrote empty snapshot to {SNAPSHOT_FILE}")
         return
 
@@ -132,9 +123,7 @@ def main():
         "coins_fetched": len(coin_data),
     }
 
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(SNAPSHOT_FILE, "w") as f:
-        json.dump(snapshot, f, indent=2)
+    save_json(SNAPSHOT_FILE, snapshot)
 
     elapsed = time.time() - start
     log(f"Snapshot written to {SNAPSHOT_FILE} in {elapsed:.1f}s")
@@ -150,25 +139,6 @@ def main():
             log(f"  {coin}: NO DATA")
 
 
-def write_heartbeat():
-    """Write heartbeat so supervisor knows we're alive."""
-    hb_file = BUS_DIR / "heartbeat.json"
-    try:
-        hb = {}
-        if hb_file.exists():
-            try:
-                with open(hb_file) as f:
-                    hb = json.load(f)
-            except Exception:
-                pass
-        hb["taapi_fetcher"] = datetime.now(timezone.utc).isoformat()
-        BUS_DIR.mkdir(parents=True, exist_ok=True)
-        with open(hb_file, "w") as f:
-            json.dump(hb, f, indent=2)
-    except Exception:
-        pass
-
-
 if __name__ == "__main__":
     loop_mode = "--loop" in sys.argv
 
@@ -177,13 +147,13 @@ if __name__ == "__main__":
         while True:
             try:
                 main()
-                write_heartbeat()
+                update_heartbeat("taapi_fetcher")
             except Exception as e:
                 log(f"Cycle failed: {e}")
                 import traceback
                 traceback.print_exc()
-                write_heartbeat()
+                update_heartbeat("taapi_fetcher")
             time.sleep(CYCLE_SECONDS)
     else:
         main()
-        write_heartbeat()
+        update_heartbeat("taapi_fetcher")

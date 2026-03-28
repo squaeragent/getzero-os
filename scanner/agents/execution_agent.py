@@ -35,24 +35,31 @@ from pathlib import Path
 from eth_account import Account as EthAccount
 from hyperliquid.utils.signing import sign_l1_action, get_timestamp_ms, float_to_wire
 
-# ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
+from scanner.utils import (
+    load_json,
+    save_json,
+    append_jsonl,
+    make_logger,
+    load_env,
+    update_heartbeat,
+    SCANNER_DIR,
+    BUS_DIR,
+    DATA_DIR,
+    LIVE_DIR,
+    APPROVED_FILE,
+    RISK_FILE,
+    KILL_SIGNALS_FILE,
+    REGIMES_FILE,
+)
 
-APPROVED_FILE = BUS_DIR / "approved.json"
-RISK_FILE = BUS_DIR / "risk.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
+# ─── PATHS ───
 CONFIG_FILE = SCANNER_DIR / "config.yaml"
 
+# Agent-specific paths (these differ from shared module paths)
 POSITIONS_FILE    = LIVE_DIR / "positions.json"
 CLOSED_FILE       = LIVE_DIR / "closed.jsonl"
 PORTFOLIO_FILE    = LIVE_DIR / "portfolio.json"
 LOG_FILE          = LIVE_DIR / "executor.log"
-KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
-REGIMES_FILE      = BUS_DIR  / "regimes.json"
 
 STRATEGY_VERSION = 5  # v5: adversary calibration + metadata propagation + exit fixes
 
@@ -200,27 +207,7 @@ def _load_hl_meta():
         })
 
 # ─── HELPERS ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    line = f"[{ts}] [EXEC] {msg}"
-    print(line)
-    LIVE_DIR.mkdir(parents=True, exist_ok=True)
-    with open(LOG_FILE, "a") as f:
-        f.write(line + "\n")
-
-
-def load_env():
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    env = {}
-    with open(env_path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:]
-            if "=" in line and not line.startswith("#"):
-                k, v = line.split("=", 1)
-                env[k] = v.strip().strip('"').strip("'")
-    return env
+log = make_logger("EXEC", log_file=LOG_FILE)
 
 
 def load_config():
@@ -228,24 +215,6 @@ def load_config():
         with open(CONFIG_FILE) as f:
             return yaml.safe_load(f)
     return {}
-
-
-def load_json(path, default=None):
-    if default is None:
-        default = {}
-    if path.exists():
-        try:
-            with open(path) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, ValueError):
-            return default
-    return default
-
-
-def save_json(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
 
 
 def _get_current_regime(coin):
@@ -256,12 +225,6 @@ def _get_current_regime(coin):
         return regimes.get("coins", {}).get(coin, {}).get("regime", "unknown")
     except Exception:
         return "unknown"
-
-
-def append_jsonl(path, record):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(record) + "\n")
 
 
 USER_FILLS_FILE = BUS_DIR / "user_fills.json"
@@ -306,12 +269,6 @@ def get_fees_for_coin_since(fills, coin, since_ms):
             except (TypeError, ValueError):
                 pass
     return total
-
-
-def update_heartbeat():
-    hb = load_json(HEARTBEAT_FILE, {})
-    hb["execution"] = datetime.now(timezone.utc).isoformat()
-    save_json(HEARTBEAT_FILE, hb)
 
 
 # ─── EXIT EXPRESSION EVALUATION ───
@@ -1799,7 +1756,7 @@ def run_cycle(client, cfg, dry, main_address=None):
         positions = kill_all_positions(client, positions, portfolio, prices, dry, main_address=main_address)
         save_json(POSITIONS_FILE, positions)
         save_json(PORTFOLIO_FILE, portfolio)
-        update_heartbeat()
+        update_heartbeat("execution")
         return
 
     # 2. Sync with HL
@@ -1882,13 +1839,13 @@ def run_cycle(client, cfg, dry, main_address=None):
                     f"Tried to write 0 positions but HL has {len(hl_active)} open.\n"
                     f"Keeping existing positions.json."
                 )
-                update_heartbeat()
+                update_heartbeat("execution")
                 return
         except Exception as e:
             log(f"WARN: HL check failed in desync guard: {e}")
     save_json(POSITIONS_FILE, positions)
     save_json(PORTFOLIO_FILE, portfolio)
-    update_heartbeat()
+    update_heartbeat("execution")
 
     total_notional = sum(p.get("size_usd", 0) for p in positions)
     log(f"Summary: {len(positions)} positions, ${total_notional:.2f} notional, trades={portfolio.get('trades', 0)}")

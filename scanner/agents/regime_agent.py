@@ -15,7 +15,6 @@ Usage:
 """
 
 import json
-import os
 import sys
 import time
 import urllib.request
@@ -23,13 +22,22 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    load_json,
+    save_json,
+    append_jsonl,
+    make_logger,
+    load_api_key,
+    update_heartbeat,
+    BUS_DIR,
+    REGIMES_FILE,
+)
+
+# ─── LOGGING ───
+log = make_logger("REGIME")
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-REGIMES_FILE = BUS_DIR / "regimes.json"
 HISTORY_FILE = BUS_DIR / "regime_history.jsonl"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 # ─── CONFIG ───
 BASE_URL = "https://gate.getzero.dev/api/claw"
@@ -63,19 +71,6 @@ TREND_THRESHOLD = 0.03  # min diff between 24H and 48H to call rising/falling
 
 
 # ─── API ───
-def load_api_key():
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    with open(env_path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:]
-            if line.startswith("ENVY_API_KEY="):
-                val = line.split("=", 1)[1]
-                return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
-
-
 def api_get(path, params, api_key):
     url = f"{BASE_URL}{path}"
     if params:
@@ -207,45 +202,6 @@ def detect_transition(current, previous):
     return False
 
 
-# ─── STATE ───
-def load_previous_regimes():
-    """Load the most recent regime state from bus."""
-    if REGIMES_FILE.exists() and REGIMES_FILE.stat().st_size > 0:
-        try:
-            with open(REGIMES_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
-
-
-def write_regimes(state):
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(REGIMES_FILE, "w") as f:
-        json.dump(state, f, indent=2)
-
-
-def append_history(state):
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(HISTORY_FILE, "a") as f:
-        f.write(json.dumps(state) + "\n")
-
-
-def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["regime"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
-
-
 # ─── MAIN ───
 def run_cycle(api_key):
     ts = datetime.now(timezone.utc)
@@ -255,7 +211,7 @@ def run_cycle(api_key):
     print(f"{'='*60}")
 
     # Load previous state for transition detection
-    prev_state = load_previous_regimes()
+    prev_state = load_json(REGIMES_FILE, {})
     prev_coins = prev_state.get("coins", {})
     prev_ts = prev_state.get("timestamp")
 
@@ -266,7 +222,7 @@ def run_cycle(api_key):
 
     if not raw:
         print("  [error] No indicator data returned, skipping cycle")
-        write_heartbeat()
+        update_heartbeat("regime")
         return
 
     # Classify each coin
@@ -334,9 +290,9 @@ def run_cycle(api_key):
     state = {"timestamp": ts_iso, "coins": coins_out}
 
     # Write outputs
-    write_regimes(state)
-    append_history(state)
-    write_heartbeat()
+    save_json(REGIMES_FILE, state)
+    append_jsonl(HISTORY_FILE, state)
+    update_heartbeat("regime")
 
     # Summary
     regime_counts = {}
@@ -367,7 +323,7 @@ def main():
                 run_cycle(api_key)
             except Exception as e:
                 print(f"  [error] Cycle failed: {e}")
-                write_heartbeat()
+                update_heartbeat("regime")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle(api_key)

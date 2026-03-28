@@ -34,7 +34,6 @@ Usage:
 """
 
 import json
-import os
 import re
 import sys
 import time
@@ -43,6 +42,26 @@ import urllib.error
 import yaml
 from datetime import datetime, timezone
 from pathlib import Path
+
+from scanner.utils import (
+    load_json,
+    save_json,
+    read_jsonl,
+    make_logger,
+    load_api_key,
+    update_heartbeat,
+    BUS_DIR,
+    DATA_DIR,
+    MEMORY_DIR,
+    EPISODES_DIR,
+    CANDIDATES_FILE,
+    HYPOTHESES_FILE,
+    REGIMES_FILE,
+    WORLD_STATE_FILE,
+    CLOSED_FILE_LIVE as CLOSED_FILE,
+)
+
+log = make_logger("HYPO")
 
 
 # ─── GENEALOGY: SIGNAL FAMILY EXTRACTOR ───
@@ -64,15 +83,9 @@ def extract_signal_family(signal_name: str) -> str:
 
 def load_family_stats() -> dict:
     """Load genealogy data for confidence adjustment."""
-    gen_file = Path(__file__).parent.parent / "bus" / "genealogy.json"
-    if not gen_file.exists():
-        return {}
-    try:
-        with open(gen_file) as f:
-            data = json.load(f)
-        return data.get("families", {})
-    except (json.JSONDecodeError, OSError):
-        return {}
+    gen_file = BUS_DIR / "genealogy.json"
+    data = load_json(gen_file, {})
+    return data.get("families", {})
 
 
 # ─── UPGRADE 2: CALIBRATION ADJUSTMENT ───
@@ -81,27 +94,17 @@ def load_calibration_adjustment():
     Read calibration.jsonl. Group by confidence bucket (0.3, 0.4, 0.5, etc.).
     If a bucket has 10+ trades and predicted >> actual, return adjustment.
     """
-    cal_file = Path(__file__).parent.parent / "memory" / "calibration.jsonl"
-    if not cal_file.exists():
+    cal_file = MEMORY_DIR / "calibration.jsonl"
+    entries = read_jsonl(cal_file)
+    if not entries:
         return {}
 
     buckets = {}
-    try:
-        with open(cal_file) as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    entry = json.loads(line)
-                    conf    = entry.get("predicted_confidence", 0.5)
-                    outcome = entry.get("actual_outcome", 0)
-                    bucket  = round(conf, 1)
-                    buckets.setdefault(bucket, []).append(outcome)
-                except (json.JSONDecodeError, ValueError):
-                    pass
-    except OSError:
-        return {}
+    for entry in entries:
+        conf    = entry.get("predicted_confidence", 0.5)
+        outcome = entry.get("actual_outcome", 0)
+        bucket  = round(conf, 1)
+        buckets.setdefault(bucket, []).append(outcome)
 
     adjustments = {}
     for bucket, outcomes in buckets.items():
@@ -114,21 +117,9 @@ def load_calibration_adjustment():
                 adjustments[bucket] = actual_wr - predicted  # positive
     return adjustments
 
-# ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
+# ─── PATHS (agent-specific; shared paths imported from scanner.utils) ───
 SIGNALS_CACHE_DIR = DATA_DIR / "signals_cache"
-CLOSED_FILE = DATA_DIR / "live" / "closed.jsonl"
-REGIMES_FILE = BUS_DIR / "regimes.json"
-WORLD_STATE_FILE = BUS_DIR / "world_state.json"
-CANDIDATES_FILE = BUS_DIR / "candidates.json"
-HYPOTHESES_FILE = BUS_DIR / "hypotheses.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 PATTERN_CANDIDATES_FILE = BUS_DIR / "pattern_candidates.json"
-MEMORY_DIR = SCANNER_DIR / "memory"
-EPISODES_DIR = MEMORY_DIR / "episodes"
 RULES_DIR = MEMORY_DIR / "rules"
 ACTIVE_RULES_FILE = RULES_DIR / "active.json"
 
@@ -151,19 +142,6 @@ REVERSAL_KEYWORDS = {"REVERSAL", "REVERT", "RSI", "BB", "BOUNCE", "OVERSOLD", "O
 
 
 # ─── API ───
-def load_api_key():
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    with open(env_path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:]
-            if line.startswith("ENVY_API_KEY="):
-                val = line.split("=", 1)[1]
-                return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
-
-
 def api_get(path, params, api_key):
     url = f"{BASE_URL}{path}"
     if params:
@@ -283,8 +261,7 @@ def refresh_signal_cache(api_key):
 
         if all_signals:
             cache_file = SIGNALS_CACHE_DIR / f"{coin}.json"
-            with open(cache_file, "w") as f:
-                json.dump(all_signals, f, indent=2)
+            save_json(cache_file, all_signals)
             refreshed += 1
 
     print(f"  Refreshed {refreshed}/{len(SIGNAL_COINS)} coins")
@@ -298,11 +275,11 @@ def load_signal_packs():
         return packs
     for f in SIGNALS_CACHE_DIR.glob("*.json"):
         coin = f.stem
-        try:
-            with open(f) as fh:
-                packs[coin] = json.load(fh)
-        except (json.JSONDecodeError, OSError) as e:
-            print(f"  [warn] Failed to load {f.name}: {e}")
+        data = load_json(f, None)
+        if data is not None:
+            packs[coin] = data
+        else:
+            log(f"Failed to load {f.name}")
     return packs
 
 
@@ -323,46 +300,19 @@ def extract_indicators_from_packs(packs):
 # ─── WORLD STATE ───
 def load_world_state():
     """Load unified world model from Phase 1 perception agent."""
-    if WORLD_STATE_FILE.exists() and WORLD_STATE_FILE.stat().st_size > 0:
-        try:
-            with open(WORLD_STATE_FILE) as f:
-                data = json.load(f)
-            return data.get("coins", {})
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
+    data = load_json(WORLD_STATE_FILE, {})
+    return data.get("coins", {})
 
 
 def load_regimes():
     """Load current regime state (fallback if world_state unavailable)."""
-    if REGIMES_FILE.exists() and REGIMES_FILE.stat().st_size > 0:
-        try:
-            with open(REGIMES_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
+    return load_json(REGIMES_FILE, {})
 
 
 # ─── CLOSED TRADES ───
 def load_closed_trades(max_lines=500):
     """Load recent closed trades from closed.jsonl (tail)."""
-    trades = []
-    if not CLOSED_FILE.exists():
-        return trades
-    try:
-        with open(CLOSED_FILE) as f:
-            lines = f.readlines()
-        for line in lines[-max_lines:]:
-            line = line.strip()
-            if line:
-                try:
-                    trades.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    except OSError:
-        pass
-    return trades
+    return read_jsonl(CLOSED_FILE, max_lines=max_lines)
 
 
 # ─── SIGNAL HEAT ───
@@ -544,14 +494,11 @@ def load_pattern_candidates(ts_iso: str) -> list[dict]:
     # Staleness check: skip if > 30 minutes old
     age_min = (time.time() - PATTERN_CANDIDATES_FILE.stat().st_mtime) / 60
     if age_min > 30:
-        print(f"  [pattern] Skipping stale pattern_candidates.json (age={age_min:.1f} min)")
+        log(f"Skipping stale pattern_candidates.json (age={age_min:.1f} min)")
         return []
 
-    try:
-        with open(PATTERN_CANDIDATES_FILE) as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, OSError) as e:
-        print(f"  [pattern] Failed to load pattern_candidates.json: {e}")
+    data = load_json(PATTERN_CANDIDATES_FILE, {})
+    if not data:
         return []
 
     raw_patterns = data.get("patterns", [])
@@ -607,22 +554,6 @@ def load_pattern_candidates(ts_iso: str) -> list[dict]:
         candidates.append(candidate)
 
     return candidates
-
-
-# ─── HEARTBEAT ───
-def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["hypothesis"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
 
 
 # ─── HYPOTHESIS REASONING ───
@@ -928,14 +859,8 @@ def make_hypothesis_id(ts, coin, direction):
 # ─── ACTIVE RULES INTEGRATION ───
 def load_active_rules():
     """Load active rules from rule lifecycle store."""
-    if not ACTIVE_RULES_FILE.exists():
-        return []
-    try:
-        with open(ACTIVE_RULES_FILE) as f:
-            rules = json.load(f)
-        return rules if isinstance(rules, list) else []
-    except (json.JSONDecodeError, OSError):
-        return []
+    rules = load_json(ACTIVE_RULES_FILE, [])
+    return rules if isinstance(rules, list) else []
 
 
 def apply_active_rules(hypothesis, active_rules):
@@ -1010,14 +935,12 @@ def apply_active_rules(hypothesis, active_rules):
 # ─── EPISODE MEMORY ───
 def write_episode(hypothesis):
     """Write hypothesis to scanner/memory/episodes/ as individual JSON file."""
-    EPISODES_DIR.mkdir(parents=True, exist_ok=True)
     hyp_id = hypothesis.get("hypothesis_id", "unknown")
     episode_file = EPISODES_DIR / f"{hyp_id}.json"
     try:
-        with open(episode_file, "w") as f:
-            json.dump(hypothesis, f, indent=2)
+        save_json(episode_file, hypothesis)
     except OSError as e:
-        print(f"  [warn] Failed to write episode {hyp_id}: {e}")
+        log(f"Failed to write episode {hyp_id}: {e}")
 
 
 # ─── ARCHETYPE SIGNALS ───
@@ -1336,7 +1259,7 @@ def run_cycle(api_key):
     packs = load_signal_packs()
     if not packs:
         print("  [error] No signal packs found in cache")
-        write_heartbeat()
+        update_heartbeat("hypothesis_generator")
         return
 
     total_packs = sum(len(v) for v in packs.values())
@@ -1374,14 +1297,10 @@ def run_cycle(api_key):
     # Load cross-timeframe signals
     timeframe_data = {}
     tf_file = BUS_DIR / "timeframe_signals.json"
-    if tf_file.exists():
-        try:
-            with open(tf_file) as f:
-                tf_raw = json.load(f)
-            timeframe_data = tf_raw.get("coins", {})
-            print(f"  Loaded timeframe signals for {len(timeframe_data)} coins")
-        except Exception:
-            pass
+    tf_raw = load_json(tf_file, {})
+    if tf_raw:
+        timeframe_data = tf_raw.get("coins", {})
+        print(f"  Loaded timeframe signals for {len(timeframe_data)} coins")
 
     # Override timeframe_data from world_state (more comprehensive)
     if world_coins:
@@ -1391,28 +1310,18 @@ def run_cycle(api_key):
 
     # Load signal weights
     signal_weights = {}
-    sw_file = BUS_DIR / "signal_weights.json"
-    if sw_file.exists():
-        try:
-            with open(sw_file) as f:
-                sw_raw = json.load(f)
-            signal_weights = sw_raw.get("weights", {})
-            print(f"  Loaded signal weights for {len(signal_weights)} signals")
-        except Exception:
-            pass
+    sw_raw = load_json(BUS_DIR / "signal_weights.json", {})
+    if sw_raw:
+        signal_weights = sw_raw.get("weights", {})
+        print(f"  Loaded signal weights for {len(signal_weights)} signals")
 
     # Load funding data
     funding_data = {}
-    funding_file = BUS_DIR / "funding.json"
-    if funding_file.exists():
-        try:
-            with open(funding_file) as f:
-                fd_raw = json.load(f)
-            for cs in fd_raw.get("convergence_signals", []):
-                funding_data[cs["coin"]] = cs
-            print(f"  Loaded funding convergence for {len(funding_data)} coins")
-        except Exception:
-            pass
+    fd_raw = load_json(BUS_DIR / "funding.json", {})
+    if fd_raw:
+        for cs in fd_raw.get("convergence_signals", []):
+            funding_data[cs["coin"]] = cs
+        print(f"  Loaded funding convergence for {len(funding_data)} coins")
 
     # Also pull funding from world_state
     if world_coins:
@@ -1441,19 +1350,12 @@ def run_cycle(api_key):
 
     if not indicator_data:
         print("  [error] No indicator data returned, skipping cycle")
-        write_heartbeat()
+        update_heartbeat("hypothesis_generator")
         return
 
     # ── EVALUATE SIGNAL PACKS ──
     # Read Fear & Greed for dynamic Sharpe floor
-    fg = 50
-    try:
-        macro_path = Path(__file__).parent.parent / "bus" / "macro_intel.json"
-        if macro_path.exists():
-            with open(macro_path) as _mf:
-                fg = json.load(_mf).get("fear_greed", 50)
-    except Exception:
-        pass
+    fg = load_json(BUS_DIR / "macro_intel.json", {}).get("fear_greed", 50)
 
     candidates = []
     stats = {"evaluated": 0, "fired": 0, "filtered": 0, "missing_data": 0}
@@ -1628,15 +1530,12 @@ def run_cycle(api_key):
         episodes_written += 1
 
     # ── OUTPUT ──
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-
     # candidates.json — backward compatible (correlation_agent reads this)
     output = {
         "timestamp": ts_iso,
         "candidates": hypotheses,  # hypotheses ARE candidates (superset)
     }
-    with open(CANDIDATES_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    save_json(CANDIDATES_FILE, output)
 
     # hypotheses.json — full objects for reflection layer (Phase 5)
     hypotheses_output = {
@@ -1644,10 +1543,9 @@ def run_cycle(api_key):
         "count": len(hypotheses),
         "hypotheses": hypotheses,
     }
-    with open(HYPOTHESES_FILE, "w") as f:
-        json.dump(hypotheses_output, f, indent=2)
+    save_json(HYPOTHESES_FILE, hypotheses_output)
 
-    write_heartbeat()
+    update_heartbeat("hypothesis_generator")
 
     # ── LOG ALL SIGNAL FIRES (for training dataset) ──
     # Captures every candidate that fired — including filtered/killed ones.
@@ -1665,13 +1563,7 @@ def run_cycle(api_key):
             })
         # Also capture rule-killed candidates if accessible
         if all_fired:
-            load_world = {}
-            if WORLD_STATE_FILE.exists():
-                try:
-                    with open(WORLD_STATE_FILE) as _f:
-                        load_world = json.load(_f)
-                except Exception:
-                    pass
+            load_world = load_json(WORLD_STATE_FILE, {})
             log_all_fires(all_fired, load_world)
     except Exception as _e:
         print(f"  [signal_logger] non-fatal: {_e}")
@@ -1719,7 +1611,7 @@ def main():
                 print(f"  [error] Cycle failed: {e}")
                 import traceback
                 traceback.print_exc()
-                write_heartbeat()
+                update_heartbeat("hypothesis_generator")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle(api_key)

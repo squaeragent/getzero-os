@@ -15,21 +15,19 @@ Usage:
 """
 
 import json
-import os
 import sys
 import time
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-SCANNER_DIR = Path(__file__).parent.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
+from scanner.utils import (
+    load_json, save_json, append_jsonl, make_logger, update_heartbeat,
+    BUS_DIR, REGIMES_FILE,
+)
 
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 FUNDING_FILE = BUS_DIR / "funding.json"
 FUNDING_HISTORY = BUS_DIR / "funding_history.jsonl"
-REGIMES_FILE = BUS_DIR / "regimes.json"
 
 # Thresholds
 EXTREME_FUNDING_PCT = 0.005   # ±0.005% per 8h = ±5.5% annualized
@@ -52,27 +50,7 @@ TRADED_COINS = {
 HL_INFO_URL = "https://api.hyperliquid.xyz/info"
 
 
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [FUND] {msg}")
-
-
-def load_json(path, default=None):
-    if default is None:
-        default = {}
-    if path.exists() and path.stat().st_size > 0:
-        try:
-            with open(path) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return default
-
-
-def save_json(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
+log = make_logger("FUND")
 
 
 def fetch_funding():
@@ -249,12 +227,6 @@ def detect_convergence(coin, funding_data, regimes):
     return None
 
 
-def update_heartbeat():
-    hb = load_json(HEARTBEAT_FILE)
-    hb["funding"] = datetime.now(timezone.utc).isoformat()
-    save_json(HEARTBEAT_FILE, hb)
-
-
 def run_cycle():
     ts = datetime.now(timezone.utc)
     print(f"\n{'='*60}")
@@ -266,7 +238,7 @@ def run_cycle():
         all_funding = fetch_funding()
     except Exception as e:
         log(f"Failed to fetch funding: {e}")
-        update_heartbeat()
+        update_heartbeat("funding")
         return
     
     log(f"Fetched funding for {len(all_funding)} coins")
@@ -358,16 +330,14 @@ def run_cycle():
     save_json(FUNDING_FILE, output)
     
     # Append to history
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
     history_entry = {
         "t": ts.isoformat(),
         "coins": {c: {"f": d["funding_pct"], "oi": d["open_interest"]} for c, d in output["coins"].items()},
         "convergence": len(output["convergence_signals"]),
     }
-    with open(FUNDING_HISTORY, "a") as f:
-        f.write(json.dumps(history_entry) + "\n")
-    
-    update_heartbeat()
+    append_jsonl(FUNDING_HISTORY, history_entry)
+
+    update_heartbeat("funding")
 
 
 def main():

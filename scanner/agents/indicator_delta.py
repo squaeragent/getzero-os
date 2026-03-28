@@ -40,13 +40,19 @@ try:
 except ImportError:
     HAS_TAAPI = False
 
+from scanner.utils import (
+    DATA_DIR,
+    append_jsonl,
+    make_logger,
+    read_jsonl,
+    update_heartbeat,
+)
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-AGENT_DIR    = Path(__file__).parent
-SCANNER_DIR  = AGENT_DIR.parent
-HISTORY_DIR  = SCANNER_DIR / "data" / "envy_history"
-DELTA_DIR    = SCANNER_DIR / "data" / "indicator_deltas"
+HISTORY_DIR  = DATA_DIR / "envy_history"
+DELTA_DIR    = DATA_DIR / "indicator_deltas"
 
 HL_INFO_URL  = "https://api.hyperliquid.xyz/info"
 CYCLE_SEC    = 900
@@ -61,9 +67,7 @@ DELTA_COINS = ["BTC", "ETH", "SOL", "DOGE", "AVAX", "LINK", "ARB", "NEAR", "SUI"
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
-
-def log(msg: str) -> None:
-    print(f"[indicator_delta] {msg}", flush=True)
+log = make_logger("INDICATOR_DELTA")
 
 
 # ---------------------------------------------------------------------------
@@ -77,20 +81,9 @@ def load_latest_envy_snapshot() -> Optional[dict[str, dict[str, float]]]:
         ts = now.timestamp() - days_back * 86400
         date_str = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
         filepath = HISTORY_DIR / f"{date_str}.jsonl"
-        if not filepath.exists():
-            continue
-        last_line = None
-        with open(filepath) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    last_line = line
-        if last_line:
-            try:
-                rec = json.loads(last_line)
-                return rec.get("coins", {})
-            except json.JSONDecodeError:
-                pass
+        records = read_jsonl(filepath, max_lines=1)
+        if records:
+            return records[-1].get("coins", {})
     return None
 
 
@@ -501,7 +494,6 @@ def run_once() -> None:
     now = datetime.now(timezone.utc)
     ts  = now.strftime("%Y-%m-%dT%H:%M:%S")
     date_str = now.strftime("%Y-%m-%d")
-    DELTA_DIR.mkdir(parents=True, exist_ok=True)
     delta_file = DELTA_DIR / f"{date_str}.jsonl"
 
     summaries: list[str] = []
@@ -557,8 +549,7 @@ def run_once() -> None:
                 "taapi": bool(taapi_vals),
             },
         }
-        with open(delta_file, "a") as f:
-            f.write(json.dumps(record) + "\n")
+        append_jsonl(delta_file, record)
 
         summaries.append(f"{coin} avg_delta={avg_pct:.1f}% max={max_pct:.1f}% ({max_ind})")
         time.sleep(0.2)  # light rate limit between coins
@@ -567,6 +558,8 @@ def run_once() -> None:
         log(" | ".join(summaries))
     else:
         log("No delta summaries produced")
+
+    update_heartbeat("indicator_delta")
 
 
 def main() -> None:

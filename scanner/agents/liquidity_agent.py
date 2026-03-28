@@ -23,12 +23,15 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    save_json, make_logger, update_heartbeat,
+    BUS_DIR,
+)
+
+log = make_logger("LIQUIDITY")
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
 LIQUIDITY_FILE = BUS_DIR / "liquidity.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 # ─── CONFIG ───
 HL_API_URL = "https://api.hyperliquid.xyz/info"
@@ -194,18 +197,7 @@ def analyze_coin(coin):
 
 # ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["liquidity"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
+    update_heartbeat("liquidity")
 
 
 # ─── MAIN CYCLE ───
@@ -243,9 +235,7 @@ def run_cycle():
         "timestamp": ts_iso,
         "coins": coins_out,
     }
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(LIQUIDITY_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    save_json(LIQUIDITY_FILE, output)
 
     write_heartbeat()
 

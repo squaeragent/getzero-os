@@ -29,13 +29,13 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-# ── PATHS ──
-AGENT_DIR  = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR    = SCANNER_DIR / "bus"
+from scanner.utils import (
+    load_json, save_json, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, HEARTBEAT_FILE,
+)
 
+# ── PATHS ──
 ENRICHMENT_FILE = BUS_DIR / "hl_enrichment.json"
-HEARTBEAT_FILE  = BUS_DIR / "heartbeat.json"
 
 # ── CONFIG ──
 HL_INFO_URL   = "https://api.hyperliquid.xyz/info"
@@ -47,38 +47,15 @@ RETRY_BACKOFF = 5     # seconds to wait after 429
 # LOGGING
 # ==========================================================================
 
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [HL_ENRICHMENT] {msg}")
+log = make_logger("HL_ENRICHMENT")
 
 
 # ==========================================================================
-# FILE HELPERS
+# HEARTBEAT
 # ==========================================================================
-
-def load_json(path, default=None):
-    if default is None:
-        default = {}
-    path = Path(path)
-    if path.exists() and path.stat().st_size > 0:
-        try:
-            with open(path) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return default
-
-
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
 
 def write_heartbeat():
-    hb = load_json(HEARTBEAT_FILE)
-    hb["hl_enrichment"] = datetime.now(timezone.utc).isoformat()
-    save_json(HEARTBEAT_FILE, hb)
+    update_heartbeat("hl_enrichment")
 
 
 # ==========================================================================

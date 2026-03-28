@@ -16,7 +16,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
 import urllib.error
@@ -24,12 +23,14 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import make_logger, load_api_key, append_jsonl, DATA_DIR
+
+log = make_logger("ENVY_CACHE")
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-AGENT_DIR   = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-HISTORY_DIR = SCANNER_DIR / "data" / "envy_history"
+HISTORY_DIR = DATA_DIR / "envy_history"
 
 # ---------------------------------------------------------------------------
 # Config
@@ -67,28 +68,6 @@ ALL_INDICATORS = FAST_INDICATORS + SLOW_AND_CHAOS_INDICATORS
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def log(msg: str) -> None:
-    print(f"[envy_cache] {msg}", flush=True)
-
-
-def load_api_key() -> str:
-    key = os.environ.get("ENVY_API_KEY")
-    if key:
-        return key
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    try:
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("export "):
-                    line = line[7:]
-                if line.startswith("ENVY_API_KEY="):
-                    val = line.split("=", 1)[1]
-                    return val.strip().strip('"').strip("'")
-    except OSError:
-        pass
-    raise RuntimeError("ENVY_API_KEY not found in env or ~/getzero-os/.env")
 
 
 def envy_get(path: str, params: dict, api_key: str) -> dict:
@@ -180,7 +159,6 @@ def purge_old_files() -> None:
 
 def save_snapshot(snapshot: dict[str, dict[str, float]]) -> None:
     """Append the snapshot as one JSONL line to today's file."""
-    HISTORY_DIR.mkdir(parents=True, exist_ok=True)
     now = datetime.now(timezone.utc)
     date_str = now.strftime("%Y-%m-%d")
     filepath = HISTORY_DIR / f"{date_str}.jsonl"
@@ -189,8 +167,7 @@ def save_snapshot(snapshot: dict[str, dict[str, float]]) -> None:
         "t": now.strftime("%Y-%m-%dT%H:%M:%S"),
         "coins": snapshot,
     }
-    with open(filepath, "a") as f:
-        f.write(json.dumps(record) + "\n")
+    append_jsonl(filepath, record)
 
 
 # ---------------------------------------------------------------------------

@@ -36,23 +36,19 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, read_jsonl, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, DATA_DIR, LIVE_DIR, MEMORY_DIR, EPISODES_DIR,
+    OBSERVATIONS_FILE, WORLD_STATE_FILE, HEARTBEAT_FILE,
+)
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
-MEMORY_DIR = SCANNER_DIR / "memory"
-EPISODES_DIR = MEMORY_DIR / "episodes"
 RULES_DIR = MEMORY_DIR / "rules"
 REFLECTIONS_DIR = MEMORY_DIR / "reflections"
 NARRATIVES_DIR = MEMORY_DIR / "narratives"
 
-OBSERVATIONS_FILE = MEMORY_DIR / "observations.jsonl"
-WORLD_STATE_FILE = BUS_DIR / "world_state.json"
 CLOSED_FILE = LIVE_DIR / "closed.jsonl"
 POSITIONS_FILE = LIVE_DIR / "positions.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 META_FILE = MEMORY_DIR / "meta.json"
 PROPOSED_RULES_FILE = RULES_DIR / "proposed.json"
 ACTIVE_RULES_FILE = RULES_DIR / "active.json"
@@ -69,49 +65,7 @@ TIMEOUT_NARRATIVE = 60    # 60s for 8b
 
 
 # ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [REFLECTION] {msg}")
-
-
-# ─── FILE HELPERS ───
-def load_json_safe(path, default=None):
-    if default is None:
-        default = {}
-    p = Path(path)
-    if not p.exists() or p.stat().st_size == 0:
-        return default
-    try:
-        with open(p) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return default
-
-
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def load_jsonl(path, max_lines=2000):
-    """Load lines from a JSONL file."""
-    p = Path(path)
-    if not p.exists():
-        return []
-    lines = []
-    try:
-        with open(p) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        lines.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        continue
-    except OSError:
-        return []
-    return lines[-max_lines:]
+log = make_logger("REFLECTION")
 
 
 # ─── OLLAMA ───
@@ -156,7 +110,7 @@ def check_ollama_available():
 
 # ─── META TRACKING ───
 def load_meta():
-    return load_json_safe(META_FILE, {
+    return load_json(META_FILE, {
         "last_reflection": None,
         "last_evolution_analysis": None,
         "reflection_cycle": 0,
@@ -173,7 +127,7 @@ def save_meta(meta):
 # ─── DATA LOADERS ───
 def load_observations():
     """Load all observations from observations.jsonl."""
-    return load_jsonl(OBSERVATIONS_FILE, max_lines=500)
+    return read_jsonl(OBSERVATIONS_FILE, max_lines=500)
 
 
 def load_observations_since(last_reflection_iso):
@@ -189,14 +143,14 @@ def load_observations_since(last_reflection_iso):
 
 def load_closed_trades():
     """Load closed trades from live trading."""
-    trades = load_jsonl(CLOSED_FILE, max_lines=1000)
+    trades = read_jsonl(CLOSED_FILE, max_lines=1000)
     trades.sort(key=lambda t: t.get("exit_time", ""))
     return trades
 
 
 def load_positions():
     """Load current open positions."""
-    pos = load_json_safe(POSITIONS_FILE, default=[])
+    pos = load_json(POSITIONS_FILE, default=[])
     if isinstance(pos, dict):
         return list(pos.values())
     return pos
@@ -204,12 +158,12 @@ def load_positions():
 
 def load_world_state():
     """Load current world state."""
-    return load_json_safe(WORLD_STATE_FILE, {})
+    return load_json(WORLD_STATE_FILE, {})
 
 
 def load_active_rules():
     """Load currently active rules."""
-    rules = load_json_safe(ACTIVE_RULES_FILE, default=[])
+    rules = load_json(ACTIVE_RULES_FILE, default=[])
     if not isinstance(rules, list):
         return []
     return rules
@@ -217,7 +171,7 @@ def load_active_rules():
 
 def load_proposed_rules():
     """Load proposed rules."""
-    rules = load_json_safe(PROPOSED_RULES_FILE, default=[])
+    rules = load_json(PROPOSED_RULES_FILE, default=[])
     if not isinstance(rules, list):
         return []
     return rules
@@ -618,11 +572,7 @@ Be concise. Use data from the observations. No speculation without evidence.
 
 # ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = load_json_safe(HEARTBEAT_FILE, {})
-    heartbeat["reflection"] = ts
-    save_json(HEARTBEAT_FILE, heartbeat)
+    update_heartbeat("reflection")
 
 
 # ─── MAIN LOOP ───

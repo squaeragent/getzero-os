@@ -29,13 +29,16 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-# -- PATHS --
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
+from scanner.utils import (
+    load_json, save_json, append_jsonl,
+    make_logger, load_api_key, get_trading_session, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, WORLD_STATE_FILE, REGIMES_FILE, HEARTBEAT_FILE,
+)
 
-WORLD_STATE_FILE  = BUS_DIR / "world_state.json"
-REGIMES_FILE      = BUS_DIR / "regimes.json"
+# -- Shared logger --
+log = make_logger("PERCEPTION")
+
+# -- Agent-specific paths --
 REGIME_HISTORY    = BUS_DIR / "regime_history.jsonl"
 LIQUIDITY_FILE    = BUS_DIR / "liquidity.json"
 TIMEFRAME_FILE    = BUS_DIR / "timeframe_signals.json"
@@ -43,7 +46,6 @@ FUNDING_FILE      = BUS_DIR / "funding.json"
 FUNDING_HISTORY   = BUS_DIR / "funding_history.jsonl"
 SPREAD_FILE       = BUS_DIR / "spread.json"
 SPREAD_HISTORY    = BUS_DIR / "spread_history.jsonl"
-HEARTBEAT_FILE    = BUS_DIR / "heartbeat.json"
 
 # -- CONFIG --
 ENVY_BASE_URL  = "https://gate.getzero.dev/api/claw"
@@ -137,54 +139,6 @@ SPREAD_WARNING_PCT    = 0.10
 SPREAD_ALERT_PCT      = 0.30
 SPREAD_COLLAPSE_SPEED = 0.05
 MAX_SPREAD_HISTORY    = 30
-
-
-# ==========================================================================
-# LOGGING
-# ==========================================================================
-
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] {msg}")
-
-
-# ==========================================================================
-# TRADING SESSION CLASSIFICATION (Upgrade 3)
-# ==========================================================================
-
-def get_trading_session(utc_hour):
-    """Classify current UTC hour into trading session."""
-    if 0 <= utc_hour < 7:
-        return "ASIA"
-    elif 7 <= utc_hour < 13:
-        return "EUROPE"
-    elif 13 <= utc_hour < 20:
-        return "US"
-    else:
-        return "LATE_US"
-
-
-# ==========================================================================
-# API KEY
-# ==========================================================================
-
-def load_api_key():
-    key = os.environ.get("ENVY_API_KEY")
-    if key:
-        return key
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    try:
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("export "):
-                    line = line[7:]
-                if line.startswith("ENVY_API_KEY="):
-                    val = line.split("=", 1)[1]
-                    return val.strip().strip('"').strip("'")
-    except OSError:
-        pass
-    raise RuntimeError("ENVY_API_KEY not found in env or ~/getzero-os/.env")
 
 
 # ==========================================================================
@@ -814,34 +768,6 @@ def compute_spread_velocity_and_collapse(coin, current_spread, prev_spread_state
 
 
 # ==========================================================================
-# FILE HELPERS
-# ==========================================================================
-
-def load_json(path, default=None):
-    if default is None:
-        default = {}
-    if path.exists() and path.stat().st_size > 0:
-        try:
-            with open(path) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return default
-
-
-def save_json(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def write_heartbeat():
-    hb = load_json(HEARTBEAT_FILE)
-    hb["perception"] = datetime.now(timezone.utc).isoformat()
-    save_json(HEARTBEAT_FILE, hb)
-
-
-# ==========================================================================
 # MAIN CYCLE
 # ==========================================================================
 
@@ -1253,8 +1179,7 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     log(f"  [regimes] written")
 
     # Append regime history
-    with open(REGIME_HISTORY, "a") as f:
-        f.write(json.dumps({"timestamp": ts_iso, "coins": legacy_regimes_coins}) + "\n")
+    append_jsonl(REGIME_HISTORY, {"timestamp": ts_iso, "coins": legacy_regimes_coins})
 
     save_json(LIQUIDITY_FILE, {"timestamp": ts_iso, "coins": legacy_liquidity_coins})
     log(f"  [liquidity] written")
@@ -1280,8 +1205,7 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
                         for c, d in legacy_funding_coins.items()},
         "convergence": len(funding_convergence),
     }
-    with open(FUNDING_HISTORY, "a") as f:
-        f.write(json.dumps(history_entry) + "\n")
+    append_jsonl(FUNDING_HISTORY, history_entry)
 
     # Spread legacy
     spread_summary = {
@@ -1301,12 +1225,10 @@ def run_cycle(api_key, prev_state, envy_cache, last_envy_ts):
     save_json(SPREAD_FILE, spread_legacy)
     log(f"  [spread] written ({spread_summary['mm_setup']} MM_SETUP, {spread_summary['unwind']} UNWIND)")
 
-    if spread_alerts:
-        with open(SPREAD_HISTORY, "a") as f:
-            for a in spread_alerts:
-                f.write(json.dumps(a) + "\n")
+    for a in spread_alerts:
+        append_jsonl(SPREAD_HISTORY, a)
 
-    write_heartbeat()
+    update_heartbeat("perception")
 
     # ── 7. Summary ──
     log(f"\n  Regimes: {dict(sorted(regime_dist.items()))}")
@@ -1363,7 +1285,7 @@ def main():
                 )
             except Exception as e:
                 log(f"[error] Cycle failed: {e}")
-                write_heartbeat()
+                update_heartbeat("perception")
             time.sleep(CYCLE_FAST)
     else:
         # Single run — full Envy fetch

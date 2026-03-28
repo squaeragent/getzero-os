@@ -23,7 +23,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
 import urllib.error
@@ -31,13 +30,15 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, make_logger, load_api_key, update_heartbeat,
+    BUS_DIR, WORLD_STATE_FILE,
+)
+
+log = make_logger("PATTERN_SCANNER")
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-WORLD_STATE_FILE = BUS_DIR / "world_state.json"
 PATTERN_CANDIDATES_FILE = BUS_DIR / "pattern_candidates.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 # ─── CONFIG ───
 TAAPI_BULK_URL = "https://api.taapi.io/bulk"
@@ -122,26 +123,6 @@ COIN_SYMBOL_MAP = {coin: f"{coin}/USDT" for coin in CORE_COINS}
 
 # Max indicators per bulk call
 MAX_INDICATORS_PER_CALL = 18
-
-
-# ─── API KEY ───
-def _load_api_key() -> str:
-    key = os.environ.get("TAAPI_API_KEY")
-    if key:
-        return key
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    try:
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("export "):
-                    line = line[7:]
-                if line.startswith("TAAPI_API_KEY="):
-                    val = line.split("=", 1)[1]
-                    return val.strip().strip('"').strip("'")
-    except OSError:
-        pass
-    raise RuntimeError("TAAPI_API_KEY not found in env or ~/getzero-os/.env")
 
 
 # ─── BULK API CALL ───
@@ -231,14 +212,8 @@ def _build_pattern_batches(coin: str, interval: str) -> list[tuple[dict, list[st
 # ─── WORLD STATE ───
 def load_world_state() -> dict:
     """Load coin regime data from world_state.json."""
-    if not WORLD_STATE_FILE.exists():
-        return {}
-    try:
-        with open(WORLD_STATE_FILE) as f:
-            data = json.load(f)
-        return data.get("coins", {})
-    except (json.JSONDecodeError, OSError):
-        return {}
+    data = load_json(WORLD_STATE_FILE, {})
+    return data.get("coins", {})
 
 
 def get_coin_regime(world_coins: dict, coin: str) -> str:
@@ -415,7 +390,7 @@ def fetch_patterns_and_generate_signals(
                 }
                 all_signals.append(signal)
                 fired_count += 1
-                print(f"    🕯️  {coin:5s} {interval}  {pattern:20s} → {direction:5s}  conf={confidence:.3f}  regime={regime}")
+                print(f"    \U0001f56f\ufe0f  {coin:5s} {interval}  {pattern:20s} \u2192 {direction:5s}  conf={confidence:.3f}  regime={regime}")
 
             if fired_count == 0:
                 print(f"    {coin:5s} {interval}: no patterns fired")
@@ -424,28 +399,12 @@ def fetch_patterns_and_generate_signals(
     return all_signals
 
 
-# ─── HEARTBEAT ───
-def write_heartbeat() -> None:
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["pattern_scanner"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
-
-
 # ─── MAIN CYCLE ───
 def run_cycle(secret: str) -> None:
     ts = datetime.now(timezone.utc)
     ts_iso = ts.isoformat()
     print(f"\n{'='*60}")
-    print(f"Pattern Scanner — {ts.strftime('%Y-%m-%d %H:%M UTC')}")
+    print(f"Pattern Scanner \u2014 {ts.strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"{'='*60}")
     print(f"  Coins: {', '.join(CORE_COINS)}")
     print(f"  Intervals: {', '.join(INTERVALS)}")
@@ -456,7 +415,7 @@ def run_cycle(secret: str) -> None:
     if world_coins:
         print(f"  World state loaded: {len(world_coins)} coins")
     else:
-        print("  [warn] world_state.json not found — using unknown regime for all coins")
+        print("  [warn] world_state.json not found \u2014 using unknown regime for all coins")
 
     # Fetch patterns + generate signals
     signals = fetch_patterns_and_generate_signals(secret, world_coins)
@@ -466,11 +425,9 @@ def run_cycle(secret: str) -> None:
         "timestamp": ts_iso,
         "patterns": signals,
     }
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(PATTERN_CANDIDATES_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    save_json(PATTERN_CANDIDATES_FILE, output)
 
-    write_heartbeat()
+    update_heartbeat("pattern_scanner")
 
     # Summary
     print(f"\n  {'='*50}")
@@ -491,7 +448,7 @@ def run_cycle(secret: str) -> None:
 
 
 def main() -> None:
-    secret = _load_api_key()
+    secret = load_api_key("TAAPI_API_KEY")
     print(f"[pattern_scanner] API key loaded: {secret[:12]}...")
 
     loop_mode = "--loop" in sys.argv
@@ -505,7 +462,7 @@ def main() -> None:
                 print(f"[pattern_scanner] Cycle error: {e}")
                 import traceback
                 traceback.print_exc()
-                write_heartbeat()
+                update_heartbeat("pattern_scanner")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle(secret)

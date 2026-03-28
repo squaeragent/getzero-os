@@ -2,9 +2,9 @@
 """Refresh historical candle data from Hyperliquid. Run weekly via cron."""
 import subprocess
 import sys
-from pathlib import Path
 
-SCANNER_DIR = Path(__file__).parent.parent
+from scanner.utils import SCANNER_DIR
+
 FETCH_SCRIPT = SCANNER_DIR / "fetch_history.py"
 
 if not FETCH_SCRIPT.exists():

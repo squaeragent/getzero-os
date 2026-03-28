@@ -21,7 +21,6 @@ Usage:
 """
 
 import json
-import os
 import sys
 import time
 import urllib.request
@@ -29,17 +28,24 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-# ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
+from scanner.utils import (
+    load_json,
+    save_json,
+    load_api_key,
+    make_logger,
+    update_heartbeat,
+    SCANNER_DIR,
+    BUS_DIR,
+    DATA_DIR,
+    LIVE_DIR,
+    CANDIDATES_FILE,
+    APPROVED_FILE,
+    REGIMES_FILE,
+)
 
-CANDIDATES_FILE = BUS_DIR / "candidates.json"
-REGIMES_FILE = BUS_DIR / "regimes.json"
-APPROVED_FILE = BUS_DIR / "approved.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
+log = make_logger("CORR")
+
+# ─── PATHS (agent-specific) ───
 FIRES_FILE = DATA_DIR / "fires.jsonl"
 POSITIONS_FILE = LIVE_DIR / "positions.json"
 
@@ -74,19 +80,6 @@ CORRELATION_BLOCK_THRESHOLD = 0.7  # block if correlation > this
 
 
 # ─── API ───
-def load_api_key():
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    with open(env_path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:]
-            if line.startswith("ENVY_API_KEY="):
-                val = line.split("=", 1)[1]
-                return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
-
-
 def api_get(path, params, api_key):
     url = f"{BASE_URL}{path}"
     if params:
@@ -181,23 +174,11 @@ def compute_correlation(coin_a, coin_b, roc_data):
 
 # ─── LOAD STATE ───
 def load_positions():
-    if POSITIONS_FILE.exists() and POSITIONS_FILE.stat().st_size > 0:
-        try:
-            with open(POSITIONS_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return []
+    return load_json(POSITIONS_FILE, default=[])
 
 
 def load_regimes():
-    if REGIMES_FILE.exists() and REGIMES_FILE.stat().st_size > 0:
-        try:
-            with open(REGIMES_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
+    return load_json(REGIMES_FILE, default={})
 
 
 def load_candidates():
@@ -208,10 +189,9 @@ def load_candidates():
     adversary hasn't run yet). Candidates with verdict KILLED are dropped.
     WEAK candidates are passed through with a 0.4x size modifier applied.
     """
-    if CANDIDATES_FILE.exists() and CANDIDATES_FILE.stat().st_size > 0:
+    data = load_json(CANDIDATES_FILE, default=None)
+    if data is not None:
         try:
-            with open(CANDIDATES_FILE) as f:
-                data = json.load(f)
             raw_candidates = data.get("candidates", [])
             adversary_ts = data.get("adversary_timestamp")
 
@@ -234,11 +214,7 @@ def load_candidates():
                     return []
 
                 # v5 Fix 5: Hard gate LONGs in Extreme Fear
-                try:
-                    with open(BUS_DIR / "macro_intel.json") as _mf:
-                        macro = json.load(_mf)
-                except Exception:
-                    macro = {}
+                macro = load_json(BUS_DIR / "macro_intel.json", default={})
                 fg = macro.get("fear_greed", 50)
 
                 approved_candidates = []
@@ -271,7 +247,7 @@ def load_candidates():
 
                 print(f"  Loaded {len(approved_candidates)}/{len(raw_candidates)} candidates after adversary filter")
                 return approved_candidates
-        except (json.JSONDecodeError, OSError):
+        except (AttributeError, KeyError, OSError):
             pass
 
     # Fallback: read recent fires from fires.jsonl
@@ -529,7 +505,6 @@ def filter_candidates(candidates, positions, roc_data, regimes, capital=750):
 
 # ─── OUTPUT ───
 def write_approved(approved, blocked, portfolio_state):
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).isoformat()
 
     # Determine overall correlation risk
@@ -553,23 +528,7 @@ def write_approved(approved, blocked, portfolio_state):
         },
     }
 
-    with open(APPROVED_FILE, "w") as f:
-        json.dump(output, f, indent=2)
-
-
-def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["correlation"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
+    save_json(APPROVED_FILE, output)
 
 
 # ─── MAIN ───
@@ -583,7 +542,7 @@ def run_cycle(api_key):
     capital = 750
     try:
         import yaml
-        config_file = Path(__file__).parent.parent / "config.yaml"
+        config_file = SCANNER_DIR / "config.yaml"
         if config_file.exists():
             with open(config_file) as _cf:
                 _cfg = yaml.safe_load(_cf)
@@ -604,7 +563,7 @@ def run_cycle(api_key):
         print("  No candidates to evaluate")
         portfolio_state = compute_portfolio_state(positions, capital=capital)
         write_approved([], [], portfolio_state)
-        write_heartbeat()
+        update_heartbeat("correlation")
         print(f"  Written empty approved to {APPROVED_FILE}")
         print(f"{'='*60}\n")
         return
@@ -636,7 +595,7 @@ def run_cycle(api_key):
 
     # Write outputs
     write_approved(approved, blocked_list, portfolio_state)
-    write_heartbeat()
+    update_heartbeat("correlation")
 
     # Summary
     print(f"\n  Approved: {len(approved)}")
@@ -662,7 +621,7 @@ def main():
                 run_cycle(api_key)
             except Exception as e:
                 print(f"  [error] Cycle failed: {e}")
-                write_heartbeat()
+                update_heartbeat("correlation")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle(api_key)

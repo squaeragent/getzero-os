@@ -17,7 +17,6 @@ Usage:
 """
 
 import json
-import os
 import sys
 import time
 import urllib.request
@@ -25,12 +24,15 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    save_json, make_logger, load_api_key, update_heartbeat,
+    BUS_DIR,
+)
+
+log = make_logger("CROSS_TF")
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
 TIMEFRAME_FILE = BUS_DIR / "timeframe_signals.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 # ─── CONFIG ───
 BASE_URL = "https://gate.getzero.dev/api/claw"
@@ -60,19 +62,6 @@ SLOW_INDICATORS = [
 
 
 # ─── API ───
-def load_api_key():
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    with open(env_path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:]
-            if line.startswith("ENVY_API_KEY="):
-                val = line.split("=", 1)[1]
-                return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
-
-
 def api_get(path, params, api_key):
     url = f"{BASE_URL}{path}"
     if params:
@@ -356,22 +345,6 @@ def compute_confirmation_score(pattern):
     return scores.get(pattern, 0.0)
 
 
-# ─── HEARTBEAT ───
-def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["cross_timeframe"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
-
-
 # ─── MAIN CYCLE ───
 def run_cycle(api_key):
     ts = datetime.now(timezone.utc)
@@ -436,11 +409,9 @@ def run_cycle(api_key):
         "timestamp": ts_iso,
         "coins": coins_out,
     }
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(TIMEFRAME_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    save_json(TIMEFRAME_FILE, output)
 
-    write_heartbeat()
+    update_heartbeat("cross_timeframe")
 
     print(f"\n  Patterns: {dict(sorted(pattern_counts.items()))}")
     print(f"  Written to {TIMEFRAME_FILE}")
@@ -458,7 +429,7 @@ def main():
                 run_cycle(api_key)
             except Exception as e:
                 print(f"  [error] Cycle failed: {e}")
-                write_heartbeat()
+                update_heartbeat("cross_timeframe")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle(api_key)

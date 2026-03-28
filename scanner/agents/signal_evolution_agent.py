@@ -24,19 +24,15 @@ import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, read_jsonl, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, DATA_DIR, LIVE_DIR, HEARTBEAT_FILE,
+    REGIMES_FILE, CLOSED_FILE_LIVE,
+)
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
 SIGNALS_CACHE_DIR = DATA_DIR / "signals_cache"
-
-REGIMES_FILE = BUS_DIR / "regimes.json"
 SIGNAL_WEIGHTS_FILE = BUS_DIR / "signal_weights.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
-
-CLOSED_FILE_LIVE = LIVE_DIR / "closed.jsonl"
 
 # ─── CONFIG ───
 CYCLE_SECONDS = 600  # 10 minutes
@@ -52,41 +48,16 @@ FATIGUE_MULTIPLIER = 0.7     # penalty for fatigued signals
 
 
 # ─── DATA LOADING ───
-def load_jsonl(path, max_lines=2000):
-    """Load lines from a JSONL file."""
-    if not path.exists():
-        return []
-    lines = []
-    try:
-        with open(path) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        lines.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        continue
-    except OSError:
-        return []
-    return lines[-max_lines:]
-
-
 def load_all_closed_trades():
     """Load closed trades from live trading."""
-    live = load_jsonl(CLOSED_FILE_LIVE)
+    live = read_jsonl(CLOSED_FILE_LIVE)
     live.sort(key=lambda t: t.get("exit_time", ""))
     return live
 
 
 def load_regimes():
     """Load current regime state."""
-    if REGIMES_FILE.exists() and REGIMES_FILE.stat().st_size > 0:
-        try:
-            with open(REGIMES_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
+    return load_json(REGIMES_FILE)
 
 
 def load_signal_names():
@@ -95,15 +66,12 @@ def load_signal_names():
     if not SIGNALS_CACHE_DIR.exists():
         return names
     for f in SIGNALS_CACHE_DIR.glob("*.json"):
-        try:
-            with open(f) as fh:
-                packs = json.load(fh)
+        packs = load_json(f, [])
+        if isinstance(packs, list):
             for pack in packs:
-                name = pack.get("name")
+                name = pack.get("name") if isinstance(pack, dict) else None
                 if name:
                     names.add(name)
-        except (json.JSONDecodeError, OSError):
-            continue
     return names
 
 
@@ -227,18 +195,7 @@ def compute_fatigue(trades, window_hours=FATIGUE_WINDOW_HOURS):
 
 # ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists() and HEARTBEAT_FILE.stat().st_size > 0:
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["signal_evolution"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
+    update_heartbeat("signal_evolution")
 
 
 # ─── MAIN CYCLE ───
@@ -268,9 +225,7 @@ def run_cycle():
             "performance": {},
             "fatigue": {},
         }
-        BUS_DIR.mkdir(parents=True, exist_ok=True)
-        with open(SIGNAL_WEIGHTS_FILE, "w") as f:
-            json.dump(output, f, indent=2)
+        save_json(SIGNAL_WEIGHTS_FILE, output)
         write_heartbeat()
         print(f"  Written neutral weights for {len(signal_names)} signals")
         print(f"{'='*60}\n")
@@ -341,9 +296,7 @@ def run_cycle():
         "performance": performance,
         "fatigue": {k: v for k, v in fatigue.items() if v > 0},
     }
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(SIGNAL_WEIGHTS_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    save_json(SIGNAL_WEIGHTS_FILE, output)
 
     write_heartbeat()
 

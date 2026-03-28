@@ -14,15 +14,16 @@ import asyncio
 import json
 import os
 import sys
-import time
 from datetime import datetime, timezone
-from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).parent
-ROOT_DIR = SCRIPT_DIR.parent
-BUS_DIR = ROOT_DIR / "bus"
+from scanner.utils import (
+    save_json, make_logger, load_api_key, update_heartbeat,
+    BUS_DIR,
+)
+
+log = make_logger("WS")
+
 WS_FILE = BUS_DIR / "ws_indicators.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 WS_URL = "wss://gate.getzero.dev/api/claw/ws/indicators"
 RECONNECT_DELAY = 5  # seconds between reconnect attempts
@@ -30,47 +31,12 @@ MAX_RECONNECT_DELAY = 300  # max backoff
 STALE_THRESHOLD = 120  # seconds before marking data stale
 
 
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [WS] {msg}")
-
-
-def get_api_key():
-    key = os.environ.get("ENVY_API_KEY")
-    if key:
-        return key
-    env_file = Path.home() / "getzero-os" / ".env"
-    if env_file.exists():
-        for line in env_file.read_text().splitlines():
-            clean = line.strip()
-            if clean.startswith("export "):
-                clean = clean[7:]
-            if clean.startswith("ENVY_API_KEY="):
-                return clean.split("=", 1)[1].strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found")
-
-
-def update_heartbeat():
-    try:
-        hb = {}
-        if HEARTBEAT_FILE.exists():
-            with open(HEARTBEAT_FILE) as f:
-                hb = json.load(f)
-        hb["ws_stream"] = datetime.now(timezone.utc).isoformat()
-        with open(HEARTBEAT_FILE, "w") as f:
-            json.dump(hb, f, indent=2)
-    except Exception:
-        pass
-
-
 def save_snapshot(raw_data):
     """Save WebSocket snapshot to bus file.
-    
+
     WS sends: {type, timestamp, coinsReturned, data: {COIN: [{indicatorCode, value, ...}]}}
     We flatten to: {source, received_at, coins: {COIN: {INDICATOR: value}}}
     """
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-
     # Parse the WS data format into our flat format
     ws_data = raw_data.get("data", raw_data.get("snapshot", {}))
     coins = {}
@@ -92,8 +58,7 @@ def save_snapshot(raw_data):
         "coin_count": len(coins),
         "coins": coins,
     }
-    with open(WS_FILE, "w") as f:
-        json.dump(snapshot, f)
+    save_json(WS_FILE, snapshot, indent=None)
 
 
 async def connect_and_stream():
@@ -105,7 +70,7 @@ async def connect_and_stream():
         log("Falling back to perception agent polling.")
         return False
 
-    api_key = get_api_key()
+    api_key = load_api_key()
     url = f"{WS_URL}?token={api_key}"
 
     delay = RECONNECT_DELAY
@@ -137,7 +102,7 @@ async def connect_and_stream():
                         msg_count += 1
 
                         if msg_count == 1 or msg_count % 20 == 0:  # First + every ~5 minutes
-                            update_heartbeat()
+                            update_heartbeat("ws_stream")
                             ws_data = data.get("data", data.get("snapshot", {}))
                             coins_count = len(ws_data) if isinstance(ws_data, dict) else 0
                             log(f"Streaming OK: {msg_count} messages, {coins_count} coins in latest")

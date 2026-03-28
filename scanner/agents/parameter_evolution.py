@@ -33,20 +33,17 @@ import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, read_jsonl, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, DATA_DIR, LIVE_DIR, MEMORY_DIR,
+    OBSERVATIONS_FILE, WORLD_STATE_FILE, HEARTBEAT_FILE, CLOSED_FILE_LIVE,
+)
+
 # ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
-MEMORY_DIR = SCANNER_DIR / "memory"
 RULES_DIR = MEMORY_DIR / "rules"
 
-CLOSED_FILE = LIVE_DIR / "closed.jsonl"
-OBSERVATIONS_FILE = MEMORY_DIR / "observations.jsonl"
-WORLD_STATE_FILE = BUS_DIR / "world_state.json"
+CLOSED_FILE = CLOSED_FILE_LIVE
 SIGNAL_WEIGHTS_FILE = BUS_DIR / "signal_weights.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 META_FILE = MEMORY_DIR / "meta.json"
 
 PROPOSED_FILE = RULES_DIR / "proposed.json"
@@ -75,54 +72,12 @@ FATIGUE_MULTIPLIER = 0.7
 
 
 # ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [PARAM_EVOLUTION] {msg}")
-
-
-# ─── FILE HELPERS ───
-def load_json_safe(path, default=None):
-    if default is None:
-        default = {}
-    p = Path(path)
-    if not p.exists() or p.stat().st_size == 0:
-        return default
-    try:
-        with open(p) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return default
-
-
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def load_jsonl(path, max_lines=2000):
-    """Load lines from a JSONL file."""
-    p = Path(path)
-    if not p.exists():
-        return []
-    lines = []
-    try:
-        with open(p) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        lines.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        continue
-    except OSError:
-        return []
-    return lines[-max_lines:]
+log = make_logger("PARAM_EVOLUTION")
 
 
 # ─── META ───
 def load_meta():
-    return load_json_safe(META_FILE, {
+    return load_json(META_FILE, {
         "last_reflection": None,
         "last_evolution_analysis": None,
         "reflection_cycle": 0,
@@ -138,7 +93,7 @@ def save_meta(meta):
 
 # ─── RULE STORE HELPERS ───
 def load_rules(path):
-    rules = load_json_safe(path, default=[])
+    rules = load_json(path, default=[])
     if not isinstance(rules, list):
         return []
     return rules
@@ -190,13 +145,13 @@ def make_rule(condition, action, value, evidence, source="parameter_evolution", 
 
 # ─── TRADE ANALYSIS ───
 def load_closed_trades():
-    trades = load_jsonl(CLOSED_FILE, max_lines=2000)
+    trades = read_jsonl(CLOSED_FILE, max_lines=2000)
     trades.sort(key=lambda t: t.get("exit_time", ""))
     return trades
 
 
 def load_observations():
-    return load_jsonl(OBSERVATIONS_FILE, max_lines=1000)
+    return read_jsonl(OBSERVATIONS_FILE, max_lines=1000)
 
 
 def compute_stats_for_group(trades):
@@ -568,7 +523,7 @@ def rebuild_signal_weights(trades):
             fatigue[signal] = fatigue.get(signal, 0) + 1
 
     # Dominant regime
-    world = load_json_safe(WORLD_STATE_FILE, {})
+    world = load_json(WORLD_STATE_FILE, {})
     regime_counts = {}
     for c in world.get("coins", {}).values():
         r = c.get("regime", "stable")
@@ -637,12 +592,8 @@ def rebuild_signal_weights(trades):
 
 # ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = load_json_safe(HEARTBEAT_FILE, {})
-    heartbeat["parameter_evolution"] = ts
-    heartbeat["signal_evolution"] = ts  # Alias — merged into parameter_evolution
-    save_json(HEARTBEAT_FILE, heartbeat)
+    update_heartbeat("parameter_evolution")
+    update_heartbeat("signal_evolution")  # Alias — merged into parameter_evolution
 
 
 # ─── MAIN CYCLE ───

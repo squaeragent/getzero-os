@@ -22,19 +22,16 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scanner.utils import (
+    load_json, save_json, read_jsonl, make_logger, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, MEMORY_DIR, EPISODES_DIR, HEARTBEAT_FILE,
+    OBSERVATIONS_FILE, CLOSED_FILE_LIVE,
+)
 
 # ─── PATHS ───
-AGENT_DIR    = Path(__file__).parent
-SCANNER_DIR  = AGENT_DIR.parent
-BUS_DIR      = SCANNER_DIR / "bus"
-MEMORY_DIR   = SCANNER_DIR / "memory"
-EPISODES_DIR = MEMORY_DIR / "episodes"
 LIVE_DIR     = SCANNER_DIR / "data" / "live"
-
 GENEALOGY_FILE  = BUS_DIR / "genealogy.json"
-HEARTBEAT_FILE  = BUS_DIR / "heartbeat.json"
-OBSERVATIONS_FILE = MEMORY_DIR / "observations.jsonl"
-CLOSED_FILE     = LIVE_DIR / "closed.jsonl"
+CLOSED_FILE     = CLOSED_FILE_LIVE
 
 CYCLE_SECONDS   = 900   # 15 minutes
 MATURE_THRESHOLD = 20   # instances needed to call a family "mature"
@@ -42,30 +39,12 @@ MIN_TRADED_FOR_STATS = 5  # need this many traded to compute win_rate
 
 
 # ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [GENEALOGY] {msg}")
+log = make_logger("GENEALOGY")
 
 
-# ─── FILE HELPERS ───
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
+# ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = {}
-    if HEARTBEAT_FILE.exists():
-        try:
-            with open(HEARTBEAT_FILE) as f:
-                heartbeat = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    heartbeat["genealogy"] = ts
-    save_json(HEARTBEAT_FILE, heartbeat)
+    update_heartbeat("genealogy")
 
 
 # ─── SIGNAL FAMILY EXTRACTION ───
@@ -124,46 +103,19 @@ def load_observations() -> dict:
     Returns dict: {hypothesis_id: obs_dict} + flat list for fuzzy matching.
     """
     obs_by_id: dict = {}
-    obs_all:   list = []
+    obs_all = read_jsonl(OBSERVATIONS_FILE)
 
-    if OBSERVATIONS_FILE.exists():
-        try:
-            with open(OBSERVATIONS_FILE) as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        obs = json.loads(line)
-                        hyp_id = obs.get("hypothesis_id") or obs.get("id")
-                        if hyp_id:
-                            obs_by_id[hyp_id] = obs
-                        obs_all.append(obs)
-                    except json.JSONDecodeError:
-                        pass
-        except OSError:
-            pass
+    for obs in obs_all:
+        hyp_id = obs.get("hypothesis_id") or obs.get("id")
+        if hyp_id:
+            obs_by_id[hyp_id] = obs
 
     return obs_by_id, obs_all
 
 
 def load_closed_trades() -> list:
     """Load closed trades for outcome matching."""
-    trades = []
-    if not CLOSED_FILE.exists():
-        return trades
-    try:
-        with open(CLOSED_FILE) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        trades.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        pass
-    except OSError:
-        pass
-    return trades
+    return read_jsonl(CLOSED_FILE)
 
 
 def build_outcome_lookup(obs_by_id: dict, obs_all: list, closed_trades: list) -> dict:

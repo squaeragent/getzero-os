@@ -27,51 +27,45 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone, date
 from pathlib import Path
-import tempfile
 
-def save_json_atomic(path, data, indent=2):
-    """Write JSON atomically — crash-safe via tempfile + rename."""
-    path_str = str(path)
-    dir_name = os.path.dirname(path_str) or "."
-    os.makedirs(dir_name, exist_ok=True)
-    tmp_fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
-    try:
-        with os.fdopen(tmp_fd, "w") as f:
-            json.dump(data, f, indent=indent)
-        os.replace(tmp_path, path_str)
-    except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-        raise
+# ─── SHARED UTILITIES ───
+# Ensure project root is in path for scanner imports
+_project_root = str(Path(__file__).parent.parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+from scanner.utils import (
+    load_json,
+    save_json_atomic,
+    append_jsonl,
+    read_jsonl,
+    make_logger,
+    load_api_key,
+    update_heartbeat,
+    BUS_DIR,
+    DATA_DIR,
+    LIVE_DIR,
+    HEARTBEAT_FILE,
+    RISK_FILE,
+    CLOSED_FILE_LIVE,
+)
 
 # ─── SUPABASE (optional — never crashes risk agent if missing) ────────────────
 try:
-    # Ensure project root is in path for scanner.supabase import
-    _project_root = str(Path(__file__).parent.parent.parent)
-    if _project_root not in sys.path:
-        sys.path.insert(0, _project_root)
     from scanner.supabase.client import supabase as _supabase
 except Exception as _import_err:
     _supabase = None
     print(f"  [info] Supabase not available: {_import_err}")
 
-# ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
+log = make_logger("RISK")
 
-RISK_FILE = BUS_DIR / "risk.json"
+# ─── PATHS (agent-specific, not in shared module) ───
+AGENT_DIR = Path(__file__).parent
 EQUITY_HISTORY_FILE = BUS_DIR / "equity_history.jsonl"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 POSITIONS_FILE = LIVE_DIR / "positions.json"
 PORTFOLIO_FILE = LIVE_DIR / "portfolio.json"
 # closed trades: check both possible locations
-CLOSED_FILE_LIVE = LIVE_DIR / "closed.jsonl"
 CLOSED_FILE_DATA = DATA_DIR / "closed.jsonl"
 
 # ─── CONFIG ───
@@ -94,24 +88,6 @@ LOSE_STREAK_YELLOW = 3
 LOSE_STREAK_ORANGE = 5
 WIN_RATE_FLOOR = 50.0
 WIN_LOSS_RATIO_FLOOR = 1.0
-
-
-# ─── ENV ───
-def load_main_address():
-    """Load HYPERLIQUID_MAIN_ADDRESS from ~/getzero-os/.env"""
-    env_path = os.path.expanduser("~/getzero-os/.env")
-    try:
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("export "):
-                    line = line[7:]
-                if line.startswith("HYPERLIQUID_MAIN_ADDRESS="):
-                    val = line.split("=", 1)[1]
-                    return val.strip().strip('"').strip("'")
-    except FileNotFoundError:
-        pass
-    raise RuntimeError("HYPERLIQUID_MAIN_ADDRESS not found in ~/getzero-os/.env")
 
 
 # ─── HYPERLIQUID API ───
@@ -182,51 +158,22 @@ def parse_hl_state(hl_data):
 
 
 # ─── LOCAL DATA ───
-def load_json(path):
-    if path.exists() and path.stat().st_size > 0:
-        try:
-            with open(path) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return None
-
-
-def load_jsonl(path, max_lines=200):
-    """Load last N lines from a jsonl file."""
-    if not path.exists():
-        return []
-    lines = []
-    try:
-        with open(path) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        lines.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        continue
-    except OSError:
-        return []
-    return lines[-max_lines:]
-
-
 def load_positions():
-    data = load_json(POSITIONS_FILE)
+    data = load_json(POSITIONS_FILE, default=[])
     if isinstance(data, list):
         return data
     return []
 
 
 def load_portfolio():
-    return load_json(PORTFOLIO_FILE) or {}
+    return load_json(PORTFOLIO_FILE, default={})
 
 
 def load_closed_trades():
     """Load closed trades, checking both possible file locations."""
-    trades = load_jsonl(CLOSED_FILE_LIVE)
+    trades = read_jsonl(CLOSED_FILE_LIVE)
     if not trades:
-        trades = load_jsonl(CLOSED_FILE_DATA)
+        trades = read_jsonl(CLOSED_FILE_DATA)
     return trades
 
 
@@ -242,13 +189,7 @@ def load_closed_trades_current_strategy():
 
 # ─── EQUITY TRACKING ───
 def load_equity_history():
-    return load_jsonl(EQUITY_HISTORY_FILE, max_lines=500)
-
-
-def append_equity(entry):
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(EQUITY_HISTORY_FILE, "a") as f:
-        f.write(json.dumps(entry) + "\n")
+    return read_jsonl(EQUITY_HISTORY_FILE, max_lines=500)
 
 
 def compute_peak_equity(equity_history, current_value):
@@ -486,7 +427,7 @@ def check_agent_heartbeats():
     stale = []
     if not HEARTBEAT_FILE.exists():
         return stale
-    heartbeat = load_json(HEARTBEAT_FILE) or {}
+    heartbeat = load_json(HEARTBEAT_FILE, default={})
     now = datetime.now(timezone.utc)
     for agent, ts_str in heartbeat.items():
         if agent == "risk":
@@ -499,15 +440,6 @@ def check_agent_heartbeats():
         except (ValueError, TypeError):
             stale.append(f"{agent} has invalid timestamp")
     return stale
-
-
-def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = load_json(HEARTBEAT_FILE) or {}
-    heartbeat["risk"] = ts
-    with open(HEARTBEAT_FILE, "w") as f:
-        json.dump(heartbeat, f, indent=2)
 
 
 # ─── OUTPUT ───
@@ -565,7 +497,7 @@ def run_cycle(main_address):
             "unrealized_pnl": round(unrealized_pnl, 2),
             "n_positions": len(positions),
         }
-        append_equity(equity_entry)
+        append_jsonl(EQUITY_HISTORY_FILE, equity_entry)
 
     # 5. Trade statistics
     # Use current strategy trades for streak/rolling (excludes pre-epoch trades
@@ -652,7 +584,7 @@ def run_cycle(main_address):
     }
 
     write_risk(risk_state)
-    write_heartbeat()
+    update_heartbeat("risk")
 
     # ── SUPABASE: persist equity snapshot + heartbeats (v5 Fix 10B: sanity check) ──
     if _supabase is not None:
@@ -691,7 +623,7 @@ def run_cycle(main_address):
 
 
 def main():
-    main_address = load_main_address()
+    main_address = load_api_key("HYPERLIQUID_MAIN_ADDRESS")
     loop_mode = "--loop" in sys.argv
 
     if loop_mode:
@@ -703,7 +635,7 @@ def main():
                 print(f"  [error] Cycle failed: {e}")
                 import traceback
                 traceback.print_exc()
-                write_heartbeat()
+                update_heartbeat("risk")
             time.sleep(CYCLE_SECONDS)
     else:
         run_cycle(main_address)

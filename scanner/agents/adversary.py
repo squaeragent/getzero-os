@@ -33,68 +33,67 @@ Usage:
   python3 scanner/agents/adversary.py --loop    # continuous 300s cycle
 """
 
-import json
-import os
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-# ─── SUPABASE (optional — never crashes adversary if missing) ─────────────────
+# ─── SHARED UTILITIES ───
 try:
     _project_root = str(Path(__file__).parent.parent.parent)
     if _project_root not in sys.path:
         sys.path.insert(0, _project_root)
+except Exception:
+    pass
+
+from scanner.utils import (
+    load_json,
+    save_json,
+    read_jsonl,
+    make_logger,
+    update_heartbeat,
+    SCANNER_DIR,
+    BUS_DIR,
+    DATA_DIR,
+    LIVE_DIR,
+    MEMORY_DIR,
+    EPISODES_DIR,
+    CANDIDATES_FILE,
+    WORLD_STATE_FILE,
+    ADVERSARY_FILE,
+    HEARTBEAT_FILE,
+    POSITIONS_FILE,
+    CLOSED_FILE_LIVE,
+    OBSERVATIONS_FILE,
+)
+
+# ─── SUPABASE (optional — never crashes adversary if missing) ─────────────────
+try:
     from scanner.supabase.client import supabase as _supabase
 except Exception:
     _supabase = None
+
+# ─── LOGGING ───
+log = make_logger("ADVERSARY")
 
 
 # ─── EVOLVED WEIGHTS LOADER ───
 def load_evolved_weights():
     """Load evolved attack weights from counterfactual learning."""
-    weights_file = Path(__file__).parent.parent / "bus" / "evolved_weights.json"
-    if not weights_file.exists():
+    weights_file = BUS_DIR / "evolved_weights.json"
+    data = load_json(weights_file, {})
+    if not data:
         return {}
-    try:
-        with open(weights_file) as f:
-            data = json.load(f)
-        # Only use if we have enough data
-        if data.get("data_points", 0) < 20:
-            return {}
-        return {k: v["evolved"] for k, v in data.get("weights", {}).items()}
-    except Exception:
+    # Only use if we have enough data
+    if data.get("data_points", 0) < 20:
         return {}
+    return {k: v["evolved"] for k, v in data.get("weights", {}).items()}
 
-# ── Upgrade 3 helper (session classification mirrors perception.py) ──
-def _get_trading_session(utc_hour):
-    if 0 <= utc_hour < 7:
-        return "ASIA"
-    elif 7 <= utc_hour < 13:
-        return "EUROPE"
-    elif 13 <= utc_hour < 20:
-        return "US"
-    else:
-        return "LATE_US"
-
-# ─── PATHS ───
-AGENT_DIR = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-LIVE_DIR = DATA_DIR / "live"
-MEMORY_DIR = SCANNER_DIR / "memory"
-EPISODES_DIR = MEMORY_DIR / "episodes"
+# ─── AGENT-SPECIFIC PATHS (not in shared module) ───
 RULES_DIR = MEMORY_DIR / "rules"
 ACTIVE_RULES_FILE = RULES_DIR / "active.json"
-
-CANDIDATES_FILE = BUS_DIR / "candidates.json"
-WORLD_STATE_FILE = BUS_DIR / "world_state.json"
 TAAPI_SNAPSHOT_FILE = BUS_DIR / "taapi_snapshot.json"
-ADVERSARY_FILE = BUS_DIR / "adversary.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
-POSITIONS_FILE = LIVE_DIR / "positions.json"
-CLOSED_FILE = LIVE_DIR / "closed.jsonl"
+CLOSED_FILE = CLOSED_FILE_LIVE
 REGIME_PREDICTIONS_FILE = BUS_DIR / "regime_predictions.json"
 GENEALOGY_FILE = BUS_DIR / "genealogy.json"
 
@@ -109,72 +108,26 @@ THRESHOLD_WEAK = 0.15
 MAX_TOTAL_SEVERITY = 3.0  # Cap to prevent severity runaway (Fix 1B)
 
 
-# ─── LOGGING ───
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [ADVERSARY] {msg}")
-
-
-# ─── FILE HELPERS ───
-def load_json_safe(path, default=None):
-    if default is None:
-        default = {}
-    if not Path(path).exists():
-        return default
-    try:
-        with open(path) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return default
-
-
-def save_json(path, data):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
 # ─── DATA LOADERS ───
 def load_closed_trades(max_lines=1000):
     """Load recent closed trades from closed.jsonl."""
-    trades = []
-    if not CLOSED_FILE.exists():
-        return trades
-    try:
-        with open(CLOSED_FILE) as f:
-            lines = f.readlines()
-        for line in lines[-max_lines:]:
-            line = line.strip()
-            if line:
-                try:
-                    trades.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    except OSError:
-        pass
-    return trades
+    return read_jsonl(CLOSED_FILE, max_lines=max_lines)
 
 
 def load_positions():
     """Load current open positions."""
-    if not POSITIONS_FILE.exists():
-        return []
-    try:
-        with open(POSITIONS_FILE) as f:
-            data = json.load(f)
-        return data if isinstance(data, list) else []
-    except (json.JSONDecodeError, OSError):
-        return []
+    data = load_json(POSITIONS_FILE, [])
+    return data if isinstance(data, list) else []
 
 
 def load_world_state():
     """Load unified world model — returns full data (coins + meta)."""
-    return load_json_safe(WORLD_STATE_FILE, {})
+    return load_json(WORLD_STATE_FILE, {})
 
 
 def load_candidates():
     """Load current candidates from hypothesis generator."""
-    data = load_json_safe(CANDIDATES_FILE, {})
+    data = load_json(CANDIDATES_FILE, {})
     return data.get("timestamp", ""), data.get("candidates", [])
 
 
@@ -919,20 +872,15 @@ def attack_session_risk(hypothesis, world_state_meta):
     session   = world_state_meta.get("session", "UNKNOWN")
     direction = hypothesis.get("direction", "")
 
-    obs_file = Path(__file__).parent.parent / "memory" / "observations.jsonl"
-    if not obs_file.exists():
+    all_obs = read_jsonl(OBSERVATIONS_FILE)
+    if not all_obs:
         return {"attack": "session_risk", "severity": 0, "weight": 1.0,
                 "detail": "no session data yet"}
 
-    session_trades = []
-    with open(obs_file) as f:
-        for line in f:
-            try:
-                obs = json.loads(line.strip())
-                if obs.get("session") == session and obs.get("direction") == direction:
-                    session_trades.append(obs)
-            except Exception:
-                pass
+    session_trades = [
+        obs for obs in all_obs
+        if obs.get("session") == session and obs.get("direction") == direction
+    ]
 
     if len(session_trades) < 10:
         return {"attack": "session_risk", "severity": 0, "weight": 1.0,
@@ -989,11 +937,7 @@ def score_to_verdict(survival_score):
 
 # ─── HEARTBEAT ───
 def write_heartbeat():
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    heartbeat = load_json_safe(HEARTBEAT_FILE, {})
-    heartbeat["adversary"] = ts
-    save_json(HEARTBEAT_FILE, heartbeat)
+    update_heartbeat("adversary")
 
 
 # ─── EPISODE UPDATE ───
@@ -1002,19 +946,11 @@ def update_episode(hypothesis_id, adversary_result):
     EPISODES_DIR.mkdir(parents=True, exist_ok=True)
     episode_file = EPISODES_DIR / f"{hypothesis_id}.json"
 
-    episode = {}
-    if episode_file.exists():
-        try:
-            with open(episode_file) as f:
-                episode = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            episode = {}
-
+    episode = load_json(episode_file, {})
     episode["adversary"] = adversary_result
 
     try:
-        with open(episode_file, "w") as f:
-            json.dump(episode, f, indent=2)
+        save_json(episode_file, episode)
     except OSError as e:
         log(f"  [warn] Failed to update episode {hypothesis_id}: {e}")
 
@@ -1022,14 +958,8 @@ def update_episode(hypothesis_id, adversary_result):
 # ─── MAIN ADVERSARY LOGIC ───
 def load_active_rules_for_adversary():
     """Load active rules for adversary rule-based attacks."""
-    if not ACTIVE_RULES_FILE.exists():
-        return []
-    try:
-        with open(ACTIVE_RULES_FILE) as f:
-            rules = json.load(f)
-        return rules if isinstance(rules, list) else []
-    except (json.JSONDecodeError, OSError):
-        return []
+    rules = load_json(ACTIVE_RULES_FILE, [])
+    return rules if isinstance(rules, list) else []
 
 
 def attack_oi_divergence(hypothesis, world_coins):
@@ -1175,9 +1105,9 @@ def attack_active_rules(hypothesis, active_rules):
 
 
 # ─── ATTACK 11: CROSS-SOURCE DATA DISAGREEMENT ───
-def load_taapi_snapshot() -> dict:
+def load_taapi_snapshot():
     """Load the latest TAAPI snapshot from bus file."""
-    return load_json_safe(TAAPI_SNAPSHOT_FILE, {})
+    return load_json(TAAPI_SNAPSHOT_FILE, {})
 
 
 def _pct_delta(envy_val: float, taapi_val: float) -> float:
@@ -1349,29 +1279,17 @@ def extract_signal_family(signal_name: str) -> str:
 
 
 # ─── REGIME PREDICTIONS LOADER ───
-def load_regime_predictions() -> dict:
+def load_regime_predictions():
     """Load latest regime transition predictions."""
-    if not REGIME_PREDICTIONS_FILE.exists():
-        return {}
-    try:
-        with open(REGIME_PREDICTIONS_FILE) as f:
-            data = json.load(f)
-        return data.get("predictions", {})
-    except (json.JSONDecodeError, OSError):
-        return {}
+    data = load_json(REGIME_PREDICTIONS_FILE, {})
+    return data.get("predictions", {})
 
 
 # ─── GENEALOGY FAMILY STATS LOADER ───
-def load_genealogy_family_stats() -> dict:
+def load_genealogy_family_stats():
     """Load genealogy data for family track record attack."""
-    if not GENEALOGY_FILE.exists():
-        return {}
-    try:
-        with open(GENEALOGY_FILE) as f:
-            data = json.load(f)
-        return data.get("families", {})
-    except (json.JSONDecodeError, OSError):
-        return {}
+    data = load_json(GENEALOGY_FILE, {})
+    return data.get("families", {})
 
 
 # ─── ATTACK 9 (New): REGIME TRANSITION ───
@@ -1536,7 +1454,7 @@ def run_adversary(hypotheses, closed_trades, positions, world_coins, world_state
         log(f"  Loaded {len(active_rules)} active rules for rule-based attacks")
 
     # Load macro intel for fear_greed + macro_event attacks
-    macro_intel = load_json_safe(BUS_DIR / "macro_intel.json", {})
+    macro_intel = load_json(BUS_DIR / "macro_intel.json", {})
 
     # Load regime predictions + genealogy family stats (new attacks)
     regime_predictions = load_regime_predictions()
@@ -1672,7 +1590,7 @@ def run_cycle():
         return
 
     # Check if hypotheses are fresh (avoid re-processing old ones)
-    adv_data = load_json_safe(ADVERSARY_FILE, {})
+    adv_data = load_json(ADVERSARY_FILE, {})
     last_processed_ts = adv_data.get("candidates_timestamp", "")
     if last_processed_ts and last_processed_ts == cand_ts:
         log(f"Already processed these hypotheses (ts={cand_ts}), skipping")
@@ -1713,7 +1631,7 @@ def run_cycle():
 
     # ── Update candidates.json ──
     # Read fresh (don't rely on what we loaded since we mutated it)
-    cand_data = load_json_safe(CANDIDATES_FILE, {})
+    cand_data = load_json(CANDIDATES_FILE, {})
     cand_data["candidates"] = survivors
     cand_data["adversary_timestamp"] = ts_iso
     cand_data["adversary_killed"] = killed

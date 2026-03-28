@@ -26,104 +26,33 @@ Usage:
   python3 scanner/agents/observer.py --loop    # continuous 2-min cycle
 """
 
-import json
-import os
 import re
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-# ── Upgrade 3: session classification (mirrors perception.py) ──
-def get_trading_session(utc_hour):
-    if 0 <= utc_hour < 7:
-        return "ASIA"
-    elif 7 <= utc_hour < 13:
-        return "EUROPE"
-    elif 13 <= utc_hour < 20:
-        return "US"
-    else:
-        return "LATE_US"
+from scanner.utils import (
+    load_json, save_json, append_jsonl, read_jsonl,
+    make_logger, get_trading_session, update_heartbeat,
+    SCANNER_DIR, BUS_DIR, DATA_DIR, LIVE_DIR, MEMORY_DIR, EPISODES_DIR,
+    WORLD_STATE_FILE, HYPOTHESES_FILE, ADVERSARY_FILE,
+    KILL_SIGNALS_FILE, OBSERVATIONS_FILE, CALIBRATION_FILE, HEARTBEAT_FILE,
+    CLOSED_FILE_LIVE,
+)
 
 # ─── PATHS ───────────────────────────────────────────────────────────────────
-AGENT_DIR   = Path(__file__).parent
-SCANNER_DIR = AGENT_DIR.parent
-BUS_DIR     = SCANNER_DIR / "bus"
-DATA_DIR    = SCANNER_DIR / "data"
-LIVE_DIR    = DATA_DIR / "live"
-MEMORY_DIR  = SCANNER_DIR / "memory"
-EPISODES_DIR = MEMORY_DIR / "episodes"
-
+# Agent-specific paths not in the shared module
 POSITIONS_FILE    = LIVE_DIR / "positions.json"
-CLOSED_FILE       = LIVE_DIR / "closed.jsonl"
-WORLD_STATE_FILE  = BUS_DIR  / "world_state.json"
-HYPOTHESES_FILE   = BUS_DIR  / "hypotheses.json"
-ADVERSARY_FILE    = BUS_DIR  / "adversary.json"
-KILL_SIGNALS_FILE = BUS_DIR  / "kill_signals.json"
-OBSERVATIONS_FILE  = MEMORY_DIR / "observations.jsonl"
-CALIBRATION_FILE   = MEMORY_DIR / "calibration.jsonl"   # Upgrade 2
-HEARTBEAT_FILE     = BUS_DIR  / "heartbeat.json"
-LOG_FILE           = LIVE_DIR / "observer.log"
+CLOSED_FILE       = CLOSED_FILE_LIVE
+LOG_FILE          = LIVE_DIR / "observer.log"
 
 CYCLE_SECONDS = 120  # 2 minutes
 MIN_KILL_HOLD_MINUTES = 60   # kill conditions can't fire for first 60 minutes
 _kill_pending: dict[str, str] = {}   # coin_direction -> last_triggered_condition (confirmation tracker)
 
 # ─── LOGGING ─────────────────────────────────────────────────────────────────
-def log(msg: str):
-    ts   = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    line = f"[{ts}] [OBS] {msg}"
-    print(line)
-    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_FILE, "a") as f:
-        f.write(line + "\n")
-
-
-# ─── GENERIC I/O ─────────────────────────────────────────────────────────────
-def load_json(path: Path, default=None):
-    if default is None:
-        default = {}
-    if path.exists():
-        try:
-            with open(path) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, ValueError):
-            return default
-    return default
-
-
-def save_json(path: Path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def append_jsonl(path: Path, record: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(record) + "\n")
-
-
-def read_jsonl(path: Path) -> list:
-    records = []
-    if not path.exists():
-        return records
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    records.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    return records
-
-
-def update_heartbeat():
-    hb = load_json(HEARTBEAT_FILE, {})
-    hb["observer"] = datetime.now(timezone.utc).isoformat()
-    save_json(HEARTBEAT_FILE, hb)
+log = make_logger("OBS", log_file=LOG_FILE)
 
 
 # ─── HYPOTHESIS LOOKUP ───────────────────────────────────────────────────────
@@ -696,7 +625,7 @@ def run_cycle():
     log("--- Observer cycle ---")
     check_kill_conditions()
     record_observations()
-    update_heartbeat()
+    update_heartbeat("observer")
     log("--- Observer cycle complete ---")
 
 

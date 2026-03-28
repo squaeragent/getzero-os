@@ -8,24 +8,29 @@ Also evaluates exit expressions for open positions → writes exit_signals.json.
 This is the FAST PATH — 30s evaluation vs 10-min hypothesis generator cycle.
 """
 
-import json
 import os
 import re
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-SCANNER_DIR = Path(__file__).parent.parent
-BUS_DIR = SCANNER_DIR / "bus"
-DATA_DIR = SCANNER_DIR / "data"
-SIGNALS_DIR = DATA_DIR / "signals_cache"
+from scanner.utils import (
+    load_json,
+    save_json,
+    make_logger,
+    update_heartbeat,
+    BUS_DIR,
+    DATA_DIR,
+    CANDIDATES_FILE,
+)
 
+log = make_logger("RT-EVAL")
+
+# Agent-specific paths
+SIGNALS_DIR = DATA_DIR / "signals_cache"
 WS_FILE = BUS_DIR / "ws_indicators.json"
-CANDIDATES_FILE = BUS_DIR / "candidates.json"
 POSITIONS_FILE = DATA_DIR / "live" / "positions.json"
 EXIT_SIGNALS_FILE = BUS_DIR / "exit_signals.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 # Only evaluate Tier 1 signals (Sharpe ≥ 2.0, WR ≥ 60%, N ≥ 10)
 TIER1_SHARPE = 2.0
@@ -36,26 +41,6 @@ CYCLE_SECONDS = 30
 STALE_WS_THRESHOLD = 60  # Only evaluate if WS data < 60s old
 
 
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [RT-EVAL] {msg}", flush=True)
-
-
-def load_json(path, default=None):
-    try:
-        if path.exists():
-            with open(path) as f:
-                return json.load(f)
-    except Exception:
-        pass
-    return default if default is not None else {}
-
-
-def save_json(path, data):
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
 def load_tier1_signals():
     """Load all Tier 1 signals from cache."""
     signals_by_coin = {}
@@ -64,8 +49,7 @@ def load_tier1_signals():
             continue
         coin = fn.stem
         try:
-            with open(fn) as f:
-                data = json.load(f)
+            data = load_json(fn, {})
             sigs = data if isinstance(data, list) else data.get("signals", [])
             tier1 = [s for s in sigs
                      if s.get("sharpe", 0) >= TIER1_SHARPE
@@ -210,15 +194,6 @@ def evaluate_exits(ws_coins, positions):
     return exits
 
 
-def write_heartbeat():
-    try:
-        hb = load_json(HEARTBEAT_FILE, {})
-        hb["realtime_evaluator"] = datetime.now(timezone.utc).isoformat()
-        save_json(HEARTBEAT_FILE, hb)
-    except Exception:
-        pass
-
-
 def run_cycle():
     """Single evaluation cycle."""
     # Check WS freshness
@@ -270,7 +245,7 @@ def run_cycle():
         })
         log(f"  ⚡ {len(fired_exits)} exit signals written")
 
-    write_heartbeat()
+    update_heartbeat("realtime_evaluator")
     return len(fired_entries), len(fired_exits)
 
 

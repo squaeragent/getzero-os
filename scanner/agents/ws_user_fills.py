@@ -13,15 +13,16 @@ import asyncio
 import json
 import os
 import sys
-import time
 from datetime import datetime, timezone
-from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).parent
-ROOT_DIR = SCRIPT_DIR.parent
-BUS_DIR = ROOT_DIR / "bus"
+from scanner.utils import (
+    load_json, save_json, make_logger, load_api_key, update_heartbeat,
+    BUS_DIR,
+)
+
+log = make_logger("WS-FILLS")
+
 USER_FILLS_FILE = BUS_DIR / "user_fills.json"
-HEARTBEAT_FILE = BUS_DIR / "heartbeat.json"
 
 WS_URL = "wss://api.hyperliquid.xyz/ws"
 RECONNECT_DELAY = 5
@@ -29,51 +30,14 @@ MAX_RECONNECT_DELAY = 300
 MAX_FILLS_KEPT = 200  # keep last N fills in bus file
 
 
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [WS-FILLS] {msg}")
-
-
 def get_wallet_address():
     """Read wallet address from env or config."""
-    addr = os.environ.get("HYPERLIQUID_MAIN_ADDRESS")
-    if addr:
-        return addr
-    env_file = Path.home() / "getzero-os" / ".env"
-    if env_file.exists():
-        for line in env_file.read_text().splitlines():
-            clean = line.strip()
-            if clean.startswith("export "):
-                clean = clean[7:]
-            if clean.startswith("HYPERLIQUID_MAIN_ADDRESS="):
-                return clean.split("=", 1)[1].strip().strip('"').strip("'")
-    raise RuntimeError("HYPERLIQUID_MAIN_ADDRESS not found")
-
-
-def update_heartbeat():
-    try:
-        hb = {}
-        if HEARTBEAT_FILE.exists():
-            with open(HEARTBEAT_FILE) as f:
-                hb = json.load(f)
-        hb["ws_user_fills"] = datetime.now(timezone.utc).isoformat()
-        with open(HEARTBEAT_FILE, "w") as f:
-            json.dump(hb, f, indent=2)
-    except Exception:
-        pass
+    return load_api_key("HYPERLIQUID_MAIN_ADDRESS")
 
 
 def save_fill(fill_data):
     """Append new fill(s) to bus/user_fills.json, keep bounded."""
-    BUS_DIR.mkdir(parents=True, exist_ok=True)
-
-    existing = {"fills": [], "updated_at": "", "source": "websocket"}
-    if USER_FILLS_FILE.exists():
-        try:
-            with open(USER_FILLS_FILE) as f:
-                existing = json.load(f)
-        except (json.JSONDecodeError, ValueError):
-            pass
+    existing = load_json(USER_FILLS_FILE, {"fills": [], "updated_at": "", "source": "websocket"})
 
     fills = existing.get("fills", [])
 
@@ -102,8 +66,7 @@ def save_fill(fill_data):
         "fill_count": len(fills),
         "fills": fills,
     }
-    with open(USER_FILLS_FILE, "w") as f:
-        json.dump(snapshot, f, indent=2)
+    save_json(USER_FILLS_FILE, snapshot)
 
 
 async def connect_and_stream():
@@ -164,7 +127,7 @@ async def connect_and_stream():
 
                         # Periodic heartbeat
                         if fill_count == 1 or fill_count % 10 == 0:
-                            update_heartbeat()
+                            update_heartbeat("ws_user_fills")
 
                     except json.JSONDecodeError:
                         log("WARN: Non-JSON message received")

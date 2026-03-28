@@ -17,7 +17,6 @@ Outputs:
 """
 
 import json
-import os
 import sys
 import time
 import urllib.request
@@ -26,11 +25,14 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).parent
-ROOT_DIR = SCRIPT_DIR.parent
-DATA_DIR = ROOT_DIR / "data"
+from scanner.utils import (
+    load_json, save_json, make_logger, load_api_key, update_heartbeat,
+    DATA_DIR,
+)
+
+log = make_logger("PACKS")
+
 SIGNALS_DIR = DATA_DIR / "signals_cache"
-HEARTBEAT_FILE = ROOT_DIR / "bus" / "heartbeat.json"
 
 BASE_URL = "https://gate.getzero.dev/api/claw"
 PACK_TYPES = ["common", "rare", "trump"]
@@ -47,26 +49,6 @@ ALL_COINS = [
     "SEI", "SOL", "SUI", "TIA", "TON", "TRUMP", "TRX", "UNI", "WLD",
     "XPL", "XRP", "ZEC", "kBONK", "kPEPE", "kSHIB",
 ]
-
-
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"[{ts}] [PACKS] {msg}")
-
-
-def get_api_key():
-    key = os.environ.get("ENVY_API_KEY")
-    if key:
-        return key
-    env_file = Path.home() / "getzero-os" / ".env"
-    if env_file.exists():
-        for line in env_file.read_text().splitlines():
-            clean = line.strip()
-            if clean.startswith("export "):
-                clean = clean[7:]
-            if clean.startswith("ENVY_API_KEY="):
-                return clean.split("=", 1)[1].strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found")
 
 
 def fetch_pack(coin, pack_type, api_key):
@@ -116,13 +98,7 @@ def fetch_pack(coin, pack_type, api_key):
 def load_existing(coin):
     """Load existing cached signals for a coin."""
     cache_file = SIGNALS_DIR / f"{coin}.json"
-    if cache_file.exists():
-        try:
-            with open(cache_file) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return []
+    return load_json(cache_file, [])
 
 
 def merge_signals(existing, new_signals):
@@ -141,29 +117,13 @@ def merge_signals(existing, new_signals):
 
 def save_signals(coin, signals):
     """Save signals to cache."""
-    SIGNALS_DIR.mkdir(parents=True, exist_ok=True)
     cache_file = SIGNALS_DIR / f"{coin}.json"
-    with open(cache_file, "w") as f:
-        json.dump(signals, f, indent=2)
-
-
-def update_heartbeat():
-    """Write heartbeat timestamp."""
-    try:
-        hb = {}
-        if HEARTBEAT_FILE.exists():
-            with open(HEARTBEAT_FILE) as f:
-                hb = json.load(f)
-        hb["pack_refresher"] = datetime.now(timezone.utc).isoformat()
-        with open(HEARTBEAT_FILE, "w") as f:
-            json.dump(hb, f, indent=2)
-    except Exception:
-        pass
+    save_json(cache_file, signals)
 
 
 def refresh_all():
     """Pull fresh packs for all coins and merge into cache."""
-    api_key = get_api_key()
+    api_key = load_api_key()
     total_added = 0
     total_existing = 0
 
@@ -187,7 +147,7 @@ def refresh_all():
         time.sleep(0.2)  # Between coins
 
     log(f"Refresh complete: +{total_added} new signals. Library: {total_existing + total_added} total")
-    update_heartbeat()
+    update_heartbeat("pack_refresher")
     return total_added
 
 
