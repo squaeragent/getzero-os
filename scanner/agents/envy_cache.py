@@ -21,7 +21,6 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
-from pathlib import Path
 
 from scanner.utils import make_logger, load_api_key, append_jsonl, DATA_DIR
 

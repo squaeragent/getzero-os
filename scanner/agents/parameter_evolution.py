@@ -27,7 +27,6 @@ Usage:
   python3 scanner/agents/parameter_evolution.py --loop    # continuous 10-min cycle
 """
 
-import json
 import sys
 import time
 from datetime import datetime, timezone, timedelta
@@ -35,8 +34,8 @@ from pathlib import Path
 
 from scanner.utils import (
     load_json, save_json, read_jsonl, make_logger, update_heartbeat,
-    SCANNER_DIR, BUS_DIR, DATA_DIR, LIVE_DIR, MEMORY_DIR,
-    OBSERVATIONS_FILE, WORLD_STATE_FILE, HEARTBEAT_FILE, CLOSED_FILE_LIVE,
+    BUS_DIR, MEMORY_DIR,
+    OBSERVATIONS_FILE, WORLD_STATE_FILE, CLOSED_FILE_LIVE,
 )
 
 # ─── PATHS ───
@@ -498,8 +497,6 @@ def rebuild_signal_weights(trades):
     Maintain backward compat signal_weights.json output.
     This preserves the output format signal_evolution_agent.py produced.
     """
-    from pathlib import Path as _Path
-
     # Build performance matrix: signal → {regime → {trades, wins, pnls}}
     matrix = {}
     for t in trades:

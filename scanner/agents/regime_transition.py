@@ -22,12 +22,10 @@ from pathlib import Path
 
 from scanner.utils import (
     save_json, make_logger, update_heartbeat,
-    SCANNER_DIR, BUS_DIR,
+    BUS_DIR,
 )
 
 # ─── PATHS ───
-AGENT_DIR   = Path(__file__).parent
-
 REGIME_HISTORY_FILE    = BUS_DIR / "regime_history.jsonl"
 REGIME_PREDICTIONS_FILE = BUS_DIR / "regime_predictions.json"
 

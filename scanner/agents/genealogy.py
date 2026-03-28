@@ -16,7 +16,6 @@ Output: scanner/bus/genealogy.json
 """
 
 import json
-import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -24,12 +23,11 @@ from pathlib import Path
 
 from scanner.utils import (
     load_json, save_json, read_jsonl, make_logger, update_heartbeat,
-    SCANNER_DIR, BUS_DIR, MEMORY_DIR, EPISODES_DIR, HEARTBEAT_FILE,
+    BUS_DIR, MEMORY_DIR, EPISODES_DIR,
     OBSERVATIONS_FILE, CLOSED_FILE_LIVE,
 )
 
 # ─── PATHS ───
-LIVE_DIR     = SCANNER_DIR / "data" / "live"
 GENEALOGY_FILE  = BUS_DIR / "genealogy.json"
 CLOSED_FILE     = CLOSED_FILE_LIVE
 

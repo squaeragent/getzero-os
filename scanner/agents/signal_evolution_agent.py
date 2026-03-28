@@ -18,7 +18,6 @@ Usage:
   python3 scanner/agents/signal_evolution_agent.py --loop    # continuous 10-min cycle
 """
 
-import json
 import sys
 import time
 from datetime import datetime, timezone, timedelta
@@ -26,7 +25,7 @@ from pathlib import Path
 
 from scanner.utils import (
     load_json, save_json, read_jsonl, make_logger, update_heartbeat,
-    SCANNER_DIR, BUS_DIR, DATA_DIR, LIVE_DIR, HEARTBEAT_FILE,
+    BUS_DIR, DATA_DIR,
     REGIMES_FILE, CLOSED_FILE_LIVE,
 )
 
