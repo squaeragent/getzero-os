@@ -397,7 +397,62 @@ def get_agent_public(name_path: str):
         ]
         return {"matches": agent_matches}
 
+    # Add genesis badge
+    from scanner.v6.operator import list_genesis_operators
+    genesis_ops = list_genesis_operators()
+    genesis_entry = next((g for g in genesis_ops if g.get("agent_handle") == name), None)
+    if genesis_entry:
+        agent["genesis"] = {"number": genesis_entry["genesis_number"], "is_genesis": True}
+    else:
+        agent["genesis"] = None
+
     return agent
+
+# ── GET /v6/genesis ─────────────────────────────────────────────────────────
+
+_GENESIS_MILESTONES = [
+    {"at": 1, "name": "first operator", "status": "pending"},
+    {"at": 2, "name": "arena unlocks", "status": "pending"},
+    {"at": 5, "name": "collective activates", "status": "pending"},
+    {"at": 10, "name": "convergence begins", "status": "pending"},
+    {"at": 50, "name": "intelligence self-calibrates", "status": "pending"},
+    {"at": 100, "name": "genesis closes", "status": "pending"},
+]
+
+
+@router.get("/v6/genesis")
+def get_genesis():
+    from scanner.v6.operator import list_genesis_operators, _GENESIS_TOTAL
+
+    operators = list_genesis_operators()
+    claimed = len(operators)
+
+    milestones = []
+    for m in _GENESIS_MILESTONES:
+        milestones.append({
+            "at": m["at"],
+            "name": m["name"],
+            "status": "reached" if claimed >= m["at"] else "pending",
+        })
+
+    return {
+        "program": {
+            "total_slots": _GENESIS_TOTAL,
+            "claimed": claimed,
+            "remaining": _GENESIS_TOTAL - claimed,
+            "status": "closed" if claimed >= _GENESIS_TOTAL else "open",
+        },
+        "operators": [
+            {
+                "genesis_number": op["genesis_number"],
+                "handle": op.get("agent_handle", "unknown"),
+                "registered_at": op["registered_at"][:10],
+            }
+            for op in operators
+        ],
+        "milestones": milestones,
+    }
+
 
 # ── Cache endpoints (serve pre-computed data for website SSR) ──────────────
 

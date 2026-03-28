@@ -166,3 +166,60 @@ def plan_allows_strategy(plan: str, strategy_name: str) -> bool:
 def get_allowed_strategies(plan: str) -> set[str]:
     """Get the set of strategies allowed for a plan."""
     return _PLAN_STRATEGIES.get(plan, _PLAN_STRATEGIES["free"])
+
+
+# ── Genesis Program ─────────────────────────────────────────────────────────
+
+_GENESIS_FILE = Path(__file__).parent / "data" / "genesis_operators.json"
+_GENESIS_TOTAL = 100
+
+
+def _load_genesis() -> list[dict]:
+    if not _GENESIS_FILE.exists():
+        return []
+    try:
+        return json.loads(_GENESIS_FILE.read_text())
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def _save_genesis(operators: list[dict]) -> None:
+    _GENESIS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    _GENESIS_FILE.write_text(json.dumps(operators, indent=2))
+
+
+def get_genesis_number(operator_id: str) -> int | None:
+    """Return genesis number for an operator, or None if not genesis."""
+    for op in _load_genesis():
+        if op["operator_id"] == operator_id:
+            return op["genesis_number"]
+    return None
+
+
+def register_genesis_operator(operator_id: str, agent_handle: str) -> int | None:
+    """Assign next genesis number. Returns number or None if program full."""
+    operators = _load_genesis()
+
+    # Already registered
+    for op in operators:
+        if op["operator_id"] == operator_id:
+            return op["genesis_number"]
+
+    if len(operators) >= _GENESIS_TOTAL:
+        return None
+
+    from datetime import datetime, timezone
+    genesis_number = len(operators) + 1
+    operators.append({
+        "operator_id": operator_id,
+        "genesis_number": genesis_number,
+        "registered_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "agent_handle": agent_handle,
+    })
+    _save_genesis(operators)
+    return genesis_number
+
+
+def list_genesis_operators() -> list[dict]:
+    """Return all genesis operators."""
+    return _load_genesis()
