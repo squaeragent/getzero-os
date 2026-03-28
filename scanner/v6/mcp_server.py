@@ -61,6 +61,42 @@ def _gate(tool_name: str) -> dict | None:
     return check_tool_tier(tool_name, _get_plan())
 
 
+import re
+
+_COIN_RE = re.compile(r"^[A-Z0-9]{1,20}$")
+_STRATEGY_RE = re.compile(r"^[a-z0-9_-]{1,50}$")
+_SESSION_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
+_MODE_VALID = {"comfort", "sport", "track"}
+
+
+def _validate_coin(coin: str) -> dict | None:
+    """Return error dict if coin is invalid, None if OK."""
+    if not coin or not _COIN_RE.match(coin):
+        return {"error": f"Invalid coin: {coin!r}. Must be 1-20 uppercase alphanumeric chars."}
+    return None
+
+
+def _validate_strategy(strategy: str) -> dict | None:
+    """Return error dict if strategy name is invalid, None if OK."""
+    if not strategy or not _STRATEGY_RE.match(strategy):
+        return {"error": f"Invalid strategy: {strategy!r}. Must be 1-50 lowercase alphanumeric/dash/underscore."}
+    return None
+
+
+def _validate_session_id(session_id: str) -> dict | None:
+    """Return error dict if session_id is invalid, None if OK."""
+    if not session_id or not _SESSION_ID_RE.match(session_id):
+        return {"error": f"Invalid session_id: {session_id!r}. Must be 1-64 alphanumeric/dash/underscore."}
+    return None
+
+
+def _validate_limit(limit: int, max_val: int = 100) -> dict | None:
+    """Return error dict if limit is out of range, None if OK."""
+    if not isinstance(limit, int) or limit < 1 or limit > max_val:
+        return {"error": f"Invalid limit: {limit}. Must be 1-{max_val}."}
+    return None
+
+
 # ── SESSION TOOLS (8) ────────────────────────────────────────────────────────
 
 @mcp.tool()
@@ -72,12 +108,18 @@ def zero_list_strategies() -> dict:
 @mcp.tool()
 def zero_preview_strategy(strategy: str) -> dict:
     """Preview a strategy: full risk math, evaluation criteria, and session parameters."""
+    err = _validate_strategy(strategy)
+    if err:
+        return err
     return _api.preview_strategy(_get_operator_id(), strategy)
 
 
 @mcp.tool()
 def zero_start_session(strategy: str, paper: bool = True) -> dict:
     """Deploy a trading session with a specific strategy. Paper mode by default."""
+    err = _validate_strategy(strategy)
+    if err:
+        return err
     return _api.start_session(_get_operator_id(), strategy, paper=paper)
 
 
@@ -96,6 +138,9 @@ def zero_end_session() -> dict:
 @mcp.tool()
 def zero_queue_session(strategy: str, paper: bool = True) -> dict:
     """Queue a session to start after the current one completes."""
+    err = _validate_strategy(strategy)
+    if err:
+        return err
     return _api.queue_session(_get_operator_id(), strategy, paper=paper)
 
 
@@ -108,6 +153,9 @@ def zero_session_history(limit: int = 10) -> dict:
 @mcp.tool()
 def zero_session_result(session_id: str) -> dict:
     """Get full result card for a specific completed session."""
+    err = _validate_session_id(session_id)
+    if err:
+        return err
     return _api.session_result(_get_operator_id(), session_id)
 
 
@@ -136,6 +184,8 @@ def zero_set_mode(mode: str) -> dict:
 
     Does NOT change strategy logic — only push frequency and approval flow.
     """
+    if mode not in _MODE_VALID:
+        return {"error": f"Invalid mode: {mode!r}. Must be one of: {', '.join(sorted(_MODE_VALID))}"}
     return _api.set_mode(_get_operator_id(), mode)
 
 
@@ -144,6 +194,9 @@ def zero_set_mode(mode: str) -> dict:
 @mcp.tool()
 def zero_evaluate(coin: str) -> dict:
     """Evaluate a coin through 7 intelligence layers. Returns consensus, conviction, direction, and per-layer detail."""
+    err = _validate_coin(coin)
+    if err:
+        return err
     return _api.evaluate(_get_operator_id(), coin)
 
 

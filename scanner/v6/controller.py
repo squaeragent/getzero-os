@@ -1071,6 +1071,15 @@ def _approve_entry_inner(
     coin      = entry.get("coin", "")
     direction = entry.get("direction", "LONG")
 
+    # ── INPUT VALIDATION ────────────────────────────────────────────────────────
+    if not coin or not isinstance(coin, str):
+        return False, f"invalid_coin: empty or non-string ({coin!r})"
+    direction = direction.upper()
+    if direction not in ("LONG", "SHORT"):
+        return False, f"invalid_direction: {direction!r} (must be LONG or SHORT)"
+    if equity <= 0:
+        return False, f"invalid_equity: {equity} (must be positive)"
+
     # ── HARD CAPS (pre-flight, unconfigurable) ─────────────────────────────────
     if controller is not None:
         caps_ok, caps_reason = controller.check_hard_caps(entry, positions, equity)

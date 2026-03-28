@@ -223,7 +223,22 @@ def load_env() -> dict:
 
 
 def get_env(key: str, default: str = "") -> str:
-    """Get env var from process environment or ~/getzero-os/.env."""
+    """Get env var from process environment, key file, or ~/getzero-os/.env.
+
+    For sensitive keys (HL_PRIVATE_KEY, HYPERLIQUID_SECRET_KEY), prefers
+    reading from the HL_KEY_FILE path to avoid /proc/pid/environ exposure.
+    """
+    # For private keys, prefer secure key file over env var
+    if key in ("HL_PRIVATE_KEY", "HYPERLIQUID_SECRET_KEY"):
+        key_file = os.environ.get("HL_KEY_FILE")
+        if key_file and os.path.isfile(key_file):
+            try:
+                with open(key_file) as f:
+                    val = f.read().strip()
+                if val:
+                    return val
+            except OSError:
+                pass
     val = os.environ.get(key)
     if val:
         return val

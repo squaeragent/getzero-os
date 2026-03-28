@@ -2,6 +2,7 @@
 
 import os
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -95,8 +96,19 @@ def start(paper, daemon):
     console.print("  [dim]this might take hours. that's the design.[/dim]")
     spacer()
 
-    # Build environment
+    # Write key to a temporary secure file instead of environment variable.
+    # Environment variables are visible via /proc/pid/environ on Linux.
+    # The key file is readable only by the current user (0o600) and the
+    # supervisor/controller reads it on startup then deletes it.
+    key_file = os.path.join(ZEROOS_DIR, ".hl_key")
+    with open(key_file, "w") as kf:
+        kf.write(private_key)
+    os.chmod(key_file, stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+
+    # Build environment — pass key file path, not the key itself
     env = os.environ.copy()
+    env["HL_KEY_FILE"] = key_file
+    # Keep HL_PRIVATE_KEY for backward compat with direct invocations
     env["HL_PRIVATE_KEY"] = private_key
     if paper or mode == "paper":
         env["PAPER_MODE"] = "1"
