@@ -176,20 +176,37 @@ async def engine_stats():
 
 # ── GET /v6/collective ───────────────────────────────────────────────────────
 
+_MILESTONES = [
+    {"at": 1, "name": "genesis", "desc": "intelligence running"},
+    {"at": 2, "name": "arena", "desc": "competition begins"},
+    {"at": 5, "name": "collective", "desc": "consensus activates"},
+    {"at": 10, "name": "convergence", "desc": "convergence tracking begins"},
+    {"at": 100, "name": "genesis_close", "desc": "genesis program ends"},
+]
+
+
+def _milestones_for(agent_count: int) -> list[dict]:
+    return [
+        {**m, "status": "active" if agent_count >= m["at"] else "locked"}
+        for m in _MILESTONES
+    ]
+
+
 @router.get("/v6/collective")
 def get_collective():
     agents = _load_json("collective_agents.json")
-    if not agents:
+    agents_online = len(agents)
+
+    if agents_online < 5:
         return {
-            "agents_online": 0,
-            "regime": {"dominant": "NEUTRAL", "long_pct": 0, "short_pct": 0, "neutral_pct": 0},
-            "fear_greed": {"value": 50, "label": "NEUTRAL"},
+            "agents_online": agents_online,
+            "stage": "genesis" if agents_online < 2 else "arena" if agents_online < 5 else "collective",
             "coin_consensus": [],
             "convergence_active": [],
-            "season_accuracy": {"convergence_events": 0, "accurate": 0, "accuracy_pct": 0, "false_positives": 0},
+            "milestones": _milestones_for(agents_online),
         }
 
-    agents_online = len(agents)
+    # --- 5+ agents: full collective data ---
 
     # Aggregate all evaluations across agents per coin
     coin_map: dict[str, dict] = {}
@@ -300,13 +317,21 @@ def get_arena_public():
     agents = _load_json("arena_agents.json")
     matches = _load_json("arena_matches.json")
 
-    if not agents:
+    # Season info
+    season_start = "2026-02-03"
+    started = datetime(2026, 2, 3, tzinfo=timezone.utc)
+    day = (datetime.now(timezone.utc) - started).days
+
+    if len(agents) < 2:
         return {
-            "season": {"number": 1, "day": 0, "started": None},
+            "season": {"number": 1, "day": day, "started": season_start},
+            "status": "waiting",
+            "message": "arena opens when 2 operators connect.",
             "leaderboard": [],
             "live_matches": [],
             "recent_results": [],
             "hall_of_records": {},
+            "agents_needed": 2,
         }
 
     # Sort agents by score descending for leaderboard
@@ -319,30 +344,19 @@ def get_arena_public():
             "pnl": a.get("track_record", {}).get("total_pnl", 0),
             "score": a.get("score", 0),
             "class": a.get("class", "novice"),
-            "sessions": a.get("track_record", {}).get("sessions", 0),
+            "sessions": a.get("sessions", 0),
             "hl_address": a.get("hl_address", ""),
         })
-
-    # Season info
-    season_start = "2026-03-05"
-    from datetime import datetime, timezone
-    started = datetime(2026, 3, 5, tzinfo=timezone.utc)
-    day = (datetime.now(timezone.utc) - started).days
 
     # Recent results: last 5 completed matches
     recent = sorted(matches, key=lambda m: m.get("date", ""), reverse=True)[:5]
 
-    # Hall of records
-    hall = {
-        "longest_streak": {"value": 47, "holder": "zero/balanced"},
-        "highest_session": {"value": 94.20, "holder": "momentum/apex"},
-        "most_immune_saves": {"value": 23, "holder": "regime-hunter"},
-        "best_regime_read": {"value": "5/5", "holder": "cold-harbor"},
-        "highest_signal": {"value": 9.4, "holder": "night-trader-ai"},
-    }
+    # Hall of records: only populated from real match data
+    hall = {}
 
     return {
         "season": {"number": 1, "day": day, "started": season_start},
+        "status": "active",
         "leaderboard": leaderboard,
         "live_matches": [],
         "recent_results": recent,
