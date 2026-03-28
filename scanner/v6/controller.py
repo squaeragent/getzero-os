@@ -592,6 +592,9 @@ def get_equity() -> float:
 
 
 def check_halt(risk: dict) -> tuple[bool, str]:
+    # Stop failure circuit breaker — blocks new entries until resolved
+    if risk.get("stop_failure_halt"):
+        return True, f"stop_failure_halt: {risk.get('stop_failure_coin', '?')} stop could not be placed"
     if not risk.get("halted"):
         return False, ""
     halt_until = risk.get("halt_until")
@@ -1489,31 +1492,48 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
         if sl_status != "ok" or not sl_oid:
             log(f"  🚨 STOP LOSS FAILED: status={sl_status}")
             send_alert(f"🚨 STOP LOSS FAILED for {coin} {direction} @ ${stop_price:.2f}\nNAKED position!")
-            try:
-                time.sleep(1)
-                sl_retry = client.place_stop_loss(coin, not is_buy, size_coins, stop_price)
-                sl_retry_status = sl_retry.get("status", "unknown")
-                sl_retry_fills  = sl_retry.get("response", {}).get("data", {}).get("statuses", [{}])
-                if sl_retry_fills:
-                    sl_oid = str(sl_retry_fills[0].get("resting", {}).get("oid", ""))
-                if sl_retry_status == "ok" and sl_oid:
-                    log(f"  Stop retry succeeded: oid={sl_oid}")
-                else:
-                    log(f"  Stop retry also failed: {sl_retry}")
-                    send_alert(f"🚨🚨 STOP RETRY FAILED for {coin}. NAKED POSITION. CLOSE MANUALLY.")
-                    if not sl_oid:
-                        log(f"  ❌ CRITICAL: Closing {coin} to prevent naked exposure.")
-                        send_alert(f"❌ Stop loss failed for {coin} {direction}. Closing immediately.")
-                        close_res = (client.market_sell(coin, filled_sz)
-                                     if is_buy else client.market_buy(coin, filled_sz))
-                        log(f"  Emergency close: {close_res}")
-                        return False
-            except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError, StopLossError, APIError) as e:
-                log(f"  Stop retry error: {e}")
-                send_alert(f"❌ Stop loss failed for {coin} {direction}. Closing immediately.")
-                close_res = (client.market_sell(coin, filled_sz)
-                             if is_buy else client.market_buy(coin, filled_sz))
-                log(f"  Emergency close: {close_res}")
+
+            # Exponential backoff retry: 1s, 3s, 5s (3 attempts total)
+            _backoff_delays = [1, 3, 5]
+            for _retry_i, _delay in enumerate(_backoff_delays):
+                time.sleep(_delay)
+                log(f"  Stop retry {_retry_i + 1}/{len(_backoff_delays)} after {_delay}s backoff...")
+                try:
+                    sl_retry = client.place_stop_loss(coin, not is_buy, size_coins, stop_price)
+                    sl_retry_status = sl_retry.get("status", "unknown")
+                    sl_retry_fills  = sl_retry.get("response", {}).get("data", {}).get("statuses", [{}])
+                    if sl_retry_fills:
+                        sl_oid = str(sl_retry_fills[0].get("resting", {}).get("oid", ""))
+                    if sl_retry_status == "ok" and sl_oid:
+                        log(f"  Stop retry {_retry_i + 1} succeeded: oid={sl_oid}")
+                        break
+                    log(f"  Stop retry {_retry_i + 1} failed: {sl_retry}")
+                except (urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as e:
+                    log(f"  Stop retry {_retry_i + 1} error: {e}")
+            else:
+                # All retries exhausted — CIRCUIT BREAKER: close position immediately
+                log(f"  ❌ CIRCUIT BREAKER: All {len(_backoff_delays)} stop retries failed for {coin}.")
+                send_alert(
+                    f"🚨 CIRCUIT BREAKER: Stop loss failed {len(_backoff_delays)}x for {coin} {direction}.\n"
+                    f"Closing position immediately to prevent naked exposure."
+                )
+                try:
+                    close_res = (client.market_sell(coin, filled_sz)
+                                 if is_buy else client.market_buy(coin, filled_sz))
+                    log(f"  Emergency close result: {close_res}")
+                except (urllib.error.URLError, json.JSONDecodeError, OSError) as close_err:
+                    log(f"  ❌❌ EMERGENCY CLOSE ALSO FAILED: {close_err}")
+                    send_alert(
+                        f"❌❌ CRITICAL: Cannot close {coin} {direction}. "
+                        f"Stop AND close failed. MANUAL INTERVENTION REQUIRED."
+                    )
+                # Halt all new entries for this cycle to prevent more naked positions
+                risk = load_json(BUS_DIR / "risk.json", {})
+                risk["stop_failure_halt"] = True
+                risk["stop_failure_coin"] = coin
+                risk["stop_failure_ts"] = datetime.now(timezone.utc).isoformat()
+                save_json_atomic(BUS_DIR / "risk.json", risk)
+                log(f"  Risk halt flag set — no new entries until stop failure resolved")
                 return False
 
         # ── Stop verification: confirm stop is on the book ─────────────────────
