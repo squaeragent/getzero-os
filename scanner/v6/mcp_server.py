@@ -25,6 +25,7 @@ from typing import Optional
 from fastmcp import FastMCP
 
 from scanner.v6.api import ZeroAPI
+from scanner.v6.auth import check_tool_tier, TOOL_TIERS
 
 # ── MCP Server ───────────────────────────────────────────────────────────────
 
@@ -42,11 +43,22 @@ _api = ZeroAPI()
 
 # V1: single operator, use static token or default
 _DEFAULT_OPERATOR = "op_default"
+_DEFAULT_PLAN = "scale"  # V1: full access
 
 
 def _get_operator_id() -> str:
     """V1: returns default. V2: extract from MCP auth context."""
     return _DEFAULT_OPERATOR
+
+
+def _get_plan() -> str:
+    """V1: returns default plan. V2: extract from MCP auth context."""
+    return _DEFAULT_PLAN
+
+
+def _gate(tool_name: str) -> dict | None:
+    """Check tier gating for a tool. Returns error dict if blocked, None if allowed."""
+    return check_tool_tier(tool_name, _get_plan())
 
 
 # ── SESSION TOOLS (8) ────────────────────────────────────────────────────────
