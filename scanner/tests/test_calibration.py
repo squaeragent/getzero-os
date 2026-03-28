@@ -38,9 +38,9 @@ class TestSafeWrite:
         hl_active = [{"position": {"szi": "0.5", "coin": "BTC"}}]
         client = self._make_client(hl_active)
 
-        with patch("scanner.v6.controller.POSITIONS_FILE", pos_file), \
-             patch("scanner.v6.controller._reconcile_positions") as mock_recon, \
-             patch("scanner.v6.controller.send_alert"):
+        with patch("scanner.v6.config.POSITIONS_FILE", pos_file), \
+             patch("scanner.v6.position_manager._reconcile_positions") as mock_recon, \
+             patch("scanner.v6.position_manager.send_alert"):
             _safe_save_positions(client, [], source="test")
 
         # Should NOT have written empty — file should still have old data or reconciliation ran
@@ -58,7 +58,7 @@ class TestSafeWrite:
         client = MagicMock()
         new_positions = [{"coin": "ETH", "direction": "LONG"}]
 
-        with patch("scanner.v6.controller.POSITIONS_FILE", pos_file):
+        with patch("scanner.v6.config.POSITIONS_FILE", pos_file):
             _safe_save_positions(client, new_positions, source="test")
 
         # Should NOT query HL for non-empty writes
@@ -90,7 +90,7 @@ class TestSafeWrite:
         hl_no_active = [{"position": {"szi": "0", "coin": "BTC"}}]
         client = self._make_client(hl_no_active)
 
-        with patch("scanner.v6.controller.POSITIONS_FILE", pos_file):
+        with patch("scanner.v6.config.POSITIONS_FILE", pos_file):
             _safe_save_positions(client, [], source="test")
 
         saved = json.loads(pos_file.read_text())

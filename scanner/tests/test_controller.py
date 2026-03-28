@@ -394,7 +394,7 @@ class TestMinRegime:
     def test_blocks_disallowed_regime(self):
         params = params_from_strategy("momentum")   # min_regime=[trending, stable]
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="chaotic"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="chaotic"):
             ok, reason = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert not ok
         assert "min_regime" in reason
@@ -402,7 +402,7 @@ class TestMinRegime:
     def test_allows_in_allowed_regime(self):
         params = params_from_strategy("momentum")   # min_regime=[trending, stable]
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="trending"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="trending"):
             ok, _ = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert ok
 
@@ -410,7 +410,7 @@ class TestMinRegime:
         """When regime is unknown (no data), don't block entries."""
         params = params_from_strategy("momentum")
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="unknown"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="unknown"):
             ok, _ = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert ok
 
@@ -418,7 +418,7 @@ class TestMinRegime:
         """Fade strategy is designed for reverting regime."""
         params = params_from_strategy("fade")
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="reverting"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="reverting"):
             ok, _ = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert ok
 
@@ -865,7 +865,7 @@ class TestDecisionLog:
 
     def test_writes_correct_format(self, tmp_path):
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             log_decision(
                 coin="BTC",
                 strategy="momentum",
@@ -889,7 +889,7 @@ class TestDecisionLog:
 
     def test_rejected_verdict_written(self, tmp_path):
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             log_decision(
                 coin="ETH", strategy="defense", layers_passed=2,
                 verdict="rejected", price=3000.0, reason="max_positions",
@@ -905,7 +905,7 @@ class TestDecisionLog:
         entry = make_entry(consensus_layers=5)
         risk  = make_risk(peak_equity=1000.0)
 
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file), \
              patch("scanner.v6.controller.BUS_DIR", tmp_path), \
              patch("scanner.v6.controller.load_json", return_value={}):
             ok, reason = approve_entry(entry, [], risk, 1000.0, params, ctrl)
@@ -1002,7 +1002,7 @@ class TestRejectionCounter:
         entry  = make_entry(consensus_layers=5)
         risk   = make_risk(peak_equity=1000.0)
         assert ctrl.eval_count == 0
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
              patch("scanner.v6.controller.load_json", return_value={}):
             approve_entry(entry, [], risk, 1000.0, params, ctrl)
         assert ctrl.eval_count == 1
@@ -1014,7 +1014,7 @@ class TestRejectionCounter:
         positions = [make_position(f"C{i}", size_usd=10.0) for i in range(5)]
         entry  = make_entry(consensus_layers=5)
         risk   = make_risk(peak_equity=1000.0)
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
              patch("scanner.v6.controller.load_json", return_value={}):
             ok, _ = approve_entry(entry, positions, risk, 1000.0, params, ctrl)
         assert not ok
@@ -1026,7 +1026,7 @@ class TestRejectionCounter:
         entry  = make_entry(consensus_layers=5)
         entry["strategy_size_pct"] = 10.0   # within hard cap (10% < 25%)
         risk   = make_risk(peak_equity=1000.0)
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", Path("/tmp/test_decisions.jsonl")), \
              patch("scanner.v6.controller.load_json", return_value={}):
             ok, _ = approve_entry(entry, [], risk, 1000.0, params, ctrl)
         assert ok
@@ -1273,9 +1273,9 @@ class TestLogRotation:
         decisions = tmp_path / "decisions.jsonl"
         decisions.write_text('{"test": true}\n')
 
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decisions), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decisions), \
              patch("scanner.v6.controller.EVENTS_LOG_FILE", tmp_path / "events.jsonl"), \
-             patch("scanner.v6.controller.NEAR_MISS_LOG_FILE", tmp_path / "near_misses.jsonl"), \
+             patch("scanner.v6.trade_logger.NEAR_MISS_LOG_FILE", tmp_path / "near_misses.jsonl"), \
              patch("scanner.v6.controller._ROTATABLE_LOGS", [decisions]):
             rotate_logs_start("test_session_123")
 

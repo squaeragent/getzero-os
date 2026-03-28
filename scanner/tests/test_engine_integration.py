@@ -196,16 +196,23 @@ def _patch_controller(bus_dir: Path, data_dir: Path, strategy: StrategyConfig):
             EXITS_FILE=bus_dir / "exits.json",
             SIGNALS_FILE=bus_dir / "signals.json",
             TRADES_FILE=data_dir / "trades.jsonl",
-            DECISION_LOG_FILE=bus_dir / "decisions.jsonl",
             EVENTS_LOG_FILE=bus_dir / "events.jsonl",
-            REJECTION_LOG_FILE=bus_dir / "rejections.jsonl",
-            NEAR_MISS_LOG_FILE=bus_dir / "near_misses.jsonl",
             CONTROLLER_STATE_FILE=bus_dir / "controller_state.json",
             get_active_strategy=lambda: strategy,
             get_dynamic_limits=_test_dynamic_limits,
-        ), patch(
-            "scanner.v6.config.get_dynamic_limits",
-            _test_dynamic_limits,
+        ), patch.multiple(
+            "scanner.v6.config",
+            BUS_DIR=bus_dir,
+            DATA_DIR=data_dir,
+            POSITIONS_FILE=bus_dir / "positions.json",
+            RISK_FILE=bus_dir / "risk.json",
+            HEARTBEAT_FILE=bus_dir / "heartbeat.json",
+            get_dynamic_limits=_test_dynamic_limits,
+        ), patch.multiple(
+            "scanner.v6.trade_logger",
+            DECISION_LOG_FILE=bus_dir / "decisions.jsonl",
+            REJECTION_LOG_FILE=bus_dir / "rejections.jsonl",
+            NEAR_MISS_LOG_FILE=bus_dir / "near_misses.jsonl",
         ):
             yield
 

@@ -414,7 +414,7 @@ class TestRiskGates:
         """current regime not in min_regime → rejected."""
         params = strategy_params("momentum")  # min_regime=[trending, stable]
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="chaotic"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="chaotic"):
             ok, reason = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert not ok
         assert "min_regime" in reason
@@ -423,7 +423,7 @@ class TestRiskGates:
         """current regime in min_regime → allowed."""
         params = strategy_params("momentum")  # min_regime=[trending, stable]
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="trending"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="trending"):
             ok, _ = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert ok
 
@@ -431,7 +431,7 @@ class TestRiskGates:
         """When regime is 'unknown' → don't block entries (no data)."""
         params = strategy_params("momentum")
         entry = make_entry()
-        with patch("scanner.v6.controller._get_current_regime", return_value="unknown"):
+        with patch("scanner.v6.risk_gate._get_current_regime", return_value="unknown"):
             ok, _ = approve_entry(entry, [], make_risk(peak_equity=1000.0), 1000.0, params)
         assert ok
 
@@ -557,7 +557,7 @@ class TestHardCaps:
         params = strategy_params("momentum")
         entry = make_entry(consensus_layers=5)
         risk = make_risk(peak_equity=1000.0)
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", Path("/tmp/_test_hc_decisions.jsonl")), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", Path("/tmp/_test_hc_decisions.jsonl")), \
              patch("scanner.v6.controller.load_json", return_value={}):
             ok, reason = approve_entry(entry, [], risk, 1000.0, params, ctrl)
         assert not ok
@@ -997,7 +997,7 @@ class TestDecisionLog:
     def test_decision_log_on_evaluation(self, tmp_path):
         """log_decision writes exactly one record per call."""
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             log_decision("BTC", "momentum", 5, "approved", 50000.0, "ok", "sess_1")
         lines = decision_file.read_text().strip().split("\n")
         assert len(lines) == 1
@@ -1005,7 +1005,7 @@ class TestDecisionLog:
     def test_decision_log_on_entry_approved(self, tmp_path):
         """Approved entry logs verdict='approved'."""
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             log_decision("BTC", "momentum", 5, "approved", 50000.0, "ok")
         record = json.loads(decision_file.read_text().strip())
         assert record["verdict"] == "approved"
@@ -1014,7 +1014,7 @@ class TestDecisionLog:
     def test_decision_log_on_rejection(self, tmp_path):
         """Rejected entry logs verdict='rejected' with reason."""
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             log_decision("ETH", "defense", 2, "rejected", 3000.0, "max_positions")
         record = json.loads(decision_file.read_text().strip())
         assert record["verdict"] == "rejected"
@@ -1023,7 +1023,7 @@ class TestDecisionLog:
     def test_decision_log_format(self, tmp_path):
         """Every decision log line has required fields."""
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             log_decision("SOL", "sniper", 7, "approved", 150.0, "ok", "sess_abc")
         record = json.loads(decision_file.read_text().strip())
         required_fields = {"ts", "coin", "strategy", "layers_passed", "verdict", "price", "reason", "session_id"}
@@ -1032,7 +1032,7 @@ class TestDecisionLog:
     def test_decision_log_append_only(self, tmp_path):
         """Multiple calls → multiple lines, no truncation."""
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             for i in range(5):
                 log_decision(f"COIN{i}", "momentum", i, "rejected", 100.0, f"reason_{i}")
         lines = decision_file.read_text().strip().split("\n")
@@ -1046,7 +1046,7 @@ class TestDecisionLog:
             ("ETH", "rejected", "max_positions"),
             ("SOL", "near_miss", "consensus_threshold"),
         ]
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file):
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file):
             for coin, verdict, reason in decisions:
                 log_decision(coin, "momentum", 4, verdict, 1000.0, reason, "sess_1")
 
@@ -1073,11 +1073,11 @@ class TestPositionReconciliation:
         positions_file = tmp_path / "positions.json"
         save_json_atomic(positions_file, {"positions": local_pos})
 
-        with patch("scanner.v6.controller.POSITIONS_FILE", positions_file), \
-             patch("scanner.v6.controller.load_json_locked",
+        with patch("scanner.v6.config.POSITIONS_FILE", positions_file), \
+             patch("scanner.v6.position_manager.load_json_locked",
                    return_value={"positions": local_pos}), \
-             patch("scanner.v6.controller.save_json_locked") as mock_save, \
-             patch("scanner.v6.controller.send_alert"):
+             patch("scanner.v6.position_manager.save_json_locked") as mock_save, \
+             patch("scanner.v6.position_manager.send_alert"):
             _reconcile_positions(mock_client)
 
         # Should save with 1 position
@@ -1093,11 +1093,11 @@ class TestPositionReconciliation:
         ]
         local_pos = [make_position("BTC"), make_position("ETH")]
 
-        with patch("scanner.v6.controller.POSITIONS_FILE", tmp_path / "positions.json"), \
-             patch("scanner.v6.controller.load_json_locked",
+        with patch("scanner.v6.config.POSITIONS_FILE", tmp_path / "positions.json"), \
+             patch("scanner.v6.position_manager.load_json_locked",
                    return_value={"positions": local_pos}), \
-             patch("scanner.v6.controller.save_json_locked") as mock_save, \
-             patch("scanner.v6.controller.send_alert"):
+             patch("scanner.v6.position_manager.save_json_locked") as mock_save, \
+             patch("scanner.v6.position_manager.send_alert"):
             _reconcile_positions(mock_client)
 
         saved_data = mock_save.call_args[0][1]
@@ -1113,11 +1113,11 @@ class TestPositionReconciliation:
         ]
         local_pos = [make_position("BTC")]
 
-        with patch("scanner.v6.controller.POSITIONS_FILE", tmp_path / "positions.json"), \
-             patch("scanner.v6.controller.load_json_locked",
+        with patch("scanner.v6.config.POSITIONS_FILE", tmp_path / "positions.json"), \
+             patch("scanner.v6.position_manager.load_json_locked",
                    return_value={"positions": local_pos}), \
-             patch("scanner.v6.controller.save_json_locked") as mock_save, \
-             patch("scanner.v6.controller.send_alert"):
+             patch("scanner.v6.position_manager.save_json_locked") as mock_save, \
+             patch("scanner.v6.position_manager.send_alert"):
             _reconcile_positions(mock_client)
 
         saved_data = mock_save.call_args[0][1]
@@ -1405,7 +1405,7 @@ class TestRejectionCounterNarrative:
         assert ctrl.eval_count == 0
 
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file), \
              patch("scanner.v6.controller.load_json", return_value={}):
             approve_entry(make_entry(consensus_layers=5), [], risk, 1000.0, params, ctrl)
 
@@ -1419,7 +1419,7 @@ class TestRejectionCounterNarrative:
         risk = make_risk(peak_equity=1000.0)
 
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file), \
              patch("scanner.v6.controller.load_json", return_value={}):
             ok, _ = approve_entry(make_entry(consensus_layers=5), positions, risk, 1000.0, params, ctrl)
 
@@ -1439,7 +1439,7 @@ class TestRejectionCounterNarrative:
         entry["strategy_size_pct"] = 10.0  # within hard cap; ensures approval path
 
         decision_file = tmp_path / "decisions.jsonl"
-        with patch("scanner.v6.controller.DECISION_LOG_FILE", decision_file), \
+        with patch("scanner.v6.trade_logger.DECISION_LOG_FILE", decision_file), \
              patch("scanner.v6.controller.load_json", return_value={}):
             ok, reason = approve_entry(entry, [], risk, 1000.0, params, ctrl)
 
@@ -1488,8 +1488,8 @@ class TestNearMissDetection:
         near_miss_file = tmp_path / "near_misses.jsonl"
         params = strategy_params("momentum")  # threshold=5
         entry = make_entry(consensus_layers=4)  # 1 below threshold
-        with patch("scanner.v6.controller.NEAR_MISS_LOG_FILE", near_miss_file):
-            log_near_miss(entry, "consensus_threshold: 4 < 5/7", params)
+        with patch("scanner.v6.trade_logger.NEAR_MISS_LOG_FILE", near_miss_file):
+            log_near_miss(entry, "consensus_threshold: 4 < 5/7", params.name)
         assert near_miss_file.exists()
 
     def test_near_miss_format(self, tmp_path):
@@ -1497,8 +1497,8 @@ class TestNearMissDetection:
         near_miss_file = tmp_path / "near_misses.jsonl"
         params = strategy_params("momentum")
         entry = make_entry(coin="ETH", consensus_layers=4)
-        with patch("scanner.v6.controller.NEAR_MISS_LOG_FILE", near_miss_file):
-            log_near_miss(entry, "consensus_threshold: 4 < 5/7", params)
+        with patch("scanner.v6.trade_logger.NEAR_MISS_LOG_FILE", near_miss_file):
+            log_near_miss(entry, "consensus_threshold: 4 < 5/7", params.name)
         record = json.loads(near_miss_file.read_text().strip())
         assert record["coin"] == "ETH"
         assert record["consensus"] == 4
@@ -1511,8 +1511,8 @@ class TestNearMissDetection:
         near_miss_file = tmp_path / "near_misses.jsonl"
         params = strategy_params("sniper")  # threshold=7
         entry = make_entry(coin="BTC", consensus_layers=6)
-        with patch("scanner.v6.controller.NEAR_MISS_LOG_FILE", near_miss_file):
-            log_near_miss(entry, "consensus_threshold: 6 < 7/7", params)
+        with patch("scanner.v6.trade_logger.NEAR_MISS_LOG_FILE", near_miss_file):
+            log_near_miss(entry, "consensus_threshold: 6 < 7/7", params.name)
         content = near_miss_file.read_text()
         assert "BTC" in content
         assert "near_miss" in content
