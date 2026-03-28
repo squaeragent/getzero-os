@@ -237,3 +237,45 @@ def get_agent_public(name_path: str):
         return {"matches": agent_matches}
 
     return agent
+
+# ── Cache endpoints (serve pre-computed data for website SSR) ──────────────
+
+import os
+from pathlib import Path as _CachePath
+
+_CACHE_DIR = _CachePath(__file__).parent / "data" / "cache"
+
+@router.get("/v6/cache/{key}")
+async def get_cache(key: str):
+    """Serve cached engine data. Sub-10ms reads. Used by website SSR."""
+    allowed = {"heat", "regime", "approaching", "brief", "health", "sessions", "collective"}
+    if key not in allowed:
+        return {"error": "unknown cache key"}
+    
+    cache_file = _CACHE_DIR / f"{key}.json"
+    if not cache_file.exists():
+        return {"data": None, "stale": True, "error": "no cache yet"}
+    
+    try:
+        import json as _json
+        entry = _json.loads(cache_file.read_text())
+        return entry
+    except Exception:
+        return {"data": None, "stale": True, "error": "cache read failed"}
+
+@router.get("/v6/cache/all")
+async def get_all_cache():
+    """Serve all cached data in one request. For website SSR batch fetch."""
+    import json as _json
+    result = {}
+    for key in ["heat", "regime", "approaching", "brief", "health", "sessions", "collective"]:
+        cache_file = _CACHE_DIR / f"{key}.json"
+        try:
+            if cache_file.exists():
+                entry = _json.loads(cache_file.read_text())
+                result[key] = entry
+            else:
+                result[key] = None
+        except Exception:
+            result[key] = None
+    return result
