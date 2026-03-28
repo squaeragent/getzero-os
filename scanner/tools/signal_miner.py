@@ -49,7 +49,7 @@ def get_api_key():
     key = os.environ.get("ENVY_API_KEY")
     if not key:
         # Try loading from .env
-        env_file = Path.home() / ".config" / "openclaw" / ".env"
+        env_file = Path.home() / "getzero-os" / ".env"
         if env_file.exists():
             for line in env_file.read_text().splitlines():
                 if line.startswith("ENVY_API_KEY="):
@@ -493,7 +493,7 @@ def main():
     ensure_dirs()
     api_key = get_api_key()
     if not api_key:
-        print("FATAL: ENVY_API_KEY not found. Set in env or ~/.config/openclaw/.env")
+        print("FATAL: ENVY_API_KEY not found. Set in env or ~/getzero-os/.env")
         sys.exit(1)
 
     if len(sys.argv) < 2:

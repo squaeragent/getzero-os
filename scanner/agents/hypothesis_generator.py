@@ -152,7 +152,7 @@ REVERSAL_KEYWORDS = {"REVERSAL", "REVERT", "RSI", "BB", "BOUNCE", "OVERSOLD", "O
 
 # ─── API ───
 def load_api_key():
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     with open(env_path) as f:
         for line in f:
             line = line.strip()
@@ -161,7 +161,7 @@ def load_api_key():
             if line.startswith("ENVY_API_KEY="):
                 val = line.split("=", 1)[1]
                 return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/.config/openclaw/.env")
+    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
 
 
 def api_get(path, params, api_key):

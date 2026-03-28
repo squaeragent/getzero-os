@@ -3,7 +3,7 @@ ZERO OS — Supabase Client
 Minimal httpx-based client for Supabase REST API (PostgREST).
 No supabase-py dependency. All calls are fire-and-forget safe.
 
-Credentials loaded from ~/.config/openclaw/.env:
+Credentials loaded from ~/getzero-os/.env:
   SUPABASE_URL=https://xxxx.supabase.co
   SUPABASE_SERVICE_KEY=eyJ...
 """
@@ -34,7 +34,7 @@ def _get_httpx():
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 
 def _load_env() -> dict[str, str]:
-    env_path = Path("~/.config/openclaw/.env").expanduser()
+    env_path = Path("~/getzero-os/.env").expanduser()
     env: dict[str, str] = {}
     if not env_path.exists():
         return env
@@ -59,7 +59,7 @@ class SupabaseClient:
         self._enabled = bool(self.url and self.key)
         if not self._enabled:
             log.warning(
-                "SUPABASE_URL or SUPABASE_SERVICE_KEY missing from ~/.config/openclaw/.env — "
+                "SUPABASE_URL or SUPABASE_SERVICE_KEY missing from ~/getzero-os/.env — "
                 "Supabase persistence disabled."
             )
 

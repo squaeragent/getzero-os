@@ -2,7 +2,7 @@
 ZERO OS — Nansen SensePlugin
 
 On-chain intelligence: smart money signals, holder changes, whale distribution.
-Reads NANSEN_API_KEY from ~/.config/openclaw/.env.
+Reads NANSEN_API_KEY from ~/getzero-os/.env.
 Returns empty observations gracefully when key is missing or API is down.
 
 Output dimensions:
@@ -116,7 +116,7 @@ NANSEN_BASE = "https://api.nansen.ai"
 
 
 def _load_env() -> dict[str, str]:
-    env_path = Path("~/.config/openclaw/.env").expanduser()
+    env_path = Path("~/getzero-os/.env").expanduser()
     env: dict[str, str] = {}
     if not env_path.exists():
         return env

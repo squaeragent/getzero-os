@@ -49,7 +49,7 @@ ALL_GROUPS = [MOMENTUM_IND, TREND_IND, BB_IND, CHAOS_IND, ICHIMOKU_IND]
 
 
 def load_api_key():
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     with open(env_path) as f:
         for line in f:
             line = line.strip()

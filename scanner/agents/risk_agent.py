@@ -98,8 +98,8 @@ WIN_LOSS_RATIO_FLOOR = 1.0
 
 # ─── ENV ───
 def load_main_address():
-    """Load HYPERLIQUID_MAIN_ADDRESS from ~/.config/openclaw/.env"""
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    """Load HYPERLIQUID_MAIN_ADDRESS from ~/getzero-os/.env"""
+    env_path = os.path.expanduser("~/getzero-os/.env")
     try:
         with open(env_path) as f:
             for line in f:
@@ -111,7 +111,7 @@ def load_main_address():
                     return val.strip().strip('"').strip("'")
     except FileNotFoundError:
         pass
-    raise RuntimeError("HYPERLIQUID_MAIN_ADDRESS not found in ~/.config/openclaw/.env")
+    raise RuntimeError("HYPERLIQUID_MAIN_ADDRESS not found in ~/getzero-os/.env")
 
 
 # ─── HYPERLIQUID API ───

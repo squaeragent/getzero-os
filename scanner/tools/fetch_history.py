@@ -30,7 +30,7 @@ def get_api_key():
     key = os.environ.get("ENVY_API_KEY")
     if key:
         return key
-    env_file = Path.home() / ".config" / "openclaw" / ".env"
+    env_file = Path.home() / ".config" / "getzero-os" / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
             if line.startswith("ENVY_API_KEY="):

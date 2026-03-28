@@ -55,7 +55,7 @@ def _load_api_key() -> str | None:
     key = os.environ.get("ENVY_API_KEY")
     if key:
         return key
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     try:
         with open(env_path) as f:
             for line in f:

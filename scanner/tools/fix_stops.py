@@ -24,7 +24,7 @@ from pathlib import Path
 # ─── ENV ──────────────────────────────────────────────────────────────────────
 
 def load_env():
-    env_path = Path("~/.config/openclaw/.env").expanduser()
+    env_path = Path("~/getzero-os/.env").expanduser()
     env = {}
     if not env_path.exists():
         print(f"ERROR: {env_path} not found")

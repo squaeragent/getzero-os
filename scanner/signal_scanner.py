@@ -45,7 +45,7 @@ MIN_SHARPE = 2.0  # raised from 1.5
 
 # ─── API ───
 def get_api_key():
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     with open(env_path) as f:
         for line in f:
             line = line.strip()
@@ -54,7 +54,7 @@ def get_api_key():
             if line.startswith("ENVY_API_KEY="):
                 val = line.split("=", 1)[1]
                 return val.strip().strip('"').strip("'")
-    raise RuntimeError("ENVY_API_KEY not found in ~/.config/openclaw/.env")
+    raise RuntimeError("ENVY_API_KEY not found in ~/getzero-os/.env")
 
 API_KEY = get_api_key()
 

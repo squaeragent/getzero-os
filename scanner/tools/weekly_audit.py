@@ -46,8 +46,8 @@ ENVY_BASE_URL = "https://gate.getzero.dev/api/claw"
 # ─── Env loading ──────────────────────────────────────────────────────────────
 
 def load_env():
-    """Load env vars from ~/.config/openclaw/.env into os.environ."""
-    env_path = Path.home() / ".config" / "openclaw" / ".env"
+    """Load env vars from ~/getzero-os/.env into os.environ."""
+    env_path = Path.home() / "getzero-os" / ".env"
     if not env_path.exists():
         log(f"WARNING: {env_path} not found")
         return

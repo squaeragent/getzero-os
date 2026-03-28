@@ -25,7 +25,7 @@ VALIDATION_DIR = SCANNER_DIR / "data" / "signal_validation"
 VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_api_key():
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     if os.path.exists(env_path):
         with open(env_path) as f:
             for line in f:

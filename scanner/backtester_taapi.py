@@ -58,7 +58,7 @@ def load_taapi_key() -> str:
     key = os.environ.get("TAAPI_API_KEY")
     if key:
         return key.strip().strip('"').strip("'")
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     try:
         with open(env_path) as f:
             for line in f:
@@ -70,7 +70,7 @@ def load_taapi_key() -> str:
                     return val.strip().strip('"').strip("'")
     except OSError:
         pass
-    raise RuntimeError("TAAPI_API_KEY not found in env or ~/.config/openclaw/.env")
+    raise RuntimeError("TAAPI_API_KEY not found in env or ~/getzero-os/.env")
 
 
 # ─── TAAPI HTTP ───────────────────────────────────────────────────────────────

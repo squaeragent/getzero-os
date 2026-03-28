@@ -299,7 +299,7 @@ def main():
         health = sb.health_check()
         if health["status"] != "ok":
             print(f"\nERROR: Supabase not reachable — {health}")
-            print("Add SUPABASE_URL and SUPABASE_SERVICE_KEY to ~/.config/openclaw/.env")
+            print("Add SUPABASE_URL and SUPABASE_SERVICE_KEY to ~/getzero-os/.env")
             sys.exit(1)
         print(f"Supabase connected: {health['url']}\n")
 

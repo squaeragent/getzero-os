@@ -210,7 +210,7 @@ def log(msg):
 
 
 def load_env():
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     env = {}
     with open(env_path) as f:
         for line in f:
@@ -1423,7 +1423,7 @@ def get_mark_price(coin):
 def get_atr_stop(coin, direction, entry_price):
     """Calculate stop loss based on ATR from Envy API."""
     try:
-        env_path = os.path.expanduser("~/.config/openclaw/.env")
+        env_path = os.path.expanduser("~/getzero-os/.env")
         api_key = None
         with open(env_path) as f:
             for line in f:
@@ -1915,10 +1915,10 @@ def main():
     secret = env.get("HYPERLIQUID_SECRET_KEY")
     main_addr = env.get("HYPERLIQUID_MAIN_ADDRESS")
     if not secret:
-        log("ERROR: HYPERLIQUID_SECRET_KEY not found in ~/.config/openclaw/.env")
+        log("ERROR: HYPERLIQUID_SECRET_KEY not found in ~/getzero-os/.env")
         sys.exit(1)
     if not main_addr:
-        log("ERROR: HYPERLIQUID_MAIN_ADDRESS not found in ~/.config/openclaw/.env")
+        log("ERROR: HYPERLIQUID_MAIN_ADDRESS not found in ~/getzero-os/.env")
         sys.exit(1)
 
     cfg = load_config()

@@ -22,7 +22,7 @@ def _load_token() -> str:
     token = os.environ.get("AI_TRADER_TOKEN")
     if token:
         return token
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     try:
         with open(env_path) as f:
             for line in f:

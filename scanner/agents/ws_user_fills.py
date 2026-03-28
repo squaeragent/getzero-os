@@ -39,7 +39,7 @@ def get_wallet_address():
     addr = os.environ.get("HYPERLIQUID_MAIN_ADDRESS")
     if addr:
         return addr
-    env_file = Path.home() / ".config" / "openclaw" / ".env"
+    env_file = Path.home() / "getzero-os" / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
             clean = line.strip()

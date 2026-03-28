@@ -98,7 +98,7 @@ def log(msg):
         f.write(line + "\n")
 
 def load_env():
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     env = {}
     with open(env_path) as f:
         for line in f:

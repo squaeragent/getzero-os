@@ -206,8 +206,8 @@ ALL_COINS = [
 
 # ─── ENV HELPERS ──────────────────────────────────────────────────────────────
 def load_env() -> dict:
-    """Load all env vars from ~/.config/openclaw/.env."""
-    env_path = Path("~/.config/openclaw/.env").expanduser()
+    """Load all env vars from ~/getzero-os/.env (engine-owned)."""
+    env_path = Path("~/getzero-os/.env").expanduser()
     env = {}
     if not env_path.exists():
         return env
@@ -223,7 +223,7 @@ def load_env() -> dict:
 
 
 def get_env(key: str, default: str = "") -> str:
-    """Get env var from process environment or ~/.config/openclaw/.env."""
+    """Get env var from process environment or ~/getzero-os/.env."""
     val = os.environ.get(key)
     if val:
         return val

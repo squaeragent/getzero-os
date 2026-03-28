@@ -98,7 +98,7 @@ def record_push(state: dict) -> dict:
 
 
 def emit(tag: str, detail: str, card_path: str = None):
-    """Print structured push output for OpenClaw to pick up."""
+    """Print structured push output for engine notification system."""
     if card_path:
         print(f"[PUSH] {tag}: {detail} | card: {card_path}")
     else:

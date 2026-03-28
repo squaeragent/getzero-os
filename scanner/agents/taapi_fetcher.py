@@ -102,7 +102,7 @@ def main():
         plugin._get_api_key()
     except RuntimeError as e:
         log(f"ERROR: {e}")
-        log("Set TAAPI_API_KEY in environment or ~/.config/openclaw/.env")
+        log("Set TAAPI_API_KEY in environment or ~/getzero-os/.env")
         sys.exit(1)
 
     log(f"Fetching indicators: {', '.join(TARGET_INDICATORS)}")

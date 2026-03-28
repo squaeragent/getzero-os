@@ -21,7 +21,7 @@ def _get_bot_token() -> str:
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if token:
         return token
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     try:
         with open(env_path) as f:
             for line in f:

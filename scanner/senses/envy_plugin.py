@@ -97,7 +97,7 @@ def _load_api_key() -> str:
     key = os.environ.get("ENVY_API_KEY")
     if key:
         return key
-    env_path = os.path.expanduser("~/.config/openclaw/.env")
+    env_path = os.path.expanduser("~/getzero-os/.env")
     try:
         with open(env_path) as f:
             for line in f:
@@ -109,7 +109,7 @@ def _load_api_key() -> str:
                     return val.strip().strip('"').strip("'")
     except OSError:
         pass
-    raise RuntimeError("ENVY_API_KEY not found in env or ~/.config/openclaw/.env")
+    raise RuntimeError("ENVY_API_KEY not found in env or ~/getzero-os/.env")
 
 
 def _envy_get(path: str, params: dict, api_key: str) -> dict:
