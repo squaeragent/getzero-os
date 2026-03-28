@@ -69,6 +69,15 @@ app.add_middleware(
 from scanner.v6.auth import AuthMiddleware
 app.add_middleware(AuthMiddleware)
 
+# API version header — every response includes version for client compatibility
+from scanner.v6.config import API_VERSION
+
+@app.middleware("http")
+async def add_api_version_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-API-Version"] = API_VERSION
+    return response
+
 # ─── Helpers ───
 
 def _read_json(path: Path) -> dict | list | None:

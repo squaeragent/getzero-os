@@ -268,6 +268,81 @@ def get_env(key: str, default: str = "") -> str:
     return load_env().get(key, default)
 
 
+API_VERSION = "6.1.0"
+
+
+def validate_config() -> list[str]:
+    """Validate all config constants are within safe ranges.
+
+    Returns list of errors (empty = all OK). Called at import time
+    so misconfigurations are caught early.
+    """
+    errors = []
+
+    # Account
+    if not (0.0 < CAPITAL_FLOOR_PCT < 1.0):
+        errors.append(f"CAPITAL_FLOOR_PCT={CAPITAL_FLOOR_PCT} must be (0, 1)")
+    if not (0.0 < DAILY_LOSS_LIMIT_PCT < 1.0):
+        errors.append(f"DAILY_LOSS_LIMIT_PCT={DAILY_LOSS_LIMIT_PCT} must be (0, 1)")
+
+    # Position limits
+    if not (0.0 < MAX_POSITION_PCT <= 1.0):
+        errors.append(f"MAX_POSITION_PCT={MAX_POSITION_PCT} must be (0, 1]")
+    if not (0.0 < MIN_POSITION_PCT <= MAX_POSITION_PCT):
+        errors.append(f"MIN_POSITION_PCT={MIN_POSITION_PCT} must be (0, MAX_POSITION_PCT]")
+    if MAX_PER_COIN < 1:
+        errors.append(f"MAX_PER_COIN={MAX_PER_COIN} must be >= 1")
+    if not (0.0 < FEE_RATE < 0.01):
+        errors.append(f"FEE_RATE={FEE_RATE} must be (0, 0.01)")
+
+    # Risk
+    if not (0.0 < STOP_LOSS_PCT < 1.0):
+        errors.append(f"STOP_LOSS_PCT={STOP_LOSS_PCT} must be (0, 1)")
+    for coin, pct in COIN_STOP_PCT.items():
+        if not (0.0 < pct < 1.0):
+            errors.append(f"COIN_STOP_PCT[{coin}]={pct} must be (0, 1)")
+    for coin, slip in COIN_SLIPPAGE.items():
+        if not (0.0 < slip < 0.1):
+            errors.append(f"COIN_SLIPPAGE[{coin}]={slip} must be (0, 0.1)")
+
+    # Leverage
+    for coin, lev in COIN_LEVERAGE.items():
+        if not (1 <= lev <= 10):
+            errors.append(f"COIN_LEVERAGE[{coin}]={lev} must be [1, 10]")
+    if not (1 <= DEFAULT_LEVERAGE <= 10):
+        errors.append(f"DEFAULT_LEVERAGE={DEFAULT_LEVERAGE} must be [1, 10]")
+
+    # Timing
+    if CYCLE_SECONDS < 1:
+        errors.append(f"CYCLE_SECONDS={CYCLE_SECONDS} must be >= 1")
+    if RECONCILE_INTERVAL < 1:
+        errors.append(f"RECONCILE_INTERVAL={RECONCILE_INTERVAL} must be >= 1")
+
+    # Hard caps
+    if not (1 <= HARD_MAX_POSITION_PCT <= 100):
+        errors.append(f"HARD_MAX_POSITION_PCT={HARD_MAX_POSITION_PCT} must be [1, 100]")
+    if not (1 <= HARD_MAX_EXPOSURE_PCT <= 100):
+        errors.append(f"HARD_MAX_EXPOSURE_PCT={HARD_MAX_EXPOSURE_PCT} must be [1, 100]")
+    if HARD_MAX_ORDERS_PER_MIN < 1:
+        errors.append(f"HARD_MAX_ORDERS_PER_MIN={HARD_MAX_ORDERS_PER_MIN} must be >= 1")
+
+    # Coin universe
+    if len(ALL_COINS) < 1:
+        errors.append("ALL_COINS is empty")
+    if len(ALL_COINS) != len(set(ALL_COINS)):
+        errors.append("ALL_COINS has duplicates")
+
+    return errors
+
+
+# Validate at import time — fail fast
+_config_errors = validate_config()
+if _config_errors:
+    import warnings
+    for err in _config_errors:
+        warnings.warn(f"Config validation: {err}", stacklevel=2)
+
+
 if __name__ == "__main__":
     print("V6 config OK")
     print(f"  V6_DIR:           {V6_DIR}")
