@@ -5,7 +5,7 @@ import urllib.request
 import urllib.error
 from dataclasses import dataclass
 
-API_BASE = 'https://getzero.dev/api'
+API_BASE = 'https://api.getzero.dev/v6'
 
 
 @dataclass
