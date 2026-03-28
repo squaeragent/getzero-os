@@ -80,12 +80,14 @@ from scanner.v6.config import (
     FEE_RATE, STRATEGY_VERSION,
     get_env, get_stop_pct, get_dynamic_limits, get_slippage, get_leverage,
     HL_MAIN_ADDRESS,
+    CYCLE_SECONDS, RECONCILE_INTERVAL, HEARTBEAT_INTERVAL,
+    FAILED_ENTRY_COOLDOWN, ALERT_COOLDOWN,
+    HARD_MAX_POSITION_PCT, HARD_MAX_EXPOSURE_PCT,
+    HARD_MAX_ORDERS_PER_MIN, HARD_MAX_ORDERS_PER_SESSION,
 )
 from scanner.exceptions import APIError, InsufficientFundsError, DesyncError, OrderError, StopLossError, BusIOError
 from scanner.v6.strategy_loader import StrategyConfig, get_active_strategy
 from scanner.v6.hl_client import HLClient, load_hl_meta, COIN_TO_ASSET, COIN_SZ_DECIMALS
-
-CYCLE_SECONDS = 5
 
 REJECTION_LOG_FILE  = BUS_DIR / "rejections.jsonl"
 NEAR_MISS_LOG_FILE  = BUS_DIR / "near_misses.jsonl"
@@ -94,13 +96,11 @@ EVENTS_LOG_FILE     = BUS_DIR / "events.jsonl"
 CONTROLLER_STATE_FILE = BUS_DIR / "controller_state.json"
 SIGNALS_FILE        = BUS_DIR / "signals.json"   # Session 9: monitor signals
 
-# Failed entry cooldown — don't retry same coin+direction for 15 min after failure
+# Failed entry cooldown — don't retry same coin+direction after failure
 _failed_entries: dict[str, float] = {}
-_FAILED_ENTRY_COOLDOWN = 900  # 15 minutes
 
 # Telegram alert dedup
 _alert_history: dict[str, float] = {}
-_ALERT_COOLDOWN = 300  # 5 min between identical alerts
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -271,7 +271,7 @@ def send_alert(message: str) -> None:
         return
     alert_key = message[:60]
     now = time.time()
-    if alert_key in _alert_history and (now - _alert_history[alert_key]) < _ALERT_COOLDOWN:
+    if alert_key in _alert_history and (now - _alert_history[alert_key]) < ALERT_COOLDOWN:
         return
     _alert_history[alert_key] = now
     try:
@@ -802,11 +802,11 @@ class Controller:
     """
 
     def __init__(self) -> None:
-        # ── Hard caps — CANNOT be overridden by YAML or session params ─────────
-        self.HARD_MAX_POSITION_PCT    = 25    # max 25% of equity per position
-        self.HARD_MAX_EXPOSURE_PCT    = 80    # max 80% of equity in open positions
-        self.HARD_MAX_ORDERS_PER_MIN  = 10    # rate limit per minute
-        self.HARD_MAX_ORDERS_PER_SESSION = 100
+        # ── Hard caps — from centralized config, overridable via env ──────────
+        self.HARD_MAX_POSITION_PCT    = HARD_MAX_POSITION_PCT
+        self.HARD_MAX_EXPOSURE_PCT    = HARD_MAX_EXPOSURE_PCT
+        self.HARD_MAX_ORDERS_PER_MIN  = HARD_MAX_ORDERS_PER_MIN
+        self.HARD_MAX_ORDERS_PER_SESSION = HARD_MAX_ORDERS_PER_SESSION
         self._orders_this_session: int       = 0
         self._orders_this_minute:  list[float] = []   # timestamps
 
@@ -822,8 +822,8 @@ class Controller:
         # ── Periodic timers ─────────────────────────────────────────────────────
         self._last_reconcile_time:  float = 0.0
         self._last_heartbeat_write: float = 0.0
-        self.RECONCILE_INTERVAL   = 300   # 5 minutes
-        self.HEARTBEAT_INTERVAL   = 60    # 1 minute
+        self.RECONCILE_INTERVAL   = RECONCILE_INTERVAL
+        self.HEARTBEAT_INTERVAL   = HEARTBEAT_INTERVAL
 
     # ── EVENT BUS ─────────────────────────────────────────────────────────────
 
@@ -1298,8 +1298,8 @@ def open_trade(client: HLClient, trade: dict, dry: bool,
     cooldown_key = f"{coin}_{direction}"
     if cooldown_key in _failed_entries:
         elapsed = time.time() - _failed_entries[cooldown_key]
-        if elapsed < _FAILED_ENTRY_COOLDOWN:
-            remaining = int(_FAILED_ENTRY_COOLDOWN - elapsed)
+        if elapsed < FAILED_ENTRY_COOLDOWN:
+            remaining = int(FAILED_ENTRY_COOLDOWN - elapsed)
             log(f"  SKIP {coin} {direction}: failed entry cooldown ({remaining}s remaining)")
             return False
         else:

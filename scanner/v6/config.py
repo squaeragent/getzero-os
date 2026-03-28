@@ -195,6 +195,29 @@ TELEGRAM_CHAT_ID        = "133058580"
 TELEGRAM_BOT_TOKEN_ENV  = "TELEGRAM_BOT_TOKEN"
 
 
+# ─── CONTROLLER TIMING (overridable via environment) ─────────────────────────
+CYCLE_SECONDS              = int(os.environ.get("ZERO_CYCLE_SECONDS", "5"))
+RECONCILE_INTERVAL         = int(os.environ.get("ZERO_RECONCILE_INTERVAL", "300"))
+HEARTBEAT_INTERVAL         = int(os.environ.get("ZERO_HEARTBEAT_INTERVAL", "60"))
+FAILED_ENTRY_COOLDOWN      = int(os.environ.get("ZERO_FAILED_ENTRY_COOLDOWN", "900"))
+ALERT_COOLDOWN             = int(os.environ.get("ZERO_ALERT_COOLDOWN", "300"))
+
+# ─── HARD SAFETY CAPS (controller-level, not strategy-configurable) ──────────
+HARD_MAX_POSITION_PCT      = int(os.environ.get("ZERO_HARD_MAX_POSITION_PCT", "25"))
+HARD_MAX_EXPOSURE_PCT      = int(os.environ.get("ZERO_HARD_MAX_EXPOSURE_PCT", "80"))
+HARD_MAX_ORDERS_PER_MIN    = int(os.environ.get("ZERO_HARD_MAX_ORDERS_PER_MIN", "10"))
+HARD_MAX_ORDERS_PER_SESSION = int(os.environ.get("ZERO_HARD_MAX_ORDERS_PER_SESSION", "100"))
+
+# ─── MONITOR TIMING ─────────────────────────────────────────────────────────
+PRICE_STALE_MS             = int(os.environ.get("ZERO_PRICE_STALE_MS", "120000"))
+SOURCE_STALE_MS            = int(os.environ.get("ZERO_SOURCE_STALE_MS", "30000"))
+FEAR_GREED_TTL_S           = int(os.environ.get("ZERO_FEAR_GREED_TTL_S", "300"))
+
+# ─── IMMUNE SYSTEM ──────────────────────────────────────────────────────────
+IMMUNE_CYCLE_SECONDS       = int(os.environ.get("ZERO_IMMUNE_CYCLE_SECONDS", "60"))
+CONTROLLER_STALE_THRESHOLD_S = int(os.environ.get("ZERO_CONTROLLER_STALE_THRESHOLD", "300"))
+DEAD_MAN_STOP_PCT_CFG      = float(os.environ.get("ZERO_DEAD_MAN_STOP_PCT", "0.01"))
+
 # ─── COIN UNIVERSE ────────────────────────────────────────────────────────────
 ALL_COINS = [
     "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "BTC", "CRV",

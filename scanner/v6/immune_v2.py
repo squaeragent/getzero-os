@@ -29,6 +29,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from scanner.utils import load_json as _load_json, save_json_atomic, append_jsonl, make_logger
+from scanner.v6.config import (
+    IMMUNE_CYCLE_SECONDS as CYCLE_SECONDS,
+    CONTROLLER_STALE_THRESHOLD_S as CONTROLLER_STALE_THRESHOLD,
+    DEAD_MAN_STOP_PCT_CFG as DEAD_MAN_STOP_PCT,
+)
 
 _log = make_logger("IMMUNE")
 
@@ -38,10 +43,6 @@ BUS_DIR = V6_DIR / "bus"
 POSITIONS_FILE  = BUS_DIR / "positions.json"
 HEARTBEAT_FILE  = BUS_DIR / "heartbeat.json"
 EVENTS_FILE     = BUS_DIR / "events.jsonl"
-
-CYCLE_SECONDS          = 60
-CONTROLLER_STALE_THRESHOLD = 300  # 5 minutes
-DEAD_MAN_STOP_PCT      = 0.01    # 1% tightened stop
 
 
 def _now_iso() -> str:
