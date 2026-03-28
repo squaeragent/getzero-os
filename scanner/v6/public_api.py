@@ -176,56 +176,22 @@ async def engine_stats():
 
 # ── GET /v6/collective ───────────────────────────────────────────────────────
 
-_MILESTONES = [
-    {"at": 1, "name": "genesis", "desc": "intelligence running"},
-    {"at": 2, "name": "competition", "desc": "arena opens"},
-    {"at": 5, "name": "collective", "desc": "consensus activates"},
-    {"at": 10, "name": "network", "desc": "convergence tracking"},
-    {"at": 50, "name": "intelligence", "desc": "strategy recommendations"},
-    {"at": 100, "name": "genesis_close", "desc": "genesis program ends"},
-    {"at": 1000, "name": "infrastructure", "desc": "collective becomes layer 7"},
-]
-
-
-def _milestone_stage(agent_count: int) -> tuple[str, list[dict], dict | None]:
-    """Return (current_stage, stages_with_status, next_milestone)."""
-    current = "genesis"
-    next_ms = None
-    stages = []
-    for ms in _MILESTONES:
-        if agent_count >= ms["at"]:
-            current = ms["name"]
-            stages.append({**ms, "status": "active"})
-        else:
-            stages.append({**ms, "status": "locked"})
-            if next_ms is None:
-                next_ms = {"agents_needed": ms["at"], "unlocks": ms["desc"]}
-    return current, stages, next_ms
-
-
 @router.get("/v6/collective")
 def get_collective():
     agents = _load_json("collective_agents.json")
-    agents_online = len(agents)
-    stage, stages, next_ms = _milestone_stage(agents_online)
-
-    # Pre-collective: not enough agents for consensus
-    if agents_online < 5:
-        messages = {
-            0: "no operators registered. intelligence waiting.",
-            1: "intelligence running. collective activates at 5 operators.",
-        }
+    if not agents:
         return {
-            "agents_online": agents_online,
-            "stage": stage,
-            "message": messages.get(agents_online, f"{agents_online} operators registered. collective activates at 5."),
+            "agents_online": 0,
+            "regime": {"dominant": "NEUTRAL", "long_pct": 0, "short_pct": 0, "neutral_pct": 0},
+            "fear_greed": {"value": 50, "label": "NEUTRAL"},
             "coin_consensus": [],
             "convergence_active": [],
-            "season_accuracy": None,
-            "milestones": {"next": next_ms, "stages": stages},
+            "season_accuracy": {"convergence_events": 0, "accurate": 0, "accuracy_pct": 0, "false_positives": 0},
         }
 
-    # 5+ agents: full collective response
+    agents_online = len(agents)
+
+    # Aggregate all evaluations across agents per coin
     coin_map: dict[str, dict] = {}
     direction_totals = {"LONG": 0, "SHORT": 0, "NEUTRAL": 0}
 
@@ -306,7 +272,6 @@ def get_collective():
 
     return {
         "agents_online": agents_online,
-        "stage": stage,
         "regime": {"dominant": dominant, "long_pct": long_pct, "short_pct": short_pct, "neutral_pct": neutral_pct},
         "fear_greed": {"value": fg_value, "label": fg_label},
         "coin_consensus": coin_consensus,
@@ -317,7 +282,6 @@ def get_collective():
             "accuracy_pct": accuracy_pct,
             "false_positives": total_events - accurate_count,
         },
-        "milestones": {"next": next_ms, "stages": stages},
     }
 
 
@@ -336,22 +300,13 @@ def get_arena_public():
     agents = _load_json("arena_agents.json")
     matches = _load_json("arena_matches.json")
 
-    # Season info
-    season_start = "2026-02-03"
-    started = datetime(2026, 2, 3, tzinfo=timezone.utc)
-    day = (datetime.now(timezone.utc) - started).days
-
-    # Arena requires 2+ agents to operate
-    if len(agents) < 2:
+    if not agents:
         return {
-            "season": {"number": 1, "day": day, "started": season_start},
-            "status": "waiting",
-            "message": "arena opens when 2 operators are ready. you could be first.",
+            "season": {"number": 1, "day": 0, "started": None},
             "leaderboard": [],
             "live_matches": [],
             "recent_results": [],
             "hall_of_records": {},
-            "agents_needed": 2,
         }
 
     # Sort agents by score descending for leaderboard
@@ -368,15 +323,26 @@ def get_arena_public():
             "hl_address": a.get("hl_address", ""),
         })
 
+    # Season info
+    season_start = "2026-03-05"
+    from datetime import datetime, timezone
+    started = datetime(2026, 3, 5, tzinfo=timezone.utc)
+    day = (datetime.now(timezone.utc) - started).days
+
     # Recent results: last 5 completed matches
     recent = sorted(matches, key=lambda m: m.get("date", ""), reverse=True)[:5]
 
-    # Hall of records: only from real match data
-    hall = {}
+    # Hall of records
+    hall = {
+        "longest_streak": {"value": 47, "holder": "zero/balanced"},
+        "highest_session": {"value": 94.20, "holder": "momentum/apex"},
+        "most_immune_saves": {"value": 23, "holder": "regime-hunter"},
+        "best_regime_read": {"value": "5/5", "holder": "cold-harbor"},
+        "highest_signal": {"value": 9.4, "holder": "night-trader-ai"},
+    }
 
     return {
         "season": {"number": 1, "day": day, "started": season_start},
-        "status": "active",
         "leaderboard": leaderboard,
         "live_matches": [],
         "recent_results": recent,

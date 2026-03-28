@@ -24,7 +24,6 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
 from scanner.v6.config import BUS_DIR
@@ -167,51 +166,3 @@ def plan_allows_strategy(plan: str, strategy_name: str) -> bool:
 def get_allowed_strategies(plan: str) -> set[str]:
     """Get the set of strategies allowed for a plan."""
     return _PLAN_STRATEGIES.get(plan, _PLAN_STRATEGIES["free"])
-
-
-# ── Genesis Operator Tracking ──────────────────────────────────────────────
-
-_GENESIS_FILE = Path(__file__).parent / "data" / "genesis_operators.json"
-
-
-def _load_genesis() -> list[dict]:
-    if not _GENESIS_FILE.exists():
-        return []
-    try:
-        return json.loads(_GENESIS_FILE.read_text())
-    except (json.JSONDecodeError, OSError):
-        return []
-
-
-def _save_genesis(entries: list[dict]) -> None:
-    _GENESIS_FILE.write_text(json.dumps(entries, indent=2))
-
-
-def get_genesis_number(operator_id: str) -> int | None:
-    """Return the genesis number for an operator, or None if not a genesis operator."""
-    for entry in _load_genesis():
-        if entry["operator_id"] == operator_id:
-            return entry["genesis_number"]
-    return None
-
-
-def register_genesis_operator(operator_id: str, agent_handle: str) -> int:
-    """Register an operator in the genesis program. Returns their genesis number."""
-    entries = _load_genesis()
-    for entry in entries:
-        if entry["operator_id"] == operator_id:
-            return entry["genesis_number"]
-    next_number = len(entries) + 1
-    entries.append({
-        "operator_id": operator_id,
-        "genesis_number": next_number,
-        "registered_at": datetime.now(timezone.utc).isoformat(),
-        "agent_handle": agent_handle,
-    })
-    _save_genesis(entries)
-    return next_number
-
-
-def list_genesis_operators() -> list[dict]:
-    """Return all genesis operators."""
-    return _load_genesis()
